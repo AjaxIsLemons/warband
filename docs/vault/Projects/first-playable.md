@@ -6,7 +6,7 @@ via the launcher. Fun-signal before depth. Target date: set when the sim skeleto
 ## Content budget (hard cap)
 - **8 heroes**, ~2 spec forks each (16 endpoint identities), 1 rank-up choice per act.
 - **~12 weapons/armor pieces** total.
-- **3 acts × ~5 nodes**; small monster roster (reuse hero kits as monsters where possible).
+- **5 acts × ~4 nodes**; small monster roster (reuse hero kits as monsters where possible).
 - Programmer art, no sound. One board.
 
 ## Build order (sim first, Unity later)
@@ -21,12 +21,9 @@ via the launcher. Fun-signal before depth. Target date: set when the sim skeleto
    board render, placement drag, replay viewer, run screens. Ugly is fine.
 5. **Launcher copy + friends playtest #1.**
 
-## Open questions (round 3+)
-- **Stakes economy (the innovation space):** what does losing cost — PvE loss vs. act-boss
-  loss? Lives ("banners")? Guild-HP? Is the PvE fight optional risk/reward (Bazaar) or
-  mandatory node? Decide via play, not paper.
-- **Act-boss reward:** what does beating the human ghost grant — rating, plunder from their
-  board, run-score? What happens on act-boss loss (run over / lose a banner / refight new ghost)?
+## Open questions (round 4+) — stakes resolved by ADR 0002
+- **Wager mechanics:** what exactly is wagered (gold entry? injury risk? pick a fight tier
+  normal/elite/nightmare?) and what the reward curve looks like. Decide via play.
 - Rank-up pacing: XP-driven or act-driven?
 - Bench/reserve: exists in first playable or later?
 - Working title → shipping name (later; don't bikeshed).

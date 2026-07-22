@@ -8,6 +8,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
   settled identity + the process guardrails, with the postmortem evidence behind them.
+- [Decisions/0002-run-structure-best-of-5.md](Decisions/0002-run-structure-best-of-5.md) —
+  best-of-5 acts, PvE wagering, anti-snowball laws.
 
 ## Projects
 - [Projects/first-playable.md](Projects/first-playable.md) — content budget, build order, open questions.

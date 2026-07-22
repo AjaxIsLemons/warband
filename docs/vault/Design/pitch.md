@@ -15,15 +15,22 @@ keep Guildrun's Slay-the-Spire-style beat (a timeline of fights/shops/events in 
 close acts) — but **the act boss is another player**. PvE is where you tinker; the human is
 the exam.
 
-## The run
-- ~20–25 min. Strawman: **3 acts × ~5 PvE nodes**, each node a choice (monster fight / event /
-  shop), each act closed by a **PvP ghost fight** drawn from boards other players snapshotted
-  at the *same act* (structural fairness — circuit's same-round pools, reused wholesale).
+## The run — best of 5 (decided 2026-07-22, ADR 0002)
+- ~20–25 min. **5 acts × ~4 PvE nodes** (monster fight / event / shop), each act closed by a
+  **PvP ghost boss** drawn from boards other players snapshotted at the *same act*
+  (structural fairness — circuit's same-round pools, reused wholesale).
+- **The run is a best-of-5 against humanity.** Runs complete all 5 acts; your boss record is the
+  outcome: 3+ wins = victory, 5-0 = flawless. No lives — an early boss loss is a scoreboard
+  setback, never a death spiral.
+- **PvE is the wager layer:** fights are chosen at a risk tier — wager your strength for more
+  reward. Knowing when your build spikes (and cashing in) is a core skill. A PvE loss costs the
+  wager and tempo, never the run.
+- **Anti-snowball laws:** difficulty and rewards anchor to act number, never W/L (autobattle's
+  rule); PvP results touch the scoreboard, never your power (spoils-of-war deferred past v1);
+  ghost pools keyed to act + record, so ~50% boss win-rate is structural.
 - Blind placement both sides. **No scouting, ever** (circuit's ghost-pool-pollution argument).
 - Your act-end board enters the ghost pool regardless of result; synthetic-fill bots seed thin
   pools (cold start solved).
-- PvE fights feed the build: gold, items, hero XP. What a loss costs (PvE vs. act boss) — **OPEN**,
-  see `Projects/first-playable.md`.
 
 ## Combat
 - Auto-resolves on hexes: **4 rows × 6 columns per side**. Warband scales **2 units → cap 6**
@@ -51,7 +58,7 @@ the exam.
 - Shoota's launcher copied for one-click friend installs.
 
 ## How this one ships (anti-washout contract — see ADR 0001)
-1. First playable = **8 heroes × ~2 spec forks, 3 acts, solo vs. bot-ghosts, programmer art.**
+1. First playable = **8 heroes × ~2 spec forks, 5 acts, solo vs. bot-ghosts, programmer art.**
    Content budget is a hard cap.
 2. Nothing is "LOCKED" until it's been **played**. Reviews propose; playtests decide.
 3. The identity above is **settled** — reopened only by playtest evidence.
