@@ -7,9 +7,13 @@ namespace Warband.Sim
         BattleStart, Move, Attack, DamageDealt, Heal, Cast,
         StatusApplied, StatusExpired, ShieldChanged, ManaChanged,
         Death, StormTick, End,
+        FieldCreated,   // Target=field id, Amount=IsWall(0/1), Source=creator
+        FieldHex,       // Target=field id, Amount=Q, Aux=R (one per covered hex)
+        FieldExpired,   // Target=field id
+        AttackBlocked,  // Source=attacker, Target=intended victim, Amount=Q, Aux=R of the wall hex
     }
 
-    public enum Cause { None, Attack, Ability, Dot, Storm, Trigger }
+    public enum Cause { None, Attack, Ability, Dot, Storm, Trigger, Field }
 
     /// <summary>
     /// One log entry, tag-change model (ADR 0004): mutating events carry the delta

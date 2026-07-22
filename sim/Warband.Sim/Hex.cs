@@ -37,6 +37,40 @@ namespace Warband.Sim
             return (Math.Abs(d.Q) + Math.Abs(d.R) + Math.Abs(d.S)) / 2;
         }
 
+        /// <summary>
+        /// Deterministic integer hex line from a to b inclusive (cube-lerp with
+        /// round-to-nearest, ties toward +inf, drift fixed on the largest component —
+        /// no floats, identical on every platform). Projectile paths use this.
+        /// </summary>
+        public static System.Collections.Generic.List<Hex> Line(Hex a, Hex b)
+        {
+            int n = Distance(a, b);
+            var result = new System.Collections.Generic.List<Hex>(n + 1);
+            if (n == 0) { result.Add(a); return result; }
+            for (int i = 0; i <= n; i++)
+            {
+                long pq = (long)a.Q * (n - i) + (long)b.Q * i;
+                long pr = (long)a.R * (n - i) + (long)b.R * i;
+                long ps = -(pq + pr);
+                long rq = RoundDiv(pq, n), rr = RoundDiv(pr, n), rs = RoundDiv(ps, n);
+                if (rq + rr + rs != 0)
+                {
+                    long dq = Math.Abs(rq * n - pq), dr = Math.Abs(rr * n - pr), ds = Math.Abs(rs * n - ps);
+                    if (dq >= dr && dq >= ds) rq = -(rr + rs);
+                    else if (dr >= ds) rr = -(rq + rs);
+                    else rs = -(rq + rr);
+                }
+                result.Add(new Hex((int)rq, (int)rr));
+            }
+            return result;
+        }
+
+        private static long RoundDiv(long p, long n) // nearest, ties toward +inf; n > 0
+        {
+            long x = 2 * p + n, y = 2 * n;
+            return x >= 0 ? x / y : -((-x + y - 1) / y);
+        }
+
         /// <summary>Board view (odd-r offset): row = R, col derived from Q.</summary>
         public static Hex FromRowCol(int row, int col) => new Hex(col - (row - (row & 1)) / 2, row);
 

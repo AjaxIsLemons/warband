@@ -40,20 +40,50 @@ namespace Warband.Sim
         public const int MaxCascadeDepth = 8;
         public const int MaxEventsPerDrain = 50_000;
 
+        public const int MaxFields = 32;
+
         private readonly List<UnitState> _units;
         private readonly List<(int Team, Trigger T)> _teamTriggers;
+        private readonly List<Field> _fields = new List<Field>();
         private readonly List<BattleEvent> _log = new List<BattleEvent>();
         private readonly Queue<BattleEvent> _queue = new Queue<BattleEvent>();
         private int _tick;
+        private int _nextFieldId = 1000;   // separate id space from units
 
         private readonly List<PlaybackUnit> _initialView;
         private readonly List<ulong> _tickViewHashes = new List<ulong>();
 
-        public Battle(IEnumerable<UnitState> units, IEnumerable<(int Team, Trigger T)>? teamTriggers = null)
+        private readonly List<(FieldDef Def, Hex Center, int OwnerTeam)> _initialFields;
+
+        public Battle(IEnumerable<UnitState> units,
+                      IEnumerable<(int Team, Trigger T)>? teamTriggers = null,
+                      IEnumerable<(FieldDef Def, Hex Center, int OwnerTeam)>? initialFields = null)
         {
             _units = units.OrderBy(u => u.Id).ToList();
             _teamTriggers = teamTriggers?.ToList() ?? new List<(int, Trigger)>();
+            _initialFields = initialFields?.ToList() ?? new List<(FieldDef, Hex, int)>();
             _initialView = _units.Select(ViewOf).ToList();
+        }
+
+        private void AddField(FieldDef def, Hex center, int ownerId, int ownerTeam)
+        {
+            if (_fields.Count >= MaxFields) return; // deterministic cap
+            var field = new Field
+            {
+                Id = _nextFieldId++, OwnerId = ownerId, OwnerTeam = ownerTeam,
+                TicksLeft = def.Ticks, Def = def,
+            };
+            for (int dq = -def.Radius; dq <= def.Radius; dq++)
+                for (int dr = Math.Max(-def.Radius, -dq - def.Radius); dr <= Math.Min(def.Radius, -dq + def.Radius); dr++)
+                {
+                    var h = new Hex(center.Q + dq, center.R + dr);
+                    field.Hexes.Add(h);
+                    field.HexList.Add(h);
+                }
+            _fields.Add(field);
+            Emit(new BattleEvent { Kind = EventKind.FieldCreated, Source = ownerId, Target = field.Id, Amount = def.IsWall ? 1 : 0 });
+            foreach (var h in field.HexList)
+                Emit(new BattleEvent { Kind = EventKind.FieldHex, Target = field.Id, Amount = h.Q, Aux = h.R });
         }
 
         private static PlaybackUnit ViewOf(UnitState u)
@@ -71,6 +101,8 @@ namespace Warband.Sim
 
         public BattleResult Run()
         {
+            foreach (var (def, center, team) in _initialFields)
+                AddField(def, center, ownerId: -1, ownerTeam: team);
             Emit(new BattleEvent { Kind = EventKind.BattleStart });
             Drain();
             DeathPhase();
@@ -107,6 +139,9 @@ namespace Warband.Sim
             var casts = new List<UnitState>();
             var moves = new List<(UnitState u, Hex dest)>();
             var occupied = new HashSet<Hex>(_units.Where(x => x.Alive).Select(x => x.Pos));
+            foreach (var f in _fields)
+                if (f.Def.IsWall)
+                    occupied.UnionWith(f.HexList);
 
             AcquireTargets();
             foreach (var u in _units)
@@ -155,8 +190,46 @@ namespace Warband.Sim
             foreach (var (u, target) in attacks)
             {
                 u.NextAttackTick = _tick + u.EffAttackInterval();
+
+                // Projectile rule: any attack over ≥2 hexes traces the hex line; fields
+                // along the interior of the path may block or modify it (render-contract:
+                // resolution stays instant, the PATH is the gameplay).
+                int bonus = 0;
+                List<EffectDef>? riders = null;
+                Hex? blockedAt = null;
+                if (Hex.Distance(u.Pos, target.Pos) >= 2)
+                {
+                    var path = Hex.Line(u.Pos, target.Pos);
+                    var crossed = new HashSet<int>(); // each field acts once, not per hex
+                    for (int i = 1; i < path.Count - 1 && blockedAt == null; i++)
+                        foreach (var f in _fields)
+                        {
+                            if (!f.Covers(path[i]) || !crossed.Add(f.Id)) continue;
+                            if (f.Def.IsWall) { blockedAt = path[i]; break; }
+                            if (Field.TeamMatches(f.Def.ProjectileAffects, f.OwnerTeam, u.Team))
+                            {
+                                bonus += f.Def.ProjectileBonus;
+                                if (f.Def.ProjectileRiders.Count > 0)
+                                    (riders ??= new List<EffectDef>()).AddRange(f.Def.ProjectileRiders);
+                            }
+                        }
+                }
+
+                if (blockedAt != null)
+                {
+                    Emit(new BattleEvent
+                    {
+                        Kind = EventKind.AttackBlocked, Source = u.Id, Target = target.Id,
+                        Amount = blockedAt.Value.Q, Aux = blockedAt.Value.R,
+                    });
+                    continue; // shot wasted: no damage, no attack mana
+                }
+
                 Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
-                DealDamage(u.Id, target, u.EffAttack(), Cause.Attack, 0, u.Id);
+                DealDamage(u.Id, target, u.EffAttack() + bonus, Cause.Attack, 0, u.Id);
+                if (riders != null)
+                    foreach (var eff in riders)
+                        ApplyToTarget(u.Id, target, eff, Cause.Field, 0, u.Id);
                 GainMana(u, ManaPerAttack);
             }
             foreach (var u in casts)
@@ -170,8 +243,16 @@ namespace Warband.Sim
 
             Drain();
             DeathPhase();
-            _tickViewHashes.Add(PlaybackState.HashUnits(_units.Select(ViewOf).ToList()));
+            _tickViewHashes.Add(PlaybackState.HashView(_units.Select(ViewOf).ToList(), FieldViews()));
             _tick++;
+        }
+
+        private List<PlaybackField> FieldViews()
+        {
+            var views = new List<PlaybackField>();
+            foreach (var f in _fields)
+                views.Add(new PlaybackField { Id = f.Id, IsWall = f.Def.IsWall, Hexes = f.HexList });
+            return views;
         }
 
         private void EnginePhase()
@@ -203,6 +284,25 @@ namespace Warband.Sim
 
                 if (_tick >= OvertimeStartTick)
                     DealDamage(-1, u, 1 + (_tick - OvertimeStartTick) / StormRampInterval, Cause.Storm, 0, -1);
+            }
+
+            // Field pulses (creation order = id order), then lifetime bookkeeping.
+            if (pulse)
+                foreach (var f in _fields)
+                    if (f.Def.Pulse.Count > 0)
+                        foreach (var u in _units)
+                            if (u.Alive && f.Covers(u.Pos) && Field.TeamMatches(f.Def.PulseAffects, f.OwnerTeam, u.Team))
+                                foreach (var eff in f.Def.Pulse)
+                                    ApplyToTarget(f.OwnerId, u, eff, Cause.Field, 0, f.OwnerId);
+
+            for (int i = _fields.Count - 1; i >= 0; i--)
+            {
+                var f = _fields[i];
+                if (f.TicksLeft > 0 && --f.TicksLeft == 0)
+                {
+                    _fields.RemoveAt(i);
+                    Emit(new BattleEvent { Kind = EventKind.FieldExpired, Target = f.Id });
+                }
             }
         }
 
@@ -280,20 +380,35 @@ namespace Warband.Sim
         {
             foreach (var target in ResolveSelector(owner, eff.Select, ctx))
             {
-                switch (eff.Kind)
+                if (eff.Kind == EffectKind.CreateField)
                 {
-                    case EffectKind.Damage: DealDamage(owner.Id, target, eff.Amount, cause, depth, root); break;
-                    case EffectKind.Heal: Heal(owner.Id, target, eff.Amount, depth, root); break;
-                    case EffectKind.GrantShield:
-                        target.Shield += eff.Amount;
-                        Emit(new BattleEvent { Kind = EventKind.ShieldChanged, Source = owner.Id, Target = target.Id, Amount = eff.Amount, Depth = depth, Root = root, PostShield = target.Shield });
-                        break;
-                    case EffectKind.GrantMana: GainMana(target, eff.Amount, owner.Id, depth, root); break;
-                    case EffectKind.ApplyStatus:
-                        target.Statuses.Add(new Status { Kind = eff.Status, Mag = eff.Amount, TicksLeft = eff.StatusTicks, SourceId = owner.Id });
-                        Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = owner.Id, Target = target.Id, Amount = eff.Amount, Aux = (int)eff.Status, Depth = depth, Root = root });
-                        break;
+                    if (eff.Field != null)
+                        AddField(eff.Field, target.Pos, owner.Id, owner.Team);
                 }
+                else
+                {
+                    ApplyToTarget(owner.Id, target, eff, cause, depth, root);
+                }
+            }
+        }
+
+        /// <summary>The single mutation dispatcher — trigger effects, signature effects,
+        /// field pulses and projectile riders all land here.</summary>
+        private void ApplyToTarget(int sourceId, UnitState target, EffectDef eff, Cause cause, int depth, int root)
+        {
+            switch (eff.Kind)
+            {
+                case EffectKind.Damage: DealDamage(sourceId, target, eff.Amount, cause, depth, root); break;
+                case EffectKind.Heal: Heal(sourceId, target, eff.Amount, depth, root); break;
+                case EffectKind.GrantShield:
+                    target.Shield += eff.Amount;
+                    Emit(new BattleEvent { Kind = EventKind.ShieldChanged, Source = sourceId, Target = target.Id, Amount = eff.Amount, Depth = depth, Root = root, PostShield = target.Shield });
+                    break;
+                case EffectKind.GrantMana: GainMana(target, eff.Amount, sourceId, depth, root); break;
+                case EffectKind.ApplyStatus:
+                    target.Statuses.Add(new Status { Kind = eff.Status, Mag = eff.Amount, TicksLeft = eff.StatusTicks, SourceId = sourceId });
+                    Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = eff.Amount, Aux = (int)eff.Status, Depth = depth, Root = root });
+                    break;
             }
         }
 

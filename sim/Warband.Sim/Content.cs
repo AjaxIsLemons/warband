@@ -39,7 +39,7 @@ namespace Warband.Sim
         public bool ExcludeSelf;
     }
 
-    public enum EffectKind { Damage, Heal, ApplyStatus, GrantShield, GrantMana }
+    public enum EffectKind { Damage, Heal, ApplyStatus, GrantShield, GrantMana, CreateField }
 
     public sealed class EffectDef
     {
@@ -48,6 +48,7 @@ namespace Warband.Sim
         public int Amount;
         public StatusKind Status;
         public int StatusTicks;    // duration for ApplyStatus; <0 = whole fight
+        public FieldDef? Field;    // CreateField: glyph spec, centered on the resolved target's hex
     }
 
     public sealed class Trigger

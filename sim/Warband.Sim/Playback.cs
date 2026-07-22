@@ -34,6 +34,7 @@ namespace Warband.Sim
     public sealed class PlaybackState
     {
         public List<PlaybackUnit> Units = new List<PlaybackUnit>();
+        public List<PlaybackField> Fields = new List<PlaybackField>();
         public int Tick;
         private int _next; // index into the event list
 
@@ -108,15 +109,34 @@ namespace Warband.Sim
                         if (e.PostHp != BattleEvent.Unset) tgt.Hp = e.PostHp;
                     }
                     break;
+                case EventKind.FieldCreated:
+                    Fields.Add(new PlaybackField { Id = e.Target, IsWall = e.Amount == 1 });
+                    break;
+                case EventKind.FieldHex:
+                    for (int i = 0; i < Fields.Count; i++)
+                        if (Fields[i].Id == e.Target)
+                        {
+                            Fields[i].Hexes.Add(new Hex(e.Amount, e.Aux));
+                            break;
+                        }
+                    break;
+                case EventKind.FieldExpired:
+                    for (int i = 0; i < Fields.Count; i++)
+                        if (Fields[i].Id == e.Target)
+                        {
+                            Fields.RemoveAt(i);
+                            break;
+                        }
+                    break;
             }
         }
 
-        public ulong ViewHash() => HashUnits(Units);
+        public ulong ViewHash() => HashView(Units, Fields);
 
         /// <summary>FNV-1a over the VIEW contract: everything a renderer shows, nothing
-        /// internal (status countdowns stay sim-side; expiries arrive as events).
-        /// Statuses hashed as a (kind, mag)-sorted multiset — order-insensitive.</summary>
-        public static ulong HashUnits(List<PlaybackUnit> units)
+        /// internal (status countdowns and field timers stay sim-side; expiries arrive
+        /// as events). Statuses hashed as a (kind, mag)-sorted multiset.</summary>
+        public static ulong HashView(List<PlaybackUnit> units, List<PlaybackField> fields)
         {
             ulong h = 14695981039346656037UL;
             void Mix(int v) { unchecked { h ^= (uint)v; h *= 1099511628211UL; } }
@@ -127,6 +147,11 @@ namespace Warband.Sim
                 var sorted = new List<(StatusKind Kind, int Mag)>(u.Statuses);
                 sorted.Sort((a, b) => a.Kind != b.Kind ? a.Kind.CompareTo(b.Kind) : a.Mag.CompareTo(b.Mag));
                 foreach (var s in sorted) { Mix((int)s.Kind); Mix(s.Mag); }
+            }
+            foreach (var f in fields) // creation (= id) order on both sides
+            {
+                Mix(f.Id); Mix(f.IsWall ? 1 : 0);
+                foreach (var hex in f.Hexes) { Mix(hex.Q); Mix(hex.R); } // emission order
             }
             return h;
         }
