@@ -12,6 +12,8 @@ namespace Warband.Sim
         public int EndTick;
         public List<BattleEvent> Events = new List<BattleEvent>();
         public ulong FinalHash;
+        public List<PlaybackUnit> InitialUnits = new List<PlaybackUnit>();
+        public List<ulong> TickViewHashes = new List<ulong>();  // guardrail: fold must match, every tick
     }
 
     /// <summary>
@@ -44,10 +46,27 @@ namespace Warband.Sim
         private readonly Queue<BattleEvent> _queue = new Queue<BattleEvent>();
         private int _tick;
 
+        private readonly List<PlaybackUnit> _initialView;
+        private readonly List<ulong> _tickViewHashes = new List<ulong>();
+
         public Battle(IEnumerable<UnitState> units, IEnumerable<(int Team, Trigger T)>? teamTriggers = null)
         {
             _units = units.OrderBy(u => u.Id).ToList();
             _teamTriggers = teamTriggers?.ToList() ?? new List<(int, Trigger)>();
+            _initialView = _units.Select(ViewOf).ToList();
+        }
+
+        private static PlaybackUnit ViewOf(UnitState u)
+        {
+            var view = new PlaybackUnit
+            {
+                Id = u.Id, Team = u.Team, Name = u.Def.Name, MaxHp = u.Def.MaxHp,
+                Hp = u.Hp, Shield = u.Shield, Mana = u.Mana, ManaMax = u.Def.ManaMax,
+                Pos = u.Pos, Dead = u.Dead,
+            };
+            foreach (var s in u.Statuses)
+                view.Statuses.Add((s.Kind, s.Mag));
+            return view;
         }
 
         public BattleResult Run()
@@ -67,6 +86,8 @@ namespace Warband.Sim
                         EndTick = _tick,
                         Events = _log,
                         FinalHash = StateHash(),
+                        InitialUnits = _initialView,
+                        TickViewHashes = _tickViewHashes,
                     };
                     _log.Add(new BattleEvent { Tick = _tick, Kind = EventKind.End, Amount = (int)result.Winner });
                     return result;
@@ -129,7 +150,7 @@ namespace Warband.Sim
             foreach (var (u, dest) in moves)
             {
                 u.Pos = dest;
-                Emit(new BattleEvent { Kind = EventKind.Move, Source = u.Id, Amount = dest.Q * 1000 + dest.R });
+                Emit(new BattleEvent { Kind = EventKind.Move, Source = u.Id, Amount = dest.Q, Aux = dest.R });
             }
             foreach (var (u, target) in attacks)
             {
@@ -149,6 +170,7 @@ namespace Warband.Sim
 
             Drain();
             DeathPhase();
+            _tickViewHashes.Add(PlaybackState.HashUnits(_units.Select(ViewOf).ToList()));
             _tick++;
         }
 

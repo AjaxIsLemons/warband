@@ -28,8 +28,9 @@ namespace Warband.Sim
         public int Depth;
         public int Root = -1;
         public int Aux = -1;      // StatusKind for Status* events; absorbed-by-shield for DamageDealt
-        public int PostHp = -1;
-        public int PostShield = -1;
-        public int PostMana = -1;
+        public const int Unset = int.MinValue; // Post* sentinel — HP can legitimately go negative
+        public int PostHp = Unset;
+        public int PostShield = Unset;
+        public int PostMana = Unset;
     }
 }
