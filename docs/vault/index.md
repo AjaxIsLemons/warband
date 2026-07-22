@@ -10,6 +10,9 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Design/sim-framework.md](Design/sim-framework.md) — sim architecture: content atom, cascade semantics, fields, determinism, metrics.
 - [Design/render-contract.md](Design/render-contract.md) — how the client is guaranteed accurate: tick=100ms, bars set from absolutes, fold-as-view-model.
 
+- [Design/sauce.md](Design/sauce.md) — WORKING: class-identity sauce noodling — doctrine slots,
+  elite specs, hero fusion one-pagers; parked axes. Nothing decided.
+
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
   settled identity + the process guardrails, with the postmortem evidence behind them.

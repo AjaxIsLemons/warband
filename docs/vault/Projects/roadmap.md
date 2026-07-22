@@ -12,30 +12,32 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 - **DONE** — move to the Done section with a date.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
-1. **Placeholder content pass** — 8 roster heroes as ChassisDef+starter weapons via the
-   composer; sample armies swap to real composition path; real IRunContent impl (the smoke
-   content in scratch is a sketch) — SPEC'D (placeholder doctrine!).
-2. **Archetype sweep harness** — round-robin win matrix over seeds, flag >85%/<30% —
-   SPEC'D (builds on RunHarness/AggregateReport; add per-tier EV — first smoke already
-   flags Greedy strictly dominant under placeholder monsters).
-3. **Unity client bring-up** — SPEC'D pattern-wise (render from PlaybackState fold,
-   render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows (Shoota pipeline)
-   when we're ready for it. Board render → placement drag → replay viewer → run screens.
-4. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
+1. **DESIGN CAMPAIGN** (Jake, 2026-07-22: "shift gears back to design" — depth before any
+   playtest talk; conscious amendment of ADR 0001's playtest-first stance, flagged once):
+   a. **"The sauce"** — the missing unique-hook conversation — **DESIGN** (candidates
+      proposed; drives everything below).
+   b. **Weapons design pass** — how weapons WORK: categories, keywords, attack shapes
+      (un-deferred into here), crit identity, itemization — **DESIGN**.
+   c. **Spec-tree impact model** — what a node IS, magnitude bands, fork identity rules,
+      passives vocabulary, per-rank scaling question — **DESIGN**.
+   d. **Hero deep dives ×8** — one dedicated pass per hero, using b+c templates — **DESIGN**.
+2. **Real content pass** — the 8 designed heroes + weapons through the composer + real
+   IRunContent (supersedes "placeholder content pass"; waits on campaign) — blocked by 1.
+3. **Archetype sweep harness** — round-robin win matrix + per-tier EV over RunHarness —
+   SPEC'D (smoke already flags Greedy strictly dominant under placeholder monsters).
+4. **Unity client bring-up** — SPEC'D pattern-wise (render from PlaybackState fold,
+   render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows when ready.
+5. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
    hash-verified; copy Shoota's site/launcher/ship pipeline).
-5. **Hero deep dives ×8** — **DESIGN**, one dedicated pass per hero with Jake. Not before
-   the loop is playable.
-6. **Weapons/items design pass** — **DESIGN** (categories, attack shapes land here,
-   itemization economy).
-7. **Friends playtest #1** — the milestone that outranks everything (ADR 0001). Date it
-   as soon as content pass + a playable client stand.
+6. **Friends playtest #1** — still the milestone that ends arguments (ADR 0001), now
+   explicitly AFTER the design campaign yields real content. No date until Jake calls it.
 
 ## First-playable content budget (hard cap — ADR 0001)
 8 heroes × ~2 forks (placeholder kits OK) · ~12 items · 5 acts × ~4 nodes · small monster
 roster (reuse hero kits) · programmer art, no sound · bot-ghosts only.
 
 ## Deferred (explicitly NOT now — don't resurrect without Jake)
-Displacement (Push/Pull/collisions) · attack shapes (→ item 7) · spoils-of-war (ADR 0002)
+Displacement (Push/Pull/collisions) · spoils-of-war (ADR 0002)
 · sim-modeled projectile flight ("dodge by movement" lever, render-contract) · aura
 ExcludeOwner option · morale/rout concept · ability crits · predetermined terrain (NEVER)
 · account-scoped power (NEVER — fairness law).
