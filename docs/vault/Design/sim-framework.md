@@ -90,6 +90,17 @@ banner that started a cascade gets the credit).
   affordability). Deterministic per-run seeds from one root.
 - Output = JSON/CSV; dashboards render later.
 
+## 6b. Bonus scopes (added 2026-07-22, Jake round 7)
+Three scopes, three mechanisms — never mixed:
+- **Combat-scoped** = statuses. Born and die with the battle (ramps, buffs, debuffs).
+- **Run-scoped** = `RunBonus` + `ProgressionFold`: after each fight the run layer folds
+  the battle log (kill participation via damage attribution, damage thresholds, more
+  metrics as needed) and bakes earned **permanent statuses** into how the hero spawns in
+  later fights. The sim never mutates run state — growth is *derived from the log*, so
+  replays and ghost verification stay honest, and the metrics fold and the progression
+  system are the same machinery.
+- **Account-scoped**: none, ever (circuit's fairness law — no power from meta-progression).
+
 ## 7. Deliberately not building
 MtG-style replacement effects & layer system; SabberStone's enchantment entities;
 interrupt/priority windows; generic scripting/DSL; event-driven aura invalidation.
