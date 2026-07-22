@@ -33,6 +33,7 @@ namespace Warband.Sim
         public int Root = -1;
         public int Aux = -1;      // StatusKind for Status* events; absorbed-by-shield for DamageDealt
         public int Aux2 = -1;     // FieldCreated: radius (attached fields); else unused
+        public bool Crit;         // DamageDealt from a critical auto-attack
         public const int Unset = int.MinValue; // Post* sentinel — HP can legitimately go negative
         public int PostHp = Unset;
         public int PostShield = Unset;

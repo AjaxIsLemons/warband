@@ -16,6 +16,7 @@ namespace Warband.Sim
         OwnerBelowHpPct,           // Amount = percent
         TargetWithinHexesOfOwner,  // Amount = range
         SourceWithinHexesOfOwner,  // Amount = range (zone-punisher reactions)
+        IsCrit,                    // event was a critical strike (on-crit passives)
     }
 
     public sealed class Cond

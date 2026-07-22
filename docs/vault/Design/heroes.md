@@ -14,14 +14,16 @@ explicit** ✓.
 **Hero = Chassis + Spec Tree + Items + Rank.** Combat is fully auto (settled identity);
 everything below exists to make the *between-fights* choices deep.
 
-### 1. Chassis (fixed per hero — the identity)
+### 1. Chassis (fixed per hero — the identity) — updated round 10
 - Name, silhouette, base role (Tank / Melee / Ranged / Support flavor).
-- **Stats (deliberately few, integers only):** HP · Attack · Attack Interval · Range ·
-  Move Speed · Mana Max. (Circuit lesson: ONE damage number; flavor lives in keywords.
-  ❓ armor stat or not in v1 — lean: no, defense comes from HP/keywords/items.)
-- **1 innate passive** — the chassis trick, often spatial (e.g. Assassin: "combat start:
-  leap to the farthest enemy hex").
-- **1 signature ability** — the spell the hero auto-casts (below).
+- **Chassis stats:** HP · Move Speed · Mana Max. **The attack profile lives on the
+  WEAPON** (damage / interval / range / shape / crit / on-hit riders) — weapon-required,
+  every chassis ships with a starter weapon. A ranger who re-specs to daggers becomes
+  assassin-flavored: range is a tinkerable axis (ADR 0005).
+- **Passives from tier 1, plural** — a unit may carry multiple passives (innate + tree +
+  items), plus exactly **one active ability** (the signature).
+- **Crit exists** (the sim's only in-combat RNG — chance% + multiplier on the weapon;
+  on-crit passives are a design space).
 
 ### 2. Casting — the mana engine (decided)
 Heroes auto-attack by Attack Interval; attacks and damage *taken* build Mana (+ small time

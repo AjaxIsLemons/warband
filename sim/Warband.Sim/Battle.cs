@@ -53,17 +53,26 @@ namespace Warband.Sim
         private readonly List<PlaybackUnit> _initialView;
         private readonly List<ulong> _tickViewHashes = new List<ulong>();
 
+        public const int BoardRows = 8;
+        public const int BoardCols = 6;
+
         private readonly List<(FieldDef Def, Hex Center, int OwnerTeam)> _initialFields;
+        private readonly Rng _rng;
 
         public Battle(IEnumerable<UnitState> units,
                       IEnumerable<(int Team, Trigger T)>? teamTriggers = null,
-                      IEnumerable<(FieldDef Def, Hex Center, int OwnerTeam)>? initialFields = null)
+                      IEnumerable<(FieldDef Def, Hex Center, int OwnerTeam)>? initialFields = null,
+                      ulong seed = 1)
         {
             _units = units.OrderBy(u => u.Id).ToList();
             _teamTriggers = teamTriggers?.ToList() ?? new List<(int, Trigger)>();
             _initialFields = initialFields?.ToList() ?? new List<(FieldDef, Hex, int)>();
+            _rng = new Rng(seed);
             _initialView = _units.Select(ViewOf).ToList();
         }
+
+        public static bool InBounds(Hex h) =>
+            h.Row >= 0 && h.Row < BoardRows && h.Col >= 0 && h.Col < BoardCols;
 
         private void AddField(FieldDef def, Hex center, int ownerId, int ownerTeam)
         {
@@ -192,7 +201,7 @@ namespace Warband.Sim
                     for (int d = 0; d < 6; d++)
                     {
                         Hex n = u.Pos.Neighbor(d);
-                        if (occupied.Contains(n)) continue;
+                        if (!InBounds(n) || occupied.Contains(n)) continue;
                         int nd = Hex.Distance(n, target.Pos);
                         if (nd < bestDist) { bestDist = nd; best = n; }
                     }
@@ -251,7 +260,10 @@ namespace Warband.Sim
                 }
 
                 Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
-                DealDamage(u.Id, target, u.EffAttack(RuleBonus(u, StatKind.AttackFlat)) + bonus, Cause.Attack, 0, u.Id);
+                int damage = u.EffAttack(RuleBonus(u, StatKind.AttackFlat)) + bonus;
+                bool crit = u.Def.CritChance > 0 && _rng.Next(100u) < (uint)u.Def.CritChance;
+                if (crit) damage = damage * u.Def.CritMultFp / FP;
+                DealDamage(u.Id, target, damage, Cause.Attack, 0, u.Id, crit);
                 if (riders != null)
                     foreach (var eff in riders)
                         ApplyToTarget(u.Id, target, eff, Cause.Field, 0, u.Id);
@@ -443,6 +455,7 @@ namespace Warband.Sim
                     case CondKind.TargetWithinHexesOfOwner:
                         var tgt = ById(ev.Target);
                         ok = tgt != null && Hex.Distance(owner.Pos, tgt.Pos) <= c.Amount; break;
+                    case CondKind.IsCrit: ok = ev.Crit; break;
                     default: ok = false; break;
                 }
                 if (ok == c.Not) return false;
@@ -534,7 +547,7 @@ namespace Warband.Sim
 
         // ---- mutation primitives (every one emits with absolute post-state) ----
 
-        private void DealDamage(int sourceId, UnitState target, int amount, Cause cause, int depth, int root)
+        private void DealDamage(int sourceId, UnitState target, int amount, Cause cause, int depth, int root, bool crit = false)
         {
             if (amount <= 0 || !target.Alive) return;
             int absorbed = Math.Min(target.Shield, amount);
@@ -543,7 +556,7 @@ namespace Warband.Sim
             Emit(new BattleEvent
             {
                 Kind = EventKind.DamageDealt, Source = sourceId, Target = target.Id,
-                Amount = amount, Aux = absorbed, Cause = cause, Depth = depth, Root = root,
+                Amount = amount, Aux = absorbed, Cause = cause, Depth = depth, Root = root, Crit = crit,
                 PostHp = target.Hp, PostShield = target.Shield,
             });
             if (cause != Cause.Storm)

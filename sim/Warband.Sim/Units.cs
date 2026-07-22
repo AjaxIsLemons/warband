@@ -13,6 +13,8 @@ namespace Warband.Sim
         public int Range;            // hexes
         public int MoveInterval;     // ticks per 1-hex step
         public int ManaMax;          // 0 = no signature
+        public int CritChance;       // percent; auto-attacks only — the sim's ONLY rng (ADR 0005)
+        public int CritMultFp = 1500;
         public List<EffectDef> Signature = new List<EffectDef>();
         public List<Trigger> Triggers = new List<Trigger>();   // innate + fork riders
         public List<StatRule> StatRules = new List<StatRule>(); // conditional stats ("+speed below half HP")

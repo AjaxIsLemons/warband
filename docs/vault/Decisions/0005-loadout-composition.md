@@ -1,7 +1,18 @@
 # ADR 0005 — Items, spec trees, and the loadout composer
 
-**Date:** 2026-07-22 · **Status:** proposed (round 9, awaiting Jake's calls on the ❓s) ·
+**Date:** 2026-07-22 · **Status:** ACCEPTED (round 10, Jake's calls recorded below) ·
 **Context:** before building more, settle the remaining sim-level data shapes.
+
+## Round-10 decisions (Jake)
+1. **Hero anatomy:** passives exist from tier 1 (rank C); a unit may carry **multiple
+   passives**, exactly **one active ability** (the signature), and **their weapon/attack**.
+2. **Crit is in — the only in-combat RNG.** "Could free up ability design" (on-crit
+   passives). Nothing else rolls for now. Battle takes a seed; replay = (seed, snapshot).
+3. **Board = 6×8, clamped** ("easy to tune as needed").
+4. **Weapon-REQUIRED: every chassis ships with a starter weapon, and RANGE LIVES ON THE
+   WEAPON** (damage/interval/range/shape = the weapon's attack profile). Jake: a ranger
+   who specs into daggers becomes assassin-flavored — "more interesting and tinkerable."
+   Chassis keeps HP/move/mana/innate passives/signature.
 
 ## The composition principle
 **The battle sim never knows about items, ranks, or spec trees.** The run layer composes a
@@ -11,13 +22,13 @@ lives in `Warband.Sim` beside (not inside) `Battle`. The sim stays a pure fight 
 item/tree design can iterate forever without touching the engine or its guardrails.
 
 ## Items (from heroes.md: 2 slots — Weapon + Trinket)
-- **Weapon = an attack-profile overlay**: may override damage / interval / range /
-  **attack shape** (single, cleave, pierce-line, splash) and add on-hit triggers
-  (expressible today as `On: Attack, SourceIsOwner` triggers). Category-locked by chassis.
+- **Weapon = the attack profile** (round 10): damage / interval / **range** / attack shape
+  (single, cleave, pierce-line, splash) / on-hit triggers all live on the weapon.
+  Weapon-required; every chassis ships with a starter weapon. Category locks are a
+  content decision per chassis (loose enough for ranger→daggers pivots).
 - **Trinket = a bundle of the existing primitives**: stat mods, StatRules, Triggers,
   mana mods.
-- Chassis always has a baseline attack — a hero with no weapon still fights. Heroes are
-  the stars; items are the churn axis (heroes sticky, items swappable — ADR 0001 lineage).
+- Heroes are the stars; items are the churn axis (heroes sticky, items swappable).
 
 ## Spec tree (mechanically)
 - Rank C→B→A→S by duplicates (heroes.md). **A spec node = the same primitive bundle as a
@@ -33,11 +44,10 @@ item/tree design can iterate forever without touching the engine or its guardrai
    (into wall/unit → damage/stun) — Shade's chassis needs Leap.
 3. **Targeting-rule overrides** (nearest is hardwired; Sniper wants farthest,
    assassin wants backline) — enum on UnitDef.
-4. **Board bounds** — the board is currently an infinite plane; clamp to 6×8. ❓confirm.
-5. **In-combat RNG policy** ❓: the PCG32 is plumbed but NOTHING consumes it — fights are
-   100% deterministic given setup. Proposal: **keep zero in-combat RNG for v1** (no crit,
-   no proc rolls; every ghost matchup is pure build+placement; seed reserved for run-layer
-   generation). Revisit only if fights feel solved/stale in playtests.
+4. **Board bounds** — clamp to 6×8. DECIDED round 10, build now.
+5. **In-combat RNG** — DECIDED round 10: **crit only** (chance% + multiplier on the
+   attack profile; auto-attacks roll, abilities don't for now), plus an `IsCrit` trigger
+   condition for on-crit passives. Battle is seeded; no other rolls exist.
 
 ## Content doctrine (recorded from Jake, round 9)
 All current content is placeholder for system-building. Per-hero deep dives happen later,
