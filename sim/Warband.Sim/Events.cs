@@ -7,7 +7,7 @@ namespace Warband.Sim
         BattleStart, Move, Attack, DamageDealt, Heal, Cast,
         StatusApplied, StatusExpired, ShieldChanged, ManaChanged,
         Death, StormTick, End,
-        FieldCreated,   // Target=field id, Amount=IsWall(0/1), Source=creator
+        FieldCreated,   // Target=field id, Amount=IsWall(0/1), Source=creator, Aux=attached unit id (-1 static), Aux2=radius
         FieldHex,       // Target=field id, Amount=Q, Aux=R (one per covered hex)
         FieldExpired,   // Target=field id
         AttackBlocked,  // Source=attacker, Target=intended victim, Amount=Q, Aux=R of the wall hex
@@ -32,6 +32,7 @@ namespace Warband.Sim
         public int Depth;
         public int Root = -1;
         public int Aux = -1;      // StatusKind for Status* events; absorbed-by-shield for DamageDealt
+        public int Aux2 = -1;     // FieldCreated: radius (attached fields); else unused
         public const int Unset = int.MinValue; // Post* sentinel — HP can legitimately go negative
         public int PostHp = Unset;
         public int PostShield = Unset;

@@ -71,6 +71,18 @@ namespace Warband.Sim
             return x >= 0 ? x / y : -((-x + y - 1) / y);
         }
 
+        /// <summary>All hexes within radius of center, in a fixed deterministic order.
+        /// SHARED by sim field geometry and the playback fold — one implementation so
+        /// attached-field views can never diverge.</summary>
+        public static System.Collections.Generic.List<Hex> Range(Hex center, int radius)
+        {
+            var result = new System.Collections.Generic.List<Hex>();
+            for (int dq = -radius; dq <= radius; dq++)
+                for (int dr = Math.Max(-radius, -dq - radius); dr <= Math.Min(radius, -dq + radius); dr++)
+                    result.Add(new Hex(center.Q + dq, center.R + dr));
+            return result;
+        }
+
         /// <summary>Board view (odd-r offset): row = R, col derived from Q.</summary>
         public static Hex FromRowCol(int row, int col) => new Hex(col - (row - (row & 1)) / 2, row);
 

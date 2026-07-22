@@ -68,22 +68,46 @@ namespace Warband.Sim
         private void AddField(FieldDef def, Hex center, int ownerId, int ownerTeam)
         {
             if (_fields.Count >= MaxFields) return; // deterministic cap
+            bool attached = def.AttachToOwner && ownerId >= 0;
             var field = new Field
             {
                 Id = _nextFieldId++, OwnerId = ownerId, OwnerTeam = ownerTeam,
+                AttachedUnitId = attached ? ownerId : -1,
                 TicksLeft = def.Ticks, Def = def,
             };
-            for (int dq = -def.Radius; dq <= def.Radius; dq++)
-                for (int dr = Math.Max(-def.Radius, -dq - def.Radius); dr <= Math.Min(def.Radius, -dq + def.Radius); dr++)
-                {
-                    var h = new Hex(center.Q + dq, center.R + dr);
-                    field.Hexes.Add(h);
-                    field.HexList.Add(h);
-                }
+            if (!attached)
+                field.StaticHexes = Hex.Range(center, def.Radius);
             _fields.Add(field);
-            Emit(new BattleEvent { Kind = EventKind.FieldCreated, Source = ownerId, Target = field.Id, Amount = def.IsWall ? 1 : 0 });
-            foreach (var h in field.HexList)
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.FieldCreated, Source = ownerId, Target = field.Id,
+                Amount = def.IsWall ? 1 : 0, Aux = field.AttachedUnitId, Aux2 = def.Radius,
+            });
+            foreach (var h in field.StaticHexes)
                 Emit(new BattleEvent { Kind = EventKind.FieldHex, Target = field.Id, Amount = h.Q, Aux = h.R });
+        }
+
+        /// <summary>Current footprint: static fields keep their hexes; auras derive from
+        /// the anchor's live position (same Hex.Range the fold uses — shared geometry).</summary>
+        private List<Hex> HexesOf(Field f)
+        {
+            if (f.AttachedUnitId < 0) return f.StaticHexes;
+            var owner = Raw(f.AttachedUnitId);
+            return owner != null && owner.Alive ? Hex.Range(owner.Pos, f.Def.Radius) : new List<Hex>();
+        }
+
+        private void RemoveField(Field f)
+        {
+            _fields.Remove(f);
+            foreach (var u in _units)
+                for (int i = u.Statuses.Count - 1; i >= 0; i--)
+                    if (u.Statuses[i].SourceId == f.Id)
+                    {
+                        var s = u.Statuses[i];
+                        u.Statuses.RemoveAt(i);
+                        Emit(new BattleEvent { Kind = EventKind.StatusExpired, Target = u.Id, Amount = s.Mag, Aux = (int)s.Kind });
+                    }
+            Emit(new BattleEvent { Kind = EventKind.FieldExpired, Target = f.Id });
         }
 
         private static PlaybackUnit ViewOf(UnitState u)
@@ -141,7 +165,7 @@ namespace Warband.Sim
             var occupied = new HashSet<Hex>(_units.Where(x => x.Alive).Select(x => x.Pos));
             foreach (var f in _fields)
                 if (f.Def.IsWall)
-                    occupied.UnionWith(f.HexList);
+                    occupied.UnionWith(HexesOf(f));
 
             AcquireTargets();
             foreach (var u in _units)
@@ -189,7 +213,7 @@ namespace Warband.Sim
             }
             foreach (var (u, target) in attacks)
             {
-                u.NextAttackTick = _tick + u.EffAttackInterval();
+                u.NextAttackTick = _tick + u.EffAttackInterval(RuleBonus(u, StatKind.AttackSpeed));
 
                 // Projectile rule: any attack over ≥2 hexes traces the hex line; fields
                 // along the interior of the path may block or modify it (render-contract:
@@ -200,11 +224,12 @@ namespace Warband.Sim
                 if (Hex.Distance(u.Pos, target.Pos) >= 2)
                 {
                     var path = Hex.Line(u.Pos, target.Pos);
+                    var footprints = _fields.Select(f => (f, Hexes: HexesOf(f))).ToList();
                     var crossed = new HashSet<int>(); // each field acts once, not per hex
                     for (int i = 1; i < path.Count - 1 && blockedAt == null; i++)
-                        foreach (var f in _fields)
+                        foreach (var (f, hexes) in footprints)
                         {
-                            if (!f.Covers(path[i]) || !crossed.Add(f.Id)) continue;
+                            if (!hexes.Contains(path[i]) || !crossed.Add(f.Id)) continue;
                             if (f.Def.IsWall) { blockedAt = path[i]; break; }
                             if (Field.TeamMatches(f.Def.ProjectileAffects, f.OwnerTeam, u.Team))
                             {
@@ -226,7 +251,7 @@ namespace Warband.Sim
                 }
 
                 Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
-                DealDamage(u.Id, target, u.EffAttack() + bonus, Cause.Attack, 0, u.Id);
+                DealDamage(u.Id, target, u.EffAttack(RuleBonus(u, StatKind.AttackFlat)) + bonus, Cause.Attack, 0, u.Id);
                 if (riders != null)
                     foreach (var eff in riders)
                         ApplyToTarget(u.Id, target, eff, Cause.Field, 0, u.Id);
@@ -251,7 +276,12 @@ namespace Warband.Sim
         {
             var views = new List<PlaybackField>();
             foreach (var f in _fields)
-                views.Add(new PlaybackField { Id = f.Id, IsWall = f.Def.IsWall, Hexes = f.HexList });
+                views.Add(new PlaybackField
+                {
+                    Id = f.Id, IsWall = f.Def.IsWall,
+                    AttachedTo = f.AttachedUnitId, Radius = f.Def.Radius,
+                    Hexes = f.StaticHexes,
+                });
             return views;
         }
 
@@ -286,23 +316,55 @@ namespace Warband.Sim
                     DealDamage(-1, u, 1 + (_tick - OvertimeStartTick) / StormRampInterval, Cause.Storm, 0, -1);
             }
 
+            // Presence sweep: units inside a field carry its presence statuses, tagged
+            // with the FIELD's id as SourceId; entering grants, leaving strips. This is
+            // the continuous aura mechanic (ADR 0004: auras ARE fields).
+            foreach (var f in _fields)
+            {
+                if (f.Def.Presence.Count == 0) continue;
+                var hexes = HexesOf(f);
+                foreach (var u in _units)
+                {
+                    if (!u.Alive) continue;
+                    bool inside = hexes.Contains(u.Pos) && Field.TeamMatches(f.Def.PresenceAffects, f.OwnerTeam, u.Team);
+                    bool has = false;
+                    foreach (var s in u.Statuses)
+                        if (s.SourceId == f.Id) { has = true; break; }
+                    if (inside && !has)
+                        foreach (var (kind, mag) in f.Def.Presence)
+                        {
+                            u.Statuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1, SourceId = f.Id });
+                            Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = f.OwnerId, Target = u.Id, Amount = mag, Aux = (int)kind });
+                        }
+                    else if (!inside && has)
+                        for (int i = u.Statuses.Count - 1; i >= 0; i--)
+                            if (u.Statuses[i].SourceId == f.Id)
+                            {
+                                var s = u.Statuses[i];
+                                u.Statuses.RemoveAt(i);
+                                Emit(new BattleEvent { Kind = EventKind.StatusExpired, Target = u.Id, Amount = s.Mag, Aux = (int)s.Kind });
+                            }
+                }
+            }
+
             // Field pulses (creation order = id order), then lifetime bookkeeping.
             if (pulse)
                 foreach (var f in _fields)
                     if (f.Def.Pulse.Count > 0)
+                    {
+                        var hexes = HexesOf(f);
                         foreach (var u in _units)
-                            if (u.Alive && f.Covers(u.Pos) && Field.TeamMatches(f.Def.PulseAffects, f.OwnerTeam, u.Team))
+                            if (u.Alive && hexes.Contains(u.Pos) && Field.TeamMatches(f.Def.PulseAffects, f.OwnerTeam, u.Team))
                                 foreach (var eff in f.Def.Pulse)
                                     ApplyToTarget(f.OwnerId, u, eff, Cause.Field, 0, f.OwnerId);
+                    }
 
             for (int i = _fields.Count - 1; i >= 0; i--)
             {
                 var f = _fields[i];
-                if (f.TicksLeft > 0 && --f.TicksLeft == 0)
-                {
-                    _fields.RemoveAt(i);
-                    Emit(new BattleEvent { Kind = EventKind.FieldExpired, Target = f.Id });
-                }
+                bool anchorGone = f.AttachedUnitId >= 0 && ById(f.AttachedUnitId) == null;
+                if (anchorGone || (f.TicksLeft > 0 && --f.TicksLeft == 0))
+                    RemoveField(f);
             }
         }
 
@@ -343,6 +405,18 @@ namespace Warband.Sim
             if (trig.On != ev.Kind || !CondsOk(owner, trig.When, ev)) return;
             foreach (var eff in trig.Do)
                 ApplyEffectDef(owner, eff, ev, Cause.Trigger, ev.Depth + 1, owner.Id);
+        }
+
+        private static readonly BattleEvent NullEvent = new BattleEvent { Source = -1, Target = -1 };
+
+        /// <summary>Sum of a unit's StatRules whose conditions hold right now.</summary>
+        private int RuleBonus(UnitState u, StatKind stat)
+        {
+            int total = 0;
+            foreach (var rule in u.Def.StatRules)
+                if (rule.Stat == stat && CondsOk(u, rule.When, NullEvent))
+                    total += rule.Amount;
+            return total;
         }
 
         private bool CondsOk(UnitState owner, List<Cond> when, BattleEvent ev)

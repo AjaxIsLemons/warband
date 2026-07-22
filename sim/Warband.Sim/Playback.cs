@@ -110,7 +110,7 @@ namespace Warband.Sim
                     }
                     break;
                 case EventKind.FieldCreated:
-                    Fields.Add(new PlaybackField { Id = e.Target, IsWall = e.Amount == 1 });
+                    Fields.Add(new PlaybackField { Id = e.Target, IsWall = e.Amount == 1, AttachedTo = e.Aux, Radius = e.Aux2 });
                     break;
                 case EventKind.FieldHex:
                     for (int i = 0; i < Fields.Count; i++)
@@ -151,7 +151,8 @@ namespace Warband.Sim
             foreach (var f in fields) // creation (= id) order on both sides
             {
                 Mix(f.Id); Mix(f.IsWall ? 1 : 0);
-                foreach (var hex in f.Hexes) { Mix(hex.Q); Mix(hex.R); } // emission order
+                if (f.AttachedTo >= 0) { Mix(f.AttachedTo); Mix(f.Radius); } // aura: anchor derives the footprint
+                else foreach (var hex in f.Hexes) { Mix(hex.Q); Mix(hex.R); } // emission order
             }
             return h;
         }

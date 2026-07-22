@@ -57,4 +57,16 @@ namespace Warband.Sim
         public List<Cond> When = new List<Cond>();   // ANDed; empty = always
         public List<EffectDef> Do = new List<EffectDef>();
     }
+
+    public enum StatKind { AttackFlat, AttackSpeed }
+
+    /// <summary>Read-time conditional stat: "while <conds>: ±Amount". Evaluated fresh at
+    /// every stat read, never cached (circuit's missing primitive, ADR 0004 wall #2).
+    /// Conds must be owner-state kinds (e.g. OwnerBelowHpPct) — there is no event.</summary>
+    public sealed class StatRule
+    {
+        public StatKind Stat;
+        public List<Cond> When = new List<Cond>();
+        public int Amount;
+    }
 }

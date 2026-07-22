@@ -46,18 +46,34 @@ namespace Warband.Viewer
 
         private static string RenderBoard(PlaybackState fold)
         {
+            var fieldHexes = new HashSet<Hex>();
+            var wallHexes = new HashSet<Hex>();
+            foreach (var f in fold.Fields)
+            {
+                IEnumerable<Hex> hexes = f.AttachedTo >= 0
+                    ? (fold.ById(f.AttachedTo) is { Dead: false } anchor ? Hex.Range(anchor.Pos, f.Radius) : new List<Hex>())
+                    : f.Hexes;
+                foreach (var h in hexes)
+                    (f.IsWall ? wallHexes : fieldHexes).Add(h);
+            }
+
             var sb = new StringBuilder();
             for (int row = 7; row >= 0; row--)   // enemy half on top
             {
                 sb.Append(row % 2 == 1 ? " " : "").Append(row).Append("  ");
                 for (int col = 0; col < 6; col++)
                 {
-                    var here = fold.Units.FirstOrDefault(u => !u.Dead && u.Pos == Hex.FromRowCol(row, col));
-                    sb.Append(here == null ? "·" : Glyph(here)).Append(' ');
+                    var hex = Hex.FromRowCol(row, col);
+                    var here = fold.Units.FirstOrDefault(u => !u.Dead && u.Pos == hex);
+                    string cell = here != null ? Glyph(here)
+                        : wallHexes.Contains(hex) ? "#"
+                        : fieldHexes.Contains(hex) ? "~"
+                        : "·";
+                    sb.Append(cell).Append(' ');
                 }
                 sb.AppendLine();
             }
-            sb.AppendLine("    0 1 2 3 4 5   (A-F = your warband, a-f = ghost)");
+            sb.AppendLine("    0 1 2 3 4 5   (A-F yours, a-f ghost, ~ field, # wall)");
             return sb.ToString();
         }
 
@@ -166,7 +182,16 @@ namespace Warband.Viewer
             banneret.Triggers.Add(new Trigger
             {
                 On = EventKind.BattleStart,
-                Do = { new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.Haste, Amount = 200, StatusTicks = -1, Select = new Selector { Kind = SelKind.AlliesWithin, Range = 1, ExcludeSelf = true } } },
+                Do = { new EffectDef
+                {
+                    Kind = EffectKind.CreateField,
+                    Select = new Selector { Kind = SelKind.Self },
+                    Field = new FieldDef
+                    {
+                        AttachToOwner = true, Radius = 1, Ticks = -1,
+                        Presence = { (StatusKind.Haste, 200) }, PresenceAffects = Affects.Allies,
+                    },
+                } },
             });
 
             var units = new List<UnitState>

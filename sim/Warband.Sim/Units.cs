@@ -15,6 +15,7 @@ namespace Warband.Sim
         public int ManaMax;          // 0 = no signature
         public List<EffectDef> Signature = new List<EffectDef>();
         public List<Trigger> Triggers = new List<Trigger>();   // innate + fork riders
+        public List<StatRule> StatRules = new List<StatRule>(); // conditional stats ("+speed below half HP")
     }
 
     public sealed class UnitState
@@ -53,17 +54,17 @@ namespace Warband.Sim
 
         /// <summary>Read-time attack damage: base + AttackUp − AttackDown, floor 0.
         /// Never cached — ramp passives just stack statuses.</summary>
-        public int EffAttack()
+        public int EffAttack(int ruleBonus = 0)
         {
-            int attack = Def.Attack + Sum(StatusKind.AttackUp) - Sum(StatusKind.AttackDown);
+            int attack = Def.Attack + Sum(StatusKind.AttackUp) - Sum(StatusKind.AttackDown) + ruleBonus;
             return attack < 0 ? 0 : attack;
         }
 
         /// <summary>Read-time stat evaluation (never cached): interval scaled by
         /// fixed-point attack speed, floor 20% speed, min 1 tick.</summary>
-        public int EffAttackInterval()
+        public int EffAttackInterval(int ruleSpeedBonus = 0)
         {
-            int speed = Battle.FP + Sum(StatusKind.Haste) - Sum(StatusKind.Slow);
+            int speed = Battle.FP + Sum(StatusKind.Haste) - Sum(StatusKind.Slow) + ruleSpeedBonus;
             if (speed < Battle.FP / 5) speed = Battle.FP / 5;
             int interval = Def.AttackInterval * Battle.FP / speed;
             return interval < 1 ? 1 : interval;
