@@ -33,8 +33,11 @@ the exam.
   pools (cold start solved).
 
 ## Combat
+**The soul (ADR 0003): "A war for time and ground: your build bends the clocks and paints
+the battlefield — placement is the only order you give."**
 - Auto-resolves on hexes: **4 rows × 6 columns per side**. Warband scales **2 units → cap 6**
-  across the run.
+  across the run. Flat board, zero predetermined terrain — all ground effects are unit-cast
+  **glyphs** (fire fields, healing ground, summoned walls). Full grammar: combat-grammar.md.
 - **TFT-model movement, deliberately simple:** units path toward targets by fixed rules; speed,
   range, and placement do the rest. Tanks hold fronts, AoE respects board shapes, assassins
   reach backlines via abilities/passives — never via player micro. All skill lives between fights.

@@ -1,8 +1,8 @@
 # Combat grammar — the soul — v0.2 (2026-07-22, round 6)
 
-Soul sentence: ❓ being reworked with Jake — candidates at bottom. Working frame:
-**a war for time and ground — builds bend the clocks and paint the battlefield;
-placement is the only order you ever give.**
+Soul sentence (**approved, ADR 0003**):
+**"A war for time and ground: your build bends the clocks and paints the battlefield —
+placement is the only order you give."**
 
 ## Pillar 1 — the Clock (unchanged from v0.1)
 Two clocks per unit: attack interval + mana (fills from attacks, damage taken, trickle;
@@ -61,8 +61,3 @@ Root + collisions · reaction triggers · shapes above · field-aware pathing.
 Out (post-v1): predetermined terrain (never), Charge, cones/rows, cleanse/tenacity,
 non-wall summons, morale/rout, high-ground.
 
-## Soul sentence candidates (❓ Jake picks/edits)
-1. "A war for time and ground: your build bends the clocks and paints the battlefield —
-   placement is the only order you give."
-2. "Tempo and territory: two warbands race their clocks while painting the field."
-3. "The clock and the canvas: power is when your build fires and where it lands."

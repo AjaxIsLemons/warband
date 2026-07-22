@@ -13,6 +13,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   settled identity + the process guardrails, with the postmortem evidence behind them.
 - [Decisions/0002-run-structure-best-of-5.md](Decisions/0002-run-structure-best-of-5.md) —
   best-of-5 acts, PvE wagering, anti-snowball laws.
+- [Decisions/0003-combat-soul.md](Decisions/0003-combat-soul.md) — THE SOUL SENTENCE, Clock+Field
+  pillars, flat maps/glyphs, displacement demoted, AI legibility.
 
 ## Projects
 - [Projects/first-playable.md](Projects/first-playable.md) — content budget, build order, open questions.
