@@ -16,7 +16,8 @@ close acts) — but **the act boss is another player**. PvE is where you tinker;
 the exam.
 
 ## The run — best of 5 (decided 2026-07-22, ADR 0002)
-- ~20–25 min. **5 acts × ~4 PvE nodes** (monster fight / event / shop), each act closed by a
+- ~20–25 min. **5 acts × ~4 PvE nodes** (wager-tiered fights / events; a shop rolls after
+  every node — ADR 0006), each act closed by a
   **PvP ghost boss** drawn from boards other players snapshotted at the *same act*
   (structural fairness — circuit's same-round pools, reused wholesale).
 - **The run is a best-of-5 against humanity.** Runs complete all 5 acts; your boss record is the
@@ -35,8 +36,8 @@ the exam.
 ## Combat
 **The soul (ADR 0003): "A war for time and ground: your build bends the clocks and paints
 the battlefield — placement is the only order you give."**
-- Auto-resolves on hexes: **4 rows × 6 columns per side**. Warband scales **2 units → cap 6**
-  across the run. Flat board, zero predetermined terrain — all ground effects are unit-cast
+- Auto-resolves on hexes: **4 rows × 6 columns per side**. Warband scales **3 units → cap 6**
+  across the run (act-close slot offers, ADR 0006). Flat board, zero predetermined terrain — all ground effects are unit-cast
   **glyphs** (fire fields, healing ground, summoned walls). Full grammar: combat-grammar.md.
 - **TFT-model movement, deliberately simple:** units path toward targets by fixed rules; speed,
   range, and placement do the rest. Tanks hold fronts, AoE respects board shapes, assassins

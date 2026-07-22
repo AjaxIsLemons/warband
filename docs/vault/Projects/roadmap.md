@@ -13,14 +13,16 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 
 ## Now / Next (ordered — top unblocked item is "what's next")
 1. **Run layer (headless)** — the big one; sub-items in build order:
-   a. Act/node skeleton — SPEC'D (ADR 0002: 5 acts × ~4 nodes, act-boss ghost fight,
-      best-of-5 record scoring). Headless state machine, no UI.
-   b. Shop & economy — **DESIGN** (mechanics decided: duplicates→ranks C/B/A/S, one
-      currency, roster 2→6; numbers + reroll rules + roster-slot growth undecided).
-   c. Wager mechanics — **DESIGN** (ADR 0002 open: what's wagered, reward curve).
-   d. Ghost snapshots + bot-ghost generation — SPEC'D (format: act + record + composed
-      loadouts + placement; circuit's same-round pool model).
-   e. Full-run headless harness — SPEC'D once a–d exist (metasim lesson: model the economy).
+   a. Act/node skeleton — **DONE 2026-07-22** (`Warband.Run`: RunController state machine,
+      act/node maps, ghost-boss fights, best-of-5 record; 19 tests. ADR 0008 architecture:
+      pure host-agnostic lib, serializable state, ids-only content).
+   b. Shop stock — SPEC'D (ADR 0006 designed; the shop *tick* + slot offers + bench exist
+      in the skeleton — still to build: hero-card/item offers, reroll, buy/rank-up flow).
+   c. Wager mechanics — **DONE 2026-07-22** (ADR 0007 built into skeleton: 3 tiers,
+      per-kill payout + tier-scaled success bonus; numbers placeholder).
+   d. Bot-ghost generation — SPEC'D (snapshot format + capture built in skeleton; still
+      to build: generating credible bot boards per act/record for the P0 pool).
+   e. Full-run headless harness — SPEC'D once b & d exist (metasim lesson: model the economy).
 2. **Placeholder content pass** — 8 roster heroes as ChassisDef+starter weapons via the
    composer; sample armies swap to real composition path — SPEC'D (placeholder doctrine!).
 3. **Archetype sweep harness** — round-robin win matrix over seeds, flag >85%/<30% — SPEC'D.
@@ -47,12 +49,17 @@ ExcludeOwner option · morale/rout concept · ability crits · predetermined ter
 · account-scoped power (NEVER — fairness law).
 
 ## Open design questions (ammo for DESIGN sessions)
-Wager shape/reward curve · roster-slot growth (bought vs act-granted) · currency name +
-economy numbers · respec cost (free-for-now decided, revisit) · act-boss reward beyond
-record · symmetric-vs-enemies-only damage fields (feel it in sim) · per-rank stat scaling
-· bench/reserve in v1 · run length target validation (~20-25 min).
+Currency/tier final names (gold + Safe/Even/Greedy are placeholders until theme/lore) ·
+economy numbers (placeholder until sweep/playtest) · respec cost (free-for-now decided,
+revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fields (feel it
+in sim) · per-rank stat scaling · run length target validation (~20-25 min).
 
 ## Done
+- **2026-07-22 — Run-layer design settled + skeleton built (84 tests).** ADR 0006 (shop &
+  economy: every-node shops, 3→6 act-close slot offers, bench 2, gold), ADR 0007 (wager
+  tiers, per-kill payout + success bonus), ADR 0008 (run layer = pure host-agnostic lib).
+  `Warband.Run`: RunController machine — maps, wager fights, events, ghost bosses, record,
+  slot offers, bench, ProgressionFold, snapshot capture; 19 tests.
 - **2026-07-22 — Design foundation.** Pitch v0.3; ADR 0001 (identity + anti-washout
   contract); ADR 0002 (best-of-5, wagering, anti-snowball); ADR 0003 (combat soul: clock +
   field, glyphs on flat maps); ADR 0004 (sim framework); ADR 0005 (loadout composition,

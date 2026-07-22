@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Same laws as Warband.Sim (ADR 0008): netstandard2.1 + C# 9 so the assembly drops
+       into Unity unchanged. Pure — no Unity, no network, no filesystem, ever. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Warband.Run</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Warband.Sim\Warband.Sim.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -21,6 +21,12 @@ Read this first. One line per page; open only what's relevant. Update on every a
   cascade semantics, determinism law, tag-change replay, metrics-as-folds.
 - [Decisions/0005-loadout-composition.md](Decisions/0005-loadout-composition.md) — items/spec-trees as
   composed loadouts (sim never sees them), remaining sim gaps, PLACEHOLDER-content doctrine.
+- [Decisions/0006-shop-and-economy.md](Decisions/0006-shop-and-economy.md) — shop after every node,
+  roster 3→6 via act-close slot offers, flat rerolls, bench of 2, gold; numbers placeholder.
+- [Decisions/0007-wager-mechanics.md](Decisions/0007-wager-mechanics.md) — 3 risk tiers per fight,
+  per-kill payout + tier-scaled success bonus, no staked gold.
+- [Decisions/0008-run-layer-architecture.md](Decisions/0008-run-layer-architecture.md) — run layer =
+  pure host-agnostic lib; serializable state, ids-only content, stateless rng; hosting deferred.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,

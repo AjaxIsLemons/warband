@@ -61,13 +61,14 @@ Guildrun "Rush", huge/slow = "Stall".
 - **Banners** (our relics): whole-team rules bought/earned across the run — "front row
   +HP", "first ally death: everyone rages", "your Leaps stun". 300-relic-style variety
   is Guildrun's replayability engine; ours at v1 scale: ~10.
-- **Roster growth 2→6** is itself the biggest party upgrade (❓ slots bought in shops
-  vs granted per act).
+- **Roster growth 3→6** is itself the biggest party upgrade — bought via act-close slot
+  offers, escalating cost, cap 6 (ADR 0006; Guildrun's team-size-expander model).
 - **NO trait counting** ("3 Knights = bonus") — Jake: "synergies should be more
   emergent than explicit." Team texture comes from positional bonds/auras + banners +
   ability interactions, never from comp-math.
-- ❓ Currency: proposal — **one currency** (working name: shards) earned from fights
-  (wager-scaled), spent on everything: new heroes, duplicates, items, banners, rerolls.
+- Currency: **one currency** ✓ (ADR 0006) earned from fights (wager-scaled, ADR 0007),
+  spent on everything: new heroes, duplicates, items, banners, rerolls, slots. Named
+  **gold** — deliberately generic until theme/lore lands.
 
 ### 6. Movement on the sheet
 Move Speed stat + movement *keywords* granted by chassis/specs/items: v1 set is tiny —
