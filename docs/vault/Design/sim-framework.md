@@ -55,6 +55,11 @@ allegiance }. Glyphs are static fields; **auras are fields attached to a moving 
   problem, and the sweep is trivially deterministic. Don't build event-driven aura
   machinery we don't need.
 - Field-aware pathing (ADR 0003's step scoring) reads the same field data.
+- **Projectile-path interaction (added round 8, Jake):** any attack over ≥2 hexes traces
+  the deterministic hex line; fields crossing the interior may **block** (walls — shot
+  wasted, no mana), **amplify** (flat bonus), or **attach riders** (arrows ignite over
+  fire). Resolution stays instant (render-contract v1) — the PATH is the gameplay.
+  Each field acts once per shot regardless of hexes crossed. Built + tested 2026-07-22.
 
 ## 4. Determinism law (C# bans, CI-enforced)
 - Integer/fixed-point only (FP = 1000); NO float/double in resolution.
