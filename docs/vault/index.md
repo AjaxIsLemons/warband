@@ -3,7 +3,8 @@
 Read this first. One line per page; open only what's relevant. Update on every add/move.
 
 ## Design
-- [Design/pitch.md](Design/pitch.md) — the game in one page (v0.2, 2026-07-22). Start here.
+- [Design/pitch.md](Design/pitch.md) — the game in one page (v0.3, 2026-07-22). Start here.
+- [Design/heroes.md](Design/heroes.md) — hero anatomy DRAFT (chassis/casting/spec-tree/items/party) — round-4 deep dive.
 
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
