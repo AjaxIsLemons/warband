@@ -51,6 +51,14 @@ namespace Warband.Sim
             return total;
         }
 
+        /// <summary>Read-time attack damage: base + AttackUp − AttackDown, floor 0.
+        /// Never cached — ramp passives just stack statuses.</summary>
+        public int EffAttack()
+        {
+            int attack = Def.Attack + Sum(StatusKind.AttackUp) - Sum(StatusKind.AttackDown);
+            return attack < 0 ? 0 : attack;
+        }
+
         /// <summary>Read-time stat evaluation (never cached): interval scaled by
         /// fixed-point attack speed, floor 20% speed, min 1 tick.</summary>
         public int EffAttackInterval()

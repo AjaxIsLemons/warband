@@ -15,6 +15,8 @@ namespace Warband.Sim
         Root,     // no movement
         Regen,    // Mag healed per pulse (1s)
         Dot,      // Mag damage per pulse (1s)
+        AttackUp,   // Mag added to attack damage at read time (ramp passives)
+        AttackDown, // Mag subtracted from attack damage at read time
     }
 
     public sealed class Status

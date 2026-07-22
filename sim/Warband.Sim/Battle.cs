@@ -135,7 +135,7 @@ namespace Warband.Sim
             {
                 u.NextAttackTick = _tick + u.EffAttackInterval();
                 Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
-                DealDamage(u.Id, target, u.Def.Attack, Cause.Attack, 0, u.Id);
+                DealDamage(u.Id, target, u.EffAttack(), Cause.Attack, 0, u.Id);
                 GainMana(u, ManaPerAttack);
             }
             foreach (var u in casts)
@@ -235,6 +235,12 @@ namespace Warband.Sim
                     case CondKind.SourceIsEnemyOfOwner:
                         var src = Raw(ev.Source);
                         ok = src != null && src.Team != owner.Team; break;
+                    case CondKind.TargetIsAllyOfOwner:
+                        var ally = Raw(ev.Target);
+                        ok = ally != null && ally.Team == owner.Team && ally.Id != owner.Id; break;
+                    case CondKind.SourceWithinHexesOfOwner:
+                        var srcNear = ById(ev.Source);
+                        ok = srcNear != null && Hex.Distance(owner.Pos, srcNear.Pos) <= c.Amount; break;
                     case CondKind.CauseIs: ok = ev.Cause == c.Cause; break;
                     case CondKind.OwnerBelowHpPct:
                         ok = owner.Hp * 100 < c.Amount * owner.Def.MaxHp; break;

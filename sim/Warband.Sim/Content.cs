@@ -11,9 +11,11 @@ namespace Warband.Sim
         SourceIsOwner,             // event source is the trigger's owner
         TargetIsOwner,
         SourceIsEnemyOfOwner,
+        TargetIsAllyOfOwner,       // event target is on owner's team, not owner itself
         CauseIs,                   // event cause matches Cond.Cause
         OwnerBelowHpPct,           // Amount = percent
         TargetWithinHexesOfOwner,  // Amount = range
+        SourceWithinHexesOfOwner,  // Amount = range (zone-punisher reactions)
     }
 
     public sealed class Cond
