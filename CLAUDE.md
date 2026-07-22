@@ -9,6 +9,14 @@ spec trees. Unity client, pure C# deterministic sim.
 - Read `Design/pitch.md` + `Decisions/0001-identity-and-anti-washout-contract.md` before any
   non-trivial design or build work.
 
+## ⚠ Content doctrine (Jake, 2026-07-22 — read before touching content)
+**ALL current content is PLACEHOLDER.** Roster kits, numbers, status magnitudes, the viewer's
+sample armies — they exist to exercise SYSTEMS, not to be tuned. We are in the
+build-systems-and-see-them-work phase. Do NOT balance-tune placeholder numbers, do NOT treat
+`Design/roster.md` as final, do NOT start per-hero deep dives — each hero gets a dedicated
+design pass later, with Jake. Sim-level mechanics and data shapes (ADR 0004/0005) are the
+real work product right now.
+
 ## Invariants (ADR 0001 — do not relitigate without a playtest)
 - Identity is settled: PvE acts + act-closing ghost PvP · TFT-style emergent movement on hexes ·
   spec-tree heroes · Unity + pure C# sim.

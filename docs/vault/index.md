@@ -19,6 +19,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   pillars, flat maps/glyphs, displacement demoted, AI legibility.
 - [Decisions/0004-sim-framework.md](Decisions/0004-sim-framework.md) — trigger atom, fields=auras,
   cascade semantics, determinism law, tag-change replay, metrics-as-folds.
+- [Decisions/0005-loadout-composition.md](Decisions/0005-loadout-composition.md) — items/spec-trees as
+  composed loadouts (sim never sees them), remaining sim gaps, PLACEHOLDER-content doctrine.
 
 ## Projects
 - [Projects/first-playable.md](Projects/first-playable.md) — content budget, build order, open questions.
