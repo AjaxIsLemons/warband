@@ -12,32 +12,23 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 - **DONE** — move to the Done section with a date.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
-1. **Run layer (headless)** — the big one; sub-items in build order:
-   a. Act/node skeleton — **DONE 2026-07-22** (`Warband.Run`: RunController state machine,
-      act/node maps, ghost-boss fights, best-of-5 record; 19 tests. ADR 0008 architecture:
-      pure host-agnostic lib, serializable state, ids-only content).
-   b. Shop stock — **DONE 2026-07-22** (ADR 0009 built: 3 hero + 2 item offers, free
-      per-offer freeze, dupe→rank-up→fork flow, banners in rotation as team triggers both
-      sides, sell-back 50%, weapon/trinket equip; 12 tests).
-   c. Wager mechanics — **DONE 2026-07-22** (ADR 0007 built into skeleton: 3 tiers,
-      per-kill payout + tier-scaled success bonus; numbers placeholder).
-   d. Bot-ghost generation — SPEC'D (snapshot format + capture built in skeleton; still
-      to build: generating credible bot boards per act/record for the P0 pool).
-   e. Full-run headless harness — SPEC'D once b & d exist (metasim lesson: model the economy).
-2. **Placeholder content pass** — 8 roster heroes as ChassisDef+starter weapons via the
-   composer; sample armies swap to real composition path — SPEC'D (placeholder doctrine!).
-3. **Archetype sweep harness** — round-robin win matrix over seeds, flag >85%/<30% — SPEC'D.
-4. **Unity client bring-up** — SPEC'D pattern-wise (render from PlaybackState fold,
+1. **Placeholder content pass** — 8 roster heroes as ChassisDef+starter weapons via the
+   composer; sample armies swap to real composition path; real IRunContent impl (the smoke
+   content in scratch is a sketch) — SPEC'D (placeholder doctrine!).
+2. **Archetype sweep harness** — round-robin win matrix over seeds, flag >85%/<30% —
+   SPEC'D (builds on RunHarness/AggregateReport; add per-tier EV — first smoke already
+   flags Greedy strictly dominant under placeholder monsters).
+3. **Unity client bring-up** — SPEC'D pattern-wise (render from PlaybackState fold,
    render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows (Shoota pipeline)
    when we're ready for it. Board render → placement drag → replay viewer → run screens.
-5. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
+4. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
    hash-verified; copy Shoota's site/launcher/ship pipeline).
-6. **Hero deep dives ×8** — **DESIGN**, one dedicated pass per hero with Jake. Not before
+5. **Hero deep dives ×8** — **DESIGN**, one dedicated pass per hero with Jake. Not before
    the loop is playable.
-7. **Weapons/items design pass** — **DESIGN** (categories, attack shapes land here,
+6. **Weapons/items design pass** — **DESIGN** (categories, attack shapes land here,
    itemization economy).
-8. **Friends playtest #1** — the milestone that outranks everything (ADR 0001). Date it
-   as soon as the run layer stands.
+7. **Friends playtest #1** — the milestone that outranks everything (ADR 0001). Date it
+   as soon as content pass + a playable client stand.
 
 ## First-playable content budget (hard cap — ADR 0001)
 8 heroes × ~2 forks (placeholder kits OK) · ~12 items · 5 acts × ~4 nodes · small monster
@@ -56,6 +47,11 @@ revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fi
 in sim) · per-rank stat scaling · run length target validation (~20-25 min).
 
 ## Done
+- **2026-07-22 — RUN LAYER COMPLETE (109 tests).** Bot-ghost generation (BotGhosts: boards
+  sized to slot growth, deepened by act+record, geared, range-aware placement) + full-run
+  harness (RunHarness/RunPolicy/AggregateReport: policy hooks, fight+economy metrics,
+  deterministic). Smoke: 600 bot runs — Greedy tier strictly dominant under placeholder
+  monsters (harness working as intended; tune at sweep/playtest, not now).
 - **2026-07-22 — Run-layer design settled + skeleton & shop built (97 tests).** ADR 0006
   (shop & economy: every-node shops, 3→6 act-close slot offers, bench 2, gold), ADR 0007
   (wager tiers, per-kill payout + success bonus), ADR 0008 (run layer = pure host-agnostic

@@ -236,6 +236,9 @@ namespace Warband.Run
             State.SlotOfferPending = false;
         }
 
+        public bool HasRoomForRecruit =>
+            State.Field.Count < State.FieldSlots || State.Bench.Count < _cfg.BenchSlots;
+
         public void BenchToField(int benchIndex)
         {
             RequireShopActionable();

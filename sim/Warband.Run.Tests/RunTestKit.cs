@@ -81,9 +81,11 @@ namespace Warband.Run.Tests
         }
 
         public List<string> GhostBanners = new List<string>();
+        public bool UseBotGhosts;                // route bosses through BotGhosts.Generate
 
         public GhostSnapshot BossGhost(int act, int bossWins, Rng rng)
         {
+            if (UseBotGhosts) return BotGhosts.Generate(this, new RunConfig(), act, bossWins, rng);
             var hero = new HeroInstance { ChassisId = WeakBoss ? "ghost-weak" : "ghost" };
             var snap = new GhostSnapshot { Act = act };
             snap.BannerIds.AddRange(GhostBanners);
