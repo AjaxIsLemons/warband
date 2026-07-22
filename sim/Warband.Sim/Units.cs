@@ -1,16 +1,20 @@
+using System.Collections.Generic;
+
 namespace Warband.Sim
 {
-    /// <summary>Chassis numbers. Content layer fills these; the sim never hardcodes them.</summary>
+    /// <summary>Chassis numbers + declarative kit. Content fills these; the sim never
+    /// hardcodes them.</summary>
     public sealed class UnitDef
     {
         public string Name = "unit";
         public int MaxHp;
         public int Attack;
-        public int AttackInterval;   // ticks between swings
+        public int AttackInterval;   // base ticks between swings (modulated by Haste/Slow)
         public int Range;            // hexes
         public int MoveInterval;     // ticks per 1-hex step
         public int ManaMax;          // 0 = no signature
-        public int CastDamage;       // placeholder signature until the effect grammar lands
+        public List<EffectDef> Signature = new List<EffectDef>();
+        public List<Trigger> Triggers = new List<Trigger>();   // innate + fork riders
     }
 
     public sealed class UnitState
@@ -20,12 +24,42 @@ namespace Warband.Sim
         public UnitDef Def = null!;
         public Hex Pos;
         public int Hp;
+        public int Shield;
         public int Mana;
         public int TargetId = -1;
         public int NextAttackTick;
         public int NextMoveTick;
+        public bool Dead;            // set only by the death phase
+        public List<Status> Statuses = new List<Status>();
 
-        public bool Alive => Hp > 0;
+        public bool Alive => !Dead;
+
+        public bool Has(StatusKind kind)
+        {
+            foreach (var s in Statuses)
+                if (s.Kind == kind)
+                    return true;
+            return false;
+        }
+
+        public int Sum(StatusKind kind)
+        {
+            int total = 0;
+            foreach (var s in Statuses)
+                if (s.Kind == kind)
+                    total += s.Mag;
+            return total;
+        }
+
+        /// <summary>Read-time stat evaluation (never cached): interval scaled by
+        /// fixed-point attack speed, floor 20% speed, min 1 tick.</summary>
+        public int EffAttackInterval()
+        {
+            int speed = Battle.FP + Sum(StatusKind.Haste) - Sum(StatusKind.Slow);
+            if (speed < Battle.FP / 5) speed = Battle.FP / 5;
+            int interval = Def.AttackInterval * Battle.FP / speed;
+            return interval < 1 ? 1 : interval;
+        }
 
         public static UnitState Spawn(int id, int team, UnitDef def, Hex pos) => new UnitState
         {

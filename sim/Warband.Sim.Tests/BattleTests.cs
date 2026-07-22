@@ -7,19 +7,19 @@ namespace Warband.Sim.Tests
 {
     public class BattleTests
     {
-        private static UnitDef Grunt(int hp = 100, int atk = 10) => new UnitDef
+        internal static UnitDef Grunt(int hp = 100, int atk = 10) => new UnitDef
         {
             Name = "grunt", MaxHp = hp, Attack = atk, AttackInterval = 10,
             Range = 1, MoveInterval = 5,
         };
 
-        private static UnitDef Pacifist(int hp) => new UnitDef
+        internal static UnitDef Pacifist(int hp) => new UnitDef
         {
             Name = "pacifist", MaxHp = hp, Attack = 0, AttackInterval = 10,
             Range = 1, MoveInterval = 5,
         };
 
-        private static List<UnitState> Duel(UnitDef a, UnitDef b) => new List<UnitState>
+        internal static List<UnitState> Duel(UnitDef a, UnitDef b) => new List<UnitState>
         {
             UnitState.Spawn(0, 0, a, Hex.FromRowCol(3, 2)),
             UnitState.Spawn(1, 1, b, Hex.FromRowCol(4, 2)), // adjacent across the midline
@@ -50,7 +50,7 @@ namespace Warband.Sim.Tests
         [Fact]
         public void PerfectMirrorIsMutualKoDraw()
         {
-            // Identical adjacent units swing simultaneously (frozen-read/buffer/apply):
+            // Identical adjacent units swing simultaneously (frozen decide/apply):
             // both must die on the same tick. Iteration order must never pick a winner.
             var result = new Battle(Duel(Grunt(), Grunt())).Run();
             Assert.Equal(Winner.Draw, result.Winner);
@@ -73,7 +73,7 @@ namespace Warband.Sim.Tests
             };
             var result = new Battle(units).Run();
             Assert.Equal(Winner.Team0, result.Winner);
-            Assert.Contains(result.Events, e => e.Type == EventType.Move);
+            Assert.Contains(result.Events, e => e.Kind == EventKind.Move);
         }
 
         [Fact]
@@ -94,19 +94,22 @@ namespace Warband.Sim.Tests
         }
 
         [Fact]
-        public void FullManaCastsAndResets()
+        public void FullManaCastsSignatureAndResets()
         {
             var caster = new UnitDef
             {
                 Name = "caster", MaxHp = 300, Attack = 5, AttackInterval = 10,
-                Range = 1, MoveInterval = 5, ManaMax = 30, CastDamage = 50,
+                Range = 1, MoveInterval = 5, ManaMax = 30,
+                Signature = { new EffectDef { Kind = EffectKind.Damage, Amount = 50 } },
             };
             var result = new Battle(Duel(caster, Grunt(hp: 500, atk: 5))).Run();
-            Assert.Contains(result.Events, e => e.Type == EventType.Cast && e.Actor == 0 && e.Value == 50);
+            Assert.Contains(result.Events, e => e.Kind == EventKind.Cast && e.Source == 0);
+            Assert.Contains(result.Events, e =>
+                e.Kind == EventKind.DamageDealt && e.Cause == Cause.Ability && e.Amount == 50);
         }
 
         [Fact]
-        public void RangedKitesNothingButStillShootsFromRange()
+        public void RangedShootsFromRangeWithoutMoving()
         {
             var archer = new UnitDef
             {
@@ -120,16 +123,15 @@ namespace Warband.Sim.Tests
             };
             var result = new Battle(units).Run();
             Assert.Equal(Winner.Team0, result.Winner);
-            // Archer opened fire without ever moving: distance 4 = already in range.
-            Assert.DoesNotContain(result.Events, e => e.Type == EventType.Move && e.Actor == 0);
+            Assert.DoesNotContain(result.Events, e => e.Kind == EventKind.Move && e.Source == 0);
         }
 
         [Fact]
         public void BattleEmitsDeathsAndEnd()
         {
             var result = new Battle(Duel(Grunt(), Grunt(90))).Run();
-            Assert.Contains(result.Events, e => e.Type == EventType.Death && e.Actor == 1);
-            Assert.Equal(EventType.End, result.Events.Last().Type);
+            Assert.Contains(result.Events, e => e.Kind == EventKind.Death && e.Target == 1);
+            Assert.Equal(EventKind.End, result.Events.Last().Kind);
         }
     }
 }
