@@ -12,6 +12,36 @@ namespace Warband.Run
 
     public enum RunPhase { Node, Shop, Complete }
 
+    public enum OfferKind { Hero, Weapon, Trinket, Banner }
+
+    public enum ItemKind { Weapon, Trinket }
+
+    public enum RosterZone { Field, Bench }
+
+    public sealed class ShopOffer
+    {
+        public OfferKind Kind;
+        public string Id = "";
+        public int Price;
+        public bool Frozen;                      // free, persists into the next shop (ADR 0009)
+    }
+
+    public sealed class ItemRef
+    {
+        public ItemKind Kind;
+        public string Id = "";
+    }
+
+    /// <summary>A rank-up's 1-of-2 spec choice, blocking the shop until resolved (ADR 0009).</summary>
+    public sealed class PendingSpec
+    {
+        public RosterZone Zone;
+        public int Index;
+        public Rank ForRank;
+        public string OptionA = "";
+        public string OptionB = "";
+    }
+
     /// <summary>
     /// A hero the player owns. Content by id only (ADR 0008) — the catalog resolves ids to
     /// defs, the Loadout composer (ADR 0005) turns the whole thing into one UnitDef.
@@ -20,6 +50,8 @@ namespace Warband.Run
     {
         public string ChassisId = "";
         public Rank Rank = Rank.C;
+        public string? PathId;                   // set by the B fork (ADR 0009)
+        public int GoldSpent;                    // card + dupes — sell-back refunds 50% of this
         public string? WeaponId;                 // null = chassis starter weapon
         public List<string> TrinketIds = new List<string>();
         public List<string> SpecNodeIds = new List<string>();
@@ -28,7 +60,11 @@ namespace Warband.Run
 
         public HeroInstance Clone()
         {
-            var c = new HeroInstance { ChassisId = ChassisId, Rank = Rank, WeaponId = WeaponId };
+            var c = new HeroInstance
+            {
+                ChassisId = ChassisId, Rank = Rank, WeaponId = WeaponId,
+                PathId = PathId, GoldSpent = GoldSpent,
+            };
             c.TrinketIds.AddRange(TrinketIds);
             c.SpecNodeIds.AddRange(SpecNodeIds);
             c.RunBonuses.AddRange(RunBonuses);
@@ -53,6 +89,7 @@ namespace Warband.Run
         public int WinsAtCapture;
         public int LossesAtCapture;
         public List<GhostUnit> Units = new List<GhostUnit>();
+        public List<string> BannerIds = new List<string>();  // ghost boards keep their team rules
     }
 
     /// <summary>Pure data, serializable-by-construction (ADR 0008). No content refs, no rng.</summary>
@@ -69,6 +106,11 @@ namespace Warband.Run
         public bool JustClosedBoss;              // shop-exit routing: next act vs next node
         public List<HeroInstance> Field = new List<HeroInstance>();
         public List<HeroInstance> Bench = new List<HeroInstance>();
+        public List<ShopOffer?> ShopOffers = new List<ShopOffer?>();  // null = bought/empty slot
+        public int ShopRolls;                    // generation counter — stateless shop rng (ADR 0008)
+        public List<ItemRef> Inventory = new List<ItemRef>();
+        public List<string> Banners = new List<string>();
+        public PendingSpec? PendingSpec;
         public int BossWins;
         public int BossLosses;
         public NodeKind[][] ActMaps = new NodeKind[0][];   // [act-1][nodeIndex], generated at start

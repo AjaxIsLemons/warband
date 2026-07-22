@@ -24,7 +24,7 @@ namespace Warband.Run
     /// </summary>
     public sealed class RunController
     {
-        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltGhost = 4;
+        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltGhost = 4, SaltShop = 5;
         private const int EnemyIdBase = 100;     // player heroes are 0..5, so no collision
 
         public RunState State { get; }
@@ -95,15 +95,127 @@ namespace Warband.Run
                 enemies.Add((ComposeDef(g.Hero), MirrorToEnemyHalf(g.Pos)));
 
             CaptureSnapshot(placement);
-            var outcome = RunBattle(placement, enemies, pot: 0, killSharePct: 0);
+            var outcome = RunBattle(placement, enemies, pot: 0, killSharePct: 0,
+                                    enemyBanners: ghost.BannerIds);
             outcome.BaseIncome = _cfg.BaseIncome(State.Act);
             State.Gold += outcome.GoldEarned;
-            if (outcome.Won) State.BossWins++; else State.BossLosses++;   // draw = not a win
+            if (outcome.Won) State.BossWins++; else State.BossLosses++;
             EnterShop(bossJustClosed: true);
             return outcome;
         }
 
-        // ---- Shop phase (ADR 0006; offer/reroll stock arrives with roadmap 1b) ------
+        // ---- Shop phase (ADR 0006 cadence, ADR 0009 stock) --------------------------
+
+        /// <summary>Buy the offer at a slot. Hero card of an owned chassis = dupe: rank-up
+        /// fires and the 1-of-2 spec choice must be resolved before any other shop action.</summary>
+        public void BuyOffer(int index)
+        {
+            RequireShopActionable();
+            var offer = OfferAt(index);
+            Require(State.Gold >= offer.Price, "not enough gold");
+            switch (offer.Kind)
+            {
+                case OfferKind.Hero: BuyHero(offer); break;
+                case OfferKind.Weapon:
+                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = offer.Id }); break;
+                case OfferKind.Trinket:
+                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = offer.Id }); break;
+                case OfferKind.Banner: State.Banners.Add(offer.Id); break;
+            }
+            State.Gold -= offer.Price;
+            State.ShopOffers[index] = null;
+        }
+
+        public void Reroll()
+        {
+            RequireShopActionable();
+            Require(State.Gold >= _cfg.RerollCost, "not enough gold to reroll");
+            State.Gold -= _cfg.RerollCost;
+            GenerateShop();
+        }
+
+        public void ToggleFreeze(int index)
+        {
+            RequireShopActionable();
+            var offer = OfferAt(index);
+            offer.Frozen = !offer.Frozen;
+        }
+
+        /// <summary>Resolve the pending rank-up choice: 0 = OptionA, 1 = OptionB.</summary>
+        public void ChooseSpec(int which)
+        {
+            Require(State.Phase == RunPhase.Shop && State.PendingSpec != null, "no spec choice pending");
+            var p = State.PendingSpec!;
+            var hero = Zone(p.Zone)[p.Index];
+            string chosen = which == 0 ? p.OptionA : p.OptionB;
+            hero.SpecNodeIds.Add(chosen);
+            if (p.ForRank == Rank.B) hero.PathId = chosen;   // the fork sets the path
+            State.PendingSpec = null;
+        }
+
+        public void SellHero(RosterZone zone, int index)
+        {
+            RequireShopActionable();
+            var list = Zone(zone);
+            var hero = list[index];
+            UnequipWeapon(zone, index);
+            while (hero.TrinketIds.Count > 0) UnequipTrinket(zone, index);
+            State.Gold += hero.GoldSpent * _cfg.SellPct / 100;
+            list.RemoveAt(index);
+        }
+
+        public void SellItem(int invIndex)
+        {
+            RequireShopActionable();
+            var item = State.Inventory[invIndex];
+            State.Gold += ItemPrice(item.Kind) * _cfg.SellPct / 100;
+            State.Inventory.RemoveAt(invIndex);
+        }
+
+        public void EquipWeapon(RosterZone zone, int index, int invIndex)
+        {
+            RequireShopActionable();
+            var item = State.Inventory[invIndex];
+            Require(item.Kind == ItemKind.Weapon, "not a weapon");
+            var hero = Zone(zone)[index];
+            State.Inventory.RemoveAt(invIndex);
+            if (hero.WeaponId != null)
+                State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId });
+            hero.WeaponId = item.Id;
+        }
+
+        public void EquipTrinket(RosterZone zone, int index, int invIndex)
+        {
+            RequireShopActionable();
+            var item = State.Inventory[invIndex];
+            Require(item.Kind == ItemKind.Trinket, "not a trinket");
+            var hero = Zone(zone)[index];
+            State.Inventory.RemoveAt(invIndex);
+            if (hero.TrinketIds.Count > 0)                   // one trinket slot (heroes.md)
+            {
+                State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = hero.TrinketIds[0] });
+                hero.TrinketIds.Clear();
+            }
+            hero.TrinketIds.Add(item.Id);
+        }
+
+        public void UnequipWeapon(RosterZone zone, int index)
+        {
+            RequireShopActionable();
+            var hero = Zone(zone)[index];
+            if (hero.WeaponId == null) return;               // starter isn't an item
+            State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId });
+            hero.WeaponId = null;
+        }
+
+        public void UnequipTrinket(RosterZone zone, int index)
+        {
+            RequireShopActionable();
+            var hero = Zone(zone)[index];
+            if (hero.TrinketIds.Count == 0) return;
+            State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = hero.TrinketIds[0] });
+            hero.TrinketIds.RemoveAt(0);
+        }
 
         public bool SlotOfferOpen => State.Phase == RunPhase.Shop && State.SlotOfferPending;
 
@@ -114,6 +226,7 @@ namespace Warband.Run
 
         public void BuySlot()
         {
+            RequireShopActionable();
             Require(SlotOfferOpen, "no slot offer open");
             int cost = _cfg.SlotCost(State.SlotsBought);
             Require(State.Gold >= cost, "not enough gold for the slot");
@@ -125,7 +238,7 @@ namespace Warband.Run
 
         public void BenchToField(int benchIndex)
         {
-            Require(State.Phase == RunPhase.Shop, "roster moves only in the shop phase");
+            RequireShopActionable();
             Require(State.Field.Count < State.FieldSlots, "field is full");
             State.Field.Add(State.Bench[benchIndex]);
             State.Bench.RemoveAt(benchIndex);
@@ -133,7 +246,7 @@ namespace Warband.Run
 
         public void FieldToBench(int fieldIndex)
         {
-            Require(State.Phase == RunPhase.Shop, "roster moves only in the shop phase");
+            RequireShopActionable();
             Require(State.Bench.Count < _cfg.BenchSlots, "bench is full");
             State.Bench.Add(State.Field[fieldIndex]);
             State.Field.RemoveAt(fieldIndex);
@@ -143,6 +256,7 @@ namespace Warband.Run
         public void LeaveShop()
         {
             Require(State.Phase == RunPhase.Shop, "not in the shop phase");
+            Require(State.PendingSpec == null, "resolve the spec choice before leaving");
             State.SlotOfferPending = false;
             if (State.JustClosedBoss)
             {
@@ -163,13 +277,133 @@ namespace Warband.Run
             State.Phase = RunPhase.Shop;
             State.JustClosedBoss = bossJustClosed;
             State.SlotOfferPending = bossJustClosed && State.FieldSlots < _cfg.MaxFieldSlots;
+            GenerateShop();
+        }
+
+        /// <summary>Roll the shop: frozen offers keep their slots, the rest regenerate.
+        /// Slots 0..HeroSlots-1 are hero cards, the remainder item cards (ADR 0009).</summary>
+        private void GenerateShop()
+        {
+            var rng = RngFor(SaltShop, State.ShopRolls++);
+            int slots = _cfg.HeroSlots + _cfg.ItemSlots;
+            var offers = new List<ShopOffer?>();
+            for (int i = 0; i < slots; i++)
+            {
+                var old = i < State.ShopOffers.Count ? State.ShopOffers[i] : null;
+                if (old != null && old.Frozen) { offers.Add(old); continue; }
+                offers.Add(i < _cfg.HeroSlots ? RollHero(rng) : RollItem(rng));
+            }
+            State.ShopOffers = offers;
+        }
+
+        private ShopOffer? RollHero(Rng rng)
+        {
+            var pool = new List<string>();
+            foreach (var id in _content.HeroPool(State.Act))
+                if (!OwnedAtMaxRank(id)) pool.Add(id);
+            if (pool.Count == 0) return null;
+            return new ShopOffer
+            {
+                Kind = OfferKind.Hero, Id = pool[rng.Next(pool.Count)], Price = _cfg.HeroPrice,
+            };
+        }
+
+        private ShopOffer? RollItem(Rng rng)
+        {
+            // Draw order is fixed (banner roll, then kind, then id) — determinism law.
+            bool tryBanner = rng.Next(100) < _cfg.BannerChancePct;
+            if (tryBanner)
+            {
+                var banners = new List<string>();
+                foreach (var id in _content.BannerPool(State.Act))
+                    if (!State.Banners.Contains(id)) banners.Add(id);
+                if (banners.Count > 0)
+                    return new ShopOffer
+                    {
+                        Kind = OfferKind.Banner, Id = banners[rng.Next(banners.Count)],
+                        Price = _cfg.BannerPrice,
+                    };
+            }
+            var weapons = _content.WeaponPool(State.Act);
+            var trinkets = _content.TrinketPool(State.Act);
+            bool weapon = weapons.Count > 0 && (trinkets.Count == 0 || rng.Next(2) == 0);
+            if (weapon)
+                return new ShopOffer
+                {
+                    Kind = OfferKind.Weapon, Id = weapons[rng.Next(weapons.Count)],
+                    Price = _cfg.WeaponPrice,
+                };
+            if (trinkets.Count == 0) return null;
+            return new ShopOffer
+            {
+                Kind = OfferKind.Trinket, Id = trinkets[rng.Next(trinkets.Count)],
+                Price = _cfg.TrinketPrice,
+            };
+        }
+
+        private void BuyHero(ShopOffer offer)
+        {
+            for (int z = 0; z < 2; z++)
+            {
+                var zone = (RosterZone)z;
+                var list = Zone(zone);
+                for (int i = 0; i < list.Count; i++)
+                    if (list[i].ChassisId == offer.Id)
+                    {
+                        var hero = list[i];
+                        Require(hero.Rank < Rank.S, "chassis already at max rank");
+                        hero.Rank++;
+                        hero.GoldSpent += offer.Price;
+                        var (a, b) = _content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
+                        State.PendingSpec = new PendingSpec
+                        {
+                            Zone = zone, Index = i, ForRank = hero.Rank, OptionA = a, OptionB = b,
+                        };
+                        return;
+                    }
+            }
+            var recruit = new HeroInstance { ChassisId = offer.Id, GoldSpent = offer.Price };
+            if (State.Field.Count < State.FieldSlots) State.Field.Add(recruit);
+            else if (State.Bench.Count < _cfg.BenchSlots) State.Bench.Add(recruit);
+            else throw new InvalidOperationException("no room — field and bench are full");
+        }
+
+        private bool OwnedAtMaxRank(string chassisId) =>
+            State.Field.Concat(State.Bench).Any(h => h.ChassisId == chassisId && h.Rank == Rank.S);
+
+        private List<HeroInstance> Zone(RosterZone zone) =>
+            zone == RosterZone.Field ? State.Field : State.Bench;
+
+        private ShopOffer OfferAt(int index)
+        {
+            Require(index >= 0 && index < State.ShopOffers.Count && State.ShopOffers[index] != null,
+                    "no offer in that slot");
+            return State.ShopOffers[index]!;
+        }
+
+        private int ItemPrice(ItemKind kind) =>
+            kind == ItemKind.Weapon ? _cfg.WeaponPrice : _cfg.TrinketPrice;
+
+        private void RequireShopActionable()
+        {
+            Require(State.Phase == RunPhase.Shop, "only available in the shop phase");
+            Require(State.PendingSpec == null, "resolve the pending spec choice first");
         }
 
         private FightOutcome RunBattle(IReadOnlyList<Hex> placement,
                                        List<(UnitDef Def, Hex Pos)> enemies,
-                                       int pot, int killSharePct)
+                                       int pot, int killSharePct,
+                                       List<string>? enemyBanners = null)
         {
             ValidatePlacement(placement);
+            var teamTriggers = new List<(int Team, Trigger T)>();
+            foreach (var id in State.Banners)
+                foreach (var t in _content.Banner(id).TeamTriggers)
+                    teamTriggers.Add((0, t));
+            if (enemyBanners != null)
+                foreach (var id in enemyBanners)
+                    foreach (var t in _content.Banner(id).TeamTriggers)
+                        teamTriggers.Add((1, t));
             var units = new List<UnitState>();
             for (int i = 0; i < State.Field.Count; i++)
             {
@@ -185,11 +419,14 @@ namespace Warband.Run
                 units.Add(UnitState.Spawn(EnemyIdBase + i, 1, def, pos));
             }
 
-            var result = new Battle(units, seed: Mix(State.Seed, SaltBattle,
-                                    (ulong)State.Act, (ulong)State.NodeIndex)).Run();
+            var result = new Battle(units, teamTriggers,
+                                    seed: Mix(State.Seed, SaltBattle,
+                                              (ulong)State.Act, (ulong)State.NodeIndex)).Run();
 
             int killed = result.Events.Count(e => e.Kind == EventKind.Death && e.Target >= EnemyIdBase);
-            bool won = result.Winner == Winner.Team0;
+            // Draws count as wins (Jake, 2026-07-22): your board wasn't beaten. Applies to
+            // both the boss record and the wager bonus.
+            bool won = result.Winner != Winner.Team1;
 
             for (int i = 0; i < State.Field.Count; i++)
             {
@@ -240,6 +477,7 @@ namespace Warband.Run
                 WinsAtCapture = State.BossWins,
                 LossesAtCapture = State.BossLosses,
             };
+            snap.BannerIds.AddRange(State.Banners);
             for (int i = 0; i < State.Field.Count; i++)
                 snap.Units.Add(new GhostUnit { Hero = State.Field[i].Clone(), Pos = placement[i] });
             State.CapturedGhosts.Add(snap);

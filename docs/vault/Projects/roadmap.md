@@ -16,8 +16,9 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
    a. Act/node skeleton — **DONE 2026-07-22** (`Warband.Run`: RunController state machine,
       act/node maps, ghost-boss fights, best-of-5 record; 19 tests. ADR 0008 architecture:
       pure host-agnostic lib, serializable state, ids-only content).
-   b. Shop stock — SPEC'D (ADR 0006 designed; the shop *tick* + slot offers + bench exist
-      in the skeleton — still to build: hero-card/item offers, reroll, buy/rank-up flow).
+   b. Shop stock — **DONE 2026-07-22** (ADR 0009 built: 3 hero + 2 item offers, free
+      per-offer freeze, dupe→rank-up→fork flow, banners in rotation as team triggers both
+      sides, sell-back 50%, weapon/trinket equip; 12 tests).
    c. Wager mechanics — **DONE 2026-07-22** (ADR 0007 built into skeleton: 3 tiers,
       per-kill payout + tier-scaled success bonus; numbers placeholder).
    d. Bot-ghost generation — SPEC'D (snapshot format + capture built in skeleton; still
@@ -55,11 +56,12 @@ revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fi
 in sim) · per-rank stat scaling · run length target validation (~20-25 min).
 
 ## Done
-- **2026-07-22 — Run-layer design settled + skeleton built (84 tests).** ADR 0006 (shop &
-  economy: every-node shops, 3→6 act-close slot offers, bench 2, gold), ADR 0007 (wager
-  tiers, per-kill payout + success bonus), ADR 0008 (run layer = pure host-agnostic lib).
-  `Warband.Run`: RunController machine — maps, wager fights, events, ghost bosses, record,
-  slot offers, bench, ProgressionFold, snapshot capture; 19 tests.
+- **2026-07-22 — Run-layer design settled + skeleton & shop built (97 tests).** ADR 0006
+  (shop & economy: every-node shops, 3→6 act-close slot offers, bench 2, gold), ADR 0007
+  (wager tiers, per-kill payout + success bonus), ADR 0008 (run layer = pure host-agnostic
+  lib), ADR 0009 (shop stock: offers/freeze/forks/banners/sell). `Warband.Run`:
+  RunController machine — maps, wager fights, events, ghost bosses (draws = wins), record,
+  slot offers, bench, shop stock, ProgressionFold, snapshot capture (incl. banners); 32 tests.
 - **2026-07-22 — Design foundation.** Pitch v0.3; ADR 0001 (identity + anti-washout
   contract); ADR 0002 (best-of-5, wagering, anti-snowball); ADR 0003 (combat soul: clock +
   field, glyphs on flat maps); ADR 0004 (sim framework); ADR 0005 (loadout composition,

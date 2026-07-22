@@ -22,6 +22,16 @@ namespace Warband.Run
         public int[] TierKillSharePct = { 70, 50, 30 };      // pot % paid per-kill; rest is the win bonus
                                                              // (greed shifts weight to on-win — ADR 0007 §5)
 
+        public int HeroSlots = 3;                // shop layout (ADR 0009): 3 hero cards…
+        public int ItemSlots = 2;                // …+ 2 item cards per tick
+        public int HeroPrice = 3;                // flat v1; a dupe costs the same as the card
+        public int WeaponPrice = 3;
+        public int TrinketPrice = 2;
+        public int BannerPrice = 6;
+        public int RerollCost = 1;               // flat (ADR 0006)
+        public int BannerChancePct = 25;         // per item slot, banner instead of an item
+        public int SellPct = 50;                 // sell-back refund (ADR 0009)
+
         public int BaseIncome(int act) => BaseIncomeByAct[act - 1];
         public int Pot(int act, FightTier tier) => PotBaseByAct[act - 1] * TierPotPct[(int)tier] / 100;
         public int SlotCost(int slotsBought) => SlotCosts[slotsBought];

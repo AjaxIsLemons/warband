@@ -293,6 +293,21 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
+        public void DrawnBossFightCountsAsAWin()
+        {
+            // 1 hero vs 1 identical ghost, adjacent across the midline: the sim's proven
+            // mutual-KO draw. Your board wasn't beaten — the record credits a win.
+            var content = new StubContent { GhostPos = Hex.FromRowCol(3, 2) };
+            var run = NewRun(content: content, heroes: 1);
+            DriveToBoss(run);
+            var o = run.ResolveBoss(new List<Hex> { Hex.FromRowCol(3, 2) });
+            Assert.Equal(Winner.Draw, o.Battle.Winner);
+            Assert.True(o.Won);
+            Assert.Equal(1, run.State.BossWins);
+            Assert.Equal(0, run.State.BossLosses);
+        }
+
+        [Fact]
         public void BossCapturesGhostSnapshotOfTheBoardGoingIn()
         {
             var run = NewRun();

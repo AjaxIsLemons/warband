@@ -27,6 +27,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   per-kill payout + tier-scaled success bonus, no staked gold.
 - [Decisions/0008-run-layer-architecture.md](Decisions/0008-run-layer-architecture.md) — run layer =
   pure host-agnostic lib; serializable state, ids-only content, stateless rng; hosting deferred.
+- [Decisions/0009-shop-stock.md](Decisions/0009-shop-stock.md) — 3 hero + 2 item offers, per-offer
+  freeze, dupe→rank-up forks, banners in rotation (team triggers), 50% sell-back.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,

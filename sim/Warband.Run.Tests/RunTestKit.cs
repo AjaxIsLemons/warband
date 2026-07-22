@@ -13,6 +13,7 @@ namespace Warband.Run.Tests
         public int MonsterHp = 40;
         public int MonsterAttack = 4;
         public bool WeakBoss = true;             // weak ghost = player wins bosses by default
+        public Hex GhostPos = Hex.FromRowCol(0, 2);   // owner-half coords, mirrored at fight time
 
         public ChassisDef Chassis(string id) => new ChassisDef
         {
@@ -25,6 +26,40 @@ namespace Warband.Run.Tests
         public WeaponDef Weapon(string id) => new WeaponDef { Name = id, Damage = 20, Interval = 10, Range = 1 };
         public TrinketDef Trinket(string id) => new TrinketDef { Name = id, HpBonus = 20 };
         public SpecNode Node(string id) => new SpecNode { Name = id, HpBonus = 10 };
+
+        public BannerDef Banner(string id) => new BannerDef
+        {
+            Name = id,
+            TeamTriggers =
+            {
+                new Trigger
+                {
+                    On = EventKind.BattleStart,
+                    Do =
+                    {
+                        new EffectDef
+                        {
+                            Kind = EffectKind.GrantShield, Amount = 30,
+                            Select = new Selector { Kind = SelKind.AlliesWithin, Range = 99 },
+                        },
+                    },
+                },
+            },
+        };
+
+        public List<string> Heroes = new List<string>
+            { "hero0", "hero1", "hero2", "alpha", "beta", "gamma", "delta", "epsilon" };
+        public List<string> Weapons = new List<string> { "blade", "bow" };
+        public List<string> Trinkets = new List<string> { "charm" };
+        public List<string> Banners = new List<string> { "warbanner" };
+
+        public IReadOnlyList<string> HeroPool(int act) => Heroes;
+        public IReadOnlyList<string> WeaponPool(int act) => Weapons;
+        public IReadOnlyList<string> TrinketPool(int act) => Trinkets;
+        public IReadOnlyList<string> BannerPool(int act) => Banners;
+
+        public (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId) =>
+            ($"{pathId ?? chassisId}-{rank}-a", $"{pathId ?? chassisId}-{rank}-b");
 
         public Func<int, int, FightTier, Rng, List<(UnitDef, Hex)>>? EncounterOverride;
 
@@ -45,11 +80,14 @@ namespace Warband.Run.Tests
             return list;
         }
 
+        public List<string> GhostBanners = new List<string>();
+
         public GhostSnapshot BossGhost(int act, int bossWins, Rng rng)
         {
             var hero = new HeroInstance { ChassisId = WeakBoss ? "ghost-weak" : "ghost" };
             var snap = new GhostSnapshot { Act = act };
-            snap.Units.Add(new GhostUnit { Hero = hero, Pos = Hex.FromRowCol(0, 2) });
+            snap.BannerIds.AddRange(GhostBanners);
+            snap.Units.Add(new GhostUnit { Hero = hero, Pos = GhostPos });
             if (!WeakBoss)
             {
                 snap.Units.Add(new GhostUnit
