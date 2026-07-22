@@ -472,10 +472,34 @@ namespace Warband.Sim
                     if (eff.Field != null)
                         AddField(eff.Field, target.Pos, owner.Id, owner.Team);
                 }
+                else if (eff.Kind == EffectKind.Leap)
+                {
+                    LeapTo(owner, target);
+                }
                 else
                 {
                     ApplyToTarget(owner.Id, target, eff, cause, depth, root);
                 }
+            }
+        }
+
+        /// <summary>Teleport the leaper to the first free in-bounds hex adjacent to the
+        /// target (fixed direction order = deterministic); drop its sticky target so it
+        /// re-acquires nearest from the new position. No free hex = no leap.</summary>
+        private void LeapTo(UnitState leaper, UnitState target)
+        {
+            var occupied = new HashSet<Hex>(_units.Where(x => x.Alive).Select(x => x.Pos));
+            foreach (var f in _fields)
+                if (f.Def.IsWall)
+                    occupied.UnionWith(HexesOf(f));
+            for (int d = 0; d < 6; d++)
+            {
+                Hex n = target.Pos.Neighbor(d);
+                if (!InBounds(n) || occupied.Contains(n)) continue;
+                leaper.Pos = n;
+                leaper.TargetId = -1;
+                Emit(new BattleEvent { Kind = EventKind.Move, Source = leaper.Id, Amount = n.Q, Aux = n.R });
+                return;
             }
         }
 
@@ -518,6 +542,17 @@ namespace Warband.Sim
                         {
                             int d = Hex.Distance(owner.Pos, u.Pos);
                             if (d < bestDist) { bestDist = d; best = u; }
+                        }
+                    AddIf(best); break;
+                }
+                case SelKind.FarthestEnemy:
+                {
+                    UnitState? best = null; int bestDist = -1;
+                    foreach (var u in _units)
+                        if (u.Alive && u.Team != owner.Team)
+                        {
+                            int d = Hex.Distance(owner.Pos, u.Pos);
+                            if (d > bestDist) { bestDist = d; best = u; }
                         }
                     AddIf(best); break;
                 }

@@ -30,7 +30,7 @@ namespace Warband.Sim
     public enum SelKind
     {
         Self, EventSource, EventTarget, CurrentTarget,
-        NearestEnemy, LowestHpAlly, AlliesWithin, EnemiesWithin,
+        NearestEnemy, FarthestEnemy, LowestHpAlly, AlliesWithin, EnemiesWithin,
     }
 
     public sealed class Selector
@@ -40,7 +40,10 @@ namespace Warband.Sim
         public bool ExcludeSelf;
     }
 
-    public enum EffectKind { Damage, Heal, ApplyStatus, GrantShield, GrantMana, CreateField }
+    // Leap: the OWNER moves to a free hex adjacent to the selected target, drops its
+    // sticky target, and fights like a normal unit from there (round 10: backline access
+    // is a passive, not a targeting rule).
+    public enum EffectKind { Damage, Heal, ApplyStatus, GrantShield, GrantMana, CreateField, Leap }
 
     public sealed class EffectDef
     {

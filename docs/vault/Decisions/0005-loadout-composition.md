@@ -38,12 +38,13 @@ item/tree design can iterate forever without touching the engine or its guardrai
   (circuit's evolution model). No effect-graph surgery in the engine.
 - Per-rank chassis stat scaling = a table on the chassis (content, later).
 
-## Remaining sim-level gaps (the honest list, build order)
-1. **Attack shapes** on auto-attacks (cleave/pierce/splash) — weapons need them.
-2. **Displacement effects** (Push/Pull/Leap as EffectKinds) + **collision** hooks
-   (into wall/unit → damage/stun) — Shade's chassis needs Leap.
-3. **Targeting-rule overrides** (nearest is hardwired; Sniper wants farthest,
-   assassin wants backline) — enum on UnitDef.
+## Remaining sim-level gaps — re-scoped round 10 (Jake)
+1. **Attack shapes** — DEFERRED to the weapons design pass ("less worried for now").
+2. **Displacement (Push/Pull/collisions)** — DEFERRED, nice-to-have. **Leap is BUILT**
+   (effect: owner teleports adjacent to selected target, drops sticky target, fights
+   normally — backline access is a passive, not a targeting rule).
+3. **Targeting** — SETTLED as-is: TFT-simple, nearest-in-range + sticky. No override
+   system. "Simple rules for now."
 4. **Board bounds** — clamp to 6×8. DECIDED round 10, build now.
 5. **In-combat RNG** — DECIDED round 10: **crit only** (chance% + multiplier on the
    attack profile; auto-attacks roll, abilities don't for now), plus an `IsCrit` trigger
