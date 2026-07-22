@@ -9,6 +9,19 @@ spec trees. Unity client, pure C# deterministic sim.
 - Read `Design/pitch.md` + `Decisions/0001-identity-and-anti-washout-contract.md` before any
   non-trivial design or build work.
 
+## Planning SOP — "ok, what's next?"
+**`docs/vault/Projects/roadmap.md` is the ONLY live priority list.** When Jake opens a
+session and asks what's next, the answer comes from the board, never from memory:
+1. Read the roadmap. "What's next" = the topmost unblocked item, respecting its stage.
+2. **Stages:** `DESIGN` = needs a Jake conversation — don't build it, drive the discussion
+   with concrete proposals and record outcomes as ADRs, then flip it to SPEC'D.
+   `SPEC'D` = build autonomously. `BUILD` = in progress — finish before starting anything
+   new. `VERIFY` = needs tests/verification/polish. `DONE` = move to Done with a date.
+3. **Update the board as you work** — stage flips when state changes, finished work moves
+   to Done, new discoveries become items (Deferred/Open-questions if not now). Session end
+   with a stale board = failed session hygiene.
+4. Never invent roadmap priorities without Jake; the Deferred list is "explicitly not now."
+
 ## ⚠ Content doctrine (Jake, 2026-07-22 — read before touching content)
 **ALL current content is PLACEHOLDER.** Roster kits, numbers, status magnitudes, the viewer's
 sample armies — they exist to exercise SYSTEMS, not to be tuned. We are in the

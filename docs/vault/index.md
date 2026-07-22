@@ -23,6 +23,7 @@ Read this first. One line per page; open only what's relevant. Update on every a
   composed loadouts (sim never sees them), remaining sim gaps, PLACEHOLDER-content doctrine.
 
 ## Projects
-- [Projects/first-playable.md](Projects/first-playable.md) — content budget, build order, open questions.
+- [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
+  open questions, done log. Sessions plan from here (CLAUDE.md Planning SOP).
 
 *(Daily/ and Bugs/ get created when first needed.)*
