@@ -25,8 +25,9 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
       Bulwark SETTLED (dive #2 — Taunt promoted to sim vocab) · Shade SETTLED (dive #3 —
       A-fork late-bloomer, Phase status, targeting law → ADR 0013) · Sharpshot SETTLED
       (dive #4 — auto-scaling Volleyer, payload-split fork, muskets debut) · Pyromancer
-      SETTLED (dive #5 — Burn decay law → sim vocab, staves debut) · Berserker PROPOSED
-      (dive #6 — feeds-him vs hits-them) · then Phalanx/Banneret.
+      SETTLED (dive #5 — Burn decay law → sim vocab, staves debut) · Berserker SETTLED
+      (dive #6 — cheat-death approved as mechanic class, greataxes debut) · Phalanx
+      PROPOSED (dive #7 — hold-yours vs break-theirs, Counter law) · then Banneret.
    d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).

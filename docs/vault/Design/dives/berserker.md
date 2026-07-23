@@ -1,14 +1,15 @@
-# Deep dive #6 — Berserker (v0.1 PROPOSAL, 2026-07-23)
+# Deep dive #6 — Berserker (v1.0 SETTLED, 2026-07-23)
 
-Status: **PROPOSED.** From roster.md draft (melee r1; attack speed rises as HP falls;
-Frenzy → Bloodreaver lifesteal | Rampager cleave) + ADR 0011 template. **Resolves the
+Status: **SETTLED** (Jake: full web blessed as proposed — **including Deathless:
+cheat-death approved as a new mechanic class**, once-per-fight bounded). Champion
+working name adopted: **Ulfrik, Who Burns His Hours** (Viking Age). **Resolves the
 audit's fork-law "verify" flag:** Bloodreaver is a genuine **ADD** (melee dps + drain
 bruiser — sustain becomes a second hat), Rampager DEEPENs into AoE dps. Law satisfied,
 no exception needed. Fork timing: B default (no late-bloom rationale). Frenzy specced as
 a **next-N-swings window — 3rd vote for the charge-status shape** (Volley window,
 Rolling Fire); it's load-bearing across three kits now.
 
-## The kit (proposed)
+## The kit
 
 **Identity: the engine that runs hotter as it breaks.**
 Fork question: **does the frenzy feed HIM (Bloodreaver) or hit THEM (Rampager)?**
@@ -69,9 +70,8 @@ StatRule (Burning Hours — sibling of Full Draw's target-distance input) · Lif
 (Deathless — NEW mechanic class, needs Jake's explicit yes)** · window-extend-on-kill
 (Red Harvest — killer-attribution 3rd vote) · overheal→Shield conversion (Crimson Tide) ·
 self-damage-amp rider (Reckless Swing) · full-ring finisher cleave (Aftershock).
+Deathless approved by Jake → cheat-death is now sanctioned sim vocabulary.
 
-## Open (for Jake)
-Bless the fork frame (feeds-him vs hits-them) + Frenzy as an instant-swing window ·
-**Deathless: do we want cheat-death in this game at all?** (it's a new mechanic class,
-not just a node — easy to redraw if no) · the four A/S pairs · greataxes + daggers as
-specializations · champion name (floating: **Ulfrik, Who Burns His Hours**, Viking Age).
+## Open
+None at design level. Magnitudes (N swings, Z% lifesteal, cleave %) placeholder until
+sweep/playtest.
