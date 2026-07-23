@@ -17,11 +17,12 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
    run, and can wear different hats.**):
    a. **Theme/lore frame** — **DONE 2026-07-22** (ADR 0010: The Last Hour — dying
       multiverse + Tower, binding laws, class/champion split; Design/theme.md).
-   b. **Spec-tree impact model** — the deep-dive template: fork "hat check", node
-      magnitude bands, per-rank scaling, passives vocabulary — **DESIGN** (proposal made,
-      awaiting Jake's reaction; becomes ADR 0011).
+   b. **Spec-tree impact model** — **DONE 2026-07-22** (ADR 0011: archetype algebra,
+      ADD/SWAP/DEEPEN fork law w/ exceptions, C/B/A/S ladder, variable fork timing,
+      wardrobe test; roster audited — Shade/Sharpshot flagged).
    c. **Hero deep dives ×8** — one dedicated pass per class w/ Jake, from roster.md
-      drafts; each dive shapes its starter weapon + names its era champion — **DESIGN**.
+      drafts + ADR 0011 template; each dive shapes its starter weapon + names its era
+      champion — **DESIGN**. Next up: **Cleric** (dive #1).
    d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).

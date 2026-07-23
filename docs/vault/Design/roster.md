@@ -47,3 +47,10 @@ the event→trigger→effect grammar covers all of it.
 ❓ Open reactions wanted: which chassis feel wrong/missing? (No wall-summoner, dedicated
 displacer, or debuffer in v1 — deliberate scope cuts; the wall-summoner Jake likes is the
 strongest 9th-hero / post-v1 candidate.)
+
+## Template audit (ADR 0011, 2026-07-22 — input for the dives)
+Fork law (≥1 path per class must ADD/SWAP an archetype): Bulwark ✓ (+disruptor|+support) ·
+Cleric ✓ (+melee dps|+ground support) · Pyromancer ✓ (area denial|burst swap) · Phalanx ✓ ·
+Berserker ~ (sustain|cleave — verify in dive) · **Shade ✗ and Sharpshot ✗ double-DEEPEN**
+(specialist-exception candidates or path rework) · **Banneret ~lean**. Fork timing: B
+default; late-bloomer candidates Pyromancer, Shade.
