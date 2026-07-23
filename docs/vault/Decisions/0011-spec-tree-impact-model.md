@@ -42,6 +42,10 @@ may be less interesting than at A") resolved with bounded variance.
 - **Complementary verbs principle:** a chassis's auto and signature should cover different
   jobs (heal-auto ⇒ damage signature, and vice versa) so wardrobe swaps pivot the unit
   rather than stack one axis.
+- **Explicit-language law (Jake):** node text is mechanically explicit — name the target,
+  the effect, and whether states are applied or consumed. "Scorches" is flavor; "deals X%
+  as damage, applies no stacks" is design. Stack semantics are always stated (additive =
+  harder per second, not longer — sim's stacking model).
 
 ## Consequences
 - Roster audit under the fork law: Bulwark ✓, Cleric ✓, Pyromancer ✓, Phalanx ✓ — but

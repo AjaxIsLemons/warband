@@ -24,15 +24,24 @@ or retreat to the back.
 
 ## A/S riffs (verb-rider grammar; awaiting Jake)
 
-- **War-Priest A:** auto-rider — *her swings scorch the nearest Burning enemy for X% of the
-  amount dealt or healed* | sig-rider — *enemies killed while Burning spread their stacks*.
-- **War-Priest S:** sig — **Conflagration**: Pyre detonates all Burn stacks in radius |
-  auto — **Undying Zeal**: while any enemy Burns, she gains attack speed and her swings
-  also heal her.
-- **Lifebinder A:** sig-rider — *pulse leaves healing ground* | auto-rider — *every 3rd
-  censer swing grants its target brief Haste*.
-- **Lifebinder S:** sig — **Great Chorus**: pulse centers on the TWO lowest allies | sig —
-  **Sanctuary**: pulsed allies also gain Shield.
+(Language law, Jake 2026-07-22: node text is mechanically explicit — name the target, the
+effect, and whether states are applied or consumed.)
+
+- **War-Priest A:** **Scorched Mercy** auto-rider — *her swings also deal X% of the amount
+  dealt or healed as bonus damage to the nearest Burning enemy (damage only; applies no
+  stacks)* | **Contagion** sig-rider — *an enemy that dies while Burning passes its
+  remaining Burn stacks to the nearest enemy; stacks add, so the recipient burns HARDER
+  per second, not longer*.
+- **War-Priest S:** **Conflagration** sig — *casting the Pyre detonates: every Burning
+  enemy in radius takes its remaining Burn damage instantly (stacks consumed), then the
+  fresh Pyre re-applies Burn* | **Undying Zeal** auto — *while any enemy Burns, she gains
+  attack speed and her swings also heal her*.
+- **Lifebinder A:** **Lingering Grace** sig-rider — *the pulse leaves healing ground for Y
+  seconds* | **Chorus** auto-rider — *every 3rd swing, ANY weapon: brief Haste to the
+  target if ally, brief Slow if enemy (weapon-agnostic per the rider law)*.
+- **Lifebinder S:** **Great Chorus** sig — *the pulse fires twice, one instance centered on
+  each of the two lowest-HP allies (with Lingering Grace: two healing grounds)* | **Sanctuary**
+  sig — *pulsed allies also gain Shield*.
 
 ## The build web (A × S braid — visual: claude.ai artifact "Cleric — Choice Web")
 War-Priest: Scorched+Conflagration = **Slow Fuse** · Scorched+Zeal = **The Zealot** ✦ ·
