@@ -13,7 +13,8 @@ or retreat to the back.
 - **C — recruit** *(healer + melee dps hybrid)*. Starter weapon: **Censer** (r3 heal-auto —
   swings heal the lowest-HP ally). Signature: **Sanctified Pyre** — AoE holy fire around
   HERSELF: damages enemies, heals allies in the radius. Weapon specializations: censer +
-  staff. Innate: OPEN (candidate: overflow — heals on full-HP targets splash to next-lowest).
+  staff. Innate (settled): **Mercy Aura** — allies within 2 hexes Regen X/s (placement-
+  based; attached-aura + Regen, expressible today; numbers placeholder).
 - **B — War-Priest** *(DEEPEN the bruiser)*: Pyre radius grows and applies **Burn** stacks.
   Adds mace specialization (fork extends the wardrobe, ADR 0012).
 - **B — Lifebinder** *(SWAP to backline: healer + support)*: Pyre becomes a **remote pulse
@@ -52,5 +53,5 @@ Ally-targeting autos (ADR 0012, logged) · self/target-centered instant pulse �
 expressible via existing field-centered-on-resolved-target pattern; verify at content time.
 
 ## Open
-Innate choice · A/S picks from the riffs above · champion name (floating: *Sister Maren of
-the Waning Bell*, Plague Medieval) · exact numbers = placeholder doctrine, sweep/playtest.
+A/S picks from the riffs above · champion name (floating: *Sister Maren of the Waning
+Bell*, Plague Medieval) · exact numbers = placeholder doctrine, sweep/playtest.
