@@ -21,8 +21,9 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
       ADD/SWAP/DEEPEN fork law w/ exceptions, C/B/A/S ladder, variable fork timing,
       wardrobe test; roster audited — Shade/Sharpshot flagged).
    c. **Hero deep dives ×8** — one dedicated pass per class w/ Jake, from roster.md
-      drafts + ADR 0011 template; each dive shapes its starter weapon + names its era
-      champion — **DESIGN**. Next up: **Cleric** (dive #1).
+      drafts + ADR 0011 template — **DESIGN, 1/8 done**: Cleric SETTLED (dive #1,
+      Design/dives/cleric.md) · Bulwark PROPOSED (dive #2, Design/dives/bulwark.md) ·
+      then Shade (specialist-exception + late-bloomer stress test), 5 more after.
    d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).

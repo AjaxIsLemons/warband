@@ -1,8 +1,10 @@
-# Deep dive #1 — Cleric (v0.2, 2026-07-22)
+# Deep dive #1 — Cleric (v1.0 SETTLED, 2026-07-22)
 
-Status: **IN PROGRESS** — spine settled with Jake (kit inversion, both forks, verb grammar);
-A/S nodes are riffs awaiting reaction. Template: ADR 0011 (+ same-day amendment born here);
-weapons: ADR 0012.
+Status: **SETTLED** — full web blessed by Jake (explicit-language pass included; Contagion =
+harder-not-longer, Conflagration = consume-and-detonate approved). Champion working name
+adopted: **Sister Maren of the Waning Bell** (Plague Medieval). Numbers remain placeholder
+per content doctrine. Template: ADR 0011 (+ amendments born here); weapons: ADR 0012.
+Visual: claude.ai artifact "Cleric — Choice Web".
 
 ## The kit (settled spine)
 
@@ -69,5 +71,5 @@ Ally-targeting autos (ADR 0012, logged) · self/target-centered instant pulse �
 expressible via existing field-centered-on-resolved-target pattern; verify at content time.
 
 ## Open
-A/S picks from the riffs above · champion name (floating: *Sister Maren of the Waning
-Bell*, Plague Medieval) · exact numbers = placeholder doctrine, sweep/playtest.
+None at design level. Numbers = placeholder doctrine (sweep/playtest). Sim gaps logged
+above + "every Nth swing" rider counter (Chorus needs it).
