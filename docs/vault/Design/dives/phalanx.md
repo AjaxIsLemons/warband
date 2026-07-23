@@ -41,9 +41,9 @@ Fork question: **does the spear hold YOUR line (Pikewall) or break THEIRS (Lance
   [COUNTER] — *his Counters briefly Disarm whoever they strike (existing status — the
   sword knocked aside; under the directional law that can be a frontliner eating an
   archer's riposte)*.
-- **Pikewall S:** **The Unbroken Line** [AURA] — *adjacent allies gain his Riposte:
-  the first attack against each of them is answered by Phalanx (directional law,
-  swung from HIS hex); recharges on his cast* | **Give No Ground** [STATUS] — *while
+- **Pikewall S:** **The Unbroken Line** [MUSTER] — *allies PLACED adjacent to him gain
+  his Riposte for the fight (ADR 0014): the first attack against each of them is
+  answered by Phalanx (directional law, swung from HIS hex); recharges on his cast* | **Give No Ground** [STATUS] — *while
   at least one enemy is Taunted by him, he takes X% less damage (taunted-by-owner
   condition — 2nd vote w/ Bulwark)*.
 - **Lancer A:** **Overreach** [AUTO] — *his swings also hit the hex directly behind
@@ -71,8 +71,8 @@ r4 reach means his directional riposte answers even the archers in kind (all ans
 no wall bulk).
 
 ## Banner hooks
-- Formation banners (*"allies adjacent to an ally gain X"*) — his lifestyle; the
-  placement-legible phalanx comp.
+- Formation banners (*"allies PLACED adjacent to an ally gain X"* — muster-snapshot per
+  ADR 0014) — his lifestyle; the placement-legible phalanx comp.
 - Anti-dive family (*"when an enemy Leaps: X"* — heroes.md's banner space) — Pikewall
   is the payoff piece; pairs with the Leap-stun banner texture from Shade's dive.
 - Taunt banners (with Bulwark — the two Taunt owners make a lockdown comp).

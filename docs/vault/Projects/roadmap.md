@@ -28,7 +28,8 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
       SETTLED (dive #5 — Burn decay law → sim vocab, staves debut) · Berserker SETTLED
       (dive #6 — cheat-death approved as mechanic class, greataxes debut) · Phalanx
       SETTLED (dive #7 — directional Counter law, Leap-Taunt r2) · Banneret PROPOSED
-      (dive #8 — THE LAST ONE: protect-the-line vs lead-the-charge).
+      v0.2 (dive #8 — THE LAST ONE: protect-the-line vs lead-the-charge; **ADR 0014
+      aura/muster law** locked out of this dive: muster for states, live for casts).
    d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
