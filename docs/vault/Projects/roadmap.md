@@ -15,11 +15,14 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 1. **DESIGN CAMPAIGN** (Jake, 2026-07-22: depth before any playtest talk; reordered
    hero-first same day. **THE BAR: every class can be brought, feels different run to
    run, and can wear different hats.**):
-   a. **Spec-tree impact model** — the deep-dive template: fork "hat check", node
-      magnitude bands, per-rank scaling, passives vocabulary — **DESIGN** (proposal made).
-   b. **Hero deep dives ×8** — one dedicated pass per hero w/ Jake, starting from
-      roster.md drafts; each dive shapes its starter weapon — **DESIGN**.
-   c. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
+   a. **Theme/lore frame** — **DONE 2026-07-22** (ADR 0010: The Last Hour — dying
+      multiverse + Tower, binding laws, class/champion split; Design/theme.md).
+   b. **Spec-tree impact model** — the deep-dive template: fork "hat check", node
+      magnitude bands, per-rank scaling, passives vocabulary — **DESIGN** (proposal made,
+      awaiting Jake's reaction; becomes ADR 0011).
+   c. **Hero deep dives ×8** — one dedicated pass per class w/ Jake, from roster.md
+      drafts; each dive shapes its starter weapon + names its era champion — **DESIGN**.
+   d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
 2. **Real content pass** — the 8 designed heroes + weapons through the composer + real

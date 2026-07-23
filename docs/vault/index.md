@@ -10,8 +10,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Design/sim-framework.md](Design/sim-framework.md) — sim architecture: content atom, cascade semantics, fields, determinism, metrics.
 - [Design/render-contract.md](Design/render-contract.md) — how the client is guaranteed accurate: tick=100ms, bars set from absolutes, fold-as-view-model.
 
-- [Design/sauce.md](Design/sauce.md) — WORKING: class-identity sauce noodling — doctrine slots,
-  elite specs, hero fusion one-pagers; parked axes. Nothing decided.
+- [Design/sauce.md](Design/sauce.md) — PARKED: class-identity sauce noodling (two rounds cold);
+  superseded by the "wears different hats" quality bar.
+- [Design/theme.md](Design/theme.md) — THE LAST HOUR: dying multiverse + Tower frame, binding
+  laws, mechanics↔fiction map, class/champion split, era-spread champion riffs.
 
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
@@ -32,6 +34,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   pure host-agnostic lib; serializable state, ids-only content, stateless rng; hosting deferred.
 - [Decisions/0009-shop-stock.md](Decisions/0009-shop-stock.md) — 3 hero + 2 item offers, per-offer
   freeze, dupe→rank-up forks, banners in rotation (team triggers), 50% sell-back.
+- [Decisions/0010-theme-last-hour.md](Decisions/0010-theme-last-hour.md) — theme: The Last Hour
+  frame, three binding laws, class/champion naming split; flavor-name candidates pending.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
