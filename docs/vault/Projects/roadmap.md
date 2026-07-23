@@ -20,18 +20,17 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
    b. **Spec-tree impact model** — **DONE 2026-07-22** (ADR 0011: archetype algebra,
       ADD/SWAP/DEEPEN fork law w/ exceptions, C/B/A/S ladder, variable fork timing,
       wardrobe test; roster audited — Shade/Sharpshot flagged).
-   c. **Hero deep dives ×8** — one dedicated pass per class w/ Jake, from roster.md
-      drafts + ADR 0011 template — **DESIGN, 4/8 done**: Cleric SETTLED (dive #1) ·
-      Bulwark SETTLED (dive #2 — Taunt promoted to sim vocab) · Shade SETTLED (dive #3 —
-      A-fork late-bloomer, Phase status, targeting law → ADR 0013) · Sharpshot SETTLED
-      (dive #4 — auto-scaling Volleyer, payload-split fork, muskets debut) · Pyromancer
-      SETTLED (dive #5 — Burn decay law → sim vocab, staves debut) · Berserker SETTLED
-      (dive #6 — cheat-death approved as mechanic class, greataxes debut) · Phalanx
-      SETTLED (dive #7 — directional Counter law, Leap-Taunt r2) · Banneret PROPOSED
-      v0.2 (dive #8 — THE LAST ONE: protect-the-line vs lead-the-charge; **ADR 0014
-      aura/muster law** locked out of this dive: muster for states, live for casts).
-   d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
-      two proves what's needed — **DESIGN**.
+   c. **Hero deep dives ×8** — **DONE 2026-07-23, 8/8 SETTLED**: Cleric · Bulwark
+      (Taunt → sim vocab) · Shade (late-bloomer, Phase, ADR 0013 targeting) · Sharpshot
+      (auto-scaling Volleyer, muskets) · Pyromancer (Burn decay law → sim vocab, staves)
+      · Berserker (cheat-death approved, greataxes) · Phalanx (directional Counter law,
+      pikes) · Banneret (ADR 0014 muster law + the Company, dread captain, Bearer =
+      first cross-layer node, standards/sabres). All 8 champions named. Sim backlog
+      accumulated in Daily/2026-07-23 — becomes the build queue.
+   d. **Weapons/itemization pass** — full categories + attack shapes — **DESIGN,
+      NOW THE TOP ITEM**: 10 categories debuted across dives (censer, tower shield,
+      daggers, bows, muskets, staves, greataxes, pikes, standards, sabres) vs ~12-item
+      first-playable cap — the squeeze is the first conversation.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
 2. **Real content pass** — the 8 designed heroes + weapons through the composer + real
    IRunContent (supersedes "placeholder content pass"; waits on campaign) — blocked by 1.

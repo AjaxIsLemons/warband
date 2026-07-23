@@ -1,18 +1,18 @@
-# Deep dive #8 — Banneret (v0.2 PROPOSAL, 2026-07-23) — THE LAST DIVE
+# Deep dive #8 — Banneret (v1.0 SETTLED, 2026-07-23) — THE LAST DIVE
 
-Status: **PROPOSED** (v0.2 — reworked onto **ADR 0014**, the aura/muster law this dive
-gave birth to: muster for states, live range for moments). **The Company**: allies
-placed adjacent to him at muster are "under the banner" for the fight — his permanent
-effects follow them wherever they drift; his casts read live geometry, sized honestly.
-Audit's "~lean" resolved: Warcaller reworked into the **fighting captain** (support +
-melee dps ADD — the Cleric/War-Priest move). Alt kept warm: the **dread captain**
-(support + disruptor — Rally doubles as a war-shout slowing nearby enemies' swings).
-Fork timing: B default. **First consumer of mana-grant** (v1 vocabulary since day 1).
+Status: **SETTLED** (Jake's calls: **dread captain over fighting captain** — Warcaller's
+ADD is disruptor, not dps · **Bearer of the Mark APPROVED** — the first cross-layer
+node, precedent deliberately set · **ally-facing cheat-death REJECTED** — The Colors Do
+Not Fall cut; cheat-death stays Berserker-exclusive · freed slots lean TEMPO per Jake:
+more allied haste + a global-haste crown). Champion working name adopted: **Capitana
+Vespera, Banner of the Turning Age** (Renaissance). Born from this dive: **ADR 0014**
+(muster for states, live for casts) and **the Company**. Fork law: ✓ — Herald DEEPENs
+support, Warcaller ADDs disruptor. **First consumer of mana-grant.**
 
-## The kit (proposed)
+## The kit
 
 **Identity: the warband's soul — you don't place him, you muster around him.**
-Fork question: **does the banner protect the line (Herald) or lead the charge
+Fork question: **does the banner steady YOUR line (Herald) or shake THEIRS
 (Warcaller)?**
 
 - **C — recruit** *(support)*. Starter: **Company Standard** (r1, light swings — the
@@ -23,70 +23,69 @@ Fork question: **does the banner protect the line (Herald) or lead the charge
   0014). Specializations: standards + sabres.
 - **B — Herald** *(DEEPEN support — the shieldward)*: *Rally also Shields each
   recipient.* The banner that keeps the line standing.
-- **B — Warcaller** *(ADD melee dps — the fighting captain)*: *Rally becomes a
-  war-cry: it reaches every ally on his current ROW, grants AttackUp alongside the
-  mana — and includes HIMSELF.* The captain whose own sabre work becomes real damage
-  as he drums the company forward.
+- **B — Warcaller** *(ADD disruptor — the dread captain)*: *Rally is also a
+  war-shout: enemies within 2 hexes of him swing X% slower for a few seconds* (live,
+  enemy-facing — ADR 0014 clause 3). One cast fights the tempo war both ways: your
+  side surges, theirs staggers.
 
 ## A/S web (verb-riders, explicit)
 
 - **Herald A:** **Steady the Line** [MUSTER] — *his Company also gains X% damage
   reduction* | **Second Wind** [SIG] — *allies below half HP receive double Rally
   (mana AND Shield — the triage rider, target-below-HP condition reused)*.
-- **Herald S:** **The Colors Do Not Fall** [MUSTER] — *once per fight, the first
-  Company member who would die instead drops to 1 HP and gains a big Shield (the
-  banner catches them — ally-facing extension of the Deathless cheat-death class)* |
-  **The Wide Banner** [MUSTER+CAST] — *his muster reach AND Rally radius grow by 1
-  (Company = placed within 2; Rally = live r3 — the whole field hears him)*.
-- **Warcaller A:** **Lead From the Front** [AUTO, live] — *his swings deal +X% while
-  adjacent to 2+ allies (self-measured press-of-bodies — stays live per ADR 0014
-  clause 3)* | **Drumbeat** [SIG] — *Rallied allies' next 3 swings come Y% faster
-  (the next-N-swings status GRANTED cross-unit — 4th vote for the shape)*.
+- **Herald S:** **The Quickening** [MUSTER] — *Standard-Bearer's haste is doubled for
+  his Company (intensity — the few, faster)* | **The Wide Banner** [MUSTER+CAST] —
+  *his muster reach AND Rally radius grow by 1 (breadth — Company = placed within 2,
+  Rally live r3)*.
+- **Warcaller A:** **Drumbeat** [SIG] — *Rallied allies' next 3 swings come Y% faster
+  (the next-N-swings status GRANTED cross-unit — 4th vote for the shape)* | **Dread
+  Presence** [AURA, live] — *enemies adjacent to him swing X% slower (enemy-facing
+  persistent aura — legal under clause 3: they bring themselves to him)*. The A pair
+  IS the fork question in miniature: speed yours vs slow theirs.
 - **Warcaller S:** **Bearer of the Mark** [BANNER] — *your equipped run-banner's
-  effect is doubled while he lives (THE cross-layer crown — the class named for
-  banners carries the Tower's actual Mark; needs Jake's explicit yes, it crosses
-  sim/run layers)* | **The Captain's Cut** [AUTO] — *after each Rally, his swings
-  deal +Z% per ally it reached, until his next cast (he swings with the weight of
-  the company)*.
+  effect is doubled while he lives (**APPROVED**: the first cross-layer node — the
+  class named for banners carries the Tower's actual Mark)* | **The Last March**
+  [MUSTER] — *Standard-Bearer reaches every ally: the whole warband is his Company
+  (Jake's global-haste crown)*.
 
 ## The build web (A × S braid)
-Herald: Steady+Colors = **The Last Stand** ✦ · Steady+WideBanner = **The Broad Wall** ·
-SecondWind+Colors = **No One Left** ✦ · SecondWind+WideBanner = **Mercy's Reach**.
-Warcaller: LeadFront+Bearer = **The Tower's Own** ✦ · LeadFront+CaptainsCut = **First
-Through the Breach** · Drumbeat+Bearer = **March of the Hour** · Drumbeat+CaptainsCut =
-**The Red Parade** ✦.
+Herald: Steady+Quickening = **The Iron Cadence** ✦ · Steady+WideBanner = **The Broad
+Wall** · SecondWind+Quickening = **Second Heart** · SecondWind+WideBanner = **Mercy's
+Reach** ✦.
+Warcaller: Drumbeat+Bearer = **March of the Hour** ✦ · Drumbeat+LastMarch = **The Red
+Parade** · DreadPresence+Bearer = **The Tower's Own** · DreadPresence+LastMarch =
+**The Turning Tide** ✦ (everyone hastened, everyone near him slowed — the tempo war
+won outright).
 
 ## Weapon wardrobe (ADR 0012 — standards debut as the muster-weapon; sabres as the
 officer's blade)
 Standard mastery (placeholder rider: Company potency). Herald × standard: the classic
-colors · Herald × sabre: the duelist who guards the wounded · Warcaller × sabre: the
-fencing captain — Captain's Cut lives here · Warcaller × standard: the banner-charge,
-laying about with the pole · unmastered spice: Banneret × censer — the chaplain: Rally
-plus heal-swings, the full support stack in one body. ⚠ Category-count flag: standards
-+ sabres bring weapon categories to 10 vs the ~12-item first-playable cap — fine under
-placeholder doctrine, but the itemization pass (next on the board) inherits the squeeze.
+colors · Herald × sabre: the duelist who guards the wounded · Warcaller × standard:
+the dreadnought colors — the shout rolls out from under the banner · Warcaller ×
+sabre: the officer who wades in where his shout bites · unmastered spice: Banneret ×
+censer — the chaplain: Rally plus heal-swings, the full support stack in one body.
+⚠ Category-count flag: standards + sabres bring weapon categories to 10 vs the
+~12-item first-playable cap — fine under placeholder doctrine; the itemization pass
+(next on the board) inherits the squeeze.
 
 ## Banner hooks
 He IS the banner texture: cast-cadence banners (Rally cycles fast) · Shield banners
 (Herald output) · formation/muster family (*"allies placed adjacent to an ally gain
-X"* — ADR 0014 texture, third vote after Phalanx/Berserker) · and Bearer of the Mark
-literally doubles whichever run-banner you brought — the class and the item system
-shake hands.
+X"* — ADR 0014 texture) · and Bearer of the Mark literally doubles whichever
+run-banner you brought — the class and the item system shake hands, by law now.
 
 ## Sim gaps this dive adds
 **Mana-grant effect** (first consumer — Rally; vocabulary day 1) · **Company muster
 set** (fight-start membership snapshot + member conditions — ADR 0014's machinery;
-placement passives already built) · ally-facing cheat-death (Colors — extends the
-approved Deathless class cross-unit) · muster/cast radius params (Wide Banner) ·
-granted next-N-swings on allies (4th vote, first cross-unit grant) · live
-adjacent-ally-count condition (Lead From the Front) · per-cast reach-count damage
-rider (Captain's Cut) · live-row cast targeting (Warcaller Rally) · **run-banner
-effect multiplier** (Bearer — crosses into ProgressionFold/run layer; only if Jake
-blesses).
+placement passives already built) · muster/cast radius params (Wide Banner) ·
+innate-potency multiplier (Quickening) · global-muster flag (Last March) · granted
+next-N-swings on allies (Drumbeat — 4th vote) · attack-speed-down status (war-shout +
+Dread Presence; 3 votes total w/ Pyro's Choking Smoke) · **run-banner effect
+multiplier (Bearer — APPROVED; ProgressionFold hook, first sim↔run-layer crossing)**.
+Cut with Colors: ally-facing cheat-death (rejected — cheat-death stays
+Berserker-exclusive).
 
-## Open (for Jake)
-Bless the fork frame + the **Warcaller ADD rework** (fighting captain; dread-captain
-disruptor alt available) · **Bearer of the Mark** — cross-layer crown, yes/no (it's a
-precedent like Deathless was) · **The Colors Do Not Fall** — ally-facing cheat-death
-OK? · the four A/S pairs · standards + sabres debut (category count → 10, flagged) ·
-champion name (floating: **Capitana Vespera, Banner of the Turning Age**, Renaissance).
+## Open
+None at design level. Magnitudes (haste %, shout duration, radii) placeholder until
+sweep/playtest. Roster's original row-reach Warcaller retired with the fighting
+captain (both superseded by the dread-captain rework).
