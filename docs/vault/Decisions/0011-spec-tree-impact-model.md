@@ -34,6 +34,15 @@ may be less interesting than at A") resolved with bounded variance.
    **4–6 genuinely distinct loadouts** (placement, item priorities, spike timing), or the
    chassis is too narrow and gets reworked.
 
+## Amendment (same day, from the Cleric dive)
+- **Verb-rider node grammar:** every A/S node is a rider on one of the unit's two verbs —
+  the **auto** or the **signature** (`On: Attack` / `On: Cast` triggers — the content atom
+  natively). Auto-riders are phrased **effect-agnostic** ("…for X% of the amount dealt or
+  healed") so they survive weapon swaps under universal equip (ADR 0012).
+- **Complementary verbs principle:** a chassis's auto and signature should cover different
+  jobs (heal-auto ⇒ damage signature, and vice versa) so wardrobe swaps pivot the unit
+  rather than stack one axis.
+
 ## Consequences
 - Roster audit under the fork law: Bulwark ✓, Cleric ✓, Pyromancer ✓, Phalanx ✓ — but
   **Shade and Sharpshot are double-DEEPEN** (specialist-exception candidates or rework)
