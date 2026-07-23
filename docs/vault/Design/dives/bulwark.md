@@ -1,7 +1,9 @@
-# Deep dive #2 — Bulwark (v0.1 PROPOSAL, 2026-07-22)
+# Deep dive #2 — Bulwark (v1.0 SETTLED, 2026-07-22)
 
-Status: **PROPOSED** — full web drafted under ADR 0011 (+ amendments) and ADR 0012 for
-Jake's reaction. Explicit-language law applied throughout. Numbers placeholder.
+Status: **SETTLED** — blessed by Jake after two redraw rounds (Warden rebuilt around
+Taunt; Momentum → Shockwave). Champion working name adopted: **Brakka, Shieldmaid of the
+Bronze Hour** (Bronze Age). Numbers placeholder. Visual: claude.ai artifact "Bulwark —
+Choice Web".
 
 ## The kit (proposed)
 
@@ -19,8 +21,8 @@ or one that draws the storm onto itself (Warden — taunt).
   the Stun lasts longer.
 - **B — Warden** *(DEEPEN tank — protection by redirection; Jake's taunt redraw)*: the Slam
   stays but becomes a challenge — it **deals no damage and does not Stun**; enemies
-  **within 2 hexes** are **Taunted** onto him for T seconds and he gains a **self-Shield**.
-  Radius reaches ranged attackers on purpose (Jake: adjacent isn't enough).
+  **within 3 hexes** (Jake: tune in the 3–4 band) are **Taunted** onto him for T seconds
+  and he gains a **self-Shield**. Radius reaches ranged attackers on purpose.
   (**Taunt**, defined once: while it lasts the enemy's target is forced to the taunter
   AND the enemy is **Silenced** — no casting, no mana gain (existing status, same
   duration); normal behavior resumes on expiry. NEW sim status — second vote after
@@ -41,7 +43,7 @@ or one that draws the storm onto itself (Warden — taunt).
   Slam also get AttackDown while the Taunt lasts (they swing weaker at him)* | **Iron
   Rebuke** [AUTO] — *every swing against an enemy Taunted by him also grants him a small
   Shield (sustain while holding the line)*.
-- **Warden S**: **Unbreakable Challenge** [SIG] — *the Slam's Taunt reach grows to 3 hexes
+- **Warden S**: **Unbreakable Challenge** [SIG] — *the Slam's Taunt reach grows to 4 hexes
   and the self-Shield scales up — even the backline answers him* | **Retribution** [SIG —
   rides the Slam's Taunt state] — *thorns: enemies Taunted by him take back P% of the
   damage they deal to him (reflected as damage, active while the Taunt lasts)*.
@@ -78,6 +80,5 @@ needs a shield-reading input) · "every Nth swing" rider counter (Concussive Swi
 Cleric's Chorus also wants it — 2 votes, promoted) · thorns conditioned on attacker
 carrying MY Taunt (Retribution — needs a "source is Taunted by owner" condition).
 
-## Open (for Jake)
-Bless/adjust the redrawn A/S pairs · champion name (theme.md riff floating: **Brakka,
-Shieldmaid of the Bronze Hour**, Bronze Age).
+## Open
+None at design level. Numbers placeholder (sweep/playtest); Taunt radius tunable 3–4.

@@ -16,8 +16,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   laws, mechanics↔fiction map, class/champion split, era-spread champion riffs.
 - [Design/dives/cleric.md](Design/dives/cleric.md) — dive #1 SETTLED: bruiser-healer, censer +
   Sanctified Pyre, front-vs-back fork, 8 named builds; Sister Maren of the Waning Bell.
-- [Design/dives/bulwark.md](Design/dives/bulwark.md) — dive #2 PROPOSED: tank, Tower Shield +
-  Shield Slam, Juggernaut (adds disruptor) vs Warden (adds support); awaiting Jake.
+- [Design/dives/bulwark.md](Design/dives/bulwark.md) — dive #2 SETTLED: tank, Tower Shield +
+  Shield Slam, Juggernaut (AoE stun) vs Warden (r3-4 Taunt+Silence, thorns); Brakka.
 
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
