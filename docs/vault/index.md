@@ -18,6 +18,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   Sanctified Pyre, front-vs-back fork, 8 named builds; Sister Maren of the Waning Bell.
 - [Design/dives/bulwark.md](Design/dives/bulwark.md) — dive #2 SETTLED: tank, Tower Shield +
   Shield Slam, Juggernaut (AoE stun) vs Warden (r3-4 Taunt+Silence, thorns); Brakka.
+- [Design/dives/shade.md](Design/dives/shade.md) — dive #3 PROPOSED: late-bloomer (fork at A),
+  Reaper (crit-fish + Execute) vs Phantom (Phase — untargetable, scaling); awaiting Jake.
 
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
