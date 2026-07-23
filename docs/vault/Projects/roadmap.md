@@ -28,9 +28,11 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
       first cross-layer node, standards/sabres). All 8 champions named. Sim backlog
       accumulated in Daily/2026-07-23 — becomes the build queue.
    d. **Weapons/itemization pass** — full categories + attack shapes — **DESIGN,
-      NOW THE TOP ITEM**: 10 categories debuted across dives (censer, tower shield,
-      daggers, bows, muskets, staves, greataxes, pikes, standards, sabres) vs ~12-item
-      first-playable cap — the squeeze is the first conversation.
+      v0.1 PROPOSED** (Design/weapons.md): 11-category catalog (maces were the missed
+      11th) + engine-rider law + temper-tier rarity (Worn/Honed/Relic, act-gated
+      stock) + Tower-forge reforge + the Relic rule (unmastered riders go live) —
+      resolves the 12-item squeeze (categories ARE the items; tiers ≠ items).
+      Awaiting Jake's calls.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
 2. **Real content pass** — the 8 designed heroes + weapons through the composer + real
    IRunContent (supersedes "placeholder content pass"; waits on campaign) — blocked by 1.
