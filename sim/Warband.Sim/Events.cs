@@ -11,15 +11,24 @@ namespace Warband.Sim
         FieldHex,       // Target=field id, Amount=Q, Aux=R (one per covered hex)
         FieldExpired,   // Target=field id
         AttackBlocked,  // Source=attacker, Target=intended victim, Amount=Q, Aux=R of the wall hex
+        Leap,           // Source=leaper, Amount=Q, Aux=R of the landing hex (Pikewall punish, Leap banners)
+        CheatDeath,     // Target=the unit that refused to die (Deathless — Berserker dive)
     }
 
-    public enum Cause { None, Attack, Ability, Dot, Storm, Trigger, Field }
+    public enum Cause
+    {
+        None, Attack, Ability, Dot, Storm, Trigger, Field,
+        Burn,     // the decay-pool tick (Pyro dive law) — distinct so Burn banners can hook it
+        Counter,  // a directional riposte swing (Phalanx dive law) — "when an ally Counters: X"
+    }
 
     /// <summary>
     /// One log entry, tag-change model (ADR 0004): mutating events carry the delta
     /// (Amount) AND the absolute post-state (Post*). A replay client SETS bars to the
     /// absolutes and never accumulates — dropped frame = stale, never drift.
     /// Root = the unit whose trigger chain originated this event (attribution).
+    /// Death events: Source = the killer (last damager), Amount = overkill damage —
+    /// so on-kill triggers and overkill-carry riders compose from the grammar.
     /// </summary>
     public sealed class BattleEvent
     {

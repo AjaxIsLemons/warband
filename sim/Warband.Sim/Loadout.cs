@@ -18,17 +18,31 @@ namespace Warband.Sim
         public List<StatRule> StatRules = new List<StatRule>();
     }
 
-    /// <summary>The attack profile lives here (round 10): swap the weapon, change the hero.</summary>
+    /// <summary>Temper tiers (ADR 0015): rarity is a tier on the same weapon, never a
+    /// new item. Stat scale is placeholder (+25/+50%).</summary>
+    public enum WeaponTier { Worn, Honed, Relic }
+
+    /// <summary>The attack profile lives here (round 10): swap the weapon, change the hero.
+    /// ADR 0015: the weapon also carries its category's latent mastery rider — active for
+    /// specialists, live for EVERYONE at Relic tier (doubled for specialists).</summary>
     public sealed class WeaponDef
     {
         public string Name = "weapon";
+        public string Category = "";  // ADR 0012 tag: matched against the chassis' specializations
         public int Damage;
         public int Interval;
         public int Range;
         public int CritChance;
         public int CritMultFp = 1500;
-        public List<Trigger> Triggers = new List<Trigger>();      // on-hit riders etc.
+        public bool HealAutos;        // censer law: swings heal the lowest-HP ally
+        public int CleavePct;         // greataxe shape: swing also hits enemies adjacent to target
+        public List<Trigger> Triggers = new List<Trigger>();      // on-hit riders etc. (always on)
         public List<StatRule> StatRules = new List<StatRule>();
+
+        // The latent mastery rider (one per category, engine-amplifier law):
+        public List<Trigger> MasteryTriggers = new List<Trigger>();
+        public List<StatRule> MasteryStatRules = new List<StatRule>();
+        public int MasteryRangeBonus; // bow's physics rider (+1 range) — reach IS its engine
     }
 
     public sealed class TrinketDef
@@ -60,32 +74,52 @@ namespace Warband.Sim
 
     public static class Loadout
     {
+        /// <summary>Tier stat multipliers, fixed-point /100 (placeholder magnitudes).</summary>
+        private static int TierScale(WeaponTier tier) =>
+            tier == WeaponTier.Relic ? 150 : tier == WeaponTier.Honed ? 125 : 100;
+
         /// <summary>Merge order (fixed, documented): chassis → weapon → trinkets → nodes.
-        /// Last node with a SignatureOverride wins. Null weapon = the starter.</summary>
+        /// Last node with a SignatureOverride wins. Null weapon = the starter.
+        /// ADR 0015 rider gate: mastered → rider on · Relic → rider on for anyone ·
+        /// Relic AND mastered → rider doubled (included twice — additive rider law).</summary>
         public static ComposedLoadout Compose(
             ChassisDef chassis,
             WeaponDef? weapon = null,
             IEnumerable<TrinketDef>? trinkets = null,
-            IEnumerable<SpecNode>? nodes = null)
+            IEnumerable<SpecNode>? nodes = null,
+            WeaponTier tier = WeaponTier.Worn,
+            bool mastered = false)
         {
             var w = weapon ?? chassis.StarterWeapon;
+            int scale = TierScale(tier);
             var def = new UnitDef
             {
                 Name = chassis.Name,
                 MaxHp = chassis.MaxHp,
                 MoveInterval = chassis.MoveInterval,
                 ManaMax = chassis.ManaMax,
-                Attack = w.Damage,
+                Attack = w.Damage * scale / 100,
                 AttackInterval = w.Interval,
                 Range = w.Range,
                 CritChance = w.CritChance,
                 CritMultFp = w.CritMultFp,
+                HealAutos = w.HealAutos,
+                CleavePct = w.CleavePct,
             };
             def.Signature.AddRange(chassis.Signature);
             def.Triggers.AddRange(chassis.Passives);
             def.Triggers.AddRange(w.Triggers);
             def.StatRules.AddRange(chassis.StatRules);
             def.StatRules.AddRange(w.StatRules);
+
+            bool riderLive = mastered || tier == WeaponTier.Relic;
+            int riderCopies = (mastered && tier == WeaponTier.Relic) ? 2 : riderLive ? 1 : 0;
+            for (int i = 0; i < riderCopies; i++)
+            {
+                def.Triggers.AddRange(w.MasteryTriggers);
+                def.StatRules.AddRange(w.MasteryStatRules);
+                def.Range += w.MasteryRangeBonus;
+            }
 
             var result = new ComposedLoadout { Def = def };
 

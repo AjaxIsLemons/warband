@@ -15,6 +15,9 @@ namespace Warband.Sim
         public int ManaMax;          // 0 = no signature
         public int CritChance;       // percent; auto-attacks only — the sim's ONLY rng (ADR 0005)
         public int CritMultFp = 1500;
+        public bool HealAutos;       // censer law (ADR 0012): swings heal the lowest-HP ally instead
+        public int CleavePct;        // >0: swings also hit enemies adjacent to the target at this % (greataxe)
+        public int ExtraArrowPct = 50; // MultiShot extras deal this % unless the window says otherwise
         public List<EffectDef> Signature = new List<EffectDef>();
         public List<Trigger> Triggers = new List<Trigger>();   // innate + fork riders
         public List<StatRule> StatRules = new List<StatRule>(); // conditional stats ("+speed below half HP")
@@ -33,6 +36,9 @@ namespace Warband.Sim
         public int NextAttackTick;
         public int NextMoveTick;
         public bool Dead;            // set only by the death phase
+        public int SwingCount;       // lifetime swings — Nth-swing riders + charge decrement
+        public int LastDamagedBy = -1; // killer attribution on the Death event
+        public List<(int Tick, int Amount)> RecentDamage = new List<(int, int)>(); // Phase-entry window
         public List<Status> Statuses = new List<Status>();
 
         public bool Alive => !Dead;

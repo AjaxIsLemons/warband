@@ -15,17 +15,18 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 🎯 **GOAL (Jake, 2026-07-23): a playable PoC.** Path: mechanics build → real content →
 outlier sanity sweep → Unity bring-up. Sweep bar (Jake's words): *rule out CRAZY
 outliers or broken things — NOT a detailed balance pass.*
-1. **Sim mechanics build queue** — **SPEC'D → BUILD next** (specs live in the 8 dive
-   docs + ADRs 0013/0014/0015; consolidated backlog in Daily/2026-07-23). Suggested
-   order (votes/dependencies): next-N-swings charge status (4 votes) → Burn decay
-   engine → Taunt + directional Counter + Phase (the big statuses) → Lifesteal /
-   overheal→Shield / cheat-death / killer attribution (3 votes) → StatRule inputs
-   (target-distance, self-HP) + condition riders (target-below-HP, taunted-by-owner,
-   range-exact, no-enemy-within-R, engaged-with-ally, Nth-swing) → shapes & riders
-   (cleave, line lunge, multi-target swing, double-swing, ring finisher, overkill-carry,
-   forced-crit) → mana-grant + Company muster set + aura-granted Counter + Leap-landing
-   trigger + ally-targeting autos + field-spawn-on-death/permanence/consume-stacks →
-   composer tier param + rider gating + reforge shop action (ADR 0015).
+1. **Sim mechanics build queue** — **DONE 2026-07-23 (145 tests, was 109).** The whole
+   dive backlog landed as grammar primitives (Jake's law: everything banner/Relic-
+   hookable — no unit-hardcoded specials): next-N-swings charges (SwingsLeft) · Burn
+   decay pool + merge + BurnAmp · Taunt (forced target + silence) · directional
+   Counter (Swing effect + Cause.Counter) · Phase + entry window · Lifesteal/thorns
+   (PctOfEventAmount) · overheal→Shield · cheat-death · Death = killer + overkill ·
+   gradient StatRules (Full Draw, Burning Hours) · new conds (below-HP, exact-range,
+   spacing, engaged-with-ally, taunted-by-owner, has-status, Nth-swing, IsRootEvent) ·
+   cleave/pierce-line/MultiShot/double-swing/forced-crit/Execute/Recast/RemoveStatus ·
+   HealAutos (censer) · Leap event · corpse field spawns · composer temper tiers +
+   Relic rider gate. Muster/Company = BattleStart+AlliesWithin — zero new machinery.
+   NOTE: reforge shop action is run-layer → part of item 2.
 2. **Real content pass** — all 8 settled kits (full C/B/A/S webs from the dive docs) +
    11 weapons × 3 tiers + starter banner set through composer + real IRunContent —
    SPEC'D, unblocked once 1 lands.
