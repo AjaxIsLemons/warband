@@ -1,29 +1,39 @@
-# Deep dive #5 — Pyromancer (v0.1 PROPOSAL, 2026-07-23)
+# Deep dive #5 — Pyromancer (v1.0 SETTLED, 2026-07-23)
 
-Status: **PROPOSED.** From roster.md draft (caster r3, weak auto / big mana, the glyph
-anchor) + ADR 0011 template. Fork law: ✓ clean — Inferno DEEPENs the zoner, Starfall
-SWAPs zone→burst (no exception needed; the audit's "area denial | burst swap" holds).
-Roster flagged her a late-bloomer candidate; **recommendation: B-fork default** —
-late-bloom fit Shade because his fork was a risk *profile* on an unchanged hat; an
-archetype SWAP wants early divergence so the run actually lives in the chosen hat.
-Jake steers.
+Status: **SETTLED** (fork frame + pairs blessed; **the Burn law settled the dive** —
+decay model chosen, see below; never-decay White Heat rejected by Jake as broken →
+retexted to the plain-double crown). B-fork confirmed (roster's late-bloomer flag
+declined: late-bloom is for risk-profile forks per the Shade precedent; an archetype
+SWAP wants early divergence). Censer confirmed as second specialization. Champion
+working name adopted: **Ilion-7, Cinder of a Dead Star** (far-future). Fork law: ✓
+clean — Inferno DEEPENs the zoner, Starfall SWAPs zone→burst.
 
-## The kit (proposed)
+## The kit
 
 **Identity: the caster who makes ground a weapon.**
 Fork question: **does the fire live on the GROUND (Inferno) or on the TARGET (Starfall)?**
 
 - **C — recruit** *(caster dps / zoner-lite)*. Starter: **Ashwood Staff** (r3, weak
   quick swings, big mana pool — the cast IS the class). Innate: **Firebrand** — *her
-  swings apply 1 stack of Burn (stacking DoT)*. Signature: **Fire Glyph** — *ignite the
-  target's hex + radius 1: enemies standing in or entering the blaze take Burn stacks
-  over time.* Specializations: staves + censers.
+  swings apply 1 stack of Burn*. Signature: **Fire Glyph** — *ignite the target's hex +
+  radius 1: enemies standing in or entering the blaze take Burn stacks over time.*
+  Specializations: staves + censers.
 - **B — Inferno** *(DEEPEN — area denial; the ground is the weapon)*: Fire Glyph ignites
   **radius 2**, and *when a Burning enemy dies, the hexes under it ignite* — the fire
   spreads through their ranks. Owns the map, punishes clumps and chokepoints.
 - **B — Starfall** *(SWAP zone→burst; the target is the weapon)*: no field — Fire Glyph
   becomes **Starfall**: *a massive single hit on her current target (~3× glyph damage)
   plus a heavy slug of Burn stacks.* The artillery caster.
+
+## The Burn law (settled here — sim vocabulary, the Taunt promotion path)
+**Burn is a single integer pool per unit; all sources merge.** On a fixed global cadence
+(0.5s placeholder), each Burning unit takes damage equal to its current stacks, then
+loses 1 stack. No durations, no timers — "how long does a stack last" isn't a question
+this model asks. Stacks are a currency (Detonate consumes them). Tall piles pay
+superlinear total damage (N + N−1 + …) — the deliberate scaler fantasy, and THE lever to
+watch at sweep time. Rejected: per-stack duration timers (bookkeeping nobody feels under
+Firebrand's constant application) · never-decaying stacks (Jake: broken — unbounded
+growth even within fight length).
 
 ## A/S web (verb-riders, explicit)
 
@@ -38,7 +48,9 @@ Fork question: **does the fire live on the GROUND (Inferno) or on the TARGET (St
   **Kindling** [AUTO] — *her swings apply +1 additional Burn stack*.
 - **Starfall S:** **Dying Star** [SIG] — *if Starfall kills its target, it immediately
   recasts free on the nearest Burning enemy (kill-gated, Burning-bounded chain)* |
-  **White Heat** [STATUS] — *her Burn stacks tick twice as fast*.
+  **White Heat** [STATUS] — *enemy Burn ticks deal double damage (2× pool payout —
+  plain-double crown, One Breath/Widowmaker precedent; replaced never-decay, rejected
+  as broken)*.
 
 ## The build web (A × S braid)
 Inferno: Choking+WorldAlight = **Firestorm Front** · Choking+Everburn = **Nothing Grows
@@ -58,22 +70,21 @@ Everburn field.
 
 ## Banner hooks
 - Burn banner family (*"allies' attacks apply Burn"* / *"Burning enemies take +X%"*) —
-  she's the amplifier AND the enabler; frequency-costed like On-Heal.
+  she's the amplifier AND the enabler; frequency-costed like On-Heal. One-pool law means
+  banner Burn merges into her engine (and White Heat doubles it — deliberately global).
 - Opening-cast banners (*"first ability cast each fight: +X%"*) — big-mana Starfall
   openers.
 - Ground texture: *"allies standing in friendly fields gain X"* — pairs with Inferno
   (and Cleric's Pyre) for placement-legible fire-party comps.
 
 ## Sim gaps this dive adds
-**Stacking-status semantics** (Burn stacks: per-stack tick, cap?, refresh rule — the big
-one; vocabulary listed Burn from day 1, stacking never specced) · field-spawn-on-death
-(Inferno spread) · consume-stacks-for-damage (Detonate) · free-recast-on-kill w/
-target filter (Dying Star — killer attribution 2nd vote, cascade bounds already built) ·
-enemies-in-field conditional riders (presence statuses exist — verify shape covers
-Choking/Stoke) · field permanence flag (Everburn) · attack-speed-down status magnitude.
+**Burn decay engine** (single int pool + global tick cadence — law settled above,
+implementation new) · field-spawn-on-death (Inferno spread) · consume-stacks-for-damage
+(Detonate) · free-recast-on-kill w/ target filter (Dying Star — killer attribution 2nd
+vote, cascade bounds already built) · enemies-in-field conditional riders (presence
+statuses exist — verify shape covers Choking/Stoke) · field permanence flag (Everburn) ·
+attack-speed-down status · Burn-tick damage multiplier (White Heat).
 
-## Open (for Jake)
-Bless the ground-vs-target fork frame + Firebrand innate · fork timing: B default
-(recommended) vs roster's late-bloomer flag · the four A/S pairs · censer as second
-specialization (vs muskets — the flame-cannon — or daggers) · champion name (floating:
-**Ilion-7, Cinder of a Dead Star**, far-future).
+## Open
+None at design level. Magnitudes (tick cadence, per-stack damage, radii, Z%) placeholder
+until sweep/playtest.
