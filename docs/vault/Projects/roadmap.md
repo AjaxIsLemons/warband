@@ -41,10 +41,15 @@ outliers or broken things — NOT a detailed balance pass.*
    · in-field cond · shield-scaled StatRule · any-enemy-has cond · triage filter ·
    behind-only lines · victim-anchored selectors · Mark tag status · node cleave
    bonus. Leftover judgment calls → Open questions below.
-3. **Outlier sanity sweep** — archetype round-robin win matrix + per-tier EV over
-   RunHarness with REAL content (harness exists, 109 tests; extend to matchup matrix).
-   Flag only: strict dominance, degenerate/infinite loops, conservation violations,
-   never-picked nodes. Explicitly NOT tuning numbers.
+3. **Outlier sanity sweep** — **DONE 2026-07-23** (`Warband.Sweep` console, 4s run;
+   full report + interpretation: **Projects/sweep-2026-07-23.md**). 64-build
+   round-robin (2,080 fights) + 360 full bot runs. **Clean bills: zero safety-cap
+   hits, zero crashes, no chassis-dominant, determinism intact.** Real outliers
+   NAMED, not tuned (the bar): ① Phase uptime near-degenerate (Here-and-Gone ≈
+   70-80% immune; phantom builds 86-94%) ② Warden Taunt owns small boards (Δ-49
+   over Juggernaut) ③ Banneret floor 5-20% (support/harness confound, still stark).
+   Placeholder-difficulty finding: victory saturates ~99% at every tier → Greedy
+   strictly dominant on gold at zero risk — fix is the difficulty curve, later.
 4. **Unity client bring-up → the playable PoC** — render from PlaybackState fold
    (render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows when ready;
    terminal viewer covers fight-watching until then.

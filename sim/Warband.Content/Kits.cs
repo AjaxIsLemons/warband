@@ -294,7 +294,7 @@ namespace Warband.Content
             Node("sharpshot.sniper.onebreath", new SpecNode // half as often, twice as hard
             {
                 StatRules = { Rule(StatKind.AttackSpeed, -500) },
-                SpawnStatuses = { (StatusKind.AttackUp, 10) },
+                SpawnStatuses = { (StatusKind.SwingAmpPct, 100) }, // a true double (permanent: not swing-scoped)
             });
             Node("sharpshot.sniper.killwindow", new SpecNode // kills refund half her mana
             {
