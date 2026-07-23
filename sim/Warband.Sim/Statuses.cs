@@ -33,6 +33,10 @@ namespace Warband.Sim
         NextSwingCrit,    // swing-scoped: the next swing is an automatic crit (Cold Return, sabre mastery)
         SwingAmpPct,      // swing-scoped: +Mag% swing damage (musket mastery opening shot)
         CounterCharge,    // ammo for Counter-law content: consumed by the riposte trigger (Phalanx)
+        DamageTakenDown,  // Mag = % less damage taken (Steady the Line, Give No Ground) — armor is a STATUS, not a stat
+        DamageTakenUp,    // Mag = % more damage taken (Reckless Swing's risk dial)
+        CritUp,           // Mag = flat crit-chance % added at the roll (Reaper, dagger mastery)
+        CritMultUp,       // Mag = fixed-point added to the crit multiplier (Widowmaker)
     }
 
     public sealed class Status

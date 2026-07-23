@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/sim/">
+    <Project Path="sim/Warband.Content/Warband.Content.csproj" />
     <Project Path="sim/Warband.Run.Tests/Warband.Run.Tests.csproj" />
     <Project Path="sim/Warband.Run/Warband.Run.csproj" />
     <Project Path="sim/Warband.Sim.Tests/Warband.Sim.Tests.csproj" />

@@ -61,6 +61,8 @@ namespace Warband.Run.Tests
         public (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId) =>
             ($"{pathId ?? chassisId}-{rank}-a", $"{pathId ?? chassisId}-{rank}-b");
 
+        public Rank ForkRank(string chassisId) => Rank.B;
+
         public Func<int, int, FightTier, Rng, List<(UnitDef, Hex)>>? EncounterOverride;
 
         public List<(UnitDef Def, Hex Pos)> Encounter(int act, int nodeIndex, FightTier tier, Rng rng)

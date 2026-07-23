@@ -1,3 +1,5 @@
+using Warband.Sim;
+
 namespace Warband.Run
 {
     /// <summary>
@@ -31,9 +33,15 @@ namespace Warband.Run
         public int RerollCost = 1;               // flat (ADR 0006)
         public int BannerChancePct = 25;         // per item slot, banner instead of an item
         public int SellPct = 50;                 // sell-back refund (ADR 0009)
+        public int[] ReforgeCosts = { 4, 8 };    // Worn→Honed, Honed→Relic (ADR 0015, placeholder)
 
         public int BaseIncome(int act) => BaseIncomeByAct[act - 1];
         public int Pot(int act, FightTier tier) => PotBaseByAct[act - 1] * TierPotPct[(int)tier] / 100;
         public int SlotCost(int slotsBought) => SlotCosts[slotsBought];
+
+        /// <summary>ADR 0015: the forge follows the front — stock and reforge are both
+        /// capped by act (never by record). Placeholder curve.</summary>
+        public WeaponTier TierCeiling(int act) =>
+            act <= 1 ? WeaponTier.Worn : act <= 3 ? WeaponTier.Honed : WeaponTier.Relic;
     }
 }

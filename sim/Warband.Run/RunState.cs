@@ -24,12 +24,14 @@ namespace Warband.Run
         public string Id = "";
         public int Price;
         public bool Frozen;                      // free, persists into the next shop (ADR 0009)
+        public WeaponTier Tier = WeaponTier.Worn; // weapon offers: act-gated temper (ADR 0015)
     }
 
     public sealed class ItemRef
     {
         public ItemKind Kind;
         public string Id = "";
+        public WeaponTier Tier = WeaponTier.Worn; // travels with the weapon (ADR 0015)
     }
 
     /// <summary>A rank-up's 1-of-2 spec choice, blocking the shop until resolved (ADR 0009).</summary>
@@ -53,6 +55,7 @@ namespace Warband.Run
         public string? PathId;                   // set by the B fork (ADR 0009)
         public int GoldSpent;                    // card + dupes — sell-back refunds 50% of this
         public string? WeaponId;                 // null = chassis starter weapon
+        public WeaponTier WeaponTier = WeaponTier.Worn; // temper of the weapon in hand (starter included)
         public List<string> TrinketIds = new List<string>();
         public List<string> SpecNodeIds = new List<string>();
         public List<RunBonus> RunBonuses = new List<RunBonus>();  // growth rules (content-granted)
@@ -63,7 +66,7 @@ namespace Warband.Run
             var c = new HeroInstance
             {
                 ChassisId = ChassisId, Rank = Rank, WeaponId = WeaponId,
-                PathId = PathId, GoldSpent = GoldSpent,
+                WeaponTier = WeaponTier, PathId = PathId, GoldSpent = GoldSpent,
             };
             c.TrinketIds.AddRange(TrinketIds);
             c.SpecNodeIds.AddRange(SpecNodeIds);

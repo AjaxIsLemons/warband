@@ -29,9 +29,14 @@ namespace Warband.Run
         IReadOnlyList<string> TrinketPool(int act);
         IReadOnlyList<string> BannerPool(int act);
 
-        /// <summary>The 1-of-2 spec choice a rank-up presents. At B the chosen id is also
-        /// the hero's path; A/S options are scoped by that path (heroes.md).</summary>
+        /// <summary>The 1-of-2 spec choice a rank-up presents. The choice made at
+        /// ForkRank(chassis) is the hero's path; other ranks offer in-path (or
+        /// path-agnostic) nodes. One flat content table = trivially retunable offers.</summary>
         (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId);
+
+        /// <summary>Which rank-up IS the fork. B for most classes; A for late-bloomers
+        /// (Shade — ADR 0011 late-bloomer law).</summary>
+        Rank ForkRank(string chassisId);
 
         /// <summary>Monster comp for a fight node. Positions in enemy half (rows 4-7).
         /// Difficulty must anchor to act + tier, never W/L (ADR 0002 law).</summary>

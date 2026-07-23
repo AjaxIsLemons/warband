@@ -27,9 +27,17 @@ outliers or broken things — NOT a detailed balance pass.*
    HealAutos (censer) · Leap event · corpse field spawns · composer temper tiers +
    Relic rider gate. Muster/Company = BattleStart+AlliesWithin — zero new machinery.
    NOTE: reforge shop action is run-layer → part of item 2.
-2. **Real content pass** — all 8 settled kits (full C/B/A/S webs from the dive docs) +
-   11 weapons × 3 tiers + starter banner set through composer + real IRunContent —
-   SPEC'D, unblocked once 1 lands.
+2. **Real content pass** — **DONE 2026-07-23 (152 tests).** `Warband.Content`: all 8
+   kits as data (80 nodes, every one traced to its dive doc; ~13 marked SIMPLIFIED
+   where a shape was approximated — sweep watch-list in Daily) · 11-weapon catalog w/
+   mastery riders · 5 starter banners · Catalog : IRunContent (kits-as-monsters
+   encounters, act+tier anchored) · **stat law landed** (HP/Attack/Speed/Range/Crit/
+   Mana; armor = status pair; rank-up = flat per-chassis HP/Attack bump + the 1-of-2
+   offer — one flat Offers table, Jake's "easily changeable" ask) · weapon TIER state
+   through shop/inventory/equip/ghosts · **Reforge action** (forge follows the front) ·
+   ForkRank law (Shade forks at A — fixed a real BotGhosts bug) · Bearer wired via
+   SpecNode.DoublesBanners. Integration smoke: 6 full bot runs complete on the real
+   catalog.
 3. **Outlier sanity sweep** — archetype round-robin win matrix + per-tier EV over
    RunHarness with REAL content (harness exists, 109 tests; extend to matchup matrix).
    Flag only: strict dominance, degenerate/infinite loops, conservation violations,

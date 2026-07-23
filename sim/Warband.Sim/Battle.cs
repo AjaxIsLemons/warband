@@ -236,9 +236,8 @@ namespace Warband.Sim
                     u.SwingCount++;
                     Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
                     int healAmt = u.EffAttack(RuleBonus(u, StatKind.AttackFlat));
-                    bool healCrit = u.Has(StatusKind.NextSwingCrit) ||
-                                    (u.Def.CritChance > 0 && _rng.Next(100u) < (uint)u.Def.CritChance);
-                    if (healCrit) healAmt = healAmt * u.Def.CritMultFp / FP;
+                    bool healCrit = RollCrit(u);
+                    if (healCrit) healAmt = healAmt * CritMult(u) / FP;
                     Heal(u.Id, target, healAmt, 0, u.Id);
                     GainMana(u, ManaPerAttack);
                     DecrementSwingCharges(u);
@@ -283,9 +282,8 @@ namespace Warband.Sim
                 u.SwingCount++; // before the emit: Nth-swing conds see this swing at drain time
                 Emit(new BattleEvent { Kind = EventKind.Attack, Source = u.Id, Target = target.Id, Cause = Cause.Attack });
                 int damage = u.EffAttack(RuleBonus(u, StatKind.AttackFlat)) + bonus;
-                bool crit = u.Has(StatusKind.NextSwingCrit) ||
-                            (u.Def.CritChance > 0 && _rng.Next(100u) < (uint)u.Def.CritChance);
-                if (crit) damage = damage * u.Def.CritMultFp / FP;
+                bool crit = RollCrit(u);
+                if (crit) damage = damage * CritMult(u) / FP;
                 int amp = u.Sum(StatusKind.SwingAmpPct);
                 if (amp > 0) damage = damage * (100 + amp) / 100;
                 DealDamage(u.Id, target, damage, Cause.Attack, 0, u.Id, crit);
@@ -685,11 +683,20 @@ namespace Warband.Sim
             int pct = eff.Amount > 0 ? eff.Amount : 100;
             Emit(new BattleEvent { Kind = EventKind.Attack, Source = owner.Id, Target = victim.Id, Cause = cause, Depth = depth });
             int damage = owner.EffAttack(RuleBonus(owner, StatKind.AttackFlat)) * pct / 100;
-            bool crit = owner.Def.CritChance > 0 && _rng.Next(100u) < (uint)owner.Def.CritChance;
-            if (crit) damage = damage * owner.Def.CritMultFp / FP;
+            bool crit = RollCrit(owner);
+            if (crit) damage = damage * CritMult(owner) / FP;
             DealDamage(owner.Id, victim, damage, cause, depth, owner.Id, crit);
             GainMana(owner, ManaPerAttack);
         }
+
+        private bool RollCrit(UnitState u)
+        {
+            if (u.Has(StatusKind.NextSwingCrit)) return true;
+            int chance = u.Def.CritChance + u.Sum(StatusKind.CritUp);
+            return chance > 0 && _rng.Next(100u) < (uint)chance;
+        }
+
+        private static int CritMult(UnitState u) => u.Def.CritMultFp + u.Sum(StatusKind.CritMultUp);
 
         /// <summary>Teleport the leaper to the first free in-bounds hex adjacent to the
         /// target (fixed direction order = deterministic); drop its sticky target so it
@@ -862,6 +869,9 @@ namespace Warband.Sim
         private void DealDamage(int sourceId, UnitState target, int amount, Cause cause, int depth, int root, bool crit = false)
         {
             if (amount <= 0 || !target.Alive || target.Has(StatusKind.Phase)) return; // Phase = immune
+            int taken = 100 + target.Sum(StatusKind.DamageTakenUp) - target.Sum(StatusKind.DamageTakenDown);
+            if (taken != 100) amount = amount * (taken < 0 ? 0 : taken) / 100;
+            if (amount <= 0) return;
             int absorbed = Math.Min(target.Shield, amount);
             target.Shield -= absorbed;
             target.Hp -= amount - absorbed;

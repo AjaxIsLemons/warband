@@ -64,7 +64,7 @@ namespace Warband.Run
                 var (a, b) = content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
                 string chosen = rng.Next(2) == 0 ? a : b;
                 hero.SpecNodeIds.Add(chosen);
-                if (hero.Rank == Rank.B) hero.PathId = chosen;
+                if (hero.Rank == content.ForkRank(hero.ChassisId)) hero.PathId = chosen;
             }
 
             // Gear: one item per act past the first, alternating kinds.

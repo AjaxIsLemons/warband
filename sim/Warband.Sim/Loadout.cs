@@ -13,6 +13,11 @@ namespace Warband.Sim
         public int MoveInterval = 5;
         public int ManaMax;
         public WeaponDef StarterWeapon = null!;   // weapon-required (round 10)
+        // The rank stat law (Jake, 2026-07-23): every rank-up carries a flat stat bump
+        // alongside its 1-of-2 node offer. Per-chassis, pure data, trivially retunable.
+        public int RankHp;                        // +MaxHp per rank step (C→B→A→S)
+        public int RankAttack;                    // +Attack per rank step
+        public List<string> Specializations = new List<string>(); // ADR 0012 category tags
         public List<EffectDef> Signature = new List<EffectDef>();
         public List<Trigger> Passives = new List<Trigger>();
         public List<StatRule> StatRules = new List<StatRule>();
@@ -63,7 +68,9 @@ namespace Warband.Sim
         public int HpBonus;
         public List<Trigger> Triggers = new List<Trigger>();
         public List<StatRule> StatRules = new List<StatRule>();
+        public List<(StatusKind Kind, int Mag)> SpawnStatuses = new List<(StatusKind, int)>(); // trinket-shaped (ADR 0005)
         public List<EffectDef>? SignatureOverride;
+        public bool DoublesBanners; // Bearer of the Mark (ADR: first cross-layer node) — read by the run layer
     }
 
     public sealed class ComposedLoadout
@@ -88,17 +95,18 @@ namespace Warband.Sim
             IEnumerable<TrinketDef>? trinkets = null,
             IEnumerable<SpecNode>? nodes = null,
             WeaponTier tier = WeaponTier.Worn,
-            bool mastered = false)
+            bool mastered = false,
+            int rankSteps = 0)
         {
             var w = weapon ?? chassis.StarterWeapon;
             int scale = TierScale(tier);
             var def = new UnitDef
             {
                 Name = chassis.Name,
-                MaxHp = chassis.MaxHp,
+                MaxHp = chassis.MaxHp + chassis.RankHp * rankSteps,
                 MoveInterval = chassis.MoveInterval,
                 ManaMax = chassis.ManaMax,
-                Attack = w.Damage * scale / 100,
+                Attack = w.Damage * scale / 100 + chassis.RankAttack * rankSteps,
                 AttackInterval = w.Interval,
                 Range = w.Range,
                 CritChance = w.CritChance,
@@ -140,6 +148,8 @@ namespace Warband.Sim
                     def.MaxHp += n.HpBonus;
                     def.Triggers.AddRange(n.Triggers);
                     def.StatRules.AddRange(n.StatRules);
+                    foreach (var (kind, mag) in n.SpawnStatuses)
+                        result.SpawnStatuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1 });
                     if (n.SignatureOverride != null)
                     {
                         def.Signature.Clear();

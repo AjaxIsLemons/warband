@@ -117,7 +117,7 @@ namespace Warband.Run
             {
                 case OfferKind.Hero: BuyHero(offer); break;
                 case OfferKind.Weapon:
-                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = offer.Id }); break;
+                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = offer.Id, Tier = offer.Tier }); break;
                 case OfferKind.Trinket:
                     State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = offer.Id }); break;
                 case OfferKind.Banner: State.Banners.Add(offer.Id); break;
@@ -149,7 +149,8 @@ namespace Warband.Run
             var hero = Zone(p.Zone)[p.Index];
             string chosen = which == 0 ? p.OptionA : p.OptionB;
             hero.SpecNodeIds.Add(chosen);
-            if (p.ForRank == Rank.B) hero.PathId = chosen;   // the fork sets the path
+            if (p.ForRank == _content.ForkRank(hero.ChassisId))
+                hero.PathId = chosen;                        // the fork sets the path (B, or A for late-bloomers)
             State.PendingSpec = null;
         }
 
@@ -180,8 +181,9 @@ namespace Warband.Run
             var hero = Zone(zone)[index];
             State.Inventory.RemoveAt(invIndex);
             if (hero.WeaponId != null)
-                State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId });
+                State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId, Tier = hero.WeaponTier });
             hero.WeaponId = item.Id;
+            hero.WeaponTier = item.Tier;                     // temper travels with the weapon
         }
 
         public void EquipTrinket(RosterZone zone, int index, int invIndex)
@@ -204,8 +206,22 @@ namespace Warband.Run
             RequireShopActionable();
             var hero = Zone(zone)[index];
             if (hero.WeaponId == null) return;               // starter isn't an item
-            State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId });
+            State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId, Tier = hero.WeaponTier });
             hero.WeaponId = null;
+            hero.WeaponTier = WeaponTier.Worn;               // the starter comes back untempered (placeholder rule)
+        }
+
+        /// <summary>The Tower's forge (ADR 0015): pay gold, raise the held weapon —
+        /// starter included — one temper tier, capped at the act's stock ceiling.</summary>
+        public void Reforge(RosterZone zone, int index)
+        {
+            RequireShopActionable();
+            var hero = Zone(zone)[index];
+            Require(hero.WeaponTier < _cfg.TierCeiling(State.Act), "the forge follows the front");
+            int cost = _cfg.ReforgeCosts[(int)hero.WeaponTier];
+            Require(State.Gold >= cost, "not enough gold to reforge");
+            State.Gold -= cost;
+            hero.WeaponTier = hero.WeaponTier + 1;
         }
 
         public void UnequipTrinket(RosterZone zone, int index)
@@ -331,11 +347,17 @@ namespace Warband.Run
             var trinkets = _content.TrinketPool(State.Act);
             bool weapon = weapons.Count > 0 && (trinkets.Count == 0 || rng.Next(2) == 0);
             if (weapon)
+            {
+                // Temper rolls uniformly up to the act ceiling (ADR 0015 act-gated stock;
+                // higher tiers cost more — placeholder: price scales with the tier scale).
+                var tier = (WeaponTier)rng.Next((int)_cfg.TierCeiling(State.Act) + 1);
+                int price = _cfg.WeaponPrice + (int)tier * _cfg.ReforgeCosts[0];
                 return new ShopOffer
                 {
                     Kind = OfferKind.Weapon, Id = weapons[rng.Next(weapons.Count)],
-                    Price = _cfg.WeaponPrice,
+                    Price = price, Tier = tier,
                 };
+            }
             if (trinkets.Count == 0) return null;
             return new ShopOffer
             {
@@ -400,9 +422,17 @@ namespace Warband.Run
         {
             ValidatePlacement(placement);
             var teamTriggers = new List<(int Team, Trigger T)>();
-            foreach (var id in State.Banners)
-                foreach (var t in _content.Banner(id).TeamTriggers)
-                    teamTriggers.Add((0, t));
+            // Bearer of the Mark (ADR 0015 dive law): a fielded bearer doubles the
+            // warband's banner effects. Player side only for now — ghost bearers noted
+            // as a fairness follow-up.
+            int bannerCopies = 1;
+            foreach (var hero in State.Field)
+                foreach (var nodeId in hero.SpecNodeIds)
+                    if (_content.Node(nodeId).DoublesBanners) { bannerCopies = 2; break; }
+            for (int c = 0; c < bannerCopies; c++)
+                foreach (var id in State.Banners)
+                    foreach (var t in _content.Banner(id).TeamTriggers)
+                        teamTriggers.Add((0, t));
             if (enemyBanners != null)
                 foreach (var id in enemyBanners)
                     foreach (var t in _content.Banner(id).TeamTriggers)
@@ -450,11 +480,19 @@ namespace Warband.Run
             };
         }
 
-        private ComposedLoadout Compose(HeroInstance hero) => Loadout.Compose(
-            _content.Chassis(hero.ChassisId),
-            hero.WeaponId == null ? null : _content.Weapon(hero.WeaponId),
-            hero.TrinketIds.Select(_content.Trinket),
-            hero.SpecNodeIds.Select(_content.Node));
+        private ComposedLoadout Compose(HeroInstance hero)
+        {
+            var chassis = _content.Chassis(hero.ChassisId);
+            var weapon = hero.WeaponId == null ? chassis.StarterWeapon : _content.Weapon(hero.WeaponId);
+            return Loadout.Compose(
+                chassis,
+                weapon,
+                hero.TrinketIds.Select(_content.Trinket),
+                hero.SpecNodeIds.Select(_content.Node),
+                tier: hero.WeaponTier,
+                mastered: chassis.Specializations.Contains(weapon.Category),
+                rankSteps: (int)hero.Rank);
+        }
 
         private UnitDef ComposeDef(HeroInstance hero)
         {
