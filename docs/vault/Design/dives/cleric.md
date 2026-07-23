@@ -34,6 +34,13 @@ or retreat to the back.
 - **Lifebinder S:** sig — **Great Chorus**: pulse centers on the TWO lowest allies | sig —
   **Sanctuary**: pulsed allies also gain Shield.
 
+## The build web (A × S braid — visual: claude.ai artifact "Cleric — Choice Web")
+War-Priest: Scorched+Conflagration = **Slow Fuse** · Scorched+Zeal = **The Zealot** ✦ ·
+Contagion+Conflagration = **The Detonator** ✦ · Contagion+Zeal = **Plague Candle**.
+Lifebinder: Grace+GreatChorus = **The Gardener** · Grace+Sanctuary = **Fortress Garden** ✦ ·
+Chorus+GreatChorus = **Tempo Weaver** ✦ · Chorus+Sanctuary = **Bulwark Choir**.
+(✦ = natural partners; all four combos per path are legal — no A→S gates.)
+
 ## Weapon wardrobe (ADR 0012 universal equip)
 War-Priest × mace: frontline battle-priest (mace mastery: double mana per swing — the cast
 engine roars) · War-Priest × censer: sustain smiter, team that never dies · Lifebinder ×
