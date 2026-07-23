@@ -1,6 +1,8 @@
-# The weapons pass — catalog, riders, rarity, the forge (v0.1 PROPOSAL, 2026-07-23)
+# The weapons pass — catalog, riders, rarity, the forge (v1.0 SETTLED, 2026-07-23)
 
-Status: **PROPOSED** (board 1d — first conversation after the dive campaign). Inputs:
+Status: **SETTLED → ADR 0015** (Jake: "sounds good as a start" — all recommendations
+locked: engine-rider law, temper tiers + Relic rule, Tower-forge reforge, wager-rarity
+dead, starters-begin-Worn; tier names Worn/Honed/Relic adopted as working names). Inputs:
 ADR 0005 (weapon = the attack profile: damage/interval/range/shape; weapon-required),
 ADR 0012 (universal equip, weapon carries ONE latent mastery rider, classes tag 1–2
 specializations, heal-weapons legal), ADR 0006/0009 (per-node shop: 2 item cards,

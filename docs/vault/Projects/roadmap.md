@@ -12,38 +12,34 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 - **DONE** — move to the Done section with a date.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
-1. **DESIGN CAMPAIGN** (Jake, 2026-07-22: depth before any playtest talk; reordered
-   hero-first same day. **THE BAR: every class can be brought, feels different run to
-   run, and can wear different hats.**):
-   a. **Theme/lore frame** — **DONE 2026-07-22** (ADR 0010: The Last Hour — dying
-      multiverse + Tower, binding laws, class/champion split; Design/theme.md).
-   b. **Spec-tree impact model** — **DONE 2026-07-22** (ADR 0011: archetype algebra,
-      ADD/SWAP/DEEPEN fork law w/ exceptions, C/B/A/S ladder, variable fork timing,
-      wardrobe test; roster audited — Shade/Sharpshot flagged).
-   c. **Hero deep dives ×8** — **DONE 2026-07-23, 8/8 SETTLED**: Cleric · Bulwark
-      (Taunt → sim vocab) · Shade (late-bloomer, Phase, ADR 0013 targeting) · Sharpshot
-      (auto-scaling Volleyer, muskets) · Pyromancer (Burn decay law → sim vocab, staves)
-      · Berserker (cheat-death approved, greataxes) · Phalanx (directional Counter law,
-      pikes) · Banneret (ADR 0014 muster law + the Company, dread captain, Bearer =
-      first cross-layer node, standards/sabres). All 8 champions named. Sim backlog
-      accumulated in Daily/2026-07-23 — becomes the build queue.
-   d. **Weapons/itemization pass** — full categories + attack shapes — **DESIGN,
-      v0.1 PROPOSED** (Design/weapons.md): 11-category catalog (maces were the missed
-      11th) + engine-rider law + temper-tier rarity (Worn/Honed/Relic, act-gated
-      stock) + Tower-forge reforge + the Relic rule (unmastered riders go live) —
-      resolves the 12-item squeeze (categories ARE the items; tiers ≠ items).
-      Awaiting Jake's calls.
-   ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
-2. **Real content pass** — the 8 designed heroes + weapons through the composer + real
-   IRunContent (supersedes "placeholder content pass"; waits on campaign) — blocked by 1.
-3. **Archetype sweep harness** — round-robin win matrix + per-tier EV over RunHarness —
-   SPEC'D (smoke already flags Greedy strictly dominant under placeholder monsters).
-4. **Unity client bring-up** — SPEC'D pattern-wise (render from PlaybackState fold,
-   render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows when ready.
+🎯 **GOAL (Jake, 2026-07-23): a playable PoC.** Path: mechanics build → real content →
+outlier sanity sweep → Unity bring-up. Sweep bar (Jake's words): *rule out CRAZY
+outliers or broken things — NOT a detailed balance pass.*
+1. **Sim mechanics build queue** — **SPEC'D → BUILD next** (specs live in the 8 dive
+   docs + ADRs 0013/0014/0015; consolidated backlog in Daily/2026-07-23). Suggested
+   order (votes/dependencies): next-N-swings charge status (4 votes) → Burn decay
+   engine → Taunt + directional Counter + Phase (the big statuses) → Lifesteal /
+   overheal→Shield / cheat-death / killer attribution (3 votes) → StatRule inputs
+   (target-distance, self-HP) + condition riders (target-below-HP, taunted-by-owner,
+   range-exact, no-enemy-within-R, engaged-with-ally, Nth-swing) → shapes & riders
+   (cleave, line lunge, multi-target swing, double-swing, ring finisher, overkill-carry,
+   forced-crit) → mana-grant + Company muster set + aura-granted Counter + Leap-landing
+   trigger + ally-targeting autos + field-spawn-on-death/permanence/consume-stacks →
+   composer tier param + rider gating + reforge shop action (ADR 0015).
+2. **Real content pass** — all 8 settled kits (full C/B/A/S webs from the dive docs) +
+   11 weapons × 3 tiers + starter banner set through composer + real IRunContent —
+   SPEC'D, unblocked once 1 lands.
+3. **Outlier sanity sweep** — archetype round-robin win matrix + per-tier EV over
+   RunHarness with REAL content (harness exists, 109 tests; extend to matchup matrix).
+   Flag only: strict dominance, degenerate/infinite loops, conservation violations,
+   never-picked nodes. Explicitly NOT tuning numbers.
+4. **Unity client bring-up → the playable PoC** — render from PlaybackState fold
+   (render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows when ready;
+   terminal viewer covers fight-watching until then.
 5. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
    hash-verified; copy Shoota's site/launcher/ship pipeline).
-6. **Friends playtest #1** — still the milestone that ends arguments (ADR 0001), now
-   explicitly AFTER the design campaign yields real content. No date until Jake calls it.
+6. **Friends playtest #1** — still the milestone that ends arguments (ADR 0001), after
+   the PoC. No date until Jake calls it.
 
 ## First-playable content budget (hard cap — ADR 0001)
 8 heroes × ~2 forks (placeholder kits OK) · ~12 items · 5 acts × ~4 nodes · small monster
@@ -62,6 +58,13 @@ revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fi
 in sim) · per-rank stat scaling · run length target validation (~20-25 min).
 
 ## Done
+- **2026-07-23 — DESIGN CAMPAIGN COMPLETE (1a–1d).** Theme (ADR 0010) · impact model
+  (ADR 0011) · 8/8 hero dives settled (Cleric, Bulwark, Shade, Sharpshot, Pyromancer,
+  Berserker, Phalanx, Banneret — all champions named; laws locked along the way: ADR
+  0013 targeting, Burn decay, ADR 0014 aura/muster, cheat-death + cross-layer
+  precedents) · weapons pass (ADR 0015: 11-category catalog, engine riders, temper
+  tiers + Relic rule, Tower forge). Sauce hunt stays PARKED (Design/sauce.md).
+  Full session log: Daily/2026-07-22 + Daily/2026-07-23.
 - **2026-07-22 — RUN LAYER COMPLETE (109 tests).** Bot-ghost generation (BotGhosts: boards
   sized to slot growth, deepened by act+record, geared, range-aware placement) + full-run
   harness (RunHarness/RunPolicy/AggregateReport: policy hooks, fight+economy metrics,
