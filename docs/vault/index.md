@@ -38,6 +38,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   frame, three binding laws, class/champion naming split; flavor-name candidates pending.
 - [Decisions/0011-spec-tree-impact-model.md](Decisions/0011-spec-tree-impact-model.md) — dive
   template: 7 archetypes, ADD/SWAP/DEEPEN fork law, C/B/A/S ladder, variable fork timing.
+- [Decisions/0012-weapon-access-model.md](Decisions/0012-weapon-access-model.md) — universal
+  weapon equip, class specializations + weapon mastery riders, heal-weapons legal.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,

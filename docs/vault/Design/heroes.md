@@ -52,9 +52,12 @@ Guildrun "Rush", huge/slow = "Stall".
 
 ### 4. Items — the churn axis (❓ slot model)
 - Lean: **2 slots per hero — Weapon + Trinket.** Weapon reshapes the auto-attack
-  (profile + a keyword: cleave arc, pierce line, lifesteal…), category-locked by
-  chassis; Trinket = defense/utility/mana mods. Freely re-equippable between fights —
-  items are the tinkering verb, heroes are sticky (circuit lesson).
+  (profile + a keyword: cleave arc, pierce line, lifesteal…). **Universal equip — any
+  class wears any weapon** (ADR 0012); classes carry 1–2 **weapon specializations**, and
+  each weapon has one latent **mastery rider** that lights up for specialists. Heal-weapons
+  (ally-targeting autos, e.g. the censer) are a legal family. Trinket = defense/utility/
+  mana mods. Freely re-equippable between fights — items are the tinkering verb, heroes
+  are sticky (circuit lesson).
 - Items come from wager fights, shops, act rewards.
 
 ### 5. Party layer (decided: no traits)
