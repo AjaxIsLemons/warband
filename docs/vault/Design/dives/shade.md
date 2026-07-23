@@ -1,6 +1,8 @@
-# Deep dive #3 — Shade (v0.1 PROPOSAL, 2026-07-22)
+# Deep dive #3 — Shade (v1.0 SETTLED, 2026-07-22)
 
-Status: **PROPOSED**. Template firsts: **late-bloomer (fork at A)** and the **documented
+Status: **SETTLED** ("good for our starting point" — Jake; Twist the Knife softened to
+1.5×; Phase trigger stays damage-in-window). Champion working name adopted: **Null, the
+Redacted** (near-future). Targeting locked as ADR 0013 out of this dive. Template firsts: **late-bloomer (fork at A)** and the **documented
 double-DEEPEN specialist exception** (both paths deepen melee dps; the fork is a RISK
 PROFILE, not an archetype change — ADR 0011 exception clause, used as designed).
 Jake's axes: ranged-vs-melee → routed to the wardrobe (ADR 0012); crit-fishing and
@@ -36,8 +38,9 @@ fight in the enemy backline. The fork isn't WHAT he is — it's what he's willin
     (attackers retarget), then re-enters with a Leap to the farthest enemy. Each Phase
     grants a permanent AttackUp stack for the fight — survival IS his scaling.
 - **S — crowns:**
-  - Reaper: **Twist the Knife** [SIG] — *Backstab deals double damage to a target he has
-    crit since his last cast* | **Widowmaker** [AUTO] — *his crit multiplier is doubled*.
+  - Reaper: **Twist the Knife** [SIG] — *Backstab deals 1.5× damage to a target he has
+    crit since his last cast (softened from 2× — Jake)* | **Widowmaker** [AUTO] — *his
+    crit multiplier is doubled*.
   - Phantom: **Here and Gone** [SIG] — *after Backstab resolves he always Phases briefly,
     regardless of damage taken (offense-scheduled phasing)* | **Cold Return** [AUTO] —
     *his first swing after each Phase is an automatic crit*.
@@ -69,8 +72,6 @@ AttackFlat/AttackSpeed only) · forced-crit rider (Cold Return) · **TargetBelow
 condition** (Execute + Opportunist; roster's original Reaper wanted it too) ·
 damage-in-window threshold trigger (Phase entry).
 
-## Open (for Jake)
-Bless the ladder shape (B baseline + agnostic riders) · the four B/S pairs + both fork
-kits · champion name (theme.md floating: **Null, the Redacted**, near-future — the Phase
-kit fits the redaction fantasy; alt: Edo shinobi Kagerō) · Phase magnitudes (P%, window,
-D) are placeholder but the SHAPE (threshold-reactive vs cooldown) is a real question.
+## Open
+None at design level. Phase magnitudes (P%, window, D) placeholder; reactive
+damage-in-window shape confirmed as the starting point.

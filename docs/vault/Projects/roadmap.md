@@ -22,9 +22,9 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
       wardrobe test; roster audited — Shade/Sharpshot flagged).
    c. **Hero deep dives ×8** — one dedicated pass per class w/ Jake, from roster.md
       drafts + ADR 0011 template — **DESIGN, 2/8 done**: Cleric SETTLED (dive #1) ·
-      Bulwark SETTLED (dive #2 — Taunt promoted to sim vocab, radius 3–4 band) · Shade
-      PROPOSED (dive #3 — first A-fork late-bloomer + documented specialist exception;
-      Phase status proposed) · then Sharpshot/Pyromancer/Berserker/Phalanx/Banneret.
+      Bulwark SETTLED (dive #2 — Taunt promoted to sim vocab) · Shade SETTLED (dive #3 —
+      A-fork late-bloomer, Phase status, targeting law → ADR 0013) · Sharpshot PROPOSED
+      (dive #4 — Volleyer reworked to Rooting fan) · then Pyro/Berserker/Phalanx/Banneret.
    d. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
       two proves what's needed — **DESIGN**.
    ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).

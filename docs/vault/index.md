@@ -18,8 +18,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
   Sanctified Pyre, front-vs-back fork, 8 named builds; Sister Maren of the Waning Bell.
 - [Design/dives/bulwark.md](Design/dives/bulwark.md) — dive #2 SETTLED: tank, Tower Shield +
   Shield Slam, Juggernaut (AoE stun) vs Warden (r3-4 Taunt+Silence, thorns); Brakka.
-- [Design/dives/shade.md](Design/dives/shade.md) — dive #3 PROPOSED: late-bloomer (fork at A),
-  Reaper (crit-fish + Execute) vs Phantom (Phase — untargetable, scaling); awaiting Jake.
+- [Design/dives/shade.md](Design/dives/shade.md) — dive #3 SETTLED: late-bloomer (fork at A),
+  Reaper (crit-fish + Execute) vs Phantom (Phase); Null, the Redacted.
+- [Design/dives/sharpshot.md](Design/dives/sharpshot.md) — dive #4 PROPOSED: ranged dps,
+  Sniper artillery vs reworked Volleyer (3-line Rooting fan); muskets debut; awaiting Jake.
 
 ## Decisions
 - [Decisions/0001-identity-and-anti-washout-contract.md](Decisions/0001-identity-and-anti-washout-contract.md) —
@@ -46,6 +48,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   template: 7 archetypes, ADD/SWAP/DEEPEN fork law, C/B/A/S ladder, variable fork timing.
 - [Decisions/0012-weapon-access-model.md](Decisions/0012-weapon-access-model.md) — universal
   weapon equip, class specializations + weapon mastery riders, heal-weapons legal.
+- [Decisions/0013-targeting-law.md](Decisions/0013-targeting-law.md) — sticky target; re-acquire
+  on death / range-exit / untargetable / Taunt; melee subtlety flagged.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
