@@ -12,16 +12,20 @@ namespace Warband.Content
         public static Selector Cur => new Selector { Kind = SelKind.CurrentTarget };
         public static Selector EvSrc => new Selector { Kind = SelKind.EventSource };
         public static Selector EvTgt => new Selector { Kind = SelKind.EventTarget };
-        public static Selector Nearest(StatusKind? must = null, bool atEvent = false) =>
-            new Selector { Kind = SelKind.NearestEnemy, MustHave = must, AnchorEvent = atEvent };
+        public static Selector Nearest(StatusKind? must = null, bool atEvent = false, bool atCorpse = false, bool exAnchor = false) =>
+            new Selector { Kind = SelKind.NearestEnemy, MustHave = must, AnchorEvent = atEvent,
+                           AnchorEventTarget = atCorpse, ExcludeAnchorUnit = exAnchor };
         public static Selector Farthest => new Selector { Kind = SelKind.FarthestEnemy };
         public static Selector Lowest => new Selector { Kind = SelKind.LowestHpAlly };
-        public static Selector Allies(int r, bool exSelf = true) =>
-            new Selector { Kind = SelKind.AlliesWithin, Range = r, ExcludeSelf = exSelf };
-        public static Selector Enemies(int r, StatusKind? must = null) =>
-            new Selector { Kind = SelKind.EnemiesWithin, Range = r, MustHave = must };
-        public static Selector Line(int len = 0) =>
-            new Selector { Kind = SelKind.EnemiesOnLineThroughTarget, Range = len };
+        public static Selector Allies(int r, bool exSelf = true, int below = 0) =>
+            new Selector { Kind = SelKind.AlliesWithin, Range = r, ExcludeSelf = exSelf, BelowHpPct = below };
+        public static Selector Enemies(int r, StatusKind? must = null, bool atVictim = false, bool exAnchor = false) =>
+            new Selector { Kind = SelKind.EnemiesWithin, Range = r, MustHave = must,
+                           AnchorEventTarget = atVictim, ExcludeAnchorUnit = exAnchor };
+        public static Selector Line(int len = 0, bool behindOnly = false) =>
+            new Selector { Kind = SelKind.EnemiesOnLineThroughTarget, Range = len, SkipCtxTarget = behindOnly };
+        public static Selector LineFar(int len = 0) =>
+            new Selector { Kind = SelKind.EnemiesOnLineThroughFarthest, Range = len };
 
         // ---- conditions ----
         public static Cond SrcOwner => new Cond { Kind = CondKind.SourceIsOwner };
@@ -47,10 +51,14 @@ namespace Warband.Content
         public static Cond RecentDmg(int pct) => new Cond { Kind = CondKind.OwnerRecentDamageAbovePct, Amount = pct };
 
         // ---- effects ----
-        public static EffectDef Dmg(Selector sel, int amt, int pctOfEvent = 0) =>
-            new EffectDef { Kind = EffectKind.Damage, Select = sel, Amount = amt, PctOfEventAmount = pctOfEvent };
+        public static EffectDef Dmg(Selector sel, int amt, int pctOfEvent = 0, int escalate = 0) =>
+            new EffectDef { Kind = EffectKind.Damage, Select = sel, Amount = amt,
+                            PctOfEventAmount = pctOfEvent, EscalatePctPerIndex = escalate };
         public static EffectDef DmgPerStack(Selector sel, int perStack, StatusKind stack) =>
             new EffectDef { Kind = EffectKind.Damage, Select = sel, Amount = perStack, ScaleByTargetStatus = true, ScaleStatus = stack };
+        public static EffectDef PassStack(StatusKind stack, Selector to) => new EffectDef // the corpse's pool moves on
+            { Kind = EffectKind.ApplyStatus, Status = stack, Amount = 1, Select = to,
+              ScaleByEventTargetStatus = true, ScaleStatus = stack };
         public static EffectDef Heal(Selector sel, int amt, int pctOfEvent = 0) =>
             new EffectDef { Kind = EffectKind.Heal, Select = sel, Amount = amt, PctOfEventAmount = pctOfEvent };
         public static EffectDef Shield(Selector sel, int amt, int pctOfEvent = 0) =>

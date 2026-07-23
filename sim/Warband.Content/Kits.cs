@@ -65,10 +65,10 @@ namespace Warband.Content
                 Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAttack, RootEv),
                     Dmg(Nearest(must: StatusKind.Burn), 0, pctOfEvent: 30)) },
             });
-            Node("cleric.warpriest.contagion", new SpecNode // SIMPLIFIED: flat pass-on (stack transfer needs corpse-pool read)
+            Node("cleric.warpriest.contagion", new SpecNode // the corpse's remaining pool moves on — harder, not longer
             {
                 Triggers = { On(EventKind.Death, W(TgtAlly(not: true), TgtHas(StatusKind.Burn)),
-                    Status(StatusKind.Burn, 4, Nearest(atEvent: true))) },
+                    PassStack(StatusKind.Burn, Nearest(atCorpse: true, exAnchor: true))) },
             });
             Offer("cleric", Rank.S, "cleric.warpriest", "cleric.warpriest.conflagration", "cleric.warpriest.zeal");
             Node("cleric.warpriest.conflagration", new SpecNode // detonate every Burning enemy in radius
@@ -77,9 +77,13 @@ namespace Warband.Content
                     DmgPerStack(Enemies(2, must: StatusKind.Burn), 1, StatusKind.Burn),
                     Strip(StatusKind.Burn, Enemies(2, must: StatusKind.Burn))) },
             });
-            Node("cleric.warpriest.zeal", new SpecNode // SIMPLIFIED: heal-on-swing half (AS half dropped)
+            Node("cleric.warpriest.zeal", new SpecNode // while any enemy Burns: faster, and her swings feed her
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAttack, RootEv), Heal(Self, 0, pctOfEvent: 30)) },
+                StatRules = { Rule(StatKind.AttackSpeed, 300, StatScale.None,
+                    new Cond { Kind = CondKind.AnyEnemyHasStatus, Status = StatusKind.Burn }) },
+                Triggers = { On(EventKind.DamageDealt,
+                    W(SrcOwner, ByAttack, RootEv, new Cond { Kind = CondKind.AnyEnemyHasStatus, Status = StatusKind.Burn }),
+                    Heal(Self, 0, pctOfEvent: 30)) },
             });
 
             Offer("cleric", Rank.A, "cleric.lifebinder", "cleric.lifebinder.grace", "cleric.lifebinder.chorus");
@@ -146,9 +150,9 @@ namespace Warband.Content
                 Triggers = { On(EventKind.Attack, W(SrcOwner, Nth(3), RootEv, TgtAlly(not: true)),
                     Status(StatusKind.Slow, 300, EvTgt, ticks: 20)) },
             });
-            Node("bulwark.juggernaut.shockwave", new SpecNode // SIMPLIFIED: flat (per-enemy-hit count n/a)
+            Node("bulwark.juggernaut.shockwave", new SpecNode // Shield PER enemy the Slam hits (one event each)
             {
-                Triggers = { On(EventKind.Cast, W(SrcOwner), Shield(Self, 15)) },
+                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAbility), Shield(Self, 8)) },
             });
             Offer("bulwark", Rank.S, "bulwark.juggernaut", "bulwark.juggernaut.faultline", "bulwark.juggernaut.grudgekeeper");
             Node("bulwark.juggernaut.faultline", new SpecNode
@@ -156,9 +160,9 @@ namespace Warband.Content
                 SignatureOverride = new List<EffectDef>
                     { Dmg(Enemies(2), 10), Status(StatusKind.Stun, 0, Enemies(2), ticks: 15) },
             });
-            Node("bulwark.juggernaut.grudgekeeper", new SpecNode // SIMPLIFIED: flat bonus packet (shield-scaled StatRule n/a)
+            Node("bulwark.juggernaut.grudgekeeper", new SpecNode // the wall swings with its own weight
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAttack, RootEv), Dmg(EvTgt, 0, pctOfEvent: 30)) },
+                StatRules = { Rule(StatKind.AttackFlat, 2, StatScale.ShieldPer10) },
             });
 
             Offer("bulwark", Rank.A, "bulwark.warden", "bulwark.warden.bellow", "bulwark.warden.rebuke");
@@ -228,9 +232,13 @@ namespace Warband.Content
             });
 
             Offer("shade", Rank.S, "shade.reaper", "shade.reaper.twist", "shade.reaper.widowmaker");
-            Node("shade.reaper.twist", new SpecNode // SIMPLIFIED: rides ability hits (crit-since-cast memory n/a)
+            Node("shade.reaper.twist", new SpecNode // crits Mark the victim; Backstab twists marked wounds
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAbility), Dmg(EvTgt, 0, pctOfEvent: 50)) },
+                Triggers =
+                {
+                    On(EventKind.DamageDealt, W(SrcOwner, ByAttack, Crit), Status(StatusKind.Mark, 0, EvTgt, ticks: 30)),
+                    On(EventKind.DamageDealt, W(SrcOwner, ByAbility, TgtHas(StatusKind.Mark)), Dmg(EvTgt, 0, pctOfEvent: 50)),
+                },
             });
             Node("shade.reaper.widowmaker", new SpecNode { SpawnStatuses = { (StatusKind.CritMultUp, 1500) } });
             Offer("shade", Rank.S, "shade.phantom", "shade.phantom.hereandgone", "shade.phantom.coldreturn");
@@ -261,10 +269,9 @@ namespace Warband.Content
             ForkRanks["sharpshot"] = Rank.B;
             Offer("sharpshot", Rank.B, null, "sharpshot.sniper", "sharpshot.volleyer");
 
-            Node("sharpshot.sniper", new SpecNode // the nuker: alpha shot on the farthest enemy
+            Node("sharpshot.sniper", new SpecNode // the nuker: the bolt aims at the FARTHEST enemy, board-length line
             {
-                // SIMPLIFIED: line-through-farthest n/a — the alpha hit carries the identity.
-                SignatureOverride = new List<EffectDef> { Dmg(Farthest, 35) },
+                SignatureOverride = new List<EffectDef> { Dmg(LineFar(0), 35) },
             });
             Node("sharpshot.volleyer", new SpecNode // the scaler: the cast feeds the autos (v1.0 rework)
             {
@@ -279,9 +286,9 @@ namespace Warband.Content
             {
                 Triggers = { On(EventKind.Attack, W(SrcOwner, Nth(3), RootEv), Swing(EvTgt, pct: 50)) },
             });
-            Node("sharpshot.sniper.overpen", new SpecNode // SIMPLIFIED: flat ability rider (per-body scaling n/a)
+            Node("sharpshot.sniper.overpen", new SpecNode // each body passed adds +25% for those farther down
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAbility), Dmg(EvTgt, 0, pctOfEvent: 25)) },
+                SignatureOverride = new List<EffectDef> { Dmg(LineFar(0), 35, escalate: 25) },
             });
             Offer("sharpshot", Rank.S, "sharpshot.sniper", "sharpshot.sniper.onebreath", "sharpshot.sniper.killwindow");
             Node("sharpshot.sniper.onebreath", new SpecNode // half as often, twice as hard
@@ -299,9 +306,12 @@ namespace Warband.Content
             {
                 Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Haste, 300, Self, swings: 3)) },
             });
-            Node("sharpshot.volleyer.splitheads", new SpecNode // SIMPLIFIED: extra ramp rate (arrow-pierce n/a)
+            Node("sharpshot.volleyer.splitheads", new SpecNode // extra arrows splinter into whoever stands beside their victim
             {
-                Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.MultiShotRamp, 1, Self)) },
+                // Extras are depth-1 rider-hits — Not(IsRootEvent) picks them out.
+                Triggers = { On(EventKind.DamageDealt,
+                    W(SrcOwner, ByAttack, new Cond { Kind = CondKind.IsRootEvent, Not = true }),
+                    Dmg(Enemies(1, atVictim: true, exAnchor: true), 0, pctOfEvent: 40)) },
             });
             Offer("sharpshot", Rank.S, "sharpshot.volleyer", "sharpshot.volleyer.arrowstorm", "sharpshot.volleyer.trueflight");
             Node("sharpshot.volleyer.arrowstorm", new SpecNode // starts as if she'd already cast twice
@@ -349,13 +359,19 @@ namespace Warband.Content
             });
 
             Offer("pyromancer", Rank.A, "pyromancer.inferno", "pyromancer.inferno.chokingsmoke", "pyromancer.inferno.stoke");
-            Node("pyromancer.inferno.chokingsmoke", new SpecNode // SIMPLIFIED: shout-shaped (in-field cond n/a)
+            Node("pyromancer.inferno.chokingsmoke", new SpecNode // enemies she hurts INSIDE her fields choke
             {
-                Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Slow, 200, Enemies(2), ticks: 30)) },
+                // Fires on every damage she sources into a field-stander — incl. her own
+                // Burn ticks, so standing in the fire means staying slowed.
+                Triggers = { On(EventKind.DamageDealt,
+                    W(SrcOwner, new Cond { Kind = CondKind.TargetInFieldOfOwner }),
+                    Status(StatusKind.Slow, 150, EvTgt, ticks: 15)) },
             });
-            Node("pyromancer.inferno.stoke", new SpecNode // SIMPLIFIED: +2 Burn on all swings
+            Node("pyromancer.inferno.stoke", new SpecNode // her swings stoke enemies standing in the coals
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAttack, RootEv), Status(StatusKind.Burn, 2, EvTgt)) },
+                Triggers = { On(EventKind.DamageDealt,
+                    W(SrcOwner, ByAttack, RootEv, new Cond { Kind = CondKind.TargetInFieldOfOwner }),
+                    Status(StatusKind.Burn, 2, EvTgt)) },
             });
             Offer("pyromancer", Rank.S, "pyromancer.inferno", "pyromancer.inferno.worldalight", "pyromancer.inferno.everburn");
             Node("pyromancer.inferno.worldalight", new SpecNode // ignite under EVERY Burning enemy
@@ -451,9 +467,9 @@ namespace Warband.Content
             {
                 Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Frenzied, 0, Self, swings: 2)) },
             });
-            Node("berserker.rampager.noquarter", new SpecNode // SIMPLIFIED: flat weight (cleave% mod n/a)
+            Node("berserker.rampager.noquarter", new SpecNode // width becomes weight: cleave to 100%
             {
-                SpawnStatuses = { (StatusKind.AttackUp, 4) },
+                CleaveBonusPct = 75, // greataxe base 25 → full damage
             });
         }
 
@@ -522,13 +538,15 @@ namespace Warband.Content
             });
 
             Offer("phalanx", Rank.A, "phalanx.lancer", "phalanx.lancer.overreach", "phalanx.lancer.deepthrust");
-            Node("phalanx.lancer.overreach", new SpecNode // every auto a mini-Skewer (SIMPLIFIED: line echo)
+            Node("phalanx.lancer.overreach", new SpecNode // every auto also stabs the hexes BEHIND the target
             {
-                Triggers = { On(EventKind.Attack, W(SrcOwner, RootEv), Dmg(Line(3), 4)) },
+                Triggers = { On(EventKind.Attack, W(SrcOwner, RootEv), Dmg(Line(3, behindOnly: true), 4)) },
             });
-            Node("phalanx.lancer.deepthrust", new SpecNode // SIMPLIFIED: flat lunge rider (per-body n/a)
+            Node("phalanx.lancer.deepthrust", new SpecNode // the lunge drives harder per body it passes
             {
-                Triggers = { On(EventKind.DamageDealt, W(SrcOwner, ByAbility), Dmg(EvTgt, 0, pctOfEvent: 25)) },
+                // Composition wart (documented): Sarissa's S-override replaces this sig —
+                // the "Breach the Line" combo keeps length, drops escalation. Placeholder.
+                SignatureOverride = new List<EffectDef> { Dmg(Line(4), 12, escalate: 30) },
             });
             Offer("phalanx", Rank.S, "phalanx.lancer", "phalanx.lancer.sarissa", "phalanx.lancer.perfectform");
             Node("phalanx.lancer.sarissa", new SpecNode // the lunge runs board-length
@@ -572,9 +590,10 @@ namespace Warband.Content
             {
                 Triggers = { AtStart(Status(StatusKind.DamageTakenDown, 15, Allies(1))) },
             });
-            Node("banneret.herald.secondwind", new SpecNode // SIMPLIFIED: triage heal on cast
+            Node("banneret.herald.secondwind", new SpecNode // allies below half receive double Rally
             {
-                Triggers = { On(EventKind.Cast, W(SrcOwner), Heal(Lowest, 12)) },
+                Triggers = { On(EventKind.Cast, W(SrcOwner),
+                    Mana(Allies(2, below: 50), 10), Shield(Allies(2, below: 50), 10)) },
             });
             Offer("banneret", Rank.S, "banneret.herald", "banneret.herald.quickening", "banneret.herald.widebanner");
             Node("banneret.herald.quickening", new SpecNode // intensity: the few, faster (doubles the innate)

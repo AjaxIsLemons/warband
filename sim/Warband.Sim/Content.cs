@@ -34,6 +34,9 @@ namespace Warband.Sim
         OwnerRecentDamageAbovePct, // damage taken in the last RecentWindow ticks ≥ Amount% max HP (Phase entry)
         IsRootEvent,               // event depth 0 — guards echo-riders (Twin Nock must not
                                    // fire off its own second arrow; counters not counter counters)
+        AnyEnemyHasStatus,         // Cond.Status — state cond, StatRule-legal (Undying Zeal)
+        TargetInFieldOfOwner,      // event target stands in a field the owner created
+                                   // (Choking Smoke, Stoke the Coals; "in your fields" banners)
     }
 
     public sealed class Cond
@@ -51,6 +54,7 @@ namespace Warband.Sim
         NearestEnemy, FarthestEnemy, LowestHpAlly, AlliesWithin, EnemiesWithin,
         EnemiesOnLineThroughTarget, // the pierce line: owner → through resolved anchor → onward
                                     // (Piercing Bolt, Lancer lunge; Range = max hexes, 0 = board)
+        EnemiesOnLineThroughFarthest, // Sniper's law: the bolt aims at the FARTHEST enemy
     }
 
     public sealed class Selector
@@ -60,6 +64,11 @@ namespace Warband.Sim
         public bool ExcludeSelf;
         public bool AnchorEvent;   // range kinds measure from the event SOURCE's hex, not owner's
                                    // (banner shapes: "when an enemy Leaps: stun around the lander")
+        public bool AnchorEventTarget; // …or from the event TARGET's hex (the corpse, the victim);
+                                       // wins over AnchorEvent (overkill-carry, Contagion, Splitheads)
+        public bool ExcludeAnchorUnit; // drop the unit standing AT the anchor ("around the victim, not the victim")
+        public bool SkipCtxTarget;     // line kinds: skip the through-target itself (Overreach's "behind")
+        public int BelowHpPct;         // >0: only units under this HP% (Second Wind's triage filter)
         public StatusKind? MustHave; // filter: only units carrying this status ("nearest Burning enemy")
     }
 
@@ -94,6 +103,10 @@ namespace Warband.Sim
                                      // (Lifesteal, thorns, overkill-carry — Death.Amount = overkill)
         public bool ScaleByTargetStatus; // Amount is multiplied by the target's Sum(ScaleStatus)
         public StatusKind ScaleStatus;   // (Detonate: +Z per Burn stack consumed)
+        public bool ScaleByEventTargetStatus; // …by the EVENT target's Sum instead — the corpse's
+                                              // pool (Contagion passes on what actually remained)
+        public int EscalatePctPerIndex;  // multi-target effects: +% per resolved-target index —
+                                         // enemies farther down the line take more (Overpenetration)
         public bool AsCounter;     // Swing only: apply the directional Counter law + Cause.Counter
     }
 
@@ -107,8 +120,9 @@ namespace Warband.Sim
     public enum StatKind { AttackFlat, AttackSpeed }
 
     /// <summary>Multiplies a StatRule's Amount by live state — the gradient innates:
-    /// Full Draw (per hex to target), Burning Hours (per 10% missing HP).</summary>
-    public enum StatScale { None, DistanceToTarget, MissingHpPct10 }
+    /// Full Draw (per hex to target), Burning Hours (per 10% missing HP),
+    /// Grudgekeeper (per 10 Shield held).</summary>
+    public enum StatScale { None, DistanceToTarget, MissingHpPct10, ShieldPer10 }
 
     /// <summary>Read-time conditional stat: "while <conds>: ±Amount". Evaluated fresh at
     /// every stat read, never cached (circuit's missing primitive, ADR 0004 wall #2).

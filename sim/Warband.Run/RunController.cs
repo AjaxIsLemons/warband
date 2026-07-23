@@ -95,8 +95,12 @@ namespace Warband.Run
                 enemies.Add((ComposeDef(g.Hero), MirrorToEnemyHalf(g.Pos)));
 
             CaptureSnapshot(placement);
+            int ghostBannerCopies = 1;
+            foreach (var g in ghost.Units)
+                foreach (var nodeId in g.Hero.SpecNodeIds)
+                    if (_content.Node(nodeId).DoublesBanners) { ghostBannerCopies = 2; break; }
             var outcome = RunBattle(placement, enemies, pot: 0, killSharePct: 0,
-                                    enemyBanners: ghost.BannerIds);
+                                    enemyBanners: ghost.BannerIds, enemyBannerCopies: ghostBannerCopies);
             outcome.BaseIncome = _cfg.BaseIncome(State.Act);
             State.Gold += outcome.GoldEarned;
             if (outcome.Won) State.BossWins++; else State.BossLosses++;
@@ -418,7 +422,8 @@ namespace Warband.Run
         private FightOutcome RunBattle(IReadOnlyList<Hex> placement,
                                        List<(UnitDef Def, Hex Pos)> enemies,
                                        int pot, int killSharePct,
-                                       List<string>? enemyBanners = null)
+                                       List<string>? enemyBanners = null,
+                                       int enemyBannerCopies = 1)
         {
             ValidatePlacement(placement);
             var teamTriggers = new List<(int Team, Trigger T)>();
@@ -434,9 +439,10 @@ namespace Warband.Run
                     foreach (var t in _content.Banner(id).TeamTriggers)
                         teamTriggers.Add((0, t));
             if (enemyBanners != null)
-                foreach (var id in enemyBanners)
-                    foreach (var t in _content.Banner(id).TeamTriggers)
-                        teamTriggers.Add((1, t));
+                for (int c = 0; c < enemyBannerCopies; c++)      // ghost bearers double too (fairness)
+                    foreach (var id in enemyBanners)
+                        foreach (var t in _content.Banner(id).TeamTriggers)
+                            teamTriggers.Add((1, t));
             var units = new List<UnitState>();
             for (int i = 0; i < State.Field.Count; i++)
             {

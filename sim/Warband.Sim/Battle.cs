@@ -289,12 +289,13 @@ namespace Warband.Sim
                 DealDamage(u.Id, target, damage, Cause.Attack, 0, u.Id, crit);
 
                 // Cleave (greataxe shape, ADR 0015): the swing also hits enemies adjacent
-                // to the TARGET at CleavePct.
+                // to the TARGET at CleavePct. Rider-hits land at depth 1 — content can
+                // tell them from the main strike (IsRootEvent).
                 if (u.Def.CleavePct > 0)
                     foreach (var e in _units)
                         if (Targetable(e) && e.Team != u.Team && e.Id != target.Id
                             && Hex.Distance(e.Pos, target.Pos) == 1)
-                            DealDamage(u.Id, e, damage * u.Def.CleavePct / 100, Cause.Attack, 0, u.Id, crit);
+                            DealDamage(u.Id, e, damage * u.Def.CleavePct / 100, Cause.Attack, 1, u.Id, crit);
 
                 // MultiShot (Volleyer law): while a window is open, Sum(ramp) extra arrows
                 // strike the enemies nearest the target; the deficit re-strikes the target.
@@ -310,7 +311,7 @@ namespace Warband.Sim
                     for (int i = 0; i < arrows; i++)
                     {
                         var victim = i < pool.Count ? pool[i] : target;
-                        DealDamage(u.Id, victim, damage * pct / 100, Cause.Attack, 0, u.Id, crit);
+                        DealDamage(u.Id, victim, damage * pct / 100, Cause.Attack, 1, u.Id, crit); // depth 1: extras are rider-hits
                     }
                 }
 
@@ -505,6 +506,11 @@ namespace Warband.Sim
                         // Burning Hours (Berserker): per 10% of max HP missing.
                         mult = (u.Def.MaxHp - u.Hp) * 100 / u.Def.MaxHp / 10;
                     }
+                    else if (rule.ScaleBy == StatScale.ShieldPer10)
+                    {
+                        // Grudgekeeper (Bulwark): the wall swings with its own weight.
+                        mult = u.Shield / 10;
+                    }
                     total += rule.Amount * mult;
                 }
             return total;
@@ -591,6 +597,22 @@ namespace Warband.Sim
                         ok = c.Amount > 0 && owner.SwingCount > 0 && owner.SwingCount % c.Amount == 0; break;
                     case CondKind.StatusIs: ok = ev.Aux == (int)c.Status; break;
                     case CondKind.IsRootEvent: ok = ev.Depth == 0; break;
+                    case CondKind.AnyEnemyHasStatus:
+                    {
+                        ok = false;
+                        foreach (var e in _units)
+                            if (e.Alive && e.Team != owner.Team && e.Has(c.Status)) { ok = true; break; }
+                        break;
+                    }
+                    case CondKind.TargetInFieldOfOwner:
+                    {
+                        var t = Raw(ev.Target);
+                        ok = false;
+                        if (t != null)
+                            foreach (var f in _fields)
+                                if (f.OwnerId == owner.Id && HexesOf(f).Contains(t.Pos)) { ok = true; break; }
+                        break;
+                    }
                     case CondKind.OwnerRecentDamageAbovePct:
                     {
                         int sum = 0;
@@ -607,6 +629,7 @@ namespace Warband.Sim
 
         private void ApplyEffectDef(UnitState owner, EffectDef eff, BattleEvent ctx, Cause cause, int depth, int root)
         {
+            int index = 0;
             foreach (var target in ResolveSelector(owner, eff.Select, ctx))
             {
                 if (eff.Kind == EffectKind.CreateField)
@@ -636,8 +659,16 @@ namespace Warband.Sim
                     int amount = eff.Amount;
                     if (eff.PctOfEventAmount > 0) amount = ctx.Amount * eff.PctOfEventAmount / 100;
                     if (eff.ScaleByTargetStatus) amount = amount * target.Sum(eff.ScaleStatus);
+                    if (eff.ScaleByEventTargetStatus)
+                    {
+                        var evTgt = Raw(ctx.Target);           // the corpse's pool (Contagion)
+                        amount = evTgt == null ? 0 : amount * evTgt.Sum(eff.ScaleStatus);
+                    }
+                    if (eff.EscalatePctPerIndex > 0)           // farther down the line, harder
+                        amount = amount * (100 + eff.EscalatePctPerIndex * index) / 100;
                     ApplyToTarget(owner.Id, target, eff, cause, depth, root, amount);
                 }
+                index++;
             }
         }
 
@@ -771,17 +802,20 @@ namespace Warband.Sim
         private List<UnitState> ResolveSelector(UnitState owner, Selector sel, BattleEvent ctx)
         {
             var result = new List<UnitState>();
-            bool StatusOk(UnitState u) => sel.MustHave == null || u.Has(sel.MustHave.Value);
-            void AddIf(UnitState? u) { if (u != null && u.Alive && StatusOk(u)) result.Add(u); }
 
-            // AnchorEvent: distance-measured kinds measure from the event source's hex
-            // (banner shapes: "when an enemy Leaps: X around the lander").
+            // Anchor: distance-measured kinds measure from the owner, the event source
+            // ("around the Leaper"), or the event target ("around the corpse/victim").
             Hex anchor = owner.Pos;
-            if (sel.AnchorEvent)
-            {
-                var a = Raw(ctx.Source);
-                if (a != null) anchor = a.Pos;
-            }
+            int anchorId = owner.Id;
+            var anchorUnit = sel.AnchorEventTarget ? Raw(ctx.Target)
+                           : sel.AnchorEvent ? Raw(ctx.Source) : null;
+            if (anchorUnit != null) { anchor = anchorUnit.Pos; anchorId = anchorUnit.Id; }
+
+            bool StatusOk(UnitState u) =>
+                (sel.MustHave == null || u.Has(sel.MustHave.Value))
+                && (sel.BelowHpPct <= 0 || u.Hp * 100 < sel.BelowHpPct * u.Def.MaxHp)
+                && !(sel.ExcludeAnchorUnit && u.Id == anchorId);
+            void AddIf(UnitState? u) { if (u != null && u.Alive && StatusOk(u)) result.Add(u); }
 
             switch (sel.Kind)
             {
@@ -843,11 +877,24 @@ namespace Warband.Sim
                             result.Add(u);
                     break;
                 case SelKind.EnemiesOnLineThroughTarget:
+                case SelKind.EnemiesOnLineThroughFarthest:
                 {
-                    // The pierce line (Piercing Bolt, Lancer lunge): from the owner,
-                    // through the event target (or current target), extended onward.
+                    // The pierce line (Piercing Bolt, Lancer lunge, Sniper's bolt): from
+                    // the owner, through the anchor enemy, extended onward.
                     // Range = max length in hexes; 0 = the whole board (Sarissa).
-                    var through = ById(ctx.Target) ?? ById(owner.TargetId);
+                    UnitState? through;
+                    if (sel.Kind == SelKind.EnemiesOnLineThroughFarthest)
+                    {
+                        through = null; int best = -1;
+                        foreach (var u in _units)
+                            if (Targetable(u) && u.Team != owner.Team)
+                            {
+                                int d = Hex.Distance(owner.Pos, u.Pos);
+                                if (d > best) { best = d; through = u; }
+                            }
+                    }
+                    else
+                        through = ById(ctx.Target) ?? ById(owner.TargetId);
                     if (through == null) break;
                     int maxLen = sel.Range > 0 ? sel.Range : BoardRows + BoardCols;
                     var far = new Hex(
@@ -856,7 +903,8 @@ namespace Warband.Sim
                     var path = Hex.Line(owner.Pos, far);
                     for (int i = 1; i < path.Count && i <= maxLen; i++)
                         foreach (var u in _units)
-                            if (Targetable(u) && u.Team != owner.Team && StatusOk(u) && u.Pos.Equals(path[i]))
+                            if (Targetable(u) && u.Team != owner.Team && StatusOk(u) && u.Pos.Equals(path[i])
+                                && !(sel.SkipCtxTarget && u.Id == through.Id))
                                 result.Add(u);
                     break;
                 }

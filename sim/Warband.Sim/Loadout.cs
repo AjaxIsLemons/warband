@@ -70,6 +70,7 @@ namespace Warband.Sim
         public List<StatRule> StatRules = new List<StatRule>();
         public List<(StatusKind Kind, int Mag)> SpawnStatuses = new List<(StatusKind, int)>(); // trinket-shaped (ADR 0005)
         public List<EffectDef>? SignatureOverride;
+        public int CleaveBonusPct;  // added to the weapon's cleave (No Quarter: width becomes weight)
         public bool DoublesBanners; // Bearer of the Mark (ADR: first cross-layer node) — read by the run layer
     }
 
@@ -146,6 +147,7 @@ namespace Warband.Sim
                 foreach (var n in nodes)
                 {
                     def.MaxHp += n.HpBonus;
+                    def.CleavePct += n.CleaveBonusPct;
                     def.Triggers.AddRange(n.Triggers);
                     def.StatRules.AddRange(n.StatRules);
                     foreach (var (kind, mag) in n.SpawnStatuses)

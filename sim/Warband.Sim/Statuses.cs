@@ -37,6 +37,8 @@ namespace Warband.Sim
         DamageTakenUp,    // Mag = % more damage taken (Reckless Swing's risk dial)
         CritUp,           // Mag = flat crit-chance % added at the roll (Reaper, dagger mastery)
         CritMultUp,       // Mag = fixed-point added to the crit multiplier (Widowmaker)
+        Mark,             // inert tag — pure trigger fuel (Twist the Knife's crit-memory;
+                          // "marked enemies" banner space). The engine never reads it.
     }
 
     public sealed class Status

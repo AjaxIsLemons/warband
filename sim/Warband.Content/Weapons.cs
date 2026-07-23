@@ -31,8 +31,8 @@ namespace Warband.Content
             ["greataxe"] = new WeaponDef
             {
                 Name = "Greataxe", Category = "greataxe", Damage = 14, Interval = 14, Range = 1, CleavePct = 25,
-                // Overkill carries to the nearest enemy (Death.Amount = overkill).
-                MasteryTriggers = { On(EventKind.Death, W(SrcOwner), Dmg(Nearest(atEvent: true), 0, pctOfEvent: 100)) },
+                // Overkill carries to the enemy nearest the CORPSE (Death.Amount = overkill).
+                MasteryTriggers = { On(EventKind.Death, W(SrcOwner), Dmg(Nearest(atCorpse: true, exAnchor: true), 0, pctOfEvent: 100)) },
             },
             ["towershield"] = new WeaponDef
             {

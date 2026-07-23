@@ -27,17 +27,20 @@ outliers or broken things — NOT a detailed balance pass.*
    HealAutos (censer) · Leap event · corpse field spawns · composer temper tiers +
    Relic rider gate. Muster/Company = BattleStart+AlliesWithin — zero new machinery.
    NOTE: reforge shop action is run-layer → part of item 2.
-2. **Real content pass** — **DONE 2026-07-23 (152 tests).** `Warband.Content`: all 8
-   kits as data (80 nodes, every one traced to its dive doc; ~13 marked SIMPLIFIED
-   where a shape was approximated — sweep watch-list in Daily) · 11-weapon catalog w/
-   mastery riders · 5 starter banners · Catalog : IRunContent (kits-as-monsters
-   encounters, act+tier anchored) · **stat law landed** (HP/Attack/Speed/Range/Crit/
-   Mana; armor = status pair; rank-up = flat per-chassis HP/Attack bump + the 1-of-2
-   offer — one flat Offers table, Jake's "easily changeable" ask) · weapon TIER state
-   through shop/inventory/equip/ghosts · **Reforge action** (forge follows the front) ·
-   ForkRank law (Shade forks at A — fixed a real BotGhosts bug) · Bearer wired via
-   SpecNode.DoublesBanners. Integration smoke: 6 full bot runs complete on the real
-   catalog.
+2. **Real content pass** — **DONE 2026-07-23 (161 tests incl. fidelity pass).**
+   `Warband.Content`: all 8 kits as data (80 nodes, every one traced to its dive doc)
+   · 11-weapon catalog w/ mastery riders · 5 starter banners · Catalog : IRunContent
+   (kits-as-monsters encounters, act+tier anchored) · **stat law landed** (HP/Attack/
+   Speed/Range/Crit/Mana; armor = status pair; rank-up = flat per-chassis HP/Attack
+   bump + the 1-of-2 offer — one flat Offers table, Jake's "easily changeable" ask) ·
+   weapon TIER state through shop/inventory/equip/ghosts · **Reforge action** (forge
+   follows the front) · ForkRank law (Shade forks at A — fixed a real BotGhosts bug)
+   · Bearer wired via SpecNode.DoublesBanners, BOTH sides (ghost bearers double too).
+   **FIDELITY PASS (Jake's call): 12/13 SIMPLIFIED nodes rebuilt to dive truth** —
+   new generic shapes: corpse-pool transfer · escalating lines · line-through-farthest
+   · in-field cond · shield-scaled StatRule · any-enemy-has cond · triage filter ·
+   behind-only lines · victim-anchored selectors · Mark tag status · node cleave
+   bonus. Leftover judgment calls → Open questions below.
 3. **Outlier sanity sweep** — archetype round-robin win matrix + per-tier EV over
    RunHarness with REAL content (harness exists, 109 tests; extend to matchup matrix).
    Flag only: strict dominance, degenerate/infinite loops, conservation violations,
@@ -61,6 +64,13 @@ ExcludeOwner option · morale/rout concept · ability crits · predetermined ter
 · account-scoped power (NEVER — fairness law).
 
 ## Open design questions (ammo for DESIGN sessions)
+Content-fidelity leftovers (2026-07-23, from the de-SIMPLIFY pass): **Wide Banner**
+reads as "inner circle gets innate+crown" instead of "reach replaces" — proposed as
+the actual design, needs Jake's nod · **sig-override composition wart**: an S
+signature override drops an A override's texture (Sarissa+DeepThrust keeps length,
+loses escalation) — last-wins is ADR 0005 discipline; fix would need additive sig
+mods · **Twist's crit-memory** is a 30-tick Mark, not "since last cast" (cast-event
+ordering) ·
 Currency/tier final names (gold + Safe/Even/Greedy are placeholders until theme/lore) ·
 economy numbers (placeholder until sweep/playtest) · respec cost (free-for-now decided,
 revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fields (feel it
