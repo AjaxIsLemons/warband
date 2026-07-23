@@ -1,8 +1,42 @@
 # The Sauce — class/unit identity noodling (WORKING DOC, nothing decided)
 
-Status: **NOODLING** (2026-07-22, design campaign 1a). Jake's spark: the sauce lives in how
-we do classes and units — elite specializations, combining cards into unique classes. Three
-proposals below at one-page depth for reaction. No ADR until something clicks.
+Status: **PARKED** (2026-07-22, end of session). Round 1 (three one-pagers) and round 2
+(card-stack synthesis) both came back cold-to-lukewarm. Jake's call: pause the sauce hunt —
+build a solid hero/class game first. **The bar that replaces it: every class can be
+brought, feels different run to run, and can wear different hats.** If sauce re-emerges,
+it'll be from the hero deep dives, not from a hunt. Ideas below preserved for that day.
+
+---
+
+## ROUND 2 — the synthesis: card-stack warbands
+
+**Jake's round-1 reactions:** doctrine best-of-three but "no commitment" (class = vehicle,
+gems slotted in; needs a better name) · elite specs re-aimed: branching FINAL/EVOLVED forms
+of a class reached by climbing the tree (Warrior → tank line vs bruiser line) · fusion
+should be at the FOREFRONT — fuse any time, "almost more like a deck builder" · keep trying
+for cool. **Read: transformation/combination as core verbs, not rare events.**
+
+**The pitch:** every unit is a STACK of cards; every card is a component.
+- **Class cards** = vehicle (stats, weapon proficiency, signature verb). Play one → a unit.
+- **Fusion = core verb, any time:** drop class card onto class card — stats blend, secondary
+  verb becomes an echo-rider on the primary's cast (today's content atom expresses this).
+- **Evolution = the tree:** each class has branching **elite lines** (Warrior → Juggernaut
+  vs Berserker); dupe-ranks are the leveling that unlocks the branch. Promotion moment, not
+  stat drip.
+- **The combo engine:** fused stacks unlock evolutions neither component has alone
+  (Warrior+Cleric → *Paladin*). Recipe discovery = the collection meta. Genre white space.
+- **Essences (the "doctrine" rename + better source):** slot-cards are carved from KILLS —
+  monster essences drop from wager fights, tier-gated (Greedy drops the rare ones, per ADR
+  0007's tier-scaled drops). Wager choice becomes a build choice; "what you kill becomes
+  part of you."
+
+**Law check:** dupes→ranks survive (gate evolutions) · fork-transforms law survives
+(evolution IS the transform) · one-active survives (echo = cast rider) · budget: 16
+evolutions + ~6 fusion-exclusive recipes + ~10 essences. Main rework: hero/item economy
+reframed as class-card/essence economy (weapons/trinkets remain as gear).
+
+**Fallback:** evolution-first alone (branching promotions, no stacking) — solid but drops
+the fuse-any-time ask.
 
 ---
 

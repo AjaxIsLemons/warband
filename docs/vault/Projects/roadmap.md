@@ -12,15 +12,16 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 - **DONE** — move to the Done section with a date.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
-1. **DESIGN CAMPAIGN** (Jake, 2026-07-22: "shift gears back to design" — depth before any
-   playtest talk; conscious amendment of ADR 0001's playtest-first stance, flagged once):
-   a. **"The sauce"** — the missing unique-hook conversation — **DESIGN** (candidates
-      proposed; drives everything below).
-   b. **Weapons design pass** — how weapons WORK: categories, keywords, attack shapes
-      (un-deferred into here), crit identity, itemization — **DESIGN**.
-   c. **Spec-tree impact model** — what a node IS, magnitude bands, fork identity rules,
-      passives vocabulary, per-rank scaling question — **DESIGN**.
-   d. **Hero deep dives ×8** — one dedicated pass per hero, using b+c templates — **DESIGN**.
+1. **DESIGN CAMPAIGN** (Jake, 2026-07-22: depth before any playtest talk; reordered
+   hero-first same day. **THE BAR: every class can be brought, feels different run to
+   run, and can wear different hats.**):
+   a. **Spec-tree impact model** — the deep-dive template: fork "hat check", node
+      magnitude bands, per-rank scaling, passives vocabulary — **DESIGN** (proposal made).
+   b. **Hero deep dives ×8** — one dedicated pass per hero w/ Jake, starting from
+      roster.md drafts; each dive shapes its starter weapon — **DESIGN**.
+   c. **Weapons/itemization pass** — full categories + attack shapes, AFTER a dive or
+      two proves what's needed — **DESIGN**.
+   ~~Sauce hunt~~ — **PARKED** (Design/sauce.md; two rounds cold. May re-emerge from dives).
 2. **Real content pass** — the 8 designed heroes + weapons through the composer + real
    IRunContent (supersedes "placeholder content pass"; waits on campaign) — blocked by 1.
 3. **Archetype sweep harness** — round-robin win matrix + per-tier EV over RunHarness —
