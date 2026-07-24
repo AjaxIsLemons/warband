@@ -1,6 +1,11 @@
 # ADR 0002 — Run structure: best-of-5 acts, PvE wagering, anti-snowball laws
 
-**Date:** 2026-07-22 · **Status:** accepted (round-3 pitch Q&A) · **Participants:** Jake + Claude
+**Date:** 2026-07-22 · **Status:** superseded by ADR 0016 · **Participants:** Jake + Claude
+
+> **Historical decision.** The best-of-five outcome, mandatory ghost bosses, boss record,
+> and record-keyed matchmaking are no longer the run spine. The general desire for
+> recoverable losses and ADR 0007's PvE risk/reward choice remain useful inputs to the
+> PvE vertical-slice design.
 
 ## Context
 Round 3 had to answer "what does losing cost?" Jake's explicit worry: PvP wins snowballing —

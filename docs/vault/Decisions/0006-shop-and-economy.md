@@ -1,6 +1,11 @@
 # ADR 0006 — Shop & economy: every-node shops, act-close slot offers, small bench
 
-**Date:** 2026-07-22 · **Status:** accepted (design session w/ Jake) · **Participants:** Jake + Claude
+**Date:** 2026-07-22 · **Status:** accepted; slot-offer timing reopened by ADR 0016 ·
+**Participants:** Jake + Claude
+
+> **2026-07-23 amendment:** shop-after-every-node, widen-vs-deepen, one currency, flat
+> rerolls, and the small bench remain accepted. The exact act count and therefore when/how
+> 3→6 field-slot purchases unlock must be resettled with the PvE run structure.
 
 ## Context
 The run layer (roadmap 1a) needs the economy's *structure* before it can be built. Round 4

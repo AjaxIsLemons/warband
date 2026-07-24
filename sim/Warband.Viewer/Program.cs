@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Warband.Sim;
@@ -16,12 +17,50 @@ namespace Warband.Viewer
         private static void Main(string[] args)
         {
             int every = 0;
+            string? dumpPath = null;
+            string? scenariosOut = null;
+            string? scenariosFile = null;
+            string? coveragePath = null;
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "--every")
-                    every = int.Parse(args[i + 1]);
+            {
+                if (args[i] == "--every") every = int.Parse(args[i + 1]);
+                if (args[i] == "--dump") dumpPath = args[i + 1];
+                if (args[i] == "--scenarios") scenariosOut = args[i + 1];
+                if (args[i] == "--scenarios-file") scenariosFile = args[i + 1];
+                if (args[i] == "--coverage") coveragePath = args[i + 1];
+            }
+
+            if (coveragePath != null) { Coverage(coveragePath); return; }
+            if (scenariosOut != null)
+            {
+                Environment.Exit(RunScenarios(scenariosOut,
+                    scenariosFile ?? Path.Combine(AppContext.BaseDirectory, "scenarios.json")));
+            }
 
             var (units, names) = SampleArmies();
             var result = new Battle(units).Run();
+
+            if (dumpPath != null)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(dumpPath))!);
+                using (var fs = File.Create(dumpPath))
+                    Replay.Write(fs, result.InitialUnits, result.Events);
+
+                // Round-trip self-check: re-read and fold to the end; the view the client
+                // will reconstruct must hash-match the live fight (render-contract fidelity).
+                List<PlaybackUnit> rtInitial;
+                List<BattleEvent> rtEvents;
+                using (var fs = File.OpenRead(dumpPath))
+                    (rtInitial, rtEvents) = Replay.Read(fs);
+                var live = PlaybackState.From(result.InitialUnits); live.AdvanceToTick(result.Events, result.EndTick);
+                var round = PlaybackState.From(rtInitial); round.AdvanceToTick(rtEvents, result.EndTick);
+                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash();
+
+                Console.WriteLine($"wrote replay: {dumpPath} — {result.InitialUnits.Count} units, {result.Events.Count} events, winner {result.Winner}, {result.EndTick} ticks");
+                Console.WriteLine(ok ? "round-trip OK (view hashes match)" : "!! ROUND-TRIP MISMATCH");
+                Environment.Exit(ok ? 0 : 1);
+            }
+
             if (every <= 0) every = Math.Max(1, result.EndTick / 12);
 
             Console.WriteLine($"=== WARBAND — sample skirmish (log: {result.Events.Count} events) ===");
@@ -42,6 +81,64 @@ namespace Warband.Viewer
 
             Console.WriteLine();
             Console.WriteLine($"=== RESULT: {result.Winner} at tick {result.EndTick} ({result.EndTick / 10.0:0.0}s) ===");
+        }
+
+        /// <summary>Generate every scenario's replay into <paramref name="outDir"/>, round-trip
+        /// verify each (view-hash), and emit a per-scenario coverage report on stdout. This is the
+        /// headless end-to-end proof: parse → catalog-compose → sim → serialize → re-read → fold →
+        /// hash. Returns a process exit code (0 = all scenarios round-tripped).</summary>
+        private static int RunScenarios(string outDir, string scenariosFile)
+        {
+            if (!File.Exists(scenariosFile))
+            {
+                Console.Error.WriteLine($"scenarios file not found: {scenariosFile}");
+                return 1;
+            }
+            Directory.CreateDirectory(outDir);
+            var cat = new Warband.Content.Catalog();
+            var file = Warband.Viewer.Scenarios.Load(scenariosFile);
+
+            var report = new StringBuilder();
+            report.AppendLine($"# Scenario replays — {file.scenarios.Count} fights");
+            report.AppendLine();
+            report.AppendLine($"Source: `{Path.GetFileName(scenariosFile)}` → `{outDir}`. Each is a real Catalog build; round-trip = the client's view hash matches the live fight.");
+            report.AppendLine();
+
+            bool allOk = true;
+            foreach (var s in file.scenarios)
+            {
+                var result = Warband.Viewer.Scenarios.Build(s, cat);
+                string outPath = Path.Combine(outDir, s.name + ".bytes");
+                using (var fs = File.Create(outPath))
+                    Replay.Write(fs, result.InitialUnits, result.Events);
+
+                List<PlaybackUnit> rtInitial;
+                List<BattleEvent> rtEvents;
+                using (var fs = File.OpenRead(outPath))
+                    (rtInitial, rtEvents) = Replay.Read(fs);
+                var live = PlaybackState.From(result.InitialUnits); live.AdvanceToTick(result.Events, result.EndTick);
+                var round = PlaybackState.From(rtInitial); round.AdvanceToTick(rtEvents, result.EndTick);
+                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash();
+                allOk &= ok;
+
+                report.Append(ReplayInspector.Report(
+                    $"{s.name} — winner {result.Winner}{(ok ? "" : "  ⚠ ROUND-TRIP MISMATCH")}",
+                    result.InitialUnits, result.Events));
+                report.AppendLine();
+                Console.Error.WriteLine($"  {(ok ? "ok " : "!! ")}{s.name,-20} {result.InitialUnits.Count} units, {result.Events.Count,4} events, winner {result.Winner} -> {outPath}");
+            }
+
+            Console.Write(report.ToString());
+            Console.Error.WriteLine(allOk ? "all scenarios round-tripped OK" : "!! ONE OR MORE SCENARIOS MISMATCHED");
+            return allOk ? 0 : 1;
+        }
+
+        /// <summary>Print the event-signature coverage of an existing replay file.</summary>
+        private static void Coverage(string replayPath)
+        {
+            using var fs = File.OpenRead(replayPath);
+            var (initial, events) = Replay.Read(fs);
+            Console.Write(ReplayInspector.Report(Path.GetFileNameWithoutExtension(replayPath), initial, events));
         }
 
         private static string RenderBoard(PlaybackState fold)

@@ -1,56 +1,219 @@
-# First-playable roster — DRAFT v0.1 (2026-07-22, for Jake's reaction)
+# First-playable roster — PvE contracts v1.0
 
-8 heroes × 2 paths (ADR 0001 budget). Format: **Chassis** — innate / signature → *Path A* | *Path B*.
-Numbers come later (content before numbers was circuit's mistake in reverse — here shapes
-first, tuning in the harness). Synergies listed are emergent, never rule-based.
+**Date:** 2026-07-24
+**Status:** current first-playable candidates, mechanically authored but unplayed.
 
-1. **Bulwark** (tank, melee r1, slow) — innate: starts combat Shielded (% of HP) /
-   sig **Shield Slam**: damage + brief Stun to nearest enemy →
-   *Juggernaut*: Slam hits all adjacent + bigger Stun | *Warden*: Slam also Shields adjacent allies.
-2. **Cleric** (support, ranged r3) — innate: small heal trickle to lowest ally /
-   sig **Mend**: heal lowest-HP ally →
-   *War-Priest*: Mend also smites nearest enemy for the amount healed; gains melee-grade stats |
-   *Lifebinder*: Mend also lays a small healing-ground glyph under the target.
-3. **Shade** (assassin, melee r1, fast) — innate: combat start, **Leap** to farthest enemy hex /
-   sig **Backstab**: heavy single hit →
-   *Reaper*: Backstab Executes targets below threshold | *Phantom*: after casting, Leap to a new target.
-4. **Sharpshot** (ranged r4) — innate: +1 Range while no enemy within 2 hexes /
-   sig **Piercing Bolt**: damage in a line (Pierce) →
-   *Sniper*: targets farthest enemy, huge damage | *Volleyer*: bolt splits into 3 smaller shots.
-5. **Pyromancer** (caster, ranged r3, weak auto / big mana — the glyph anchor) — innate:
-   attacks apply 1 DoT stack / sig **Fire Glyph**: ignite a radius-1 field at the target
-   (DoT while standing/entering) →
-   *Inferno*: bigger fields, DoT spreads on kill | *Starfall*: no field, triple-damage single hit + DoT.
-6. **Berserker** (melee r1) — innate: attack speed rises as HP falls /
-   sig **Frenzy**: next attacks come instantly →
-   *Bloodreaver*: Frenzy attacks Lifesteal | *Rampager*: Frenzy attacks Cleave adjacent.
-7. **Phalanx** (reach fighter, melee r2 — hits over the front row) — innate: Counters the
-   first attack against it each cast cycle / sig **Skewer**: damage target + hex behind it →
-   *Pikewall*: Counter always, and enemies whose Leap lands within 1 hex are Countered +
-   forced to target Phalanx (the anti-assassin answer, ADR 0003) | *Lancer*: Skewer becomes a full-line lunge.
-8. **Banneret** (support, melee r1 — the warband's soul) — innate: adjacent allies attack
-   faster (aura) / sig **Rally**: grant Mana to adjacent allies →
-   *Herald*: Rally also Shields | *Warcaller*: Rally hits the whole row, adds attack damage.
+The roster is not balanced or locked. Its job is to offer several legible ways to build an
+outrageous warband against authored PvE. The first playtest decides which promises actually
+work.
 
-## The keyword vocabulary this roster requires (= the sim's v1 vocabulary)
-Shield · Stun · Burn (DoT) · Heal · Lifesteal · Execute · Counter ·
-Cleave (adjacent) · Pierce (line) · Splash (ring) · Leap · Aura (adjacency) ·
-Mana-grant · Range-condition. ~14 effects — circuit's engine expressed more than this;
-the event→trigger→effect grammar covers all of it.
+## Source-of-truth boundaries
 
-## Emergent synergy examples (why no trait system is needed)
-- Banneret auras + Warden shields reward clumping — enemy Pyromancer Splash punishes it.
-- Phantom re-Leaps feed Reaper-style backline pressure; Bulwark Stuns protect against it.
-- Rally (mana-grant) accelerates Stall-type casters; Shade hunts exactly those backliners.
-- Sharpshot's range-condition wants an empty frontline; Phalanx reach punishes hers.
+- This page owns each class's **stable PvE contract**: fantasy, engine, encounter
+  contribution, dependency, and weakness.
+- `Design/dives/` owns the complete spec-tree intent and named build web.
+- `sim/Warband.Content/Kits.cs` owns the currently runnable expression and placeholder values.
+- `Design/weapons.md` and ADR 0015 own weapon physics and mastery.
+- `Design/pve-encounters.md` owns what enemies may demand and how those demands are disclosed.
 
-❓ Open reactions wanted: which chassis feel wrong/missing? (No wall-summoner, dedicated
-displacer, or debuffer in v1 — deliberate scope cuts; the wall-summoner Jake likes is the
-strongest 9th-hero / post-v1 candidate.)
+Do not duplicate every node or number here. Update this page when a class changes identity,
+not whenever a tuning value moves.
 
-## Template audit (ADR 0011, 2026-07-22 — input for the dives)
-Fork law (≥1 path per class must ADD/SWAP an archetype): Bulwark ✓ (+disruptor|+support) ·
-Cleric ✓ (+melee dps|+ground support) · Pyromancer ✓ (area denial|burst swap) · Phalanx ✓ ·
-Berserker ~ (sustain|cleave — verify in dive) · **Shade ✗ and Sharpshot ✗ double-DEEPEN**
-(specialist-exception candidates or path rework) · **Banneret ~lean**. Fork timing: B
-default; late-bloomer candidates Pyromancer, Shade.
+## Roster at a glance
+
+| Class | Base promise | Main fork | Primary PvE answers |
+|---|---|---|---|
+| Cleric | Bruiser-healer whose cast rewards contact | War-Priest Burn engine / Lifebinder remote support | Sustain, clustered fights, healing and Burn engines |
+| Bulwark | The wall the warband is built behind | Juggernaut area control / Warden threat redirection | Frontline, swarms, caster denial |
+| Shade | Backline assassin that chains through vulnerable targets | Reaper crit-Execute / Phantom Phase scaling | Protected threats, cleanup, pressure escape |
+| Sharpshot | Distance converts directly into damage | Sniper cast payload / Volleyer swing payload | Artillery, lines, opening burst, long-fight scaling |
+| Pyromancer | Burn turns targets or ground into a damage engine | Inferno Field control / Starfall focused burst | Clumps, territory, tall single-target Burn |
+| Berserker | Gets faster and more dangerous as health falls | Bloodreaver sustain / Rampager area damage | Brawls, swarms, self-sustaining aggression |
+| Phalanx | Second-rank reach and directional retaliation | Pikewall anti-dive / Lancer line damage | Formation defense, Leaps, aligned enemies |
+| Banneret | Converts formation and allies into party tempo | Herald protection / Warcaller disruption | Team acceleration, shielding, Clock control |
+
+## Cleric — Sister Maren of the Waning Bell
+
+**Contract:** A bruiser-healer who wants to stand near the part of the formation taking
+damage. Being exposed feeds mana, and casting Sanctified Pyre turns that danger into damage
+and healing around the Cleric.
+
+- **War-Priest:** commits to the scrum. A larger Pyre applies Burn, and later choices turn
+  attacks, deaths, and casts into Burn transfer, detonation, sustain, or tempo.
+- **Lifebinder:** retreats from the scrum while projecting support into it. The Pyre becomes
+  a remote heal-and-Haste pulse on the most wounded ally, with healing-ground, tempo, repeat,
+  or Shield riders.
+- **PvE contribution:** stabilizes focused allies, rewards clustered formations, enables
+  Burn interactions, and can turn sustained incoming pressure into more casts.
+- **Engine wants:** allies receiving meaningful damage; useful clusters around the Cleric or
+  pulse target; repeated casts; Burning enemies for War-Priest payoffs.
+- **Deliberate weakness:** Lifebinder gives up much of the base offensive pressure;
+  War-Priest must accept frontline danger. Fast damage races can end before the healing or
+  Burn engine compounds.
+- **Watch in play:** whether remote pulse targeting and repeat-pulse behavior are legible;
+  whether War-Priest and Lifebinder genuinely demand different placement.
+
+Detailed tree: [dives/cleric.md](dives/cleric.md).
+
+## Bulwark — Brakka, Shieldmaid of the Bronze Hour
+
+**Contract:** The wall the formation is built behind. Starting Shield and incoming attacks
+buy time and mana; Shield Slam converts that attention into control.
+
+- **Juggernaut:** breaks whatever crowds the wall. Area Slams, Stun, Slow, Shield generation,
+  and Shield-scaled damage turn enemy density into value.
+- **Warden:** draws the storm inward. The Slam becomes a wide Taunt, Silence, and self-Shield
+  package that redirects pressure instead of dealing damage.
+- **PvE contribution:** holds a lane, interrupts clustered enemies, protects fragile allies
+  through targeting, and denies dangerous casters.
+- **Engine wants:** enemies willing to engage or focus the Bulwark; crowds for Juggernaut;
+  important attack or cast threats inside Warden reach.
+- **Deliberate weakness:** low independent damage and limited access to enemies outside the
+  controlled area. Encounters that ignore the frontline reduce the value of raw durability.
+- **Watch in play:** Warden currently dominates small-board control tests; verify that Taunt
+  produces interesting protection rather than solving every formation.
+
+Detailed tree: [dives/bulwark.md](dives/bulwark.md).
+
+## Shade — Null, the Redacted
+
+**Contract:** The knife that picks its moment. Ambush opens in the enemy backline; Backstab
+and kill-triggered Leaps turn vulnerable targets into a route through the formation. Shade
+forks later than the other classes because the early ranks establish that shared assassin.
+
+- **Reaper:** accepts variance for lethal payoff. Crits threaten Execute against wounded
+  enemies and later choices amplify marked victims or crit damage.
+- **Phantom:** converts danger into absence and scaling. Burst damage triggers Phase; return
+  Leaps and permanent combat power reward surviving repeated dives.
+- **PvE contribution:** reaches protected support or artillery, cleans up weakened units,
+  and disrupts target safety created by conventional frontlines.
+- **Engine wants:** valuable distant targets, enemies that can be finished in sequence,
+  crit support for Reaper, and meaningful incoming pressure for Phantom.
+- **Deliberate weakness:** fragile when caught between escape windows. Singular encounters
+  with no secondary targets reduce the shared kill-and-releap engine.
+- **Watch in play:** Phase uptime is currently near-degenerate in the synthetic sweep; judge
+  readability and counter-pressure before touching its numbers.
+
+Detailed tree: [dives/shade.md](dives/shade.md).
+
+## Sharpshot — Calamity Vance, the Last Deadeye
+
+**Contract:** The queen of visible distance. Full Draw makes every hex matter, while the
+fork asks whether damage lives in the mana-funded signature or ordinary swings.
+
+- **Sniper:** turns Piercing Bolt into farthest-target, board-length artillery. Later choices
+  emphasize enormous shots, aligned enemies, repeat swings, or mana refunds on kills.
+- **Volleyer:** turns casts into widening multishot windows. The ability feeds an auto-attack
+  engine that becomes broader and heavier during a long fight.
+- **PvE contribution:** attacks protected backliners, punishes lines, provides opening burst,
+  and offers a ranged engine that scales without relying on Burn or taking damage.
+- **Engine wants:** distance, protected firing space, aligned or multiple enemies for line
+  and volley value, and enough fight duration for Volleyer to ramp.
+- **Deliberate weakness:** divers and collapsed spacing directly remove Full Draw value.
+  Short fights can end before Volleyer becomes spectacular.
+- **Watch in play:** One Breath needs encounters long enough to express its cadence; confirm
+  that multishot splash and line geometry match what the player reads.
+
+Detailed tree: [dives/sharpshot.md](dives/sharpshot.md).
+
+## Pyromancer — Ilion-7, Cinder of a Dead Star
+
+**Contract:** The caster who makes either the ground or the target into a weapon. Attacks
+load a shared Burn pool; the fork decides where that accumulated pressure lives.
+
+- **Inferno:** expands Fire Glyphs, spreads fields from Burning deaths, and can turn occupied
+  ground into permanent damage and Slow pressure.
+- **Starfall:** removes the field and concentrates power into a heavy hit plus Burn. Later
+  choices consume, multiply, or chain the target's accumulated pool.
+- **PvE contribution:** punishes clumps, paints hostile territory, clears linked groups, and
+  supplies focused magical pressure against durable targets.
+- **Engine wants:** enemies remaining inside useful areas for Inferno; repeated Burn
+  application and targets that survive long enough to load for Starfall.
+- **Deliberate weakness:** fragile, cast-dependent, and sensitive to enemy spacing or
+  movement. Very short fights can end before Burn pays out.
+- **Watch in play:** fields and Burn transfers must be immediately readable; current short
+  scaffolding fights substantially undervalue the class.
+
+Detailed tree: [dives/pyromancer.md](dives/pyromancer.md).
+
+## Berserker — Ulfrik, Who Burns His Hours
+
+**Contract:** The engine that runs hotter as it breaks. Missing health accelerates attacks;
+Frenzy cashes that tempo into a rapid swing window.
+
+- **Bloodreaver:** makes Frenzy feed the Berserker through Lifesteal, kill extensions,
+  cheat-death, or overheal-to-Shield.
+- **Rampager:** makes Frenzy hit the surrounding formation through Cleave, risk amplification,
+  a final ring impact, longer windows, or full-weight area damage.
+- **PvE contribution:** anchors messy melee fights, clears swarms, finishes wounded enemies,
+  and creates a self-sustaining damage engine without dedicated support.
+- **Engine wants:** enough incoming pressure to activate Burning Hours without dying;
+  repeated swings; adjacent enemies or kills for the chosen path.
+- **Deliberate weakness:** burst can kill the Berserker before the low-health engine pays off,
+  while denial or unreachable targets starve Frenzy of useful swings.
+- **Watch in play:** the synthetic sweep shows unusually broad reliability. Verify that this
+  is satisfying robustness rather than a universally correct answer.
+
+Detailed tree: [dives/berserker.md](dives/berserker.md).
+
+## Phalanx — Leonnatos of the Unbroken Line
+
+**Contract:** The second rank that fights over the first. Reach, directional Counter, and
+Skewer make formation geometry part of every attack.
+
+- **Pikewall:** holds the player's line. Repeated Counters, Leap reactions, Taunt, Disarm,
+  shared Riposte, and damage reduction punish enemies that attack the protected formation.
+- **Lancer:** breaks the enemy line. Longer and stronger Skewers turn aligned bodies and open
+  spacing into a melee artillery lane.
+- **PvE contribution:** protects against dives, supports a frontline from safety, punishes
+  attackers, and exploits enemy columns or lines.
+- **Engine wants:** enemies attacking into the defended formation; Leaps for Pikewall;
+  multiple occupied hexes on a line for Lancer.
+- **Deliberate weakness:** sparse or badly aligned enemies can leave line effects empty.
+  Threats that neither attack the formation nor enter reach reduce Counter value.
+- **Watch in play:** measure Skewer and Overreach connection rates; the current last-wins
+  signature composition causes Sarissa to lose Deep Thrust's escalation.
+
+Detailed tree: [dives/phalanx.md](dives/phalanx.md).
+
+## Banneret — Capitana Vespera, Banner of the Turning Age
+
+**Contract:** The warband's party multiplier. Allies mustered around the Standard become the
+Company and retain its tempo benefit; live Rally casts reward maintaining useful formation
+after movement begins.
+
+- **Herald:** steadies the Company through Rally Shields, damage reduction, wounded-ally
+  triage, or broader and stronger muster effects.
+- **Warcaller:** fights the Clock in both directions through allied swing windows, enemy
+  Slow, a live disruption aura, global Company reach, or doubling the run banner.
+- **PvE contribution:** accelerates casts and attacks across a team, protects clustered
+  allies, suppresses nearby enemies, and multiplies an already coherent party engine.
+- **Engine wants:** several allies capable of exploiting Haste or Mana, deliberate muster
+  placement, useful live Rally geometry, and a meaningful banner for Bearer of the Mark.
+- **Deliberate weakness:** low personal output and poor value when isolated or paired with
+  allies that cannot exploit tempo. The class magnifies a plan rather than replacing one.
+- **Watch in play:** solo-oriented harnesses understate support value; evaluate at team level.
+  Confirm Wide Banner's intended muster-and-Rally reach against its current runnable form.
+
+Detailed tree: [dives/banneret.md](dives/banneret.md).
+
+## Roster coverage law
+
+The eight candidates already cover the first-playable PvE answer space:
+
+- **enemy width:** Inferno, Rampager, Juggernaut, Volleyer, and Lancer;
+- **durable focus targets:** Sniper, Starfall, Reaper, Bloodreaver, and Shield engines;
+- **sustain and attrition:** Cleric, Bloodreaver, Bulwark, Herald, and Phantom;
+- **protected backlines:** Shade, Sniper, Lancer, and long-range wardrobes;
+- **dive defense:** Pikewall, Warden, formation, and support tools;
+- **Clock pressure:** Stun, Taunt/Silence, Slow, Haste, Mana, and attack denial;
+- **Field pressure:** Inferno and Lifebinder, plus authored banners and enemy glyphs.
+
+The roster deliberately lacks universal cleanse/tenacity, enemy-field removal, anti-heal,
+and generic Shield break. PvE encounters must not require a counter the offered roster and
+items cannot provide; see `pve-encounters.md`.
+
+Do not add a ninth hero because a concept sounds appealing. Add one only after an authored
+encounter and playtest prove that an important problem has no satisfying answer in this
+roster. Until then, deepen cross-hero engines through weapons, banners, placement, and enemy
+composition rather than expanding class count.

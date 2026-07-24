@@ -17,11 +17,18 @@ another era being eaten.
    warband on the board.
 
 ## Mechanics ↔ fiction (candidates — Jake steers)
-- **Ghost bosses = Echoes**: warbands of brother-timelines, met at each era's gate. The
-  best-of-5 record is your run's stand against five Echoes. Bot-ghosts: "when no echo
-  answers, the Tower dreams one."
-- **Acts = eras**: each act is a descent into one dying era (5 per run) — acts gain visual
-  and monster identity, stop being numbers.
+- **Asymmetrical PvE = a timeline's death throes**: the consuming Hour does not recruit a
+  fair warband. It produces swarms, engines, artillery, rituals, impossible bodies, and
+  era-scale catastrophes. Encounter rules express how this particular history is dying.
+- **Acts = eras**: each act is a descent into one dying era — acts gain visual, enemy, and
+  boss identity and stop being numbers. Exact count is reopened by ADR 0016.
+- **The final boss = the era-eater / Last Hour made manifest** (exact identity open).
+  Defeating it is a completed run; continuing beyond it is a deliberate step outside the
+  authored victory.
+- **Endless = Beyond the Hour** (candidate): the Tower keeps the victorious warband in the
+  collapse until some deeper timeline finally breaks its engine.
+- **Future PvP = Echoes**: optional no-stakes exhibitions against brother-timeline
+  warbands. Echoes are compatible with the fiction but are not part of the core run.
 - **Wager tiers → timefront stability**: Safe/Even/Greedy → **Stable / Fraying /
   Collapsing** (tier names were placeholder, ADR 0007 — these are the candidates).
 - **Currency → Sand** (candidate; "gold" was explicitly a placeholder until theme landed —

@@ -1,0 +1,63 @@
+{
+  "// note": "Data-driven replay set. Each unit is a real Catalog build. picks = path choices at B/A/S (0 or 1). tier: Worn|Honed|Relic. Board is 8 rows x 6 cols; team0 lower rows march up, team1 upper rows march down. Regenerate with `make scenarios`.",
+  "scenarios": [
+    {
+      "name": "duel-crit-vs-tank",
+      "seed": 7,
+      "units": [
+        { "team": 0, "chassis": "shade",   "picks": [1, 1, 1], "tier": "Relic", "row": 2, "col": 2 },
+        { "team": 1, "chassis": "bulwark", "picks": [1, 0, 1], "tier": "Honed", "row": 5, "col": 2 }
+      ]
+    },
+    {
+      "name": "castfest",
+      "seed": 3,
+      "banners": { "0": ["chorus"], "1": ["brand"] },
+      "units": [
+        { "team": 0, "chassis": "pyromancer", "picks": [0, 1, 0], "row": 1, "col": 1 },
+        { "team": 0, "chassis": "cleric",     "picks": [0, 0, 1], "row": 2, "col": 2 },
+        { "team": 0, "chassis": "banneret",   "picks": [1, 0, 1], "row": 1, "col": 3 },
+        { "team": 1, "chassis": "sharpshot",  "picks": [0, 0, 0], "row": 6, "col": 1 },
+        { "team": 1, "chassis": "phalanx",    "picks": [1, 1, 0], "row": 5, "col": 2 },
+        { "team": 1, "chassis": "berserker",  "picks": [0, 1, 1], "row": 6, "col": 3 }
+      ]
+    },
+    {
+      "name": "stomp",
+      "seed": 11,
+      "units": [
+        { "team": 0, "chassis": "berserker", "picks": [1, 1, 1], "weapon": "greataxe", "tier": "Relic", "mastered": true, "rank": 3, "row": 2, "col": 2 },
+        { "team": 0, "chassis": "shade",     "picks": [1, 1, 1], "tier": "Relic", "mastered": true, "rank": 3, "row": 2, "col": 3 },
+        { "team": 0, "chassis": "sharpshot", "picks": [0, 1, 1], "tier": "Relic", "mastered": true, "rank": 3, "row": 1, "col": 2 },
+        { "team": 1, "chassis": "sharpshot", "picks": [0, 0, 0], "tier": "Worn", "mastered": false, "rank": 0, "row": 5, "col": 1 },
+        { "team": 1, "chassis": "berserker", "picks": [0, 0, 0], "tier": "Worn", "mastered": false, "rank": 0, "row": 6, "col": 2 },
+        { "team": 1, "chassis": "phalanx",   "picks": [0, 0, 0], "tier": "Worn", "mastered": false, "rank": 0, "row": 5, "col": 3 }
+      ]
+    },
+    {
+      "name": "statusstorm",
+      "seed": 5,
+      "banners": { "0": ["brand"] },
+      "units": [
+        { "team": 0, "chassis": "bulwark",    "picks": [1, 1, 1], "tier": "Honed", "row": 2, "col": 2 },
+        { "team": 0, "chassis": "pyromancer", "picks": [1, 0, 1], "row": 1, "col": 1 },
+        { "team": 0, "chassis": "berserker",  "picks": [0, 1, 0], "row": 1, "col": 3 },
+        { "team": 1, "chassis": "phalanx",    "picks": [1, 0, 1], "row": 5, "col": 2 },
+        { "team": 1, "chassis": "shade",      "picks": [1, 1, 1], "row": 6, "col": 1 },
+        { "team": 1, "chassis": "cleric",     "picks": [0, 1, 0], "row": 6, "col": 3 }
+      ]
+    },
+    {
+      "name": "skirmish",
+      "seed": 1,
+      "units": [
+        { "team": 0, "chassis": "bulwark",    "picks": [0, 0, 0], "row": 2, "col": 2 },
+        { "team": 0, "chassis": "berserker",  "picks": [0, 0, 0], "row": 2, "col": 3 },
+        { "team": 0, "chassis": "pyromancer", "picks": [0, 0, 0], "row": 1, "col": 3 },
+        { "team": 1, "chassis": "phalanx",    "picks": [0, 0, 0], "row": 5, "col": 2 },
+        { "team": 1, "chassis": "cleric",     "picks": [0, 0, 0], "row": 6, "col": 2 },
+        { "team": 1, "chassis": "banneret",   "picks": [0, 0, 0], "row": 5, "col": 3 }
+      ]
+    }
+  ]
+}

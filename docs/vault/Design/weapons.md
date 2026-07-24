@@ -1,112 +1,188 @@
-# The weapons pass — catalog, riders, rarity, the forge (v1.0 SETTLED, 2026-07-23)
+# Weapons — attack physics, mastery, temper, and the forge
 
-Status: **SETTLED → ADR 0015** (Jake: "sounds good as a start" — all recommendations
-locked: engine-rider law, temper tiers + Relic rule, Tower-forge reforge, wager-rarity
-dead, starters-begin-Worn; tier names Worn/Honed/Relic adopted as working names). Inputs:
-ADR 0005 (weapon = the attack profile: damage/interval/range/shape; weapon-required),
-ADR 0012 (universal equip, weapon carries ONE latent mastery rider, classes tag 1–2
-specializations, heal-weapons legal), ADR 0006/0009 (per-node shop: 2 item cards,
-freeze/reroll/sell 50%, `IRunContent` pools **by act**), all 8 dive wardrobes, the
-~12-item first-playable cap. Numbers placeholder per doctrine — SHAPES are the
-decisions here. Settles ADR 0005's deferred "attack shapes" question. Becomes ADR 0015
-once Jake settles it.
+**Updated:** 2026-07-24
 
-## 1 · The catalog — 11 categories, the dives already built it
+**Status:** current first-playable design reference. The structure is accepted in
+[ADR 0015](../Decisions/0015-weapon-system.md); names and numbers remain placeholder-grade
+until playtest.
 
-The masters matrix (chassis tags per dives; ✚ = fork-added per ADR 0012 clause 3):
+Weapons are the player's cleanest way to change what a hero does without changing who that
+hero is. A weapon supplies the hero's basic attack physics. Its mastery rider rewards a
+natural pairing without preventing unnatural ones. Temper lets a good find remain relevant,
+and Relic temper can turn an off-label experiment into a real build.
 
-| Category | Physics (placeholder) | Masters | Mastery rider |
+## Source boundaries
+
+- This page owns the player-facing weapon catalog, mastery law, temper model, and forge
+  contract.
+- [ADR 0005](../Decisions/0005-loadout-composition.md) owns loadout composition order:
+  chassis → weapon → trinket → spec nodes.
+- [ADR 0012](../Decisions/0012-weapon-access-model.md) owns universal equip and
+  specialization rather than weapon locks.
+- [ADR 0015](../Decisions/0015-weapon-system.md) records the accepted catalog, temper, and
+  forge decisions.
+- `sim/Warband.Content/Weapons.cs` owns the currently runnable profiles and placeholder
+  magnitudes.
+- Hero specializations and intended wardrobes live in [roster.md](roster.md) and the
+  individual hero dives.
+- Trinkets are a separate item family. They do not need to obey the mastery-rider law.
+
+## What a weapon owns
+
+The weapon is the hero's basic attack profile:
+
+- damage or healing;
+- attack interval;
+- range;
+- crit profile;
+- attack shape; and
+- one latent mastery rider.
+
+The chassis still owns HP, movement, Mana capacity, innate passives, and the signature
+ability. Spec nodes still own class verbs. A weapon can make the same hero faster, slower,
+safer, longer-ranged, or more cast-hungry, but it should not contain a replacement class
+kit.
+
+The censer is the deliberate exception to damage autos: it targets the lowest-HP ally and
+heals. Heal swings still build Mana and may crit. This makes support a wardrobe choice
+rather than a permanently locked role.
+
+## Universal equip and mastery
+
+Any hero may equip any weapon. The shop therefore never offers an item that is unusable
+because the player drafted the wrong classes.
+
+Each chassis specializes in one or two categories. A specialist activates that weapon's
+mastery rider at every temper. A non-specialist receives the base attack profile without
+the rider, unless the weapon reaches Relic.
+
+Mastery riders amplify an engine—crit, Mana, tempo, defense, reach, or formation payoff.
+They do not add a second signature ability or import another hero's defining verb. Reach
+weapons may modify attack physics because distance is their engine.
+
+The specialization is an incentive, not the answer. Natural pairings should be dependable;
+off-label weapons should create understandable tradeoffs and occasional broken-build
+discoveries.
+
+## First-playable catalog
+
+The categories are the item list: one weapon in each of eleven categories.
+
+| Weapon | Base attack identity | Designed specialists | Mastery rider |
 |---|---|---|---|
-| Twin daggers | r1 · fastest · lightest | Shade · Berserker | +crit chance *(settle Shade's placeholder)* |
-| Sabre | r1 · fast · light | Banneret | **NEW:** first swing after each cast is an automatic crit (the officer's finisher) |
-| Mace | r1 · medium · medium | Bulwark · War-Priest✚ | double mana per swing *(settled ×2)* |
-| Greataxe | r1 · slow · heavy · **CLEAVE** | Berserker | **NEW:** overkill damage carries to the nearest enemy |
-| Tower shield | r1 · slow · low dmg · bulk statline | Bulwark · Phalanx | swings grant a small self-Shield *(settled)* |
-| Pike | r2 · medium (the second-rank reach) | Phalanx | **NEW:** the braced spear — +X% vs enemies adjacent to an ally |
-| Censer | r3 · medium · heal-autos (lowest ally) | Cleric · Pyromancer | overheal → Shield *(settled)* |
-| Staff | r3 · medium · caster statline | Cleric · Pyromancer | brief Haste on cast *(settled Cleric; Pyro's placeholder reconciled to this)* |
-| Bow | r4 · medium | Sharpshot · Shade | **NEW:** +1 range (the only range rider — queen-of-distance physics) |
-| Musket | r4 · slowest · hugest hits | Sharpshot | **NEW:** the opening shot — first swing each fight deals double |
-| Standard | r1 · light (the pole) | Banneret | muster/Company bonuses +X% potency *(settled Banneret)* |
+| **Twin Daggers** | range 1; fastest, lightest swings | Shade, Berserker | bonus crit chance |
+| **Officer's Sabre** | range 1; fast, light swings | Banneret | first swing after each cast is a guaranteed crit |
+| **Temple Mace** | range 1; medium cadence | Bulwark; War-Priest is intended to add it | attack-fed Mana is doubled |
+| **Greataxe** | range 1; slow, heavy swings with cleave | Berserker | overkill carries to the enemy nearest the corpse |
+| **Tower Shield** | range 1; slow, low-damage swings | Bulwark, Phalanx | each auto hit grants the wielder Shield |
+| **Pike** | range 2; second-rank reach | Phalanx | bonus damage against an enemy engaged with an ally |
+| **Censer** | range 3; heals the lowest-HP ally | Cleric, Pyromancer | overheal becomes Shield |
+| **Ashwood Staff** | range 3; steady caster cadence | Cleric, Pyromancer | casting grants brief Haste |
+| **Longbow** | range 4; steady long-range attacks | Sharpshot, Shade | additional attack range |
+| **Matchlock Musket** | range 4; slowest, heaviest shots | Sharpshot | the first shot of the fight deals double damage |
+| **Company Standard** | range 1; light polearm swings | Banneret | an additional opening Haste muster reaches adjacent allies |
 
-Coverage: every category has ≥1 master; daggers/bows/censers/staves/shields have 2 —
-the single-master five (sabre/greataxe/pike/musket/standard) are where the Relic rule
-(§3) earns its keep.
+Every category has at least one natural user. Shared categories create draft overlap;
+single-specialist categories give Relic unlocks more room to produce unusual builds.
 
-**Attack shapes resolved (ADR 0005 debt):** every weapon is single-target EXCEPT
-greataxe (cleave: target + adjacent enemies at Y%). Pierce-line/splash stay
-ability-side verbs in v1 (Skewer, Piercing Bolt, Pyre). One new shape to build, total.
+### Attack-shape law
 
-## 2 · The rider law
-**Mastery riders amplify ENGINES, never add verbs** — mana (mace), tempo (staff,
-sabre), defense (shield, censer), crit (daggers), potency (standard). Verbs live in
-spec nodes; a weapon swap re-skins your delivery physics, it never steals a class
-identity. Sanctioned exception: **reach categories get physics riders** (bow +1 range;
-pike's braced-spear condition) — reach IS their engine.
+Greataxe cleave is the only weapon-level area shape in the first playable. Every other
+damage weapon is single-target. Pierce lines, fans, splashes, and detonations remain
+ability-side verbs, where their ownership and preview are clearer.
 
-## 3 · Rarity — temper tiers, not more items
-**Rarity is a TIER on the same 11 weapons, not new content.** Three tiers:
-**Worn → Honed → Relic** (theme: a Relic is a weapon that outlived its era — "forged
-in a world the Hour already ate"; time-law compliant).
+The censer changes target faction and converts the auto into healing, but it remains a
+single-target attack cycle.
 
-- **Worn:** base stats. **All starter weapons begin Worn** — your free censer is its
-  weakest self; the upgrade economy includes your own gear from node 1.
-- **Honed:** stat scale-up (placeholder ~+25%).
-- **Relic:** bigger scale-up (~+50%) **+ the mastery rider goes live for EVERY
-  wielder — masters instead get the rider doubled.**
+## Temper: Worn → Honed → Relic
 
-The Relic rule is the playstyle engine: the dive wardrobes' "unmastered spice" builds
-(Volleyer × daggers, Warden × censer medic-tank, Phalanx × musket counter-sniper,
-Pyro × tower shield) are deliberately rider-less early — a Relic drop late-run is the
-moment a spice build matures into a real line. Runs get a wardrobe ARC: mastered
-basics early, Relic pivots late.
+Temper is a tier on the same weapon, not another catalog item.
 
-**Stock is act-gated, never record-gated:** `IRunContent` pools by act (already
-shaped, ADR 0009) — act 1–2 stocks Worn, mid acts add Honed, late acts add Relic
-(placeholder curve). Anti-snowball law holds: everyone's shop deepens with the clock,
-not with their winrate. **Wager-linked rarity (Greedy stocks rarer gear) considered
-and recommended DEAD** — it stacks gear advantage on top of ADR 0007's gold advantage
-for winners; one snowball axis is enough.
+- **Worn:** base weapon profile. Starter weapons begin here.
+- **Honed:** improves the weapon's stats.
+- **Relic:** improves the stats again and activates the mastery rider for any wielder.
+  A specialist wielding a Relic receives two copies of the rider.
 
-## 4 · Upgrades — the Tower's forge
-**Yes: reforge in place.** Any shop tick, pay gold to raise one owned weapon a tier
-(Worn→Honed→Relic; escalating placeholder prices). **The forge follows the front:**
-reforge is capped at the current act's stock ceiling — you can keep a beloved starter
-current, never skip the pacing curve.
+That final rule creates a wardrobe arc. An off-label weapon can be useful early for its
+physics, then become build-defining if the player finds or forges the Relic version. A
+natural specialist gets the reliable floor and the strongest Relic ceiling.
 
-Rejected alternatives: **dupe-merge** (TFT-style — with an 11-weapon pool dupes are
-constant, bench is 2, and hoarding fights the tinker pillar) · **kill-fed growth**
-(weapon XP — snowbally, adds tracking, rewards the already-winning board).
+Temper availability follows authored run progression, never the player's record or chosen
+risk tier. The exact PvE gates are not settled while the standard run length remains open.
+Wager-linked rarity stays rejected: risk may affect rewards, but it should not compound a
+winning board's gear quality into a second snowball axis.
 
-Economy fallout: reforged weapons sell at 50% of TOTAL gold sunk (mirrors ADR 0009's
-hero rule — the "respec my wardrobe" path). Reforge is the gold sink that competes
-with dupes/slots/rerolls — the widen-vs-deepen tension gets a third axis: **sharpen**.
+## The Tower forge
 
-## 5 · How weapons enable playstyles (the three levers)
-1. **Physics × innate:** Firebrand loves the fastest weapon (stacks/sec); Full Draw
-   loves range; Burning Hours turns the greataxe's slow heavies into a death-spiral
-   crescendo. The composer already delivers this free (range/interval on weapon).
-2. **Rider × engine:** mace on any caster chassis doubles the cast engine; staff
-   Haste-on-cast compounds Rally/Frenzy loops; standard potency scales the Company.
-3. **Relic × spice:** unmastered riders unlocking late-run (§3) — every class's
-   wardrobe section becomes an act-4 decision, not a day-1 meme.
+During **Prepare**, while economic actions are available, the player may pay gold to raise
+a held weapon by one temper tier. The forge is capped by the run's current progression
+ceiling: a favorite starter may remain current, but gold cannot skip the intended gear
+curve.
 
-## 6 · Budget math (the squeeze, resolved)
-11 weapons (one per category — **the categories ARE the item list**) + 1 trinket = 12
-✓ cap honored. Tiers multiply depth without adding items. Trinkets get a mini-pass
-later (ADR 0005: bundles of existing primitives — cheap, post-playtest).
+The forge creates a third use for gold:
 
-## 7 · Sim/run gaps this pass adds
-Loadout composer: **tier param** (stat scalar + rider-gate: mastered / Relic-any /
-master-doubled) · cleave attack shape (greataxe — only new shape) · overkill-carry
-effect (greataxe rider) · forced-crit-after-cast (sabre — 2nd vote w/ Cold Return) ·
-engaged-with-ally condition (pike rider) · first-swing-double flag (musket) · +range
-rider (bow — composer-side) · **reforge shop action** (ADR 0009 amendment) ·
-act-tiered item pools (`IRunContent` — shape exists, content fills it).
+- **widen** the warband with heroes and field slots;
+- **deepen** it through duplicates and build pieces; or
+- **sharpen** an existing weapon.
 
-## Open (for Jake)
-Rarity frame: temper-tiers-of-the-same-weapon (rec) vs separate rare items · the
-**Relic rule** — rider-for-everyone + doubled-for-masters (rec) · reforge-only
-upgrades (rec) vs dupe-merge vs both · tier names (Worn/Honed/Relic floating) · the
-six NEW riders (bow/musket/sabre/greataxe/pike/dagger) — bless or redraw · confirm
-wager-linked rarity stays dead · starters-begin-Worn (rec).
+Reconfiguration and forging finish before **Deploy**. Once deployment begins, loadouts are
+locked and the player only arranges the chosen lineup.
+
+Weapon duplicates are not an upgrade currency, and weapons do not gain kill-fed XP. Those
+models would encourage inventory hoarding or reward the board that is already winning.
+
+## Where the build fun comes from
+
+Weapon decisions operate through three different levers:
+
+1. **Physics × hero engine.** Fast daggers produce many on-swing events; a musket creates
+   fewer, larger events; a bow changes which formation slots can contribute.
+2. **Mastery × compounding engine.** Mace Mana, staff cast-Haste, censer shielding, and
+   standard muster all feed loops that another hero, banner, or spec node can amplify.
+3. **Relic × off-label pivot.** A non-specialist gains the rider late enough to transform an
+   experiment without erasing the specialist's advantage.
+
+The target feeling is not “this is the weapon assigned to this class.” It is “I understand
+why the natural pairing works, and I can see the machine I might build by breaking it.”
+
+## First-playable scope
+
+The item budget is eleven weapons plus one trinket. Do not add more weapon categories before
+the first PvE playtest. Depth should come from hero interactions, temper, formation, and
+encounter pressure—not from a larger pile of near-duplicate loot.
+
+## Implementation fidelity follow-ups
+
+The runnable content covers all eleven profiles, riders, temper scaling, Relic access,
+double riders for Relic specialists, and the held-weapon forge. The following seams should
+stay visible rather than being mistaken for settled design:
+
+- **War-Priest mace specialization:** ADR 0012 and the Cleric dive say the fork may add
+  mace mastery. The current composer only reads chassis specializations, so War-Priest does
+  not yet gain it.
+- **Tower Shield bulk:** ADR 0015 described a defensive base profile. The current weapon
+  schema changes only attack stats, so its runnable defense comes entirely from the mastery
+  Shield rider.
+- **Company Standard potency:** the accepted shorthand was “Company potency.” The current
+  concrete expression is an extra opening Haste muster to adjacent allies. Playtest this
+  expression before inventing a generic potency multiplier.
+- **Forge resale:** ADR 0015 promises a 50% refund of total gold sunk into a reforged
+  weapon. Current item state does not track forge investment, so resale only knows the base
+  item price.
+- **Starter temper persistence:** a held starter can be forged, but switching away and
+  later returning to the implicit starter currently restores it as Worn.
+- **Progression schedule:** the old five-act scaffold exposes all categories and uses a
+  placeholder act-based temper ceiling. The authored PvE run must define its real stock and
+  forge gates.
+
+These are implementation or playtest follow-ups, not reasons to reopen universal equip,
+the eleven-category cap, the mastery/Relic law, or forge-in-place.
+
+## Intentionally open
+
+- final item names and all numerical tuning;
+- the real PvE temper availability curve;
+- whether Tower Shield needs base defensive stats once the item schema supports or rejects
+  that concept;
+- whether the current Standard rider delivers the desired Company fantasy; and
+- trinket depth after the first playtest.

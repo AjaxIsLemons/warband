@@ -1,6 +1,12 @@
 # ADR 0001 — Identity decisions + anti-washout contract
 
-**Date:** 2026-07-22 · **Status:** accepted · **Participants:** Jake + Claude (round-1/2 pitch Q&A)
+**Date:** 2026-07-22 · **Status:** identity superseded in part by ADR 0016; process contract
+remains accepted · **Participants:** Jake + Claude (round-1/2 pitch Q&A)
+
+> **2026-07-23 amendment:** ADR 0016 replaces the ghost-boss spine with authored
+> asymmetrical PvE, a clear PvE victory, and optional endless continuation. The hex
+> movement, deep hero-building, technical architecture, hard content budget, and
+> anti-washout process guardrails below remain in force.
 
 ## Context
 This is the fourth autobattler attempt. Deep postmortems of the first three (2026-07-22, saved in

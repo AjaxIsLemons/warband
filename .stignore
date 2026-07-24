@@ -1,0 +1,51 @@
+// Syncthing ignores for the warband monorepo (sim/ authored on homeserv,
+// client/ is the Unity project authored on the Windows box). Generated folders
+// use (?d) so remote deletes can remove dirs even when they hold ignored files.
+
+// Unity generated / machine-specific (client/).
+(?d)[Ll]ibrary
+(?d)[Ll]ibrary/**
+(?d)[Tt]emp
+(?d)[Tt]emp/**
+(?d)[Oo]bj
+(?d)[Oo]bj/**
+(?d)[Bb]uild
+(?d)[Bb]uild/**
+(?d)[Bb]uilds
+(?d)[Bb]uilds/**
+(?d)[Ll]ogs
+(?d)[Ll]ogs/**
+(?d)[Uu]serSettings
+(?d)[Uu]serSettings/**
+(?d)[Mm]emoryCaptures
+(?d)[Mm]emoryCaptures/**
+(?d)[Rr]ecordings
+(?d)[Rr]ecordings/**
+
+// .NET sim build output (bin/ from dotnet build on homeserv).
+(?d)[Bb]in
+(?d)[Bb]in/**
+
+// Generated solution/project files (Unity regenerates these under client/).
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.tmp
+
+// IDE / OS.
+(?d).vs
+(?d).vs/**
+.vsconfig
+(?d).idea
+
+// render verification captures (throwaway, written by the MCP render loop)
+(?d)shots
+(?d)shots/**
+(?d)client/shots
+(?d)client/shots/**

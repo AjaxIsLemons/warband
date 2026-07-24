@@ -12,9 +12,10 @@ multiple competing lists is how projects rot.) Sessions plan from here; see CLAU
 - **DONE** — move to the Done section with a date.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
-🎯 **GOAL (Jake, 2026-07-23): a playable PoC.** Path: mechanics build → real content →
-outlier sanity sweep → Unity bring-up. Sweep bar (Jake's words): *rule out CRAZY
-outliers or broken things — NOT a detailed balance pass.*
+🎯 **GOAL (Jake, 2026-07-23): a playable PvE PoC.** Path: mechanics build → hero/build
+content → outlier sanity sweep → Unity rendering → one authored asymmetric PvE vertical
+slice. **North star (ADR 0016): the fun is breaking the game with a compounding warband,
+then seeing how far asymmetrical PvE and endless pressure can push it.**
 1. **Sim mechanics build queue** — **DONE 2026-07-23 (145 tests, was 109).** The whole
    dive backlog landed as grammar primitives (Jake's law: everything banner/Relic-
    hookable — no unit-hardcoded specials): next-N-swings charges (SwingsLeft) · Burn
@@ -27,7 +28,7 @@ outliers or broken things — NOT a detailed balance pass.*
    HealAutos (censer) · Leap event · corpse field spawns · composer temper tiers +
    Relic rider gate. Muster/Company = BattleStart+AlliesWithin — zero new machinery.
    NOTE: reforge shop action is run-layer → part of item 2.
-2. **Real content pass** — **DONE 2026-07-23 (161 tests incl. fidelity pass).**
+2. **Hero/build content pass** — **DONE 2026-07-23 (161 tests incl. fidelity pass).**
    `Warband.Content`: all 8 kits as data (80 nodes, every one traced to its dive doc)
    · 11-weapon catalog w/ mastery riders · 5 starter banners · Catalog : IRunContent
    (kits-as-monsters encounters, act+tier anchored) · **stat law landed** (HP/Attack/
@@ -40,7 +41,9 @@ outliers or broken things — NOT a detailed balance pass.*
    new generic shapes: corpse-pool transfer · escalating lines · line-through-farthest
    · in-field cond · shield-scaled StatRule · any-enemy-has cond · triage filter ·
    behind-only lines · victim-anchored selectors · Mark tag status · node cleave
-   bonus. Leftover judgment calls → Open questions below.
+   bonus. Leftover judgment calls → Open questions below. **ADR 0016 clarification:**
+   "real content" here meant player build content; the kits-as-monsters encounters remain
+   scaffolding and do not satisfy the authored PvE content requirement.
 3. **Outlier sanity sweep** — **DONE 2026-07-23** (`Warband.Sweep` console, 4s run;
    full report + interpretation: **Projects/sweep-2026-07-23.md**). 64-build
    round-robin (2,080 fights) + 360 full bot runs. **Clean bills: zero safety-cap
@@ -50,20 +53,164 @@ outliers or broken things — NOT a detailed balance pass.*
    over Juggernaut) ③ Banneret floor 5-20% (support/harness confound, still stark).
    Placeholder-difficulty finding: victory saturates ~99% at every tier → Greedy
    strictly dominant on gold at zero risk — fix is the difficulty curve, later.
-4. **Unity client bring-up → the playable PoC** — render from PlaybackState fold
-   (render-contract.md). 🎯 Jake creates the Unity 6.3 project on Windows when ready;
-   terminal viewer covers fight-watching until then.
-5. **Ghost server + launcher** — SPEC'D (snapshot store + same-act matchmaking, client-sim
-   hash-verified; copy Shoota's site/launcher/ship pipeline).
-6. **Friends playtest #1** — still the milestone that ends arguments (ADR 0001), after
-   the PoC. No date until Jake calls it.
+4. **Unity client bring-up → the playable PoC** — **BUILD (started 2026-07-23).**
+   Render from PlaybackState fold (render-contract.md). Decision: **mobile-ready,
+   desktop-first** (iterate & playtest on Windows; Android target is a later flip).
+   **PIPELINE LIVE end-to-end (2026-07-23):** Unity 6.3 project `client` (Universal 3D /
+   URP 17.3, Input System 1.19) created on Windows at `C:\Dev\game\warband\client`,
+   synced to homeserv via Syncthing folder `warband`, official Unity MCP relay connected
+   + approved (RunCommand round-trips clean). Config mirrors Shoota (`.mcp.json` → relay
+   at client path, `.stignore`, Makefile sync-status/mcp-test/test, 31 `unity-*`
+   skills + `.meta`/scene-edit guard hooks — skipped Shoota-specific
+   fishnet/ship/feedback-triage). **Gotcha logged:**
+   Syncthing ignores are PER-DEVICE — the Windows side needed its own ignore patterns or
+   it indexed 3GB of `Library/` (that was the "file errors"). **Settings pass DONE +
+   MCP-verified:** product=Warband, company=InhouseBoyz, id=com.inhouseboyz.warband
+   (Standalone/Android/iOS). Mobile-ready foundation already in the template (Linear
+   color, Input System New, .NET Standard = netstandard2.1-compatible). Console clean.
+   **SIM→UNITY BRIDGE DONE + verified (2026-07-23):** `make unity-sim` builds
+   Warband.Sim (netstandard2.1) → `client/Assets/Plugins/Warband/Warband.Sim.dll`,
+   Syncthing carries it, Unity imports as managed plugin (AnyPlatform), assembly loads
+   in-domain (40 types incl. PlaybackState/BattleEvent), and REAL project code compiles
+   against + runs the fold in-Editor (`Assets/Editor/WarbandSimSmoke.cs` menu item →
+   `[WarbandSimSmoke] OK: units=2 tick=0`). MCP gotcha logged: the Unity_RunCommand
+   dynamic-compile sandbox can't reference user plugins (CS0246) — test plugin code via
+   a real Assets/ script + `ExecuteMenuItem`, not inline RunCommand; and importing a
+   DLL/new script triggers a domain reload that briefly returns "Unity not detected",
+   recovers on re-probe. **FIRST REPLAY RENDER DONE + eyes-verified (2026-07-23):**
+   full chain works — `Replay.Write/Read` (shared binary serializer in Warband.Sim, no
+   deps) · `make replay` runs the sample fight → `client/Assets/StreamingAssets/
+   replay.bytes` (6 units, 348 events, round-trip view-hashes match) · `ReplayPlayer`
+   MonoBehaviour loads it, folds via PlaybackState at 10 ticks/s, builds board + team-
+   colored capsules + HP bars, auto-frames the camera · MCP scene wiring (add component
+   by reflection, save, EnterPlaymode) · multi-angle scene capture shows units on the
+   board, moved from spawn rows into engagement (Update loop advancing the fold). Warband.
+   Content stays net10.0 (only needed offline to GENERATE replays; retarget when Unity
+   runs live fights). Left in repo: `Assets/Editor/WarbandSimSmoke.cs` (bridge sanity,
+   deletable). **NEXT (finish render legibility; item 5 designs the live loop):**
+   game-camera capture path (Camera_Capture by-id failed → use scene-view for now) · render the other event
+   tells (statuses, fields/walls, casts, deaths) one-canonical-signature each. Then stop
+   before wiring run outcomes until item 5 is SPEC'D. Terminal viewer retired for
+   fight-watching — the client renders. **Do not wire the obsolete best-of-five/ghost
+   outcome into the client.**
+4b. **Render polish & juice systems** — **SPEC'D → `Design/render-polish.md` (2026-07-24).**
+   Make the client look good + READABLE as reusable SYSTEMS, not per-effect hacks. Spine: a
+   **Feedback Director** (EventKind→ScriptableObject tell registry · beat sequencer =
+   Hearthstone-BLOCK causality · pooling) running on a **decoupled playback clock** —
+   presentation time is FREE (the fight is precomputed, so hit-stop/slow-mo/stagger can never
+   desync the sim; never `Time.timeScale`). Spectator lens: readability + pacing > punch
+   (telegraphs · causal-linking via visible projectiles · one canonical tell per event kind ·
+   fixed color language · rationed trauma-shake · graduated hit-stop for emphasis/de-clutter).
+   Aesthetic: **tabletop diorama** (URP post: Neutral tonemap + Bloom via emissive/HDR +
+   vignette + tilt-shift DoF · 3-point light + APV + SSAO · compressed palette, bright=important ·
+   silhouette-first shapes). Minimal-dep: **+PrimeTween only**, hand-roll the rest (director,
+   trauma shake, hit-stop, hex mesh, decals, pooled world-TMP text); skip VFX Graph / Feel /
+   DOTween. 10-step build order in the doc; **first visible slice = steps 1-6** (diorama look +
+   one event wired end-to-end). Grounded in 2 research passes (juice/reference-games +
+   Unity 6.3/URP 17), both folded into the doc. Current `ReplayPlayer` = throwaway v0, refactors
+   into clock + Director + proper UnitView. **BUILD PROGRESS (2026-07-23): steps 1-4 done** —
+   URP HDR + diorama post-stack (Neutral tonemap · Bloom [armed, idle until emissive VFX] ·
+   Color · Vignette · Gaussian DoF) · 3-point light rig (key/fill/rim, soft shadows, tight
+   shadow dist, gradient ambient) · dark backdrop → reads as a lit board slab in a void
+   (`Assets/Settings/DioramaVolume.asset` + saved SampleScene). **Capture path SOLVED (key
+   unblock):** MCP capture tools don't show URP post-processing (scene-view ignores the volume;
+   `Camera_Capture` by-id broken) → render `Camera.main` to a PNG in editor C# + `scp` it off
+   the Windows box. **STEPS 5-6 DONE (2026-07-23):** real pointy-top **hex grid** (gap-lines
+   read as the grid, blue/red **team-zone tints**, aura now renders as hex tiles) · **Feedback
+   Director** skeleton (event→tell switch, grows into the SO registry) with **DamageDealt→
+   hit-flash (crit=gold) + Cast→caster-glow** wired end-to-end, MPB-based (no material churn),
+   verified in a frozen capture (a unit flashed white mid-fight). Edit-mode `BuildPreview(tick)`
+   replays the last ~2 ticks' tells so a static shot reveals them. **NEXT:** more tells (death
+   poof · cast telegraph/projectile for causal-linking) · floating damage numbers (step 7) ·
+   emissive particles so Bloom bites (step 8) · **+PrimeTween** (step 9) · trauma shake + hit-stop
+   (step 10) · then the decoupled-clock/beat-sequencer refactor.
+   **DATA-DRIVEN REGISTRY DONE (2026-07-23):** Director promoted from switch → **ScriptableObject
+   registry** — `FeedbackDefinition` (eventKind · source/target side · flash color/crit/duration ·
+   scale-punch · floating-number color/threshold/size) + `FeedbackRegistry` (list, looked up by
+   EventKind), auto-loaded from `Resources/FeedbackRegistry`. 3 tells authored as data
+   (`Resources/Feedback/DamageDealt|Cast|Heal`): DamageDealt→white/gold flash + punch + red
+   number · Cast→cyan glow + punch · Heal→green flash + green number. Jake tunes/adds tells in the
+   Inspector, no code. **Pooled floating numbers** (`FloatingNumber`, legacy TextMesh, dependency-
+   free) wired + verified (number spawned in a live frame).
+   **JSON TUNING LOOP DONE (2026-07-23) — the SO registry was superseded by a JSON pivot** (Jake's
+   call: config must be AI-editable text, not Inspector-only `.asset`). Full loop built + PROVEN:
+   `StreamingAssets/tuning.json` (camera · post-FX · numbers · `tells[]`) = source of truth, parsed
+   with **Newtonsoft** (string enums + hex colors + PopulateObject-over-defaults + Replace lists +
+   Error-on-typo). Hybrid surface (Jake's pick): `TuningData` POCO + `TuningConfig` MonoBehaviour +
+   custom Inspector (`TuningConfigEditor`) with Reload/Write/Apply buttons → sliders for him, text
+   for me. **Hot-reload with NO recompile:** `TuningConfig.ReloadAndApply()` (MCP-callable + menu).
+   Proven end-to-end: edited tuning.json (number size, camera) → synced → ReloadAndApply → rendered
+   → change visible, instant, no domain reload. Fixed Jake's complaints: numbers now readable
+   ("19" legible), camera lower/closer. Old FeedbackDefinition/Registry SO deleted. Research
+   (`tuning-loop-research`) validated the setup. Loop details → memory [[render-tuning-loop]].
+   **F1 DEBUG MENU DONE (2026-07-23):** in-game tuning overlay (`DebugMenu.cs`, hand-rolled IMGUI
+   per `debugmenu-research` — zero-dep, dodges the new-Input-System EventSystem clash). F1 toggles;
+   live sliders for battle-speed · camera · post-FX · numbers · per-tell (flash/punch/number + RGB
+   color sliders); edits apply instantly (ReapplyTuning); "Save JSON" writes tuning.json, "Reload
+   JSON" pulls agent edits. Auto-spawns on play (`RuntimeInitializeOnLoadMethod`), no scene wiring.
+   Closes the loop BOTH ways: Jake tunes in-game → saved to JSON → agent sees the diff; agent edits
+   JSON → Jake reloads. Verify: press F1 in play (IMGUI can't be captured via the render-to-PNG path).
+   **DATA-DRIVEN REPLAY PIPELINE DONE + eyes-verified (2026-07-24):** the client now renders
+   **REAL Catalog builds, not toy capsules.** `sim/Warband.Viewer/scenarios.json` authors fights
+   as data (each unit = chassis + B/A/S path picks + weapon/tier/mastery/rank + optional banners);
+   `make scenarios` composes them via the proven `Loadout.Compose` path → 5 diverse replays into
+   `client/Assets/StreamingAssets/replays/` (duel · castfest · stomp · statusstorm · skirmish),
+   each round-trip-verified (client view-hash == live fight). Viewer now refs Content+Run.
+   **`ReplayInspector`** (Warband.Sim, tested) folds a replay into its distinct PRESENTATION
+   signatures (Damage by Cause + crit · Status by kind · Field wall/zone; counts/amounts/tick-spans)
+   — the "what tells does this fight need?" tool; `make coverage F=<replay>` prints it. All 5 fixtures
+   rendered + eyes-verified via the MCP render-to-PNG/scp loop (real hero kits, fields, bars, numbers,
+   diorama post-stack). **SIGNATURE-MATCHED TELLS DONE + eyes-verified (2026-07-24):** tells now key
+   on the FULL event signature, not just EventKind. `TellMatch` (Warband.Sim, tested — most-specific
+   rule wins, generic = fallback) + `TellDef.byCause/byStatus` filters; Director rewritten to dispatch
+   via it. Authored as JSON data (no code per tell): Damage/**Burn**→orange · Status/**Taunt**→purple ·
+   Status/**Stun**→violet · Status/**Phase**→cyan, alongside the existing white-hit/gold-crit/cyan-cast/
+   green-heal. Verified in captures: a burn-orange flash beside a white attack-flash; twin purple Taunt
+   flashes + a cyan Phase shimmer. **165→169 tests** (+4 ReplayInspector, +4 TellMatch, all headless).
+   **NEXT:** death poof (needs a new executor — the dying unit hides same-tick, so the tell must be a
+   detached pooled effect at the death hex) · field color-per-kind (all fields render one yellow now) ·
+   scenario picker in client/F1 (flip fixtures live) · emissive particles (Bloom bites) · committed
+   contact-sheet render menu (tonight's render loop, made repeatable) · +PrimeTween · shake/hit-stop ·
+   decoupled-clock refactor. Render loop gotcha: write capture PNGs OUTSIDE the Syncthing tree (they
+   synced back into `client/shots`; cleaned + now ignored).
+5. **PvE-first playable loop** — **DESIGN (identity settled; vertical-slice rules next).**
+   ADR 0016 supersedes mandatory ghost bosses: PvE is the product, encounters are authored
+   and asymmetrical, a completed run has a final PvE victory, and the winning warband may
+   continue into endless until defeated. Before BUILD, settle only what the first slice
+   needs: one small enemy-role grammar · several encounters that pose different
+   build/placement problems · one boss · encounter/intent preview · defeat/retry rule ·
+   how risk tiers alter authored encounters · the cheapest post-boss continue-until-defeat
+   seam. **Balance law:** preserve spectacular system-breaking engines; intervene only
+   when one line erases discovery, all encounter problems, determinism, resolution, or
+   readability. **Design notes:** `Design/pve-encounters.md` now owns the settled laws that
+   the encounter itself is the boss, every boss is a multi-answer strength exam, the boss
+   mechanically rules and teaches its act, and enemy formations are always previewed before
+   deployment. All mechanics are inspectable before Play; the rules are known but the outcome
+   is not forecast. Boss units have no blanket control immunity; only explicit, previewed
+   content passives may negate or reduce a specific verb. Execute remains a true kill and
+   preserves normal death/transform consequences. Phase grants complete personal absence
+   while encounter clocks and state continue advancing. Fields are factional by default;
+   environmental and explicitly volatile fields may affect everyone. Fight flow is
+   Preview → Prepare/reconfigure → Deploy positions only → Play. **Scope correction
+   2026-07-24:** first authored proof is only a visible bonded pair—when one dies, the other
+   Enrages. Play that relationship before committing an act boss, enemy-role roster, or
+   encounter ladder; the Dying Procession remains a possible extrapolation, not current scope.
+6. **Friends playtest #1** — the milestone that ends arguments (ADR 0001), after the PvE
+   vertical slice. Distribution/launcher work is allowed only as needed to put that slice
+   in friends' hands. No date until Jake calls it.
 
-## First-playable content budget (hard cap — ADR 0001)
-8 heroes × ~2 forks (placeholder kits OK) · ~12 items · 5 acts × ~4 nodes · small monster
-roster (reuse hero kits) · programmer art, no sound · bot-ghosts only.
+## First-playable content budget (hard cap — ADR 0001 + ADR 0016)
+Current 8 heroes × 2 paths · 11 weapons + 1 trinket · 5 starter banners · **one complete
+authored PvE act/vertical slice** (a tiny reusable enemy-role grammar, several encounters,
+one boss, one event) · shops + placement · crude post-win endless seam that may reuse and
+scale the slice · programmer art, no sound. Random hero-kits-as-monsters remain scaffolding,
+not acceptable final PvE content. Do not expand to multiple acts or a full endless mode
+before playtest #1.
 
 ## Deferred (explicitly NOT now — don't resurrect without Jake)
-Displacement (Push/Pull/collisions) · spoils-of-war (ADR 0002)
+**All PvP:** ghost server · matchmaking · ratings/leaderboards · PvP rewards · no-stakes
+Echo exhibitions (the snapshot seam may remain, but no feature work) ·
+Displacement (Push/Pull/collisions) · spoils-of-war (historical ADR 0002)
 · sim-modeled projectile flight ("dodge by movement" lever, render-contract) · aura
 ExcludeOwner option · morale/rout concept · ability crits · predetermined terrain (NEVER)
 · account-scoped power (NEVER — fairness law).
@@ -75,13 +222,24 @@ the actual design, needs Jake's nod · **sig-override composition wart**: an S
 signature override drops an A override's texture (Sarissa+DeepThrust keeps length,
 loses escalation) — last-wins is ADR 0005 discipline; fix would need additive sig
 mods · **Twist's crit-memory** is a 30-tick Mark, not "since last cast" (cast-event
-ordering) ·
+ordering) · **weapon fidelity:** War-Priest does not yet acquire mace mastery; Tower
+Shield has no base defensive stat; reforged-item resale does not remember forge spend;
+returning to an implicit starter resets its temper; Company Standard currently expresses
+"Company potency" as an adjacent opening-Haste muster ·
+PvE vertical slice: standard-run act count/length · encounter-role budget · enemy intent
+preview · defeat/rewind/fail-forward rule · risk-tier mutation shape · final-boss victory
+reward · endless cycle/post-rank-S decisions/scaling/score ·
 Currency/tier final names (gold + Safe/Even/Greedy are placeholders until theme/lore) ·
 economy numbers (placeholder until sweep/playtest) · respec cost (free-for-now decided,
-revisit) · act-boss reward beyond record · symmetric-vs-enemies-only damage fields (feel it
-in sim) · per-rank stat scaling · run length target validation (~20-25 min).
+revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-23 — PVE-FIRST IDENTITY AMENDMENT (ADR 0016).** PvE is the product; authored
+  asymmetrical encounters and bosses replace mandatory ghost bosses; the player fantasy is
+  assembling compounding interactions that feel like they break the game; the authored run
+  has a real victory and may continue into endless until defeated. PvP moved wholly to
+  Deferred. Pitch, theme, top-level guidance, affected historical ADR statuses, and this
+  board realigned. Exact vertical-slice run/loss/endless rules intentionally remain DESIGN.
 - **2026-07-23 — DESIGN CAMPAIGN COMPLETE (1a–1d).** Theme (ADR 0010) · impact model
   (ADR 0011) · 8/8 hero dives settled (Cleric, Bulwark, Shade, Sharpshot, Pyromancer,
   Berserker, Phalanx, Banneret — all champions named; laws locked along the way: ADR

@@ -1,6 +1,7 @@
 # ADR 0010 — Theme: The Last Hour, binding laws, class/champion split
 
-**Date:** 2026-07-22 · **Status:** accepted · **Participants:** Jake + Claude
+**Date:** 2026-07-22 · **Status:** accepted; ghost fiction amended by ADR 0016 ·
+**Participants:** Jake + Claude
 
 ## Context
 Jake paused hero deep dives on realizing names/themes ripped too hard from Guild Wars, and
@@ -18,8 +19,10 @@ scattershot. Three frames were proposed (time-first / place-first / collision); 
 3. **Class/champion split** (TFT model): class names stay functional and board-readable
    (Bulwark, Cleric…); era-flavored champions wear them. Deep dives proceed on class
    mechanics; lore names layer per champion without blocking.
-4. This frame is load-bearing, not paint: ghost bosses = Echoes of parallel timelines
-   (async PvP made diegetic), acts = eras (visual identity), overtime storm = the Hour.
+4. This frame is load-bearing, not paint: acts = eras (visual + enemy identity),
+   asymmetrical encounters = each timeline's death throes, overtime storm = the Hour,
+   and post-victory endless = fighting Beyond the Hour. Optional future PvP can still
+   appear as Echoes of parallel timelines.
 
 ## Consequences
 - Hero deep dives unblocked; each dive names its champion within an unclaimed era.

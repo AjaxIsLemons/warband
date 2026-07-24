@@ -1,0 +1,24 @@
+[mcp_servers.unity-mcp]
+command = "ssh"
+args = [
+  "-i",
+  "/home/jake/.ssh/homeserv_to_windows",
+  "-o",
+  "StrictHostKeyChecking=accept-new",
+  "jwjwi@192.168.1.102",
+  'C:\Users\jwjwi\.unity\relay\relay_win.exe --mcp --project-path C:\Dev\game\warband\client',
+]
+startup_timeout_sec = 30
+tool_timeout_sec = 180
+
+[features]
+hooks = true
+
+[[hooks.PreToolUse]]
+matcher = "^(apply_patch|Edit|Write)$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = '"$(git rev-parse --show-toplevel)/.claude/hooks/codex-unity-serialized-asset-guard.sh"'
+timeout = 5
+statusMessage = "Protecting Unity serialized assets"

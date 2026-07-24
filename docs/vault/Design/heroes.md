@@ -1,85 +1,177 @@
-# Hero anatomy — v0.2 (2026-07-22, round-4 decisions in)
+# Hero anatomy — v1.0
 
-Status: **directions decided on paper** (Jake, round 4) — still unplayed, so per ADR 0001
-everything here is falsifiable by the first playable. Remaining opens marked ❓.
+**Date:** 2026-07-24
+**Status:** current structural source of truth; content and values remain first-playable
+candidates until playtested.
 
-**Round-4 calls:** mana engine ✓ ("cooldown is balanced by mana cost; focused units casting
-more is the good part") · rank-up via **duplicates, no XP** (Guildrun's model — XP felt
-micromanagy in prior games) · respec allowed for now, can close later · fork transforms the
-signature, never replaces the kit ✓ · **no trait counting — synergies emergent, not
-explicit** ✓.
+Heroes are the persistent pieces the player learns and deepens during a run. Combat is fully
+automatic; the hero system exists to make preview, preparation, loadout, and placement the
+gameplay.
 
-## The anatomy — what a hero IS
+## Source-of-truth boundaries
 
-**Hero = Chassis + Spec Tree + Items + Rank.** Combat is fully auto (settled identity);
-everything below exists to make the *between-fights* choices deep.
+- This page owns the universal anatomy shared by every player hero.
+- `Design/roster.md` owns each class's PvE contract.
+- `Design/dives/` owns the complete class trees.
+- ADR 0011 owns the spec impact model; ADRs 0005, 0012, and 0015 own loadout and weapons.
+- `sim/Warband.Content/` owns the currently runnable content and placeholder values.
+- `Design/pve-encounters.md` owns the Preview → Prepare → Deploy → Play commitment flow.
 
-### 1. Chassis (fixed per hero — the identity) — updated round 10
-- Name, silhouette, base role (Tank / Melee / Ranged / Support flavor).
-- **Chassis stats:** HP · Move Speed · Mana Max. **The attack profile lives on the
-  WEAPON** (damage / interval / range / shape / crit / on-hit riders) — weapon-required,
-  every chassis ships with a starter weapon. A ranger who re-specs to daggers becomes
-  assassin-flavored: range is a tinkerable axis (ADR 0005).
-- **Passives from tier 1, plural** — a unit may carry multiple passives (innate + tree +
-  items), plus exactly **one active ability** (the signature).
-- **Crit exists** (the sim's only in-combat RNG — chance% + multiplier on the weapon;
-  on-crit passives are a design space).
+## The anatomy
 
-### 2. Casting — the mana engine (decided)
-Heroes auto-attack by Attack Interval; attacks and damage *taken* build Mana (+ small time
-trickle so nothing stalls); at full Mana the signature auto-casts, Mana resets. No player
-input mid-fight, ever. "Cooldown" is balanced via mana cost. Why: casting couples to
-combat geometry — a focused tank casts *more*, an untouched backliner casts on a clock —
-so placement decisions feed cast tempo. Timing identities fall out free: cheap/fast =
-Guildrun "Rush", huge/slow = "Stall".
+**Hero = Chassis + Rank/Spec Tree + Weapon + Trinket + Run Bonuses.**
 
-### 3. Spec tree + ranks — duplicates, no XP (decided)
-- **Ranks C → B → A → S, gained by buying duplicates of a hero you own** (Guildrun's
-  model — confirmed via wiki research; there is no XP). Shop offers are the pacing valve
-  and anchor to act number (anti-snowball law).
-- Each rank-up presents the spec choice at that step:
-  - **C (recruit):** chassis as-is.
-  - **B — THE FORK:** pick 1 of 2 **paths**; a role change (Cleric → *War-Priest* vs
-    *Lifebinder*). The path **transforms the signature ability** (enhance-not-replace,
-    PoE-support-gem model) — your hero stays *your hero*.
-  - **A / S:** pick 1-of-2 nodes *within* the path — passives, keyword adds, movement
-    mods, mana-curve tweaks.
-- **The central economic tension** (steal from Guildrun): widen the roster vs. deepen
-  the core — same currency buys both.
-- **Respec: allowed for now** (cheap or free while we learn; can close later). Bricking
-  is forbidden either way.
-- v1 budget: 8 heroes × 2 paths × ~2 node choices each (ADR 0001 cap).
+Banners are team rules rather than hero anatomy. Placement is not stored power, but it
+decides which parts of the composed hero can actually express themselves.
 
-### 4. Items — the churn axis (❓ slot model)
-- Lean: **2 slots per hero — Weapon + Trinket.** Weapon reshapes the auto-attack
-  (profile + a keyword: cleave arc, pierce line, lifesteal…). **Universal equip — any
-  class wears any weapon** (ADR 0012); classes carry 1–2 **weapon specializations**, and
-  each weapon has one latent **mastery rider** that lights up for specialists. Heal-weapons
-  (ally-targeting autos, e.g. the censer) are a legal family. Trinket = defense/utility/
-  mana mods. Freely re-equippable between fights — items are the tinkering verb, heroes
-  are sticky (circuit lesson).
-- Items come from wager fights, shops, act rewards.
+### 1. Chassis — the identity
 
-### 5. Party layer (decided: no traits)
-- **Banners** (our relics): whole-team rules bought/earned across the run — "front row
-  +HP", "first ally death: everyone rages", "your Leaps stun". 300-relic-style variety
-  is Guildrun's replayability engine; ours at v1 scale: ~10.
-- **Roster growth 3→6** is itself the biggest party upgrade — bought via act-close slot
-  offers, escalating cost, cap 6 (ADR 0006; Guildrun's team-size-expander model).
-- **NO trait counting** ("3 Knights = bonus") — Jake: "synergies should be more
-  emergent than explicit." Team texture comes from positional bonds/auras + banners +
-  ability interactions, never from comp-math.
-- Currency: **one currency** ✓ (ADR 0006) earned from fights (wager-scaled, ADR 0007),
-  spent on everything: new heroes, duplicates, items, banners, rerolls, slots. Named
-  **gold** — deliberately generic until theme/lore lands.
+A chassis owns:
 
-### 6. Movement on the sheet
-Move Speed stat + movement *keywords* granted by chassis/specs/items: v1 set is tiny —
-**Walk** (default pathing), **Leap** (ignore board, land on target hex). Everything
-else (charge-through, kiting, displacement) is post-v1 vocabulary.
+- name, silhouette, and base combat role;
+- health, movement, mana capacity, and per-rank stat growth;
+- one starter weapon;
+- one or more innate passives;
+- exactly one auto-cast signature ability; and
+- one or more base weapon specializations; a path may add another.
 
-## Why this shape
-- Sim vocabulary stays small: stats, mana, keywords, hex movement — the
-  event→trigger→effect engine expresses all content (circuit's proven grammar).
-- Every system has one job: chassis = identity, tree = depth, items = churn,
-  banners = team texture, placement = the exam answer.
+The chassis does **not** own a fixed basic attack. Damage, attack interval, range, attack
+shape, crit profile, and auto-attack riders live on the equipped weapon. Swapping a bow for
+daggers genuinely changes how and where the hero fights.
+
+A hero may have multiple passives after chassis, nodes, items, and run bonuses compose
+together. Crit remains the only ordinary in-combat random roll; automatic attacks can crit,
+while abilities do not unless a future rule explicitly changes that.
+
+### 2. Casting — the mana engine
+
+Heroes attack according to their weapon. Attacks, damage taken, and a small universal trickle
+generate Mana. At full Mana, the hero automatically casts the signature and resets the meter.
+There is no player input during combat.
+
+This couples placement to cadence:
+
+- a tank under focus gains Mana from being hit;
+- a fast weapon produces more attack-fed Mana;
+- an untouched backliner relies more heavily on its natural trickle; and
+- Haste, Slow, Silence, Disarm, and Mana effects bend different parts of the Clock.
+
+Mana cost is therefore both cooldown and combat identity. The player manipulates the cast
+cycle through preparation and placement rather than pressing an ability button.
+
+### 3. Rank and spec tree — deepen the sticky piece
+
+Heroes advance **C → B → A → S** by purchasing duplicates. Every rank-up grants:
+
+1. a flat chassis-specific health and attack bump; and
+2. a mandatory one-of-two spec choice.
+
+The default ladder is:
+
+- **C — Recruit:** chassis, starter weapon, innate, and base signature.
+- **B — Fork:** normally selects one of two paths and changes the hero's operation.
+- **A — Sharpen:** chooses one of two amplifiers inside the selected path.
+- **S — Crown:** chooses one of two capstones that makes the finished engine pop off.
+
+Fork timing may move to A for a documented late-bloomer; Shade is the current example.
+Paths use ADR 0011's **ADD / SWAP / DEEPEN** language, and named specialist exceptions may
+DEEPEN both ways when the fork changes payload or risk profile rather than role.
+
+Spec nodes are composed from the same small primitives used everywhere else: stats, statuses,
+triggers, rules, and optional signature overrides. Node text must explicitly identify its
+target, trigger, effect, and whether a state is added, transferred, consumed, or replaced.
+
+Rank and path choices are sticky by default. If respec exists in the shipped run, it is an
+explicit preparation service with a cost; it is never a free action inside deployment.
+The first playable may expose free respec as clearly labeled testing scaffolding.
+
+### 4. Items — the churn axis
+
+Every hero has exactly two equipment slots:
+
+1. **Weapon** — the complete automatic attack profile.
+2. **Trinket** — defense, utility, Mana, statuses, or trigger bundles built from existing
+   primitives.
+
+Weapon access is universal: any hero may equip any category. A hero's specializations are
+bonuses, not locks. Each category carries one latent mastery rider that is active for its
+specialists; Relic-tier weapons unlock the rider for any wielder and double it for a
+specialist.
+
+Weapon rarity is temper on the same item—**Worn → Honed → Relic**—rather than a larger item
+catalog. The Tower forge upgrades an owned weapon in place during preparation, subject to
+the current run's pacing ceiling.
+
+Owned weapons and trinkets may be re-equipped freely during Prepare. Entering deployment
+locks the loadout; that screen is for positioning, not inventory management.
+
+Heroes are intentionally stickier than their equipment. The player should be able to keep a
+beloved hero and re-tool how it delivers its engine as the run's offers and encounters
+change.
+
+### 5. Party layer — emergent engines, not trait counting
+
+There are no composition thresholds such as “three Knights grants Armor.” Team identity
+emerges from:
+
+- hero triggers and statuses interacting;
+- weapon physics and mastery;
+- muster placement and live combat geometry;
+- Fields and the Clock;
+- Banners; and
+- the encounter problem the player is preparing to solve.
+
+Acquired Banners ride into combat as whole-team rules. They are the broadest cross-hero
+engine layer, and Banneret may directly amplify them. Their first-playable count and exact
+catalog live on the roadmap and in `sim/Warband.Content/Catalog.cs`, not here.
+
+The fielded warband grows from a small starting lineup toward a cap, with a small bench
+preserving roster decisions between fights. ADR 0006's current structure is three starting
+field slots, a six-unit cap, and a two-unit bench. ADR 0016 reopened **when** additional
+field slots are offered, so the PvE vertical-slice design owns that schedule.
+
+The same run currency competes across width, duplicate-driven depth, equipment, Banners,
+rerolls, forging, and any respec service. These choices should remain tradeoffs rather than a
+checklist of automatic upgrades.
+
+### 6. Between-fight commitment
+
+Every PvE fight follows:
+
+1. **Preview:** inspect the encounter, enemies, mechanics, and formation.
+2. **Prepare:** choose field/bench lineup, re-equip owned items, and use available economic
+   services.
+3. **Deploy:** loadout locks; arrange the chosen units.
+4. **Play:** positions lock; deterministic combat resolves.
+
+The preview remains accessible during preparation. The player knows the rules but not the
+winner.
+
+### 7. Movement vocabulary
+
+The current player roster uses:
+
+- **Walk:** deterministic pathing toward the current target.
+- **Leap:** reposition adjacent to a selected target and reacquire from there.
+
+Push, Pull, collisions, and other displacement remain deferred. Movement depth should come
+from readable kit rules and placement, not opaque pathfinding or mid-combat commands.
+
+## Composition law
+
+Before battle, the loadout composer deterministically resolves chassis, rank growth, weapon,
+trinket, spec nodes, and run bonuses into one battle-ready unit. The combat simulator does
+not know about shops, item inventories, ranks, or trees.
+
+This separation is deliberate: hero content can change without weakening deterministic
+combat or replay. When several nodes override the signature, the current composer uses the
+last applicable override; combinations that need additive signature modification must earn
+new machinery rather than relying on ambiguous merge behavior.
+
+## Intentionally open
+
+- Timing and price of field-slot growth in the PvE run.
+- Whether shipped respec exists, and its service cost.
+- Post-S hero decisions needed to keep endless preparation meaningful.
+- Trinket depth beyond the first-playable placeholder.
+- All numerical tuning until interactive playtest evidence exists.

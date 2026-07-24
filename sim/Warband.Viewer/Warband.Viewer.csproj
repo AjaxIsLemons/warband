@@ -9,6 +9,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Warband.Sim\Warband.Sim.csproj" />
+    <ProjectReference Include="..\Warband.Content\Warband.Content.csproj" />
+    <ProjectReference Include="..\Warband.Run\Warband.Run.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="scenarios.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

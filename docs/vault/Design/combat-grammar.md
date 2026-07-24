@@ -21,8 +21,10 @@ Because attacks feed mana, Haste accelerates casts and Slow starves them.
 - Glyphs come from signatures, forks, innates ("leaves a scorched trail"), banners.
 - By mid-fight the flat board is painted with both builds' zones — territory as a
   fight-time resource, authored by kits, not level design.
-- ❓ minor: do damage fields affect all units (symmetric — enables shove-into-fire plays,
-  needs AI avoidance) or enemies-only (simpler)? Lean: all units, revisit if it reads badly.
+- **Allegiance law (settled 2026-07-23):** harmful hero glyphs affect enemies by default;
+  beneficial glyphs affect allies; enemy glyphs mirror that ownership rule. Environmental
+  hazards and explicitly volatile glyphs may affect everyone. All-unit fields are authored,
+  visually distinct exceptions rather than the friendly-fire default.
 
 ## The vocabulary — movement & answers (demoted round 6: options, NOT a pillar)
 Displacement is deliberately lightly represented — spice, not identity:
@@ -60,4 +62,3 @@ In: full Clock set · glyph system (fire/heal/consecrate/wall to start) · Leap/
 Root + collisions · reaction triggers · shapes above · field-aware pathing.
 Out (post-v1): predetermined terrain (never), Charge, cones/rows, cleanse/tenacity,
 non-wall summons, morale/rout, high-ground.
-

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Unity Workflow"
+  short_description: "Edit and verify Warband Unity work safely"
+  default_prompt: "Use $warband-unity-workflow to implement and verify this Warband Unity change safely."
