@@ -37,6 +37,9 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Design/fx-runtime.md](Design/fx-runtime.md) — engine spec for combat-spectacle: VfxLibrary
   recipes, Director-stepped particles, hand-written URP shader set, ground substrate,
   status icon row, death linger, sim/wire changes (incl. the Burn fold bug), build phases.
+- [Design/authoring-combat-fx.md](Design/authoring-combat-fx.md) — **the how-to** for adding
+  spell/weapon/field/status/death visuals: three change tiers, 5-step new-spell workflow,
+  verification gates, and the consolidated next-steps ledger. Skill: `.claude/skills/spell-fx`.
 - [Design/hall-polish.md](Design/hall-polish.md) — **approved Hall polish direction; foundation
   built**: obsidian Tower instrument + living Sand language, preview/selection/commit grammar,
   reusable motion/feedback/Painter2D FX/audio-haptic seams, live UI FX tuning, mobile/accessibility
