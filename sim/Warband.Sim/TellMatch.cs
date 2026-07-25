@@ -3,16 +3,26 @@ namespace Warband.Sim
     /// <summary>
     /// The render layer keys "tells" (the visual/audio feedback for an event) on more than
     /// <see cref="EventKind"/> alone — a Burn tick should read differently from a sword hit, and
-    /// each status wants its own pip burst. A tell rule declares an EventKind plus OPTIONAL
-    /// <see cref="Cause"/> / <see cref="StatusKind"/> filters; the most specific matching rule
+    /// each status wants its own pip burst, and a healing glyph should not be the same color as a
+    /// fire glyph. A tell rule declares an EventKind plus OPTIONAL <see cref="Cause"/> /
+    /// <see cref="StatusKind"/> / <see cref="FieldFlavor"/> filters; the most specific matching rule
     /// wins (so a generic "Damage" tell is a fallback and "Damage/Burn" overrides it for burns).
     /// This is the client's dispatch brain, kept here so it's headless-testable and shares the
     /// event model with the sim (no drift). The Unity FeedbackDirector is a thin executor over it.
     /// </summary>
     public static class TellMatch
     {
-        /// <summary>Does a rule (kind + optional cause/status filters) match this event?</summary>
-        public static bool Matches(BattleEvent e, EventKind kind, Cause? cause, StatusKind? status)
+        /// <summary>Does a rule (kind + optional cause/status/field/ranged/chassis filters) match
+        /// this event? <paramref name="distance"/> is the hex distance between the event's two unit
+        /// endpoints, a VIEW-time fact the client computes from fold positions at dispatch — the
+        /// event itself doesn't carry it, so it's optional context (null when the event has no two
+        /// endpoints, e.g. a field tick or a status expiry). <paramref name="sourceChassis"/> is the
+        /// same kind of view context: the SOURCE unit's ChassisId from the fold, so a rule can give
+        /// the Pyromancer's cast a different tell than the Cleric's without the event carrying
+        /// ability identity (the flagged growth path in directed-tells).</summary>
+        public static bool Matches(BattleEvent e, EventKind kind, Cause? cause, StatusKind? status,
+                                   FieldFlavor? flavor = null, bool? ranged = null, int? distance = null,
+                                   string? chassis = null, string? sourceChassis = null)
         {
             if (e.Kind != kind) return false;
             if (cause.HasValue && e.Cause != cause.Value) return false;
@@ -21,12 +31,39 @@ namespace Warband.Sim
                 bool isStatusEvent = e.Kind == EventKind.StatusApplied || e.Kind == EventKind.StatusExpired;
                 if (!isStatusEvent || (StatusKind)e.Aux != status.Value) return false;
             }
+            if (flavor.HasValue)
+            {
+                // Only FieldCreated carries a flavor (Aux3); FieldHex/FieldExpired reference the
+                // zone by id, so a flavor-filtered rule simply doesn't apply to them.
+                if (e.Kind != EventKind.FieldCreated || e.Flavor != flavor.Value) return false;
+            }
+            if (ranged.HasValue)
+            {
+                // "Ranged" is the sim's own projectile law: an attack over hex distance ≥2 traces
+                // the hex line (Battle.cs:254). Keying the same threshold here means the renderer
+                // and sim can never disagree about what "ranged" means. A ranged-filtered rule
+                // needs distance context and never matches without it (events with no two unit
+                // endpoints pass distance=null) — a melee lunge and a projectile tracer must not
+                // fall back to each other when we can't tell them apart.
+                if (!distance.HasValue || (distance.Value >= 2) != ranged.Value) return false;
+            }
+            if (!string.IsNullOrEmpty(chassis))
+            {
+                // A chassis-filtered rule needs source context and never matches without it, same
+                // law as ranged: a chassis-specific cast look must not fire for an unknown caster.
+                if (string.IsNullOrEmpty(sourceChassis)
+                    || !string.Equals(chassis, sourceChassis, System.StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
             return true;
         }
 
         /// <summary>How specific a rule is — more declared filters win ties toward the narrower
-        /// rule. Kind is always required so it isn't counted.</summary>
-        public static int Specificity(Cause? cause, StatusKind? status)
-            => (cause.HasValue ? 1 : 0) + (status.HasValue ? 1 : 0);
+        /// rule. Kind is always required so it isn't counted. Equal specificity keeps the FIRST
+        /// matching rule in registry order (the dispatcher uses a strict &gt;).</summary>
+        public static int Specificity(Cause? cause, StatusKind? status, FieldFlavor? flavor = null,
+                                      bool? ranged = null, string? chassis = null)
+            => (cause.HasValue ? 1 : 0) + (status.HasValue ? 1 : 0) + (flavor.HasValue ? 1 : 0)
+               + (ranged.HasValue ? 1 : 0) + (string.IsNullOrEmpty(chassis) ? 0 : 1);
     }
 }
