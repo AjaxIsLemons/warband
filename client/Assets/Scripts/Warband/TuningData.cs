@@ -371,6 +371,11 @@ public class FxTune
     [Range(0.05f, 1.5f)] public float fieldSpawnSeconds = 0.35f;
     [Range(0.05f, 1.5f)] public float fieldExpireSeconds = 0.45f;
     [Range(1f, 4f)] public float fieldPulseBoost = 1.5f;       // brightness multiplier on a pulseGround hit
+    // The quiet-idle law (combat-spectacle §4): a field at rest is TERRAIN, ~25-35% opacity and
+    // below the bloom threshold. Everything loud about a field is its spawn, its pulse, or its
+    // expiry — raise these and the board goes back to reading as solid slabs.
+    [Range(0f, 1f)] public float fieldIdleAlpha = 0.30f;       // floor fill opacity at rest
+    [Range(0f, 1f)] public float fieldEdgeAlpha = 0.55f;       // footprint rim brightness at rest
     [Range(0.05f, 0.6f)] public float statusIconSize = 0.22f;
     [Min(1)] public int statusIconCap = 5;                     // icons before the "+N" chip
 }

@@ -55,7 +55,14 @@ public class ReplayPlayer : MonoBehaviour
     public IReadOnlyList<BattleEvent> RecentEvents => _recent;
 
     private readonly Dictionary<int, UnitView> _views = new Dictionary<int, UnitView>();
-    private readonly Dictionary<int, GameObject> _fieldTiles = new Dictionary<int, GameObject>();
+    // One FieldView per live field id (spawn/sustain/pulse/expiry — see FieldView). A view outlives
+    // its fold entry by the length of the expiry fade, which is why removal is driven by Step
+    // returning false rather than by the field leaving _fold.Fields.
+    private readonly Dictionary<int, FieldView> _fieldViews = new Dictionary<int, FieldView>();
+    // FieldCreated tick per field id, folded once per load. A frozen scrub builds every field the
+    // fold currently holds in one pass, so without this a capture at tick 60 would show a field
+    // created at tick 22 still tracing its spawn-in rim.
+    private readonly Dictionary<int, int> _fieldBornAt = new Dictionary<int, int>();
     private readonly Stack<FloatingNumber> _numberPool = new Stack<FloatingNumber>();
     private readonly Stack<Tracer> _tracerPool = new Stack<Tracer>();
     private readonly Stack<Burst> _burstPool = new Stack<Burst>();
@@ -184,6 +191,10 @@ public class ReplayPlayer : MonoBehaviour
         private readonly Action<Burst> _recycleBurst;
         private readonly Func<VfxDef, VfxInstance> _getVfx;
         private readonly Action<VfxInstance> _recycleVfx;
+        // Ground pulse router — every FieldView covering a hex flares when a `pulseGround` tell
+        // lands there. A delegate rather than a field-view list, so the Director keeps knowing
+        // nothing about how the board draws its ground.
+        private readonly Action<Hex> _pulseGround;
         // Camera-facing rotation for billboard elements — read through a delegate so an orbit yaw
         // change (FrameCamera recomputes it) reaches recipes without rebuilding the Director.
         private readonly Func<Quaternion> _billboard;
@@ -259,7 +270,7 @@ public class ReplayPlayer : MonoBehaviour
                                 Func<Tracer> getTracer, Action<Tracer> recycleTracer,
                                 Func<Burst> getBurst, Action<Burst> recycleBurst,
                                 Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
-                                Func<Quaternion> billboard,
+                                Func<Quaternion> billboard, Action<Hex> pulseGround,
                                 float ticksPerSecond, Action<string> playSfx = null)
         {
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
@@ -267,6 +278,7 @@ public class ReplayPlayer : MonoBehaviour
             _getTracer = getTracer; _recycleTracer = recycleTracer;
             _getBurst = getBurst; _recycleBurst = recycleBurst;
             _getVfx = getVfx; _recycleVfx = recycleVfx; _billboard = billboard;
+            _pulseGround = pulseGround;
             _impact = data?.impact ?? new ImpactTune();
             _numbers = data?.numbers ?? new NumberTune();
             _speedScale = Mathf.Min(1f, 10f / Mathf.Max(0.01f, ticksPerSecond));
@@ -684,8 +696,16 @@ public class ReplayPlayer : MonoBehaviour
                 && v.ModelAnimator.HasState(0, HitStateHash))
                 v.ModelAnimator.CrossFadeInFixedTime("Hit", 0.05f);
 
+            // Ground pulse, at the hex the payload landed on — the field's floor flashes because
+            // something HAPPENED on it. Read from the fold rather than the view, so a victim mid-step
+            // still credits the hex the sim says it occupies (the field's own membership test).
+            if (def.pulseGround && _pulseGround != null)
+            {
+                var su = _unitById(sideUid);
+                if (su != null) _pulseGround(su.Pos);
+            }
+
             // TODO(P4 cast choreography): def.announce pushes "«X» casts Y" into the kill-feed slots.
-            // TODO(P2 ground substrate): def.pulseGround flares the FieldView covering this hex.
         }
 
         private static readonly int HitStateHash = Animator.StringToHash("Hit");
@@ -937,6 +957,29 @@ public class ReplayPlayer : MonoBehaviour
     private void StepFx(float dt)
     {
         _director?.Tick(dt);
+        if (_fieldViews.Count == 0) return;
+        _expiredFields.Clear();
+        foreach (var kv in _fieldViews) if (!kv.Value.Step(dt)) _expiredFields.Add(kv.Key);
+        foreach (var id in _expiredFields) { _fieldViews[id].Destroy(); _fieldViews.Remove(id); }
+    }
+
+    // Scratch for StepFx's finished-view sweep — a dictionary can't be mutated while enumerated.
+    private readonly List<int> _expiredFields = new List<int>();
+
+    /// <summary>Drop every field view outright (loop-wrap, board-geometry rebuild). A wrapped replay
+    /// must spawn its fields fresh, or the second loop shows glyphs that never traced in.</summary>
+    private void ClearFieldViews()
+    {
+        foreach (var kv in _fieldViews) kv.Value.Destroy();
+        _fieldViews.Clear();
+    }
+
+    /// <summary>Flare every field covering a hex. The Director calls this at the impact of any tell
+    /// authored with `pulseGround`, which is what makes a field's loudest frame an EVENT that
+    /// happened on those hexes rather than an animation the field plays to itself.</summary>
+    public void PulseFieldsAt(Hex hex)
+    {
+        foreach (var kv in _fieldViews) if (kv.Value.Covers(hex)) kv.Value.Pulse();
     }
 
     /// <summary>Editor scrub: freeze the fold at <paramref name="tick"/>, snap the view, and replay
@@ -958,8 +1001,10 @@ public class ReplayPlayer : MonoBehaviour
         _fold = PlaybackState.From(_initial);
         _director = MakeDirector();
         Build();
-        ApplyFold(tick);
+        // Reset BEFORE the fold, not after: ResetAnim drops every decorative object the last scrub
+        // left behind (field views included), and ApplyFold is what rebuilds them for THIS tick.
         ResetAnim();
+        ApplyFold(tick);
         foreach (var v in _views.Values)
         {
             v.Smoothed = v.Target; v.Root.position = v.Target;
@@ -1030,9 +1075,9 @@ public class ReplayPlayer : MonoBehaviour
             if (slab != null) DestroyImmediate(slab.gameObject);
             _hexMesh = null; // vertices bake hexSize — force regeneration
             BuildBoard();
-            // Field tiles hold the OLD shared hex mesh — drop them; SyncFields recreates next apply.
-            foreach (var kv in _fieldTiles) DestroyImmediate(kv.Value);
-            _fieldTiles.Clear();
+            // Field views bake hexSize into their overlay scale — drop them; SyncFields recreates
+            // them (replaying the spawn-in, which is the honest read of a rebuilt board).
+            ClearFieldViews();
             _boardCenter = (HexToWorld(new Hex(0, 0))
                           + HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1))) * 0.5f;
             RecomputeStoryAnchors();
@@ -1042,7 +1087,7 @@ public class ReplayPlayer : MonoBehaviour
 
     public void ClearGenerated()
     {
-        _views.Clear(); _fieldTiles.Clear(); _numberPool.Clear();
+        _views.Clear(); _fieldViews.Clear(); _numberPool.Clear();
         _tracerPool.Clear(); _burstPool.Clear(); _vfxPools.Clear();
         // The VFX light budget is a static live count; destroying the pools underneath it would
         // otherwise leak the lights of a board that no longer exists.
@@ -1067,6 +1112,9 @@ public class ReplayPlayer : MonoBehaviour
     private void PrepareLoadedData()
     {
         _fold = PlaybackState.From(_initial);
+        _fieldBornAt.Clear();
+        foreach (var e in _events)
+            if (e.Kind == EventKind.FieldCreated) _fieldBornAt[e.Target] = e.Tick;
 
         _tuning = FindFirstObjectByType<TuningConfig>();
         if (_tuning != null) { _tuning.LoadFromJson(); _data = _tuning.data; }
@@ -1121,6 +1169,7 @@ public class ReplayPlayer : MonoBehaviour
         foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; }
         _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
+        ClearFieldViews();  // ditto the fields — the next fight traces its own glyphs in
         ClearStory();       // clears kill-feed lines + hides the banner, unlatches _ending
         ClearRecent();      // Events-tab buffer too (loop-wrap + edit-mode scrub route through here)
     }
@@ -1257,7 +1306,7 @@ public class ReplayPlayer : MonoBehaviour
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
         GetTracer, RecycleTracer, GetBurst, RecycleBurst,
-        GetVfx, RecycleVfx, () => _numberFace, ticksPerSecond, PlaySfx);
+        GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
     private AudioSource _audio;
@@ -1947,7 +1996,7 @@ public class ReplayPlayer : MonoBehaviour
             SetStatusTint(v, u);
             UpdatePips(v, u);
         }
-        SyncFields();
+        SyncFields(clock);
     }
 
     /// <summary>Status-as-material (Underlords: frozen units LOOK stony, silenced units wear the
@@ -1988,65 +2037,41 @@ public class ReplayPlayer : MonoBehaviour
         }
     }
 
-    private void SyncFields()
+    /// <summary>Point every FieldView at the fold's current fields, creating and retiring views as
+    /// the fold gains and loses them. Runs on EVERY ApplyFold, so creation is idempotent per id and
+    /// re-pointing an unchanged footprint has to be free (FieldView.SetFootprint bails on a match).
+    ///
+    /// An ATTACHED field (an aura) derives its hexes from its anchor every pass exactly as it always
+    /// did — that is what walks a Dread cloud along with the banneret; the view rebuilds its overlay
+    /// geometry on the change without replaying the spawn-in.
+    ///
+    /// Removal is a FADE, not a delete: a field the fold dropped is flagged BeginExpire and lives
+    /// until its Step says it is done. A frozen scrub past a field's expiry simply never builds it —
+    /// the fold has no entry, and decoration never resurrects what truth has forgotten.</summary>
+    private void SyncFields(float clock)
     {
-        var liveIds = new HashSet<int>();
         foreach (var f in _fold.Fields)
         {
-            liveIds.Add(f.Id);
-            IEnumerable<Hex> hexes = f.AttachedTo >= 0
-                ? (_fold.ById(f.AttachedTo) is PlaybackUnit a && !a.Dead ? Hex.Range(a.Pos, f.Radius) : new List<Hex>())
-                : f.Hexes;
-            if (!_fieldTiles.TryGetValue(f.Id, out var group))
+            if (!_fieldViews.TryGetValue(f.Id, out var view))
             {
-                group = new GameObject($"field_{f.Id}");
-                group.transform.SetParent(_generated, false);
-                _fieldTiles[f.Id] = group;
+                // FX seconds this field has already existed — 0 in live play (it appeared this
+                // tick), the real elapsed time on a scrub that jumped past its creation.
+                float born = _fieldBornAt.TryGetValue(f.Id, out var t) ? t : clock;
+                float age = Mathf.Max(0f, (clock - born) / Mathf.Max(0.01f, ticksPerSecond));
+                view = FieldView.Create(_generated, f.Id, f.IsWall, f.Flavor, HexToWorld,
+                                        () => _data, hexSize, HexMesh(), PaintTile, age);
+                _fieldViews[f.Id] = view;
             }
-            RebuildFieldTiles(group.transform, hexes, f.IsWall, f.Flavor);
+            view.SetFootprint(f.AttachedTo >= 0
+                ? (_fold.ById(f.AttachedTo) is PlaybackUnit a && !a.Dead
+                    ? Hex.Range(a.Pos, f.Radius) : new List<Hex>())
+                : f.Hexes);
         }
-        var gone = new List<int>();
-        foreach (var kv in _fieldTiles) if (!liveIds.Contains(kv.Key)) gone.Add(kv.Key);
-        foreach (var id in gone) { DestroyImmediate(_fieldTiles[id]); _fieldTiles.Remove(id); }
-    }
-
-    private void RebuildFieldTiles(Transform group, IEnumerable<Hex> hexes, bool wall, FieldFlavor flavor)
-    {
-        var list = new List<Hex>(hexes);
-        var color = FieldColor(wall, flavor);
-        while (group.childCount < list.Count)
+        foreach (var kv in _fieldViews)
         {
-            var t = new GameObject("ftile");
-            t.transform.SetParent(group, false);
-            t.AddComponent<MeshFilter>().sharedMesh = HexMesh();
-            t.AddComponent<MeshRenderer>();
-            t.transform.localScale = new Vector3(0.85f, 1f, 0.85f);
-        }
-        for (int i = 0; i < group.childCount; i++)
-        {
-            var t = group.GetChild(i);
-            bool on = i < list.Count;
-            t.gameObject.SetActive(on);
-            if (!on) continue;
-            t.position = HexToWorld(list[i]) + new Vector3(0f, wall ? 0.4f : 0.03f, 0f);
-            // repaint every pass (CachedMat keys on the color, so this is a dict hit) — that's
-            // what makes a tuning.json hot-reload recolor zones already on the board.
-            PaintTile(t.GetComponent<MeshRenderer>(), color);
-        }
-    }
-
-    /// <summary>A zone's color is its MEANING. Wall-ness and flavor are orthogonal in the sim, so
-    /// a plain barrier reads structural grey while a burning wall still reads hazardous.</summary>
-    private Color FieldColor(bool wall, FieldFlavor flavor)
-    {
-        var f = _data != null ? _data.fields : new FieldTune();
-        switch (flavor)
-        {
-            case FieldFlavor.Hazard: return f.hazard;
-            case FieldFlavor.Boon:   return f.boon;
-            case FieldFlavor.Buff:   return f.buff;
-            case FieldFlavor.Debuff: return f.debuff;
-            default: return wall ? f.wall : f.neutral;
+            bool live = false;
+            foreach (var f in _fold.Fields) if (f.Id == kv.Key) { live = true; break; }
+            if (!live) kv.Value.BeginExpire();
         }
     }
 
