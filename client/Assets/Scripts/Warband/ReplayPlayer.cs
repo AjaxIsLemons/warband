@@ -856,6 +856,7 @@ public class ReplayPlayer : MonoBehaviour
         if (_tuning != null) _data = _tuning.data;
         if (Application.isPlaying)
         {
+            if (_data != null && _data.playback != null) ticksPerSecond = _data.playback.ticksPerSecond;
             _director?.Reset();   // recycle in-flight FX + clear offsets before swapping the Director
             _director = MakeDirector();
             ApplyBoardTune();     // hexSize/tileScale live: tiles rebuild, units re-place via ApplyFold
@@ -918,6 +919,9 @@ public class ReplayPlayer : MonoBehaviour
 
         _tuning = FindFirstObjectByType<TuningConfig>();
         if (_tuning != null) { _tuning.LoadFromJson(); _data = _tuning.data; }
+        // Battle speed is tuning-owned (persists via F1 save). Apply BEFORE MakeDirector — the
+        // Director snapshots its motion speed-scale from ticksPerSecond at construction.
+        if (_data != null && _data.playback != null) ticksPerSecond = _data.playback.ticksPerSecond;
         _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         _director = MakeDirector();
     }

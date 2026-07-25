@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using Warband.Sim;
 
 /// <summary>
 /// UI Toolkit runtime tuning cockpit. Reflects over <see cref="TuningData"/> and generates a
@@ -18,12 +19,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public class DebugMenu : MonoBehaviour
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void AutoSpawn()
-    {
-        if (FindFirstObjectByType<DebugMenu>() == null)
-            new GameObject("~DebugMenu").AddComponent<DebugMenu>();
-    }
+    // Startup order is owned by GameBoot — see that class before adding one back here.
 
     // ---- palette / metrics ---------------------------------------------------
     private static readonly Color PanelBg = new Color(0.09f, 0.10f, 0.13f, 0.97f);
@@ -31,19 +27,62 @@ public class DebugMenu : MonoBehaviour
     private static readonly Color Border = new Color(0.30f, 0.55f, 0.90f, 0.55f);
     private static readonly Color TextCol = new Color(0.88f, 0.91f, 0.96f);
     private static readonly Color Muted = new Color(0.58f, 0.63f, 0.71f);
+    // Field-surface palette — the default runtime theme is LIGHT, so every input renders as a
+    // white box with our inherited light text on top (unreadable). We override the input surfaces.
+    private static readonly Color InputBg = new Color(0.16f, 0.18f, 0.23f, 1f);
+    private static readonly Color InputBorder = new Color(1f, 1f, 1f, 0.14f);
+    private static readonly Color SliderTrack = new Color(1f, 1f, 1f, 0.16f);
+    private static readonly Color SliderKnob = new Color(0.55f, 0.72f, 1f, 1f);
+    private static readonly Color TabActive = new Color(0.20f, 0.30f, 0.44f);
+    private static readonly Color TabInactive = new Color(0.13f, 0.15f, 0.19f);
     private const float LabelW = 118f;
     private const float ValW = 62f;
     private const float MiniW = 42f;
 
+    // Event-line color language (mirrors the tell palette in render-polish.md): damage white,
+    // crit gold, burn orange · heal green · cast cyan · status± purple · death bold red ·
+    // fields by flavor · blocked grey · everything else muted.
+    private static readonly Color EvDamage = new Color(0.90f, 0.92f, 0.96f);
+    private static readonly Color EvCrit = new Color(1.00f, 0.82f, 0.30f);
+    private static readonly Color EvBurn = new Color(0.96f, 0.55f, 0.22f);
+    private static readonly Color EvHeal = new Color(0.45f, 0.85f, 0.45f);
+    private static readonly Color EvCast = new Color(0.42f, 0.80f, 0.95f);
+    private static readonly Color EvStatus = new Color(0.72f, 0.55f, 0.92f);
+    private static readonly Color EvDeath = new Color(0.96f, 0.36f, 0.32f);
+    private static readonly Color EvBlocked = new Color(0.60f, 0.63f, 0.70f);
+    private static readonly Color EvFieldHazard = new Color(0.95f, 0.50f, 0.30f);
+    private static readonly Color EvFieldBoon = new Color(0.50f, 0.85f, 0.55f);
+    private static readonly Color EvFieldDebuff = new Color(0.72f, 0.55f, 0.92f);
+    private static readonly Color EvFieldElse = new Color(0.82f, 0.80f, 0.55f);
+
     // ---- state ---------------------------------------------------------------
     private UIDocument _doc;
     private VisualElement _panel;   // the whole window (absolute-positioned)
-    private ScrollView _body;       // scrolling content region
+    private ScrollView _body;       // TUNING tab: reflected control region
     private TextField _search;
-    private bool _open = true;
+    private DropdownField _scenarioDrop;                        // replays/*.bytes picker
+    private List<string> _scenarioChoices = new List<string>(); // relative paths, [ / ] cycle them
+    private bool _open;
+
+    // Tab strip: TUNING (the reflected cockpit) | EVENTS (the live event viewer).
+    private enum Tab { Tuning, Events }
+    private Tab _tab = Tab.Tuning;
+    private Button _tabTuning, _tabEvents;
+
+    // EVENTS tab surface + controls.
+    private VisualElement _eventsPanel;   // whole tab body (controls row + scroll), display-toggled
+    private ScrollView _eventsScroll;     // the line list (newest at the BOTTOM)
+    private VisualElement _eventsContent;  // _eventsScroll.contentContainer (add/remove/trim here)
+    private Toggle _followToggle, _noiseToggle;
+    private TextField _eventFilter;
+    private int _lastSeq;                  // last ReplayPlayer.EventSeq folded into the list
+
+    private sealed class EventRow { public Label El; public bool Noise; public string Lower; }
+    private readonly List<EventRow> _eventRows = new List<EventRow>();
 
     private TuningConfig _config;
     private ReplayPlayer _player;
+    private int _builtVersion = -1;   // _config.Version the current rows were generated from
 
     // Editable slider ranges, keyed by stable field path ("post.bloomIntensity", "tells[0].flashSeconds").
     private readonly Dictionary<string, (float min, float max)> _ranges = new Dictionary<string, (float, float)>();
@@ -68,6 +107,9 @@ public class DebugMenu : MonoBehaviour
         var theme = Resources.Load<ThemeStyleSheet>("DebugTheme");
         if (theme != null) ps.themeStyleSheet = theme;
         ps.scaleMode = PanelScaleMode.ConstantPixelSize;
+        // This UIDocument has its own PanelSettings. UIDocument.sortingOrder only orders
+        // documents on the same panel; cross-panel rendering AND picking use this value.
+        ps.sortingOrder = 1000;
         _doc.panelSettings = ps;
         _doc.sortingOrder = 1000;
 
@@ -85,13 +127,20 @@ public class DebugMenu : MonoBehaviour
             if (_panel != null) _panel.style.display = _open ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        // Config/player may spawn around the same time as us — re-find and rebuild once available.
-        if (_config == null)
+        // [ / ] cycle scenarios (like the dropdown), unless the user is typing in the search field.
+        if (Keyboard.current != null && _scenarioChoices.Count > 1 && !SearchFocused())
         {
-            _config = FindFirstObjectByType<TuningConfig>();
-            if (_config != null) BuildUI();
+            if (Keyboard.current.leftBracketKey.wasPressedThisFrame) CycleScenario(-1);
+            else if (Keyboard.current.rightBracketKey.wasPressedThisFrame) CycleScenario(1);
         }
+
+        // Config/player may spawn around the same time as us. We also build before ReplayPlayer
+        // loads the JSON, so rebuild whenever the config reloads — otherwise the rows target the
+        // pre-reload objects (and the tells list would still be the empty default).
+        if (_config == null) _config = FindFirstObjectByType<TuningConfig>();
+        if (_config != null && _config.Version != _builtVersion) BuildUI();
         if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
+        PollEvents();
     }
 
     /// <summary>Push edited data into the live scene.</summary>
@@ -107,10 +156,15 @@ public class DebugMenu : MonoBehaviour
     {
         var root = _doc.rootVisualElement;
         root.Clear();
+        // The runtime panel fills the screen. Ignore its otherwise-empty root so it cannot become
+        // an invisible click shield; the visible window and all of its controls remain pickable.
+        root.pickingMode = PickingMode.Ignore;
         _rows = new List<RowRef>();
         _folds = new List<FoldRef>();
+        _builtVersion = _config != null ? _config.Version : -1;
 
         _panel = new VisualElement();
+        _panel.pickingMode = PickingMode.Position;
         var s = _panel.style;
         s.position = Position.Absolute;
         s.left = _px; s.top = _py; s.width = _pw; s.height = _ph;
@@ -124,6 +178,7 @@ public class DebugMenu : MonoBehaviour
 
         BuildHeader();
         BuildToolbar();
+        BuildTabs();
 
         _body = new ScrollView(ScrollViewMode.Vertical);
         _body.style.flexGrow = 1;
@@ -132,10 +187,105 @@ public class DebugMenu : MonoBehaviour
         _panel.Add(_body);
 
         BuildBody();
+        BuildEventsBody();
         BuildResizeHandle();
 
         root.Add(_panel);
+        StyleControls();
+        UpdateTabVisibility();  // apply the persisted tab (show one body, disable search off-Tuning)
         _panel.style.display = _open ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    // ---- tab strip -----------------------------------------------------------
+
+    private void BuildTabs()
+    {
+        var strip = new VisualElement();
+        strip.style.flexDirection = FlexDirection.Row;
+        strip.style.flexShrink = 0;
+        strip.style.paddingLeft = 10; strip.style.paddingRight = 10;
+        strip.style.paddingTop = 5; strip.style.paddingBottom = 5;
+        strip.style.borderBottomWidth = 1;
+        strip.style.borderBottomColor = new Color(1f, 1f, 1f, 0.08f);
+
+        _tabTuning = new Button(() => SetTab(Tab.Tuning)) { text = "TUNING" };
+        _tabEvents = new Button(() => SetTab(Tab.Events)) { text = "EVENTS" };
+        foreach (var b in new[] { _tabTuning, _tabEvents })
+        {
+            b.style.flexGrow = 1;
+            b.style.marginLeft = 0; b.style.marginRight = 4;
+            b.style.paddingTop = 3; b.style.paddingBottom = 3;
+            b.style.color = TextCol;
+            b.style.unityFontStyleAndWeight = FontStyle.Bold;
+            Round(b.style, 4);
+        }
+        _tabEvents.style.marginRight = 0;
+        strip.Add(_tabTuning); strip.Add(_tabEvents);
+        _panel.Add(strip);
+    }
+
+    private void SetTab(Tab t) { _tab = t; UpdateTabVisibility(); }
+
+    /// <summary>Show the active tab's body, hide the other, and mirror the state onto the tab
+    /// buttons + the toolbar search (which only filters the Tuning cockpit).</summary>
+    private void UpdateTabVisibility()
+    {
+        bool tuning = _tab == Tab.Tuning;
+        if (_body != null) _body.style.display = tuning ? DisplayStyle.Flex : DisplayStyle.None;
+        if (_eventsPanel != null) _eventsPanel.style.display = tuning ? DisplayStyle.None : DisplayStyle.Flex;
+        if (_search != null) _search.SetEnabled(tuning);
+        if (_tabTuning != null) _tabTuning.style.backgroundColor = tuning ? TabActive : TabInactive;
+        if (_tabEvents != null) _tabEvents.style.backgroundColor = tuning ? TabInactive : TabActive;
+    }
+
+    /// <summary>
+    /// One post-build sweep that dark-themes every stock control. The default runtime theme is
+    /// light: field inputs come out as white boxes, so the light text we inherit down the panel is
+    /// invisible on them. Restyling the input surfaces here (rather than at each creation site)
+    /// keeps the field builders free of theme noise. Everything is built eagerly in BuildUI, so a
+    /// single query pass covers the whole tree, collapsed foldouts included.
+    /// </summary>
+    private void StyleControls()
+    {
+        _panel.Query(className: "unity-base-field__input").ForEach(input =>
+        {
+            // Sliders share this class for their drag area; a filled box there just hides the track.
+            if (input.ClassListContains("unity-base-slider__input")) return;
+            input.style.backgroundColor = InputBg;
+            input.style.color = TextCol;
+            input.style.borderLeftColor = input.style.borderRightColor =
+                input.style.borderTopColor = input.style.borderBottomColor = InputBorder;
+            Round(input.style, 3);
+            // Inherited color loses to any explicit color the theme puts on the glyph element, so
+            // set the typed text directly — otherwise a dark-theme field would read dark-on-dark.
+            input.Query<TextElement>().ForEach(t => t.style.color = TextCol);
+        });
+        // Built-in field labels (slider R/G/B/A, "search") in case the theme colors them explicitly.
+        _panel.Query(className: "unity-base-field__label").ForEach(l => l.style.color = TextCol);
+        _panel.Query(className: "unity-base-popup-field__arrow").ForEach(a =>
+            a.style.unityBackgroundImageTintColor = TextCol);
+        _panel.Query(className: "unity-base-slider__tracker").ForEach(t =>
+        {
+            t.style.backgroundColor = SliderTrack;
+            t.style.borderLeftColor = t.style.borderRightColor =
+                t.style.borderTopColor = t.style.borderBottomColor = Color.clear;
+        });
+        _panel.Query(className: "unity-base-slider__dragger").ForEach(d =>
+        {
+            d.style.backgroundColor = SliderKnob;
+            d.style.borderLeftColor = d.style.borderRightColor =
+                d.style.borderTopColor = d.style.borderBottomColor = Color.clear;
+        });
+        // Toggle + foldout arrow: the theme's checkmark art is dark, invisible on a dark panel.
+        _panel.Query(className: "unity-toggle__checkmark").ForEach(c =>
+        {
+            c.style.unityBackgroundImageTintColor = TextCol;
+            // The foldout arrow is a bare glyph — only real checkboxes get a box drawn around them.
+            if (c.ClassListContains("unity-foldout__checkmark")) return;
+            c.style.backgroundColor = InputBg;
+            c.style.borderLeftColor = c.style.borderRightColor =
+                c.style.borderTopColor = c.style.borderBottomColor = InputBorder;
+        });
     }
 
     private void BuildHeader()
@@ -217,18 +367,87 @@ public class DebugMenu : MonoBehaviour
         {
             if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
             if (_player != null) _player.ticksPerSecond = e.newValue;
+            // Mirror into tuning so the cockpit's Save persists what you hear/see (playback owns speed).
+            if (_config != null && _config.data?.playback != null) _config.data.playback.ticksPerSecond = e.newValue;
             spdVal.SetValueWithoutNotify(e.newValue);
         });
         spdVal.RegisterValueChangedCallback(e =>
         {
             if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
             if (_player != null) _player.ticksPerSecond = e.newValue;
+            if (_config != null && _config.data?.playback != null) _config.data.playback.ticksPerSecond = e.newValue;
             spd.SetValueWithoutNotify(e.newValue);
         });
         row2.Add(spdLabel); row2.Add(spd); row2.Add(spdVal);
         bar.Add(row2);
 
+        // Row 3: scenario picker (dropdown of StreamingAssets/replays/*.bytes; [ / ] cycle it too)
+        var row3 = HRow();
+        var scLabel = FieldLabel("scenario");
+        _scenarioChoices = ScenarioChoices();
+        _scenarioDrop = new DropdownField(_scenarioChoices, CurrentScenarioIndex());
+        _scenarioDrop.style.flexGrow = 1;
+        _scenarioDrop.RegisterValueChangedCallback(e =>
+        {
+            if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
+            if (_player != null && !string.IsNullOrEmpty(e.newValue)) _player.LoadScenario(e.newValue);
+        });
+        row3.Add(scLabel); row3.Add(_scenarioDrop);
+        bar.Add(row3);
+
         _panel.Add(bar);
+    }
+
+    // ---- scenario picker -----------------------------------------------------
+
+    /// <summary>Relative paths ("replays/foo.bytes") for every *.bytes under StreamingAssets/replays,
+    /// plus the player's current replayFile if it lives elsewhere, so the dropdown always shows it.</summary>
+    private List<string> ScenarioChoices()
+    {
+        var list = new List<string>();
+        try
+        {
+            var dir = Path.Combine(Application.streamingAssetsPath, "replays");
+            if (Directory.Exists(dir))
+                foreach (var p in Directory.GetFiles(dir, "*.bytes"))
+                    list.Add("replays/" + Path.GetFileName(p));
+            list.Sort(StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception e) { Debug.LogWarning($"[DebugMenu] scenario scan failed ({e.Message})"); }
+        string cur = _player != null ? _player.replayFile : null;
+        if (!string.IsNullOrEmpty(cur) && !list.Contains(cur)) list.Insert(0, cur);
+        return list;
+    }
+
+    private int CurrentScenarioIndex()
+    {
+        string cur = _player != null ? _player.replayFile : null;
+        int i = cur != null ? _scenarioChoices.IndexOf(cur) : -1;
+        return i < 0 ? 0 : i;
+    }
+
+    /// <summary>Step the scenario selection by <paramref name="dir"/> and load it, keeping the
+    /// dropdown label in sync. Bound to [ / ] in Update (skipped while the search field is focused).</summary>
+    private void CycleScenario(int dir)
+    {
+        if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
+        if (_player == null || _scenarioChoices.Count == 0) return;
+        int idx = _scenarioChoices.IndexOf(_player.replayFile);
+        if (idx < 0) idx = 0;
+        idx = (idx + dir + _scenarioChoices.Count) % _scenarioChoices.Count;
+        string next = _scenarioChoices[idx];
+        _player.LoadScenario(next);
+        _scenarioDrop?.SetValueWithoutNotify(next);
+    }
+
+    /// <summary>True when keyboard focus is inside the search field (so [ / ] type literally instead
+    /// of cycling). Walks up from the focused element — a TextField focuses its inner text element.</summary>
+    private bool SearchFocused()
+    {
+        if (_search == null || _search.panel == null) return false;
+        var f = _search.panel.focusController?.focusedElement as VisualElement;
+        while (f != null) { if (f == _search) return true; f = f.parent; }
+        return false;
     }
 
     private void BuildBody()
@@ -242,6 +461,161 @@ public class DebugMenu : MonoBehaviour
             return;
         }
         BuildObject(data, _body, "", new List<FoldRef>());
+    }
+
+    // ---- events tab ----------------------------------------------------------
+
+    /// <summary>The EVENTS body: a controls row (follow / noise toggles + substring filter) over a
+    /// scroll of color-coded event lines, newest at the bottom. Lines are appended live in
+    /// <see cref="PollEvents"/>; this only builds the empty shell and resets the poll cursor so the
+    /// next poll repopulates from the player's ring buffer (survives a BuildUI rebuild for free).</summary>
+    private void BuildEventsBody()
+    {
+        _eventsPanel = new VisualElement();
+        _eventsPanel.style.flexGrow = 1;
+        _eventsPanel.style.flexDirection = FlexDirection.Column;
+        _eventsPanel.style.overflow = Overflow.Hidden;
+
+        var ctrl = HRow();
+        ctrl.style.flexShrink = 0;
+        ctrl.style.paddingLeft = 10; ctrl.style.paddingRight = 10;
+        ctrl.style.paddingTop = 6; ctrl.style.paddingBottom = 4;
+
+        _followToggle = new Toggle("follow") { value = true };
+        _followToggle.tooltip = "keep scrolled to the newest line";
+        _followToggle.style.marginRight = 12;
+        _noiseToggle = new Toggle("noise") { value = false };
+        _noiseToggle.tooltip = "show Move/Mana/FieldHex/BattleStart spam";
+        _noiseToggle.style.marginRight = 12;
+        _eventFilter = new TextField();
+        _eventFilter.style.flexGrow = 1;
+        _eventFilter.tooltip = "filter event lines (case-insensitive)";
+        _eventFilter.RegisterValueChangedCallback(_ => RefreshEventVisibility());
+        _noiseToggle.RegisterValueChangedCallback(_ => RefreshEventVisibility());
+
+        ctrl.Add(_followToggle); ctrl.Add(_noiseToggle); ctrl.Add(_eventFilter);
+        _eventsPanel.Add(ctrl);
+
+        _eventsScroll = new ScrollView(ScrollViewMode.Vertical);
+        _eventsScroll.style.flexGrow = 1;
+        _eventsScroll.style.paddingLeft = 10; _eventsScroll.style.paddingRight = 10;
+        _eventsScroll.style.paddingBottom = 8;
+        _eventsContent = _eventsScroll.contentContainer;
+        _eventsPanel.Add(_eventsScroll);
+
+        _panel.Add(_eventsPanel);
+
+        _eventRows.Clear();
+        _lastSeq = 0;   // force the next poll to re-fold the whole ring buffer into the fresh list
+    }
+
+    /// <summary>Fold new events into the list once per frame. Keyed on ReplayPlayer.EventSeq (the
+    /// same cheap-poll pattern as _config.Version): if it dropped, the buffer was cleared (fight
+    /// switch) so we resync from scratch; then append only the entries newer than we last saw.</summary>
+    private void PollEvents()
+    {
+        if (_player == null || _eventsContent == null) return;
+        int seq = _player.EventSeq;
+        if (seq == _lastSeq) return;
+
+        if (seq < _lastSeq) { ClearEventLines(); _lastSeq = 0; } // fight reset: drop stale lines
+
+        var recent = _player.RecentEvents;
+        int newCount = Mathf.Clamp(seq - _lastSeq, 0, recent.Count);
+        for (int i = recent.Count - newCount; i < recent.Count; i++)
+            AppendEventLine(recent[i]);
+        _lastSeq = seq;
+
+        TrimEventLines();
+        if (_followToggle != null && _followToggle.value) ScrollEventsToBottom();
+    }
+
+    private void AppendEventLine(BattleEvent e)
+    {
+        string line = $"t{e.Tick,3}  {EventText.Describe(e, EventName)}";
+        var lbl = new Label(line);
+        lbl.style.fontSize = 11;
+        lbl.style.whiteSpace = WhiteSpace.Normal;   // long lines wrap rather than clip
+        lbl.style.marginBottom = 1;
+        lbl.style.color = EventColor(e);
+        if (e.Kind == EventKind.Death) lbl.style.unityFontStyleAndWeight = FontStyle.Bold;
+
+        var row = new EventRow { El = lbl, Noise = EventText.IsNoise(e), Lower = line.ToLowerInvariant() };
+        _eventRows.Add(row);
+        _eventsContent.Add(lbl);
+        ApplyEventRowVisibility(row);
+    }
+
+    /// <summary>Names for Describe: fold name, falling back to "storm" for the environment (-1) and
+    /// "#id" for anything not in the fold.</summary>
+    private string EventName(int id)
+    {
+        string n = _player != null ? _player.UnitName(id) : null;
+        return n ?? (id < 0 ? "storm" : $"#{id}");
+    }
+
+    private void ApplyEventRowVisibility(EventRow r)
+    {
+        bool showNoise = _noiseToggle != null && _noiseToggle.value;
+        string q = _eventFilter != null ? (_eventFilter.value ?? "").Trim().ToLowerInvariant() : "";
+        bool pass = (showNoise || !r.Noise) && (q.Length == 0 || r.Lower.Contains(q));
+        r.El.style.display = pass ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    private void RefreshEventVisibility()
+    {
+        foreach (var r in _eventRows) ApplyEventRowVisibility(r);
+        if (_followToggle != null && _followToggle.value) ScrollEventsToBottom();
+    }
+
+    private void ClearEventLines()
+    {
+        _eventRows.Clear();
+        _eventsContent?.Clear();
+    }
+
+    /// <summary>Cap the rendered lines to the ring-buffer size, dropping the oldest — the visible
+    /// list and the player's buffer trim in lockstep.</summary>
+    private void TrimEventLines()
+    {
+        while (_eventRows.Count > 256)
+        {
+            _eventsContent.RemoveAt(0);
+            _eventRows.RemoveAt(0);
+        }
+    }
+
+    /// <summary>Pin the scroll to the newest line. Uses the vertical Scroller (robust to filtered/
+    /// hidden trailing rows); highValue settles a frame after a layout, and we poll every frame.</summary>
+    private void ScrollEventsToBottom()
+    {
+        var scroller = _eventsScroll?.verticalScroller;
+        if (scroller != null) scroller.value = scroller.highValue;
+    }
+
+    private static Color EventColor(BattleEvent e)
+    {
+        switch (e.Kind)
+        {
+            case EventKind.DamageDealt:
+                return e.Crit ? EvCrit : e.Cause == Cause.Burn ? EvBurn : EvDamage;
+            case EventKind.Heal: return EvHeal;
+            case EventKind.Cast: return EvCast;
+            case EventKind.StatusApplied:
+            case EventKind.StatusExpired: return EvStatus;
+            case EventKind.Death:
+            case EventKind.CheatDeath: return EvDeath;
+            case EventKind.AttackBlocked: return EvBlocked;
+            case EventKind.FieldCreated:
+                switch (e.Flavor)
+                {
+                    case FieldFlavor.Hazard: return EvFieldHazard;
+                    case FieldFlavor.Boon: return EvFieldBoon;
+                    case FieldFlavor.Debuff: return EvFieldDebuff;
+                    default: return EvFieldElse;
+                }
+            default: return Muted;
+        }
     }
 
     private void BuildResizeHandle()

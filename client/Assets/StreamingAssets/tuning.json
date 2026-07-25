@@ -7,11 +7,11 @@
   },
   "post": {
     "bloomIntensity": 0.8,
-    "bloomThreshold": 0.9,
+    "bloomThreshold": 1.1,
     "vignette": 0.32,
     "saturation": 16.0,
-    "dofStart": 21.0,
-    "dofEnd": 34.0
+    "dofStart": 26.0,
+    "dofEnd": 44.0
   },
   "numbers": {
     "characterSize": 0.02,
@@ -87,6 +87,9 @@
   "board": {
     "hexSize": 1.15,
     "tileScale": 0.9
+  },
+  "playback": {
+    "ticksPerSecond": 2.0
   },
   "tells": [
     {

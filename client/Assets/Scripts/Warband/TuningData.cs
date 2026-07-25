@@ -34,6 +34,7 @@ public class TuningData
     public BarsTune bars = new BarsTune();
     public ModelsTune models = new ModelsTune();
     public BoardTune board = new BoardTune();
+    public PlaybackTune playback = new PlaybackTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
     // references to them survive a reload — see TuningIO.Settings().
@@ -110,6 +111,16 @@ public class CameraTune
     [Range(5f, 89f)] public float pitch = 52f;        // elevation angle
     [Range(0.4f, 3f)] public float distance = 1.25f;  // multiple of board span
     public Color background = new Color(0.055f, 0.06f, 0.08f);
+}
+
+/// <summary>Playback pacing. ticksPerSecond IS the battle speed (1 tick = 100ms at the contract
+/// default of 10) and lives in tuning so the F1 save persists it — it used to be only a live
+/// field on ReplayPlayer, which is how a 10000 t/s fast-forward experiment got baked into the
+/// scene as the reboot default (Jake 2026-07-25).</summary>
+[Serializable]
+public class PlaybackTune
+{
+    [Range(1f, 40f)] public float ticksPerSecond = 10f;
 }
 
 /// <summary>Board geometry (Jake 2026-07-25: "space the hexes out — things feel cluttered").
