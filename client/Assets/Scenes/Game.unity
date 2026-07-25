@@ -205,8 +205,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.49914023, y: 0, z: 0, w: 0.86652124}
-  m_LocalPosition: {x: 4.7631397, y: 10.5, z: -0.8399997}
+  m_LocalRotation: {x: 0.21504831, y: 0.11051984, z: -0.024501659, w: 0.9700203}
+  m_LocalPosition: {x: 2.3441644, y: 5.0143657, z: -5.2277346}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -236,7 +236,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
+  m_Antialiasing: 2
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -286,10 +286,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b8e0b0ec2d5c4e4bb13762f350fd06e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReplayPlayer
-  replayFile: replay.bytes
-  ticksPerSecond: 10
+  replayFile: replays/skirmish.bytes
+  ticksPerSecond: 10000
   loop: 1
   hexSize: 1
+  previewAdvanceSeconds: 0.12
+  autoPlayOnStart: 0
 --- !u!4 &364257900
 Transform:
   m_ObjectHideFlags: 0
@@ -319,8 +321,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TuningConfig
   data:
     camera:
-      heightFactor: 1
-      distanceFactor: 0.58
+      yaw: 13
+      pitch: 25
+      distance: 1.13
       background: {r: 0.05490196, g: 0.0627451, b: 0.078431375, a: 1}
     post:
       bloomIntensity: 0.8
@@ -330,13 +333,60 @@ MonoBehaviour:
       dofStart: 16
       dofEnd: 44
     numbers:
-      characterSize: 0.11
+      characterSize: 0.045
       fontSize: 90
       riseSpeed: 2.4
       lifeSeconds: 0.8
+      columns: 2
+      releaseGap: 0.1
+      columnSpread: 0.5
+      columnDrift: 0.5
+      maxHold: 0.4
+      outwardBias: 0.5
+      unitJitter: 0.25
+    impact:
+      enabled: 1
+      bigHit: 40
+      curve: 0.85
+      minScale: 0.6
+      maxScale: 1.6
+      riseBoost: 0.6
+      lifeBoost: 0.5
+      punchBoost: 0.8
+      heavyTint: {r: 1, g: 0.9490196, b: 0.85882354, a: 1}
+      tintAmount: 0.5
+    fields:
+      hazard: {r: 0.9490196, g: 0.34901962, b: 0.2, a: 1}
+      boon: {r: 0.34901962, g: 0.9019608, b: 0.4509804, a: 1}
+      buff: {r: 0.34901962, g: 0.8509804, b: 0.9490196, a: 1}
+      debuff: {r: 0.6509804, g: 0.4, b: 0.8509804, a: 1}
+      neutral: {r: 0.9490196, g: 0.8, b: 0.34901962, a: 1}
+      wall: {r: 0.54901963, g: 0.54901963, b: 0.6, a: 1}
+    nameplates:
+      show: 1
+      characterSize: 0.045
+      color: {r: 0.8784314, g: 0.8784314, b: 0.81960785, a: 1}
+    story:
+      feedShow: 1
+      feedLifeSeconds: 5
+      feedSize: 0.05
+      bannerSize: 0.14
+      endHoldSeconds: 4
+    motion:
+      bobHeight: 0.07
+      bobSteps: 2
+      leanAmount: 0.05
+      turnSpeed: 14
+      snapSpeed: 12
     tells:
     - eventKind: 3
       side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
       flash: 1
       flashColor: {r: 1, g: 1, b: 1, a: 1}
       critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
@@ -349,8 +399,52 @@ MonoBehaviour:
       critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
       minAmount: 5
       numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 3
+      side: 1
+      byCause: 1
+      cause: 7
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.47843137, b: 0.18039216, a: 1}
+      critFlashColor: {r: 1, g: 0.47843137, b: 0.18039216, a: 1}
+      flashSeconds: 0.16
+      punch: 0
+      punchAmount: 0.12
+      punchSeconds: 0.14
+      number: 1
+      numberColor: {r: 1, g: 0.6039216, b: 0.23529412, a: 1}
+      critNumberColor: {r: 1, g: 0.6039216, b: 0.23529412, a: 1}
+      minAmount: 1
+      numberScale: 0.8
+      numberBand: -0.6
+      numberLife: 0.7
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
     - eventKind: 5
       side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
       flash: 1
       flashColor: {r: 0.54901963, g: 0.84705883, b: 1, a: 1}
       critFlashColor: {r: 0.54901963, g: 0.84705883, b: 1, a: 1}
@@ -363,8 +457,23 @@ MonoBehaviour:
       critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
       minAmount: 1
       numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0.12
+      defer: 1
     - eventKind: 4
       side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
       flash: 1
       flashColor: {r: 0.41960785, g: 0.8980392, b: 0.5411765, a: 1}
       critFlashColor: {r: 0.41960785, g: 0.8980392, b: 0.5411765, a: 1}
@@ -377,6 +486,305 @@ MonoBehaviour:
       critNumberColor: {r: 0.54901963, g: 1, b: 0.6, a: 1}
       minAmount: 1
       numberScale: 1
+      numberBand: 0.55
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 6
+      side: 1
+      byCause: 0
+      cause: 5
+      byStatus: 1
+      status: 0
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.69803923, b: 0.21960784, a: 1}
+      critFlashColor: {r: 1, g: 0.69803923, b: 0.21960784, a: 1}
+      flashSeconds: 0.45
+      punch: 1
+      punchAmount: 0.28
+      punchSeconds: 0.35
+      number: 0
+      numberColor: {r: 1, g: 0.79607844, b: 0.36078432, a: 1}
+      critNumberColor: {r: 1, g: 0.79607844, b: 0.36078432, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 3
+      motionSeconds: 0.42
+      motionColor: {r: 1, g: 0.6156863, b: 0.18039216, a: 1}
+      motionGlow: 5
+      motionScale: 2.2
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 6
+      side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 1
+      status: 12
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 0.6901961, g: 0.41960785, b: 0.8784314, a: 1}
+      critFlashColor: {r: 0.6901961, g: 0.41960785, b: 0.8784314, a: 1}
+      flashSeconds: 0.32
+      punch: 1
+      punchAmount: 0.18
+      punchSeconds: 0.22
+      number: 0
+      numberColor: {r: 0.6901961, g: 0.41960785, b: 0.8784314, a: 1}
+      critNumberColor: {r: 0.6901961, g: 0.41960785, b: 0.8784314, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 6
+      side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 1
+      status: 2
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 0.60784316, g: 0.47058824, b: 0.8392157, a: 1}
+      critFlashColor: {r: 0.60784316, g: 0.47058824, b: 0.8392157, a: 1}
+      flashSeconds: 0.32
+      punch: 1
+      punchAmount: 0.22
+      punchSeconds: 0.22
+      number: 0
+      numberColor: {r: 0.60784316, g: 0.47058824, b: 0.8392157, a: 1}
+      critNumberColor: {r: 0.60784316, g: 0.47058824, b: 0.8392157, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 6
+      side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 1
+      status: 13
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 0.47843137, g: 0.8745098, b: 1, a: 1}
+      critFlashColor: {r: 0.47843137, g: 0.8745098, b: 1, a: 1}
+      flashSeconds: 0.35
+      punch: 0
+      punchAmount: 0.15
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 0.47843137, g: 0.8745098, b: 1, a: 1}
+      critNumberColor: {r: 0.47843137, g: 0.8745098, b: 1, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 0
+      motionSeconds: 0.15
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 2
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 1
+      motionSeconds: 0.14
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 1
+    - eventKind: 2
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 1
+      ranged: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 2
+      motionSeconds: 0.16
+      motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 1
+    - eventKind: 3
+      side: 1
+      byCause: 1
+      cause: 2
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 1
+      flashColor: {r: 0.7882353, g: 0.9137255, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 1
+      numberColor: {r: 1, g: 0.53333336, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0.3
+      numberLife: 1
+      motion: 2
+      motionSeconds: 0.15
+      motionColor: {r: 0.54901963, g: 0.84705883, b: 1, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 16
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 2
+      motionSeconds: 0.12
+      motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
+      motionGlow: 2
+      motionScale: 0.8
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 10
+      side: 1
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 3
+      motionSeconds: 0.35
+      motionColor: {r: 1, g: 0.3529412, b: 0.2901961, a: 1}
+      motionGlow: 3
+      motionScale: 1.6
+      windupSeconds: 0
+      defer: 0
+    - eventKind: 17
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 1
+      punchAmount: 0.3
+      punchSeconds: 0.16
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      motion: 4
+      motionSeconds: 0.34
+      motionColor: {r: 0.61960787, g: 0.54901963, b: 0.84705883, a: 1}
+      motionGlow: 2.2
+      motionScale: 1
+      windupSeconds: 0.1
+      defer: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
