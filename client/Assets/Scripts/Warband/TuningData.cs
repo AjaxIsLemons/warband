@@ -362,6 +362,12 @@ public class TellDef
     // the kill-feed slots, so it obeys the same cap + fade — ration it (T2/T3 casts, never riders).
     public bool announce = false;
     public bool pulseGround = false;     // flare fields covering the impact hex — wired in P2 (FieldView)
+    // The camera's one rationed channel (combat-spectacle §7.9, a day-one LAW). A tell marked
+    // bigImpact gets a 2-frame push-in at contact and is the ONLY class allowed to ask for a trauma
+    // shake — which is itself rationed to one per FxTune.shakeRationSeconds. Authored explicitly on
+    // the T3 moments (Starfall, Faultline, Sarissa, Death) rather than inferred from motionGlow: a
+    // silent heuristic rots the first time someone retunes a glow in the F1 cockpit.
+    public bool bigImpact = false;
 }
 
 /// <summary>
@@ -402,4 +408,32 @@ public class FxTune
     // REAL seconds, not ticks: how fast a feed can be read doesn't change with the battle speed, so
     // a fast-forwarded fight simply announces a smaller fraction of its casts. 0 disables the ration.
     [Range(0f, 20f)] public float announceCooldownSeconds = 6f;
+
+    // ---- the dress layer (combat-spectacle §7.2 · §7.5 · §7.9) ---------------
+    // Deathless (§7.2). The hold is the same channel as the Death hit-stop — REAL seconds of frozen
+    // playhead while the Director keeps stepping. The dim drops the board's key light rather than
+    // laying a dark sheet over the screen: an overlay would darken the survivor too, and the whole
+    // point is that he alone stays candle-lit. Snap dark, ease back over dimSeconds.
+    [Range(0f, 1.5f)] public float deathlessHoldSeconds = 0.4f;
+    [Range(0f, 1f)] public float deathlessDimAmount = 0.4f;
+    [Range(0.1f, 3f)] public float deathlessDimSeconds = 0.9f;
+
+    // The fight-ender (§7.5): the LAST death of a fight — the one that empties a side — drops the
+    // PLAYHEAD to enderSlowScale for enderSlowSeconds and swells the vignette, and the existing
+    // end-tick hold then slides the FightSummary readout out of that freeze.
+    [Range(0.05f, 1f)] public float enderSlowScale = 0.2f;
+    [Range(0f, 3f)] public float enderSlowSeconds = 0.6f;
+    [Range(0f, 0.8f)] public float enderVignetteBoost = 0.28f;
+
+    // The camera discipline law (§7.9, adopted day one — this is what stops every other channel from
+    // stacking into mush). ONE channel: a push-in on `bigImpact` contacts, and a trauma shake that is
+    // hard-rationed to one per shakeRationSeconds of REAL time (the announce ration's law, for the
+    // same reason: how fast an eye recovers doesn't change with the battle speed). Push amount is in
+    // world units along the view axis; a "2-frame" punch at 60 fps is ~0.03 s, but it reads as a jolt
+    // rather than a dropped frame at ~0.12.
+    [Range(0f, 1.5f)] public float cameraPunchAmount = 0.45f;
+    [Range(0.02f, 0.5f)] public float cameraPunchSeconds = 0.12f;
+    [Range(0f, 0.6f)] public float cameraShakeAmount = 0.14f;
+    [Range(0.05f, 1.5f)] public float cameraShakeSeconds = 0.35f;
+    [Range(0f, 10f)] public float shakeRationSeconds = 3f;
 }

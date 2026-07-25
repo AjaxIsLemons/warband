@@ -209,6 +209,64 @@
       "pulseGround": true
     },
     {
+      "eventKind": "DamageDealt",
+      "side": "Target",
+      "byCause": true,
+      "cause": "Trigger",
+      "flash": true,
+      "flashColor": "#FFE3B8FF",
+      "critFlashColor": "#FFE3B8FF",
+      "flashSeconds": 0.12,
+      "punch": false,
+      "number": true,
+      "numberColor": "#FF8866FF",
+      "critNumberColor": "#FF8866FF",
+      "minAmount": 1,
+      "numberScale": 0.7,
+      "numberBand": 0.45,
+      "numberLife": 0.8,
+      "sound": "",
+      "motion": "Tracer",
+      "motionSeconds": 0.12,
+      "motionColor": "#FFF6E3FF",
+      "motionGlow": 2.2,
+      "motionScale": 0.5,
+      "windupSeconds": 0.0,
+      "defer": false,
+      "projectileVfx": "spark-link",
+      "hitAnim": false
+    },
+    {
+      "eventKind": "DamageDealt",
+      "side": "Target",
+      "byCause": true,
+      "cause": "Counter",
+      "flash": true,
+      "flashColor": "#FFFFFFFF",
+      "critFlashColor": "#FFD940FF",
+      "flashSeconds": 0.1,
+      "punch": true,
+      "punchAmount": 0.26,
+      "punchSeconds": 0.14,
+      "number": true,
+      "numberColor": "#FFD8C4FF",
+      "critNumberColor": "#FFD940FF",
+      "minAmount": 1,
+      "numberScale": 1.0,
+      "numberBand": 0.15,
+      "numberLife": 0.9,
+      "sound": "hit_melee",
+      "motion": "None",
+      "motionColor": "#FFFFFFFF",
+      "motionGlow": 3.0,
+      "motionScale": 0.9,
+      "windupSeconds": 0.0,
+      "defer": false,
+      "impactVfx": "impact-spark",
+      "hitAnim": true,
+      "hitAnimMinT": 0.25
+    },
+    {
       "eventKind": "Cast",
       "side": "Source",
       "byCause": false,
@@ -914,7 +972,8 @@
       "motionScale": 1.6,
       "windupSeconds": 0.0,
       "defer": false,
-      "impactVfx": "death-dissolve-burst"
+      "impactVfx": "death-dissolve-burst",
+      "bigImpact": true
     },
     {
       "eventKind": "Leap",
@@ -1093,13 +1152,13 @@
       "numberLife": 1.0,
       "sound": "cheatdeath",
       "critSound": "",
-      "motion": "Burst",
-      "motionSeconds": 0.5,
+      "motion": "None",
       "motionColor": "#FFF2DBFF",
-      "motionGlow": 6.0,
-      "motionScale": 2.0,
+      "motionGlow": 3.0,
+      "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "impactVfx": "deathless-rune"
     },
     {
       "eventKind": "FieldCreated",
@@ -1337,7 +1396,8 @@
       "defer": true,
       "vfx": "cast-aura-pyromancer",
       "impactVfx": "fire-release",
-      "announce": true
+      "announce": true,
+      "bigImpact": true
     },
     {
       "eventKind": "Cast",
@@ -1487,7 +1547,8 @@
       "defer": true,
       "vfx": "cast-aura-bulwark",
       "impactVfx": "impact-heavy",
-      "announce": true
+      "announce": true,
+      "bigImpact": true
     },
     {
       "eventKind": "Cast",
@@ -1750,7 +1811,8 @@
       "defer": true,
       "vfx": "cast-aura-phalanx",
       "impactVfx": "impact-heavy",
-      "announce": true
+      "announce": true,
+      "bigImpact": true
     },
     {
       "eventKind": "Cast",

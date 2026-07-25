@@ -214,6 +214,76 @@ public static class VfxLibrary
         Add(CastAura("phalanx"));
         Add(CastAura("banneret"));
 
+        // The trigger-rider echo's attribution (combat-spectacle §6): a thin spark that travels from
+        // the rider's ROOT to the unit its result actually landed on, inside the beat. It is an
+        // ECHO, so it stays T1 and carries no lane Tint of its own — a rider wears the color of the
+        // engine that fired it, which is what makes six different riders readable as six engines.
+        // The line is the ParticleSystem Trails MODULE (simulated inside Simulate(), unlike the
+        // banned TrailRenderer), dragged behind a head that PlayProjectile walks root→target.
+        Add(Def("spark-link", 0.16f,
+            new ParticleElement
+            {
+                Rate = 150f, Burst = 2, Tier = 1.0f, MaxParticles = 32,
+                LifeMin = 0.05f, LifeMax = 0.10f, SpeedMin = 0f, SpeedMax = 0.25f,
+                SizeMin = 0.03f, SizeMax = 0.06f, Shape = ParticleShape.Sphere, ShapeRadius = 0.04f,
+                Trails = true, TrailRatio = 1f, TrailLifetime = 0.09f, TrailWidth = 0.20f,
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 0.26f, Tier = 1.0f, Falloff = 3f,
+                Alpha = Curve(0f, 0.9f, 0.16f, 0.45f),
+            }));
+
+        // Deathless (combat-spectacle §7.2). T3, and the only red rune on the board: the ring snaps
+        // open on his hex, the rune wheel burns inside it, and one flare goes off over his head while
+        // the rest of the board is dimming around him. Every element rides FollowUnit, so the survivor
+        // wears it — a Frenzy bursting out of the freeze takes the rune with it.
+        Add(Def("deathless-rune", 0.85f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.Ground, Anchor = VfxAnchor.FollowUnit,
+                Size = 2.6f, Tier = 2.8f, Tint = BloodHot, Thickness = 0.16f, Softness = 0.22f,
+                Offset = new Vector3(0f, 0.05f, 0f),
+                Radius = Curve(0f, 0.15f, 0.18f, 0.95f),
+                Alpha = Curve(0f, 1f, 0.55f, 0.8f, 0.85f, 0f),
+            },
+            new QuadElement
+            {
+                // The berserker's rune wheel — Deathless is his dive, so it is his engraving that
+                // refuses. RequireTexture: before the sigil batch this element simply isn't there,
+                // rather than stamping a white disc under him.
+                Shader = ShaderSigil, Orientation = QuadOrientation.Ground, Anchor = VfxAnchor.FollowUnit,
+                Size = 2.0f, Tier = 2.6f, Tint = BloodHot,
+                Texture = "Board/FX/Sigils/berserker", RequireTexture = true,
+                Offset = new Vector3(0f, 0.055f, 0f),
+                Rotation = Curve(0f, 0f, 0.85f, 0.22f),
+                Scale = Curve(0f, 0.5f, 0.14f, 1.1f, 0.85f, 1f),
+                Alpha = Curve(0f, 0f, 0.10f, 1f, 0.60f, 0.9f, 0.85f, 0f),
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard, Anchor = VfxAnchor.FollowUnit,
+                Size = 1.7f, Tier = 3.2f, Tint = BloodHot, Falloff = 2.2f,
+                Offset = new Vector3(0f, 1.0f, 0f),
+                Scale = Curve(0f, 0.35f, 0.10f, 1.25f, 0.85f, 1.4f),
+                Alpha = Curve(0f, 1f, 0.10f, 0.9f, 0.70f, 0f),
+            },
+            new ParticleElement
+            {
+                Anchor = VfxAnchor.FollowUnit, Burst = 18, Tier = 2.0f, Tint = EmberHot,
+                Offset = new Vector3(0f, 0.6f, 0f),
+                LifeMin = 0.45f, LifeMax = 0.85f, SpeedMin = 1.2f, SpeedMax = 2.6f,
+                SizeMin = 0.07f, SizeMax = 0.14f, ShapeAngle = 22f, ShapeRadius = 0.35f,
+                ShapeRotation = Up, Gravity = -0.6f, Drag = 0.2f,
+            },
+            new LightElement
+            {
+                Anchor = VfxAnchor.FollowUnit, Range = 6f, Tier = 2.4f, Tint = BloodHot,
+                Offset = new Vector3(0f, 1f, 0f),
+                Intensity = Curve(0f, 0f, 0.08f, 1f, 0.85f, 0f),
+            }));
+
         // Impacts.
         Add(Def("impact-spark", 0.2f,
             new ParticleElement

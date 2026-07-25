@@ -213,6 +213,14 @@ public class ReplayPlayer : MonoBehaviour
         // the fold reported it dead. The linger itself begins at dispatch (ReplayPlayer.BeginDeath),
         // or the body would blink out for the length of the swing that killed it.
         private readonly Action<int> _strike;
+        // The camera's one rationed channel (combat-spectacle §7.9): (push-in, shake) at the moment
+        // a `bigImpact` tell CONNECTS. The Director owns the ration — it is the only thing here with
+        // a clock — and knows nothing else about the camera; ReplayPlayer owns the transform.
+        private readonly Action<float, float> _cameraKick;
+        // Deathless (§7.2), routed WHOLE rather than piecemeal: the playhead hold, the board dim and
+        // the callout are one moment, and the tell's only say in it is when it lands. The red rune
+        // flare is this row's own impactVfx, so the recipe stays where every other recipe lives.
+        private readonly Action<int> _deathless;
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
         private readonly FxTune _fx;
@@ -279,6 +287,10 @@ public class ReplayPlayer : MonoBehaviour
         // Director-clock time each caster last named itself in the feed — the announce ration's
         // whole state (FxTune.announceCooldownSeconds). Dropped on Reset with everything else.
         private readonly Dictionary<int, float> _announcedAt = new Dictionary<int, float>();
+        // Director-clock time the camera last shook — the ENTIRE state of the shake ration
+        // (FxTune.shakeRationSeconds). Same shape as the announce cooldown above, and dropped by
+        // Reset for the same reason: a loop-wrap's first Faultline is news again.
+        private float _shookAt = float.NegativeInfinity;
         private float _clock;
 
         private const float FlightY = 0.8f;   // tracer/spark chest height
@@ -294,9 +306,10 @@ public class ReplayPlayer : MonoBehaviour
                                 Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
                                 Func<Quaternion> billboard, Action<Hex> pulseGround,
                                 Action<int, string> announce, Action<int> strike,
+                                Action<float, float> cameraKick, Action<int> deathless,
                                 float ticksPerSecond, Action<string> playSfx = null)
         {
-            _strike = strike;
+            _strike = strike; _cameraKick = cameraKick; _deathless = deathless;
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
             _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx;
             _getTracer = getTracer; _recycleTracer = recycleTracer;
@@ -732,10 +745,14 @@ public class ReplayPlayer : MonoBehaviour
 
             // Contact recipe, at the victim's chest and aimed along the blow so directional sprays
             // throw away from the hit. Empty id leaves today's rendering (flash/punch/number, plus a
-            // cube tracer's own arrival spark) exactly as it is.
+            // cube tracer's own arrival spark) exactly as it is. The side unit's Root rides along as
+            // the follow anchor: every impact recipe authored so far is World-anchored and ignores
+            // it, but a recipe that OUTLIVES the beat needs it — the Deathless rune sits on the
+            // survivor's hex for 0.85 s, and a hex-anchored element measured from the chest would
+            // float 0.8 units in the air.
             if (!string.IsNullOrEmpty(def.impactVfx))
                 PlayVfx(def.impactVfx, v.Target + Vector3.up * FlightY, pt.TargetPos - pt.SourcePos,
-                        def, Seed(e.Tick, sideUid, 2), null);
+                        def, Seed(e.Tick, sideUid, 2), v.Root);
 
             // Flinch, gated on how hard the hit READ (ImpactTune t) so a DoT tick can't spasm the
             // body. A corpse never flinches: Death is dispatched in the same beat as the blow that
@@ -753,6 +770,22 @@ public class ReplayPlayer : MonoBehaviour
 
             // The corpse's own beat. Only the Death tell carries it, and only at contact.
             if (e.Kind == EventKind.Death) _strike?.Invoke(sideUid);
+
+            // The camera, at contact and nowhere else (combat-spectacle §7.9 — the DISCIPLINE law).
+            // Only a tell authored `bigImpact` may ask. The push-in always lands, because it is two
+            // frames and reads as weight; the SHAKE additionally has to clear the ration, which is
+            // what keeps a fight that kills three units in four seconds from shaking three times.
+            // Measured on the Director clock in real seconds, exactly like the announce cooldown.
+            if (def.bigImpact && _cameraKick != null)
+            {
+                float ration = Mathf.Max(0f, _fx.shakeRationSeconds);
+                bool shake = ration <= 0f || _clock - _shookAt >= ration;
+                if (shake) _shookAt = _clock;
+                _cameraKick(_fx.cameraPunchAmount, shake ? _fx.cameraShakeAmount : 0f);
+            }
+
+            // Deathless (§7.2): the refusal IS the moment, so the whole dress fires from one call.
+            if (e.Kind == EventKind.CheatDeath) _deathless?.Invoke(sideUid);
 
             // Ground pulse, at the hex the payload landed on — the field's floor flashes because
             // something HAPPENED on it. Read from the fold rather than the view, so a victim mid-step
@@ -835,6 +868,7 @@ public class ReplayPlayer : MonoBehaviour
             _laneFreeAt.Clear(); // stale lane reservations would hold the next fight's first numbers
             _abilityById.Clear(); // a scenario switch brings different units under the same ids
             _announcedAt.Clear(); // ditto the ration: a loop-wrap's first cast is news again
+            _shookAt = float.NegativeInfinity; // ...and the camera's, or the next fight opens unshakeable
             foreach (var v in _views.Values) v.MotionOffset = Vector3.zero;
             foreach (var tr in _activeTracers) _recycleTracer(tr);
             _activeTracers.Clear();
@@ -890,6 +924,7 @@ public class ReplayPlayer : MonoBehaviour
         Build();
         _clock = 0f; _fxCursor = 0; _playing = true; _holdSeconds = 0f;
         _ending = false; _endHold = 0f;
+        ResetDress();   // re-arms the once-per-fight ender latch (no ResetAnim on this path either)
         ClearRecent();  // a fresh fight starts the Events tab clean (no ResetAnim on this path)
         ApplyFold(0);
     }
@@ -943,6 +978,7 @@ public class ReplayPlayer : MonoBehaviour
         Build();
         _clock = 0f; _fxCursor = 0; _playing = autoplay; _holdSeconds = 0f;
         _ending = false; _endHold = 0f;
+        ResetDress();
         ClearRecent();
         ApplyFold(0);
         if (!autoplay) SnapViews();
@@ -954,8 +990,21 @@ public class ReplayPlayer : MonoBehaviour
         // Hit-stop: a blocking beat (Death, crit) freezes the PLAYHEAD for a few real ms while the
         // Director keeps stepping — decorative FX animate through the hold, sim time stands still.
         // Never Time.timeScale (render-polish law): that would couple juice to Unity's clock.
+        // The fight-ender ramp (combat-spectacle §7.5) rides the SAME channel as the hit-stop: the
+        // playhead, never Time.timeScale. It drains in real seconds regardless of the hold, so the
+        // killing blow's hit-stop and the slow-mo behind it read as one continuous beat instead of
+        // a freeze followed by a separate ramp.
+        float speed = 1f;
+        if (_enderRamp > 0f)
+        {
+            _enderRamp -= Time.deltaTime;
+            speed = Mathf.Max(0.01f, _data.fx.enderSlowScale);
+            ApplyEnderVignette(_enderRamp > 0f
+                ? Mathf.Clamp01(_enderRamp / Mathf.Max(0.01f, _data.fx.enderSlowSeconds))
+                : 0f);
+        }
         if (_holdSeconds > 0f) _holdSeconds -= Time.deltaTime;
-        else _clock += Time.deltaTime * ticksPerSecond;
+        else _clock += Time.deltaTime * ticksPerSecond * speed;
         if (_clock >= _endTick)
         {
             // Reach the end → freeze the playhead and HOLD, showing the win banner + readout, instead
@@ -1020,6 +1069,9 @@ public class ReplayPlayer : MonoBehaviour
         // why two frozen captures of the SAME tick at different previewAdvanceSeconds show the
         // clocks at different fills instead of one static ring.
         foreach (var v in _views.Values) v.Icons?.Step(dt);
+        // The dress layer (board dim + camera). Stepped here rather than in Update for the parity
+        // law: the Deathless dim then reproduces in a frozen contact sheet by construction.
+        StepDress(dt);
         // Corpses: the freeze/slump/dissolve of every unit that has died and not yet finished ashing.
         // Stepped AFTER the Director so a death struck inside this same Tick starts moving now.
         if (_deaths.Count > 0)
@@ -1107,6 +1159,178 @@ public class ReplayPlayer : MonoBehaviour
         foreach (var v in _views.Values) v.Lingering = false;
         if (_marks != null) DestroyImmediate(_marks.gameObject);
         _marks = null;
+    }
+
+    // ---- the dress layer (combat-spectacle §7.2 Deathless · §7.5 fight-ender · §7.9 camera) ----
+    //
+    // Three effects that reach OUTSIDE the board's own object graph — the scene's key light, the
+    // post-processing volume, the camera transform. Everything here therefore obeys one extra rule
+    // on top of the FX-runtime laws: it must restore EXACTLY, because what it borrows outlives the
+    // fight (and, in the editor, outlives the session). <see cref="ResetDress"/> is that promise,
+    // and it runs on every path that ends a fight — loop-wrap, scenario switch, and the top of every
+    // frozen scrub.
+
+    // Deathless dims the board by dropping the KEY LIGHT, not by laying a dark sheet over the
+    // screen. A screen overlay would dim the survivor too, and "the survivor alone stays candle-lit"
+    // is the whole image: with the light down, everything LIT (board, tiles, bodies) darkens while
+    // every additive VFX keeps its full HDR value — so his red rune flare and his own white flash
+    // are suddenly the only bright things on the board. The envelope steps on the FX clock, so a
+    // frozen scrub through the moment dims by construction rather than through a second code path.
+    private Light _keyLight;
+    private float _keyBase = -1f, _dimT, _dimLife;
+
+    // The camera's rationed channel. Position ONLY: FrameCamera caches the billboard quaternion
+    // (_numberFace) from the camera's ROTATION, so translating the camera leaves every billboard —
+    // numbers, nameplates, status icons, the story feed — correct with no re-cache. Play mode only;
+    // a frozen preview never moves the camera, or two captures of one tick would frame differently.
+    private Vector3 _camBase, _camPush;
+    private bool _camHasBase;
+    private float _punchT, _punchLife, _punchAmt;
+    private float _shakeT, _shakeLife, _shakeAmt, _shakeClock;
+
+    // The fight-ender ramp: real seconds of 0.2x PLAYHEAD left to run. Same channel as the hit-stop
+    // (sim time crawls, the Director keeps stepping at real dt — so the ash still rises at full
+    // speed over a body falling in slow motion), and never Time.timeScale.
+    private float _enderRamp, _vignetteApplied;
+    private bool _enderFired;
+    private Volume _volume;
+
+    /// <summary>He refused to die. Hold the playhead, drop the board around him, and say his name —
+    /// the red rune flare over his head is the CheatDeath row's own impactVfx, so the look stays in
+    /// the recipe table with every other look (combat-spectacle §7.2).</summary>
+    private void BeginDeathless(int unitId)
+    {
+        var fx = _data != null ? _data.fx : null;
+        if (fx == null) return;
+        // Same channel as the Death hit-stop, same law: the playhead freezes for real milliseconds
+        // while Director-stepped FX animate through it. A frozen preview has no playhead to hold,
+        // which is why this half is play-mode only and the dim below is not.
+        if (Application.isPlaying)
+            _holdSeconds = Mathf.Max(_holdSeconds, fx.deathlessHoldSeconds);
+        _dimLife = Mathf.Max(0.01f, fx.deathlessDimSeconds);
+        _dimT = _dimLife;
+        // A callout, not a cast — it ignores the announce ration outright. §7.3 rations the banner
+        // strip to T3 casts, Execute and Deathless, and this IS one of the three.
+        string who = _fold?.ById(unitId)?.Name;
+        PushFeedLine(string.IsNullOrEmpty(who) ? "DEATHLESS" : $"DEATHLESS — «{who}»");
+    }
+
+    /// <summary>A T3 impact asked for the camera; the Director already spent the shake ration, so a
+    /// zero <paramref name="shake"/> means "denied this time" rather than "no shake authored".</summary>
+    private void CameraKick(float punch, float shake)
+    {
+        if (!Application.isPlaying || !_camHasBase || _data == null) return;
+        var fx = _data.fx;
+        if (punch > 0f)
+        { _punchAmt = punch; _punchLife = Mathf.Max(0.01f, fx.cameraPunchSeconds); _punchT = _punchLife; }
+        if (shake > 0f)
+        { _shakeAmt = shake; _shakeLife = Mathf.Max(0.01f, fx.cameraShakeSeconds); _shakeT = _shakeLife; _shakeClock = 0f; }
+    }
+
+    /// <summary>Advance the board dim and the camera on the FX clock, alongside every other stepped
+    /// system. Both channels write scene state, so both restore to an exact value the frame they run
+    /// out rather than decaying asymptotically toward one.</summary>
+    private void StepDress(float dt)
+    {
+        if (_dimT > 0f)
+        {
+            _dimT -= dt;
+            var key = KeyLight();
+            if (key != null)
+            {
+                // Snap dark, ease back: the drop is the EVENT, the recovery is the aftermath.
+                float k = Mathf.Clamp01(_dimT / _dimLife);
+                float amt = Mathf.Clamp01(_data.fx.deathlessDimAmount) * k;
+                key.intensity = _dimT > 0f ? _keyBase * (1f - amt) : _keyBase;
+            }
+        }
+        StepCamera(dt);
+    }
+
+    private void StepCamera(float dt)
+    {
+        if (!_camHasBase || (_punchT <= 0f && _shakeT <= 0f)) return;
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 offset = Vector3.zero;
+        if (_punchT > 0f)
+        {
+            _punchT -= dt;
+            // In hard, out over the window — the jolt is the first frame, not a zoom.
+            offset += _camPush * (_punchAmt * Mathf.Clamp01(_punchT / _punchLife));
+        }
+        if (_shakeT > 0f)
+        {
+            _shakeT -= dt;
+            _shakeClock += dt;
+            // Trauma, squared-decayed: two incommensurate sines on the SCREEN axes, so the board
+            // jitters without ever rolling. No Random and no Time.* — the shake is a function of
+            // accumulated FX time, which is the same determinism law the particle seeds follow.
+            float k = Mathf.Clamp01(_shakeT / _shakeLife);
+            float amp = _shakeAmt * k * k;
+            offset += (_numberFace * Vector3.right) * (Mathf.Sin(_shakeClock * 47f) * amp)
+                    + (_numberFace * Vector3.up) * (Mathf.Sin(_shakeClock * 31f + 1.7f) * amp);
+        }
+        // Exact restore the frame the last channel runs out: a camera left a millimetre off would
+        // accumulate across a fight's worth of deaths and slowly walk out of frame.
+        cam.transform.position = (_punchT <= 0f && _shakeT <= 0f) ? _camBase : _camBase + offset;
+    }
+
+    /// <summary>The board's key light: the first DIRECTIONAL light that actually lights the layer
+    /// the board is built on. The hall's own key is Directional too but masked to the hall layer, so
+    /// the culling-mask test is what stops a Deathless from dimming somebody else's scene.</summary>
+    private Light KeyLight()
+    {
+        if (_keyLight != null) return _keyLight;
+        foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+        {
+            if (l.type != LightType.Directional || (l.cullingMask & 1) == 0) continue;
+            _keyLight = l;
+            _keyBase = l.intensity;
+            return l;
+        }
+        return null;
+    }
+
+    /// <summary>Swell the vignette by <paramref name="k"/> (0..1) on top of its authored value. The
+    /// restore is a write of the TUNING value rather than a remembered snapshot: ApplyPost drives
+    /// the same field from the same source, so the two can never disagree about what "off" is —
+    /// which matters because the Volume's sharedProfile is an asset that outlives the scene.</summary>
+    private void ApplyEnderVignette(float k)
+    {
+        if (_vignetteApplied <= 0f && k <= 0f) return;   // never dirty a profile we never touched
+        _vignetteApplied = k;
+        if (_volume == null) _volume = FindFirstObjectByType<Volume>();
+        if (_volume == null || _volume.sharedProfile == null) return;
+        if (_volume.sharedProfile.TryGet<Vignette>(out var v))
+            v.intensity.value = Mathf.Clamp01(_data.post.vignette + _data.fx.enderVignetteBoost * k);
+    }
+
+    /// <summary>Hand back everything the dress layer borrowed from the scene — the key light's
+    /// authored intensity, the camera's framed position, the volume's authored vignette — and
+    /// re-arm the once-per-fight ender latch. Every path that ends or restarts a fight calls this,
+    /// so a capture stopped mid-dim can never leave the editor scene dark or the camera pushed in.</summary>
+    private void ResetDress()
+    {
+        if (_keyLight != null && _keyBase >= 0f) _keyLight.intensity = _keyBase;
+        _dimT = 0f;
+        _punchT = 0f; _shakeT = 0f;
+        if (_camHasBase && Camera.main != null) Camera.main.transform.position = _camBase;
+        _enderRamp = 0f; _enderFired = false;
+        ApplyEnderVignette(0f);
+    }
+
+    /// <summary>True once one side has no living units left. Dispatch runs AFTER the fold advanced
+    /// past this beat, so the death being dispatched is already counted — which is what makes "the
+    /// last death of the fight" a fact rather than a guess. A fight that ends on a timeout never
+    /// empties a side and simply never ramps.</summary>
+    private bool SideWiped()
+    {
+        if (_fold == null) return false;
+        int a0 = 0, a1 = 0;
+        foreach (var u in _fold.Units) if (!u.Dead) { if (u.Team == 0) a0++; else a1++; }
+        return a0 == 0 || a1 == 0;
     }
 
     /// <summary>Editor scrub: freeze the fold at <paramref name="tick"/>, snap the view, and replay
@@ -1303,6 +1527,7 @@ public class ReplayPlayer : MonoBehaviour
         _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
         ClearFieldViews();  // ditto the fields — the next fight traces its own glyphs in
+        ResetDress();       // key light, camera, vignette back to their authored values
         ClearStory();       // clears kill-feed lines + hides the banner, unlatches _ending
         ClearRecent();      // Events-tab buffer too (loop-wrap + edit-mode scrub route through here)
     }
@@ -1366,6 +1591,14 @@ public class ReplayPlayer : MonoBehaviour
                 // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
                 // The corpse's linger starts here for the same reason: it must not depend on a tell row.
                 if (e.Kind == EventKind.Death) { PushKill(e); BeginDeath(e.Target); }
+                // The fight-ender (combat-spectacle §7.5): the death that empties a side drops the
+                // playhead to 0.2x for a breath, and the end-tick hold then slides the FightSummary
+                // readout out of that freeze. Latched — a multi-death final beat ramps once.
+                if (e.Kind == EventKind.Death && !_enderFired && Application.isPlaying && SideWiped())
+                {
+                    _enderFired = true;
+                    _enderRamp = Mathf.Max(0f, _data.fx.enderSlowSeconds);
+                }
                 // Blocking events hold the playhead. Play mode only — a frozen BuildPreview has no
                 // playhead to hold, and a stale hold must not leak into the next scrub.
                 if (beats && Application.isPlaying)
@@ -1442,6 +1675,7 @@ public class ReplayPlayer : MonoBehaviour
         id => _fold.ById(id), HexToWorld,
         GetTracer, RecycleTracer, GetBurst, RecycleBurst,
         GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, PushAnnounce, StrikeDeath,
+        CameraKick, BeginDeathless,
         ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
@@ -2238,6 +2472,13 @@ public class ReplayPlayer : MonoBehaviour
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = _data.camera.background;
         _numberFace = cam.transform.rotation;
+        // The framed position IS the camera's rest state — the dress layer's punch/shake are offsets
+        // from it and restore to it exactly. The push axis is the view axis, so a punch reads as
+        // "closer" and never as a pan; nothing here touches rotation, which is what keeps the
+        // _numberFace billboard quaternion cached one line above valid while the camera moves.
+        _camBase = cam.transform.position;
+        _camPush = cam.transform.forward;
+        _camHasBase = true;
     }
 
     private Vector3 HexToWorld(Hex h) =>
