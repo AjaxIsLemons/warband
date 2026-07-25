@@ -128,7 +128,9 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "hitAnim": true,
+      "hitAnimMinT": 0.25
     },
     {
       "eventKind": "DamageDealt",
@@ -835,7 +837,9 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "hitAnim": true,
+      "hitAnimMinT": 0.25
     },
     {
       "eventKind": "AttackBlocked",

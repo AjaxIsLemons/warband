@@ -99,7 +99,9 @@ public class ReplayPlayer : MonoBehaviour
     private static readonly Color AccSteel = new Color(0.40f, 0.42f, 0.46f); // gunmetal
     private static readonly Color AccGun = new Color(0.30f, 0.31f, 0.35f);   // darker neutral
 
-    private sealed class UnitView
+    // Internal rather than private: DeathSequence drives a dying unit's view state directly (body
+    // scale, motion offset, materials, chrome) and lives in Vfx/ with the other FX runtime classes.
+    internal sealed class UnitView
     {
         public Transform Root, Body;
         public Transform PlanningMarker;
@@ -136,6 +138,10 @@ public class ReplayPlayer : MonoBehaviour
         public float ManaPulseT, ManaFillBaseH;
         // Non-null only on the KayKit model path — drives Idle/Walk; null for primitives.
         public Animator ModelAnimator;
+        // The fold says this unit is dead but its corpse is still on the board (DeathSequence). The
+        // ApplyFold visibility law is SetActive(!Dead || Lingering); everything else that reads a
+        // live view — nameplate styling, the icon billboard, the flinch — sits this one out.
+        public bool Lingering;
         private MaterialPropertyBlock _mpb;
 
         public void ApplyVisual()
@@ -203,6 +209,10 @@ public class ReplayPlayer : MonoBehaviour
         // Story-feed router for `announce` tells — (caster unit id, resolved ability id) at the
         // START of the windup, so the line reads while the sigil is still turning under the caster.
         private readonly Action<int, string> _announce;
+        // Death router: the victim's corpse starts slumping when the killing blow CONNECTS, not when
+        // the fold reported it dead. The linger itself begins at dispatch (ReplayPlayer.BeginDeath),
+        // or the body would blink out for the length of the swing that killed it.
+        private readonly Action<int> _strike;
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
         private readonly FxTune _fx;
@@ -283,9 +293,10 @@ public class ReplayPlayer : MonoBehaviour
                                 Func<Burst> getBurst, Action<Burst> recycleBurst,
                                 Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
                                 Func<Quaternion> billboard, Action<Hex> pulseGround,
-                                Action<int, string> announce,
+                                Action<int, string> announce, Action<int> strike,
                                 float ticksPerSecond, Action<string> playSfx = null)
         {
+            _strike = strike;
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
             _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx;
             _getTracer = getTracer; _recycleTracer = recycleTracer;
@@ -727,12 +738,21 @@ public class ReplayPlayer : MonoBehaviour
                         def, Seed(e.Tick, sideUid, 2), null);
 
             // Flinch, gated on how hard the hit READ (ImpactTune t) so a DoT tick can't spasm the
-            // body. The "Hit" state is built in P5; HasState keeps this a silent no-op until then.
-            if (def.hitAnim && t >= def.hitAnimMinT && v.ModelAnimator != null
+            // body. A corpse never flinches: Death is dispatched in the same beat as the blow that
+            // caused it and the pending list runs newest-first, so the slump has already started by
+            // the time this line runs. ActionSpeed is pinned back to 1 because the state reads the
+            // same parameter the swings fit — a flinch must not inherit the last swing's speed.
+            if (def.hitAnim && t >= def.hitAnimMinT && !v.Lingering && v.ModelAnimator != null
                 && v.ModelAnimator.runtimeAnimatorController != null
                 && v.Root.gameObject.activeSelf
                 && v.ModelAnimator.HasState(0, HitStateHash))
+            {
+                v.ModelAnimator.SetFloat(ActionSpeedHash, 1f);
                 v.ModelAnimator.CrossFadeInFixedTime("Hit", 0.05f);
+            }
+
+            // The corpse's own beat. Only the Death tell carries it, and only at contact.
+            if (e.Kind == EventKind.Death) _strike?.Invoke(sideUid);
 
             // Ground pulse, at the hex the payload landed on — the field's floor flashes because
             // something HAPPENED on it. Read from the fold rather than the view, so a victim mid-step
@@ -972,8 +992,9 @@ public class ReplayPlayer : MonoBehaviour
                 float lean = v.LeanDeg + (v.Walking ? mo.leanAmount * Mathf.Rad2Deg * 0.1f : 0f);
                 var rot = Quaternion.Euler(lean, v.TargetYaw, 0f);
                 v.Body.localRotation = Quaternion.Slerp(v.Body.localRotation, rot, Mathf.Clamp01(mo.turnSpeed * dt));
-                StyleNameplate(v);
-                v.Icons.FaceCamera(_numberFace);
+                // A lingering corpse wears no chrome: StyleNameplate would switch the nameplate back
+                // on every frame (it drives visibility from the tuning, not from the view).
+                if (!v.Lingering) { StyleNameplate(v); v.Icons.FaceCamera(_numberFace); }
             }
             if (v.FlashT > 0f) v.FlashT -= dt / v.FlashDur;
             if (v.PunchT > 0f) v.PunchT -= dt / v.PunchDur;
@@ -999,6 +1020,19 @@ public class ReplayPlayer : MonoBehaviour
         // why two frozen captures of the SAME tick at different previewAdvanceSeconds show the
         // clocks at different fills instead of one static ring.
         foreach (var v in _views.Values) v.Icons?.Step(dt);
+        // Corpses: the freeze/slump/dissolve of every unit that has died and not yet finished ashing.
+        // Stepped AFTER the Director so a death struck inside this same Tick starts moving now.
+        if (_deaths.Count > 0)
+        {
+            _finishedDeaths.Clear();
+            foreach (var kv in _deaths) if (!kv.Value.Step(dt)) _finishedDeaths.Add(kv.Key);
+            foreach (var id in _finishedDeaths)
+            {
+                var prop = _deaths[id].HiddenProp;
+                if (prop != null) _hiddenProps.Add(prop);
+                _deaths.Remove(id);
+            }
+        }
         if (_fieldViews.Count == 0) return;
         _expiredFields.Clear();
         foreach (var kv in _fieldViews) if (!kv.Value.Step(dt)) _expiredFields.Add(kv.Key);
@@ -1022,6 +1056,57 @@ public class ReplayPlayer : MonoBehaviour
     public void PulseFieldsAt(Hex hex)
     {
         foreach (var kv in _fieldViews) if (kv.Value.Covers(hex)) kv.Value.Pulse();
+    }
+
+    // ---- death presentation (fx-runtime "Death presentation", combat-spectacle §7.1) ----------
+    // One live sequence per dying unit. It is created at DISPATCH (the fold has already killed the
+    // unit by then, so the corpse would otherwise blink out for the length of the killing swing) and
+    // started at the Death tell's IMPACT. Everything it mutates is view state — see DeathSequence.
+    private readonly Dictionary<int, DeathSequence> _deaths = new Dictionary<int, DeathSequence>();
+    private readonly List<int> _finishedDeaths = new List<int>();
+    // Weapon props hidden when their clone became a grave marker. The sequences that hid them are
+    // long gone by loop-wrap time, so the promise to hand each weapon back is kept here.
+    private readonly List<Transform> _hiddenProps = new List<Transform>();
+    // The board's memory: ash silhouettes + dropped weapons, one pair per death. They live under
+    // _generated (so a rebuild drops them) and are cleared by ResetAnim — a wrapped replay must
+    // re-accumulate its marks in step with its deaths, not open on the last loop's graveyard.
+    private Transform _marks;
+
+    /// <summary>The fold killed this unit — hold its corpse on the board. Called from event dispatch
+    /// (both live and frozen), which is the same pass that pushes the kill-feed line.</summary>
+    private void BeginDeath(int unitId)
+    {
+        if (_generated == null || _deaths.ContainsKey(unitId)) return;
+        if (!_views.TryGetValue(unitId, out var v)) return;
+        if (_marks == null)
+        {
+            _marks = new GameObject("~deathmarks").transform;
+            _marks.SetParent(_generated, false);
+        }
+        var u = _fold?.ById(unitId);
+        _deaths[unitId] = DeathSequence.Begin(v, unitId, u != null ? HexToWorld(u.Pos) : v.Target,
+                                              _marks, hexSize, () => _data);
+    }
+
+    /// <summary>The killing blow connected (the Death tell's impact) — start the slump.</summary>
+    private void StrikeDeath(int unitId)
+    {
+        if (_deaths.TryGetValue(unitId, out var seq)) seq.Trigger();
+    }
+
+    /// <summary>Drop every death sequence and the marks they left, restoring the units they were
+    /// mid-way through hiding. A loop-wrap that skipped this would open on half-dissolved bodies,
+    /// frozen animators, units missing their bars, and the previous loop's graveyard.</summary>
+    private void ResetDeaths()
+    {
+        foreach (var kv in _deaths) kv.Value.Abort();
+        _deaths.Clear();
+        for (int i = 0; i < _hiddenProps.Count; i++)
+            if (_hiddenProps[i] != null) _hiddenProps[i].gameObject.SetActive(true);
+        _hiddenProps.Clear();
+        foreach (var v in _views.Values) v.Lingering = false;
+        if (_marks != null) DestroyImmediate(_marks.gameObject);
+        _marks = null;
     }
 
     /// <summary>Editor scrub: freeze the fold at <paramref name="tick"/>, snap the view, and replay
@@ -1065,7 +1150,7 @@ public class ReplayPlayer : MonoBehaviour
             {
                 _director.Handle(e);
                 RecordEvent(e); // populate the Events tab for edit-mode scrubs too (ResetAnim cleared it)
-                if (e.Kind == EventKind.Death) PushKill(e); // feed lines in the window capture too
+                if (e.Kind == EventKind.Death) { PushKill(e); BeginDeath(e.Target); } // feed + corpse in the window capture too
             }
         // Fast-forward the one FX clock so a frozen capture shows tracers mid-flight and landed
         // flashes — everything is Director-stepped, so this works with no self-Update.
@@ -1077,8 +1162,7 @@ public class ReplayPlayer : MonoBehaviour
             {
                 v.Root.position = v.Smoothed + v.MotionOffset + Vector3.up * Footfall(v, _data.motion);
                 v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f); // SNAP (no slerp) so a frozen capture shows facing
-                StyleNameplate(v);
-                v.Icons.FaceCamera(_numberFace);
+                if (!v.Lingering) { StyleNameplate(v); v.Icons.FaceCamera(_numberFace); }
             }
             v.ApplyVisual();
         }
@@ -1119,8 +1203,10 @@ public class ReplayPlayer : MonoBehaviour
             _hexMesh = null; // vertices bake hexSize — force regeneration
             BuildBoard();
             // Field views bake hexSize into their overlay scale — drop them; SyncFields recreates
-            // them (replaying the spawn-in, which is the honest read of a rebuilt board).
+            // them (replaying the spawn-in, which is the honest read of a rebuilt board). Death marks
+            // bake the old hex CENTRES the same way, so the graveyard goes with them.
             ClearFieldViews();
+            ResetDeaths();
             _boardCenter = (HexToWorld(new Hex(0, 0))
                           + HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1))) * 0.5f;
             RecomputeStoryAnchors();
@@ -1130,6 +1216,9 @@ public class ReplayPlayer : MonoBehaviour
 
     public void ClearGenerated()
     {
+        // Death state points INTO _generated (corpse views, marks, the props they hid), so it goes
+        // with it — a sequence aborted after this would be reaching into destroyed objects.
+        _deaths.Clear(); _hiddenProps.Clear(); _marks = null;
         _views.Clear(); _fieldViews.Clear(); _numberPool.Clear();
         _tracerPool.Clear(); _burstPool.Clear(); _vfxPools.Clear();
         // The VFX light budget is a static live count; destroying the pools underneath it would
@@ -1209,6 +1298,7 @@ public class ReplayPlayer : MonoBehaviour
 
     private void ResetAnim()
     {
+        ResetDeaths();      // corpses first: it hands bodies/materials/props back before anything else runs
         foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; v.Icons?.Reset(); }
         _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
@@ -1274,7 +1364,8 @@ public class ReplayPlayer : MonoBehaviour
                 RecordEvent(e); // ring buffer for the debug Events tab
                 // Kill feed hooks Death at dispatch level — unconditional, independent of whether a Death
                 // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
-                if (e.Kind == EventKind.Death) PushKill(e);
+                // The corpse's linger starts here for the same reason: it must not depend on a tell row.
+                if (e.Kind == EventKind.Death) { PushKill(e); BeginDeath(e.Target); }
                 // Blocking events hold the playhead. Play mode only — a frozen BuildPreview has no
                 // playhead to hold, and a stale hold must not leak into the next scrub.
                 if (beats && Application.isPlaying)
@@ -1350,7 +1441,8 @@ public class ReplayPlayer : MonoBehaviour
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
         GetTracer, RecycleTracer, GetBurst, RecycleBurst,
-        GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, PushAnnounce, ticksPerSecond, PlaySfx);
+        GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, PushAnnounce, StrikeDeath,
+        ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
     private AudioSource _audio;
@@ -2021,8 +2113,10 @@ public class ReplayPlayer : MonoBehaviour
         foreach (var u in _fold.Units)
         {
             if (!_views.TryGetValue(u.Id, out var v)) continue;
-            v.Root.gameObject.SetActive(!u.Dead);
-            if (u.Dead) { v.Walking = false; continue; }
+            // The linger law: a dead unit keeps its body while its DeathSequence runs. Nothing below
+            // this line touches it again — Target holds the hex it died on, so the corpse stays put.
+            v.Root.gameObject.SetActive(!u.Dead || v.Lingering);
+            if (u.Dead) { v.Walking = false; v.MotionOffset = Vector3.zero; continue; }
 
             Vector3 nt;
             if (u.Walking)

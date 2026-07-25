@@ -375,6 +375,12 @@ public class FxTune
 {
     [Range(0f, 4f)] public float deathLingerSeconds = 1.6f;    // corpse stays before it is hidden
     [Range(0.1f, 3f)] public float dissolveSeconds = 0.8f;     // _Cutoff 0→1 inside the linger
+    // What the board keeps (combat-spectacle §7.1). The ash silhouette is T0 by law — it is drawn
+    // once per death and never fades, so its opacity is the only thing standing between "the board
+    // remembers" and "the board is a collage". graveTilt lays the dropped weapon prop down: 90 is
+    // flat on its side, less stands it up against the ground.
+    [Range(0f, 1f)] public float ashMarkAlpha = 0.5f;
+    [Range(0f, 90f)] public float graveTilt = 82f;
     [Range(0.05f, 1.5f)] public float fieldSpawnSeconds = 0.35f;
     [Range(0.05f, 1.5f)] public float fieldExpireSeconds = 0.45f;
     [Range(1f, 4f)] public float fieldPulseBoost = 1.5f;       // brightness multiplier on a pulseGround hit
