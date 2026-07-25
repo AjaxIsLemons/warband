@@ -1109,18 +1109,26 @@ public class ReplayPlayer : MonoBehaviour
         string title = blueWins ? "BLUE WINS" : redWins ? "RED WINS" : "DRAW";
         Color titleCol = blueWins ? Team0 : redWins ? Team1 : Color.white;
 
-        // Damage dealers via the sim's own fold (no client damage math) — FightStats.Compute reads the
-        // event list + end tick. Top 3 by DamageDealt, names from the fold, storm bucket (-1) excluded.
-        var stats = FightStats.Compute(new BattleResult { Events = _events, EndTick = _endTick, InitialUnits = _initial });
-        var ranked = new List<UnitFightStats>(stats.Values);
-        ranked.Sort((x, y) => y.DamageDealt.CompareTo(x.DamageDealt));
+        // Post-fight comprehension via the sim's own fold (no client damage math) — FightSummary
+        // ranks units by damage with team share, and carries killed-by attribution per death
+        // (killing-blow credit; storm/ownerless damage credits nobody). fight-legibility Phase 4.
+        var summary = FightSummary.Build(new BattleResult { Events = _events, EndTick = _endTick, InitialUnits = _initial });
         var lines = new List<string>();
-        foreach (var s in ranked)
+        foreach (var s in summary.Units)
         {
-            if (s.UnitId < 0 || s.DamageDealt <= 0) continue;
-            string nm = _fold.ById(s.UnitId)?.Name ?? "?";
-            lines.Add($"{nm}  {s.DamageDealt} dmg");
+            if (s.DamageDealt <= 0) continue;
+            lines.Add($"{s.Name}  {s.DamageDealt} dmg ({s.DamagePctOfTeam:0}%)");
             if (lines.Count >= 3) break;
+        }
+        // The causality safety net (LTD2 law: when the eye missed it, say it in words): who fell,
+        // to whom, when. Cause stands in for the killer on unowned deaths (storm, hazard fields).
+        int deathLines = 0;
+        foreach (var b in summary.Beats)
+        {
+            if (deathLines++ >= 3) break;
+            string victim = _fold.ById(b.Victim)?.Name ?? "?";
+            string killer = b.Killer >= 0 ? (_fold.ById(b.Killer)?.Name ?? "?") : b.Cause.ToString();
+            lines.Add($"{victim} fell to {killer} at {b.Tick / 10f:0.0}s");
         }
         // Kills per side = Death events grouped by the killer's team (the sim's own kill attribution,
         // matching the feed 1:1); FightStats.Kills is participation-counted and would over-count here.
