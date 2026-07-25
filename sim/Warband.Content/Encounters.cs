@@ -118,13 +118,13 @@ namespace Warband.Content
                     new EncounterUnit
                     {
                         Def = bulwark,
-                        Pos = Hex.FromRowCol(5, 2),
+                        Pos = Hex.FromRowCol(5, 0),
                         Role = "Frontline control",
                     },
                     new EncounterUnit
                     {
                         Def = sharpshot,
-                        Pos = Hex.FromRowCol(6, 4),
+                        Pos = Hex.FromRowCol(5, 5),
                         Role = "Backline damage",
                     },
                 },

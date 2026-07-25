@@ -25,7 +25,7 @@ endless pressure can push it.**
 walkable end to end: Menu → five-card Draft → full-screen Management Hall → stakes-first Wager
 → formation-reveal Deployment → Fight/replay → blocking result report → spatial Hourstone Table
 → Victory/Defeat. Three acts × five
-beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **278 tests
+beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **313 tests
 green.** The workspace has data-first cards/inspector, portraits, explicit economic actions,
 responsive landscape phone/tablet compositions, safe-area rules, reduced motion, and timing
 polish. The old Management drawer has been replaced by stable Market/Warband/Armory/Hourstone
@@ -112,28 +112,39 @@ does not read well enough, and authored encounters still do not make deployment 
    camera/framing pass · live play-mode eyeball of beats/hit-stop + minis in motion.
    **Management Hall polish, 2026-07-25 → `Design/hall-polish.md` (BUILD/VERIFY).**
    Jake approved the obsidian Tower instrument / living Sand direction and asked for the deep
-   reusable system. Foundation now built and Unity-verified: shared theme tokens + dark scrollers ·
+   reusable system. Foundation now built and Unity-verified: hybrid 2.5D Table/Hall environment ·
+   accepted authored iron + living-Sand materials with procedural rejection fallbacks ·
+   pooled authored UI sound families + Hall ambience and Android/iOS haptic sink ·
+   shared theme tokens + dark scrollers ·
    five code-native vector station sigils · payload-bearing semantic feedback · interruption-safe
    reveal/preview/press/select/attention/route/commit/error recipes · identity-aware staggered
    card/choice reveals · one bounded Painter2D pulse/arc/Sand plane · reduced-motion substitutes ·
-   audio/haptic interfaces · F1 UI FX live tuning/Save/Reload/preview tab + F2 Flow Lab previews.
-   Clean compile/console; contracts, route spam, forced phone, and reduced motion passed.
-   **Open polish slices:** real sound/haptic providers · exhaustive per-transaction choreography ·
-   Rule Preview diagrams · result count-ups · real-device safe-area/finger pass · live feel tune.
+   purchase/reroll receipts · result count-ups/death-cause reveals · pinned inspector command dock ·
+   F1 UI FX/environment/audio/haptic live tuning + F2 Flow Lab previews. A 38-deliverable
+   concept/material/FX/mesh/audio batch was generated and curated; rejected tile-heavy surfaces
+   and 1.5M-triangle mesh candidates are quarantined, not shipped. Clean compile/console;
+   contracts, route spam, forced phone, and reduced motion passed.
+   Second-pass station UX is now built and in VERIFY: compact 60–64 px run ribbon · physical
+   overview nameplates · data-first station presentation catalog · short pre-handoff route lock ·
+   centered five-offer Market rail · pinned exact action tray · optional blocking dossier · typed
+   actions with disabled reasons · Armory item→champion pinning and comparison · distinct
+   Warband/Hourstone geometry · one-scroll ownership · landscape-phone composition and portrait
+   rotate interstitial. Full-size overview/Market/Armory/Warband/phone captures are clean after
+   removing inline card-detail overflow.
+   **Open polish slices:** Recruit/Rank/Bind choreography · Rule Preview diagrams · real-device
+   safe-area/finger/haptic pass · live audio/motion feel tune.
 2. **Authored PvE content** — **DESIGN/BUILD; the biggest gameplay gap.** Deployment works but
    does not yet MATTER, because every normal fight is random kits-as-monsters and every act
    boss is the same act-scaled Last Oath. A small enemy-role grammar + 3–4 encounters that pose
    genuinely different placement problems is what converts the machinery into gameplay. This is
    item 5's remaining scope; see it for the settled laws.
-3. **The Last Oath's decision is unreachable** — **SPEC'D, cheap.** `make oath` proved the
-   Bulwark dies first in **1000/1000** fights, so the encounter's own pitch ("choose which
-   threat you are willing to leave enraged") never occurs. Start with symmetric placement (a
-   data change) and re-measure — the probe re-runs in 2.6s. Report:
-   `Projects/oath-probe-2026-07-24.md`.
 4. **The pressure tier is a fake choice** — **DESIGN.** Stable/Fraying/Collapsing are visible,
    but the sweep found victory saturates ~99% at every tier, so **Collapsing strictly dominates
    at zero risk**. Either
    make risk mean something or delete tiers. ADR 0007 economy is placeholder either way.
+(Item 3, the Last Oath's unreachable decision, is DONE — 2026-07-25, see Done. The gap is
+deliberate: item numbers are load-bearing references, so finished items leave a hole rather
+than renumber.)
 Items **5 / 5a / 6** keep their numbers below — their settled laws are referenced from ADRs and
 design docs, so renumbering them would break those references.
 
@@ -274,6 +285,19 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-25 — THE LAST OATH'S DECISION IS REACHABLE (item 3, 313 tests).** The 07-24 probe's
+  "**THE CHOICE DOES NOT EXIST**" was geometry, not numbers: the pair stood asymmetrically
+  (Bulwark (5,2), Sharpshot tucked behind at (6,4)), so the Sharpshot was structurally
+  unreachable first and the Bulwark died in 1000/1000 fights. Both Oathbound now stand on the
+  same rank at opposite board edges — **(5,0) / (5,5)**, a two-line data change. Result: both
+  survive in real fights, **placement chooses the survivor in 4/4 lineups**, and the two
+  branches cost Δ84 win%. Four placements were measured before shipping; the two inner-symmetric
+  ones also pose the decision but make act 1 hard enough that the bot loses 4/6 seeded runs.
+  The probe gained a "does placement choose the survivor?" section — the pitch is now something
+  the report can actually answer. Report: `Projects/oath-probe-2026-07-25.md` (supersedes
+  `oath-probe-2026-07-24.md`). **Named not tuned:** the decision has a strongly correct answer
+  (kill the archer — a lesson, not yet a dilemma) · four arrangements kill both together so
+  Enrage never fires and nothing in the UI names that · two arrangements run ~385 ticks.
 - **2026-07-24 — FIRST-PLAYABLE RUN + PERSISTENT PLANNING UX (ADR 0019, 278 tests).**
   Three-act/five-beat state machine · terminal loss · initial Sand economy · deterministic
   Interludes and boss rewards · choose 3 of 5 draft · persistent board-first Planning

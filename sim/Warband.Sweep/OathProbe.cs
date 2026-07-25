@@ -131,9 +131,41 @@ public static class OathProbe
                 ? $"> Both survivors cost about the same (Δ{spread:F0}) — the choice exists but carries no weight yet."
                 : $"> Leaving one alive costs Δ{spread:F0} more than the other. That gap IS the decision.");
         }
+        report.AppendLine();
+
+        // ---- 4. is PLACEMENT the lever? -------------------------------------------------
+        // A choice that exists only across lineups is a roster decision the player makes in the
+        // Hall; the encounter's pitch is a DEPLOYMENT decision. So ask it per lineup: holding the
+        // three heroes fixed, does moving them change which Oathbound is left standing?
+        report.AppendLine("## Does placement choose the survivor?");
+        report.AppendLine();
+        report.AppendLine("| lineup | formations w/ Enrage | leaves bulwark | leaves sharpshot | placement chooses? |");
+        report.AppendLine("|---|---|---|---|---|");
+        int lineupsWithChoice = 0;
+        foreach (var byLineup in rows.GroupBy(r => r.Lineup))
+        {
+            var fmts = byLineup.Where(r => r.BySurvivor.Count > 0).ToList();
+            var leavesBulwark = fmts.Where(r => r.BySurvivor.Any(o => o.Role == "bulwark")).Select(r => r.Formation).ToList();
+            var leavesSharpshot = fmts.Where(r => r.BySurvivor.Any(o => o.Role == "sharpshot")).Select(r => r.Formation).ToList();
+            bool both = leavesBulwark.Count > 0 && leavesSharpshot.Count > 0;
+            if (both) lineupsWithChoice++;
+            report.AppendLine($"| {byLineup.Key} | {fmts.Count} | {Fmt(leavesBulwark)} | {Fmt(leavesSharpshot)} | {(both ? "**YES**" : "no")} |");
+        }
+        report.AppendLine();
+        report.AppendLine(lineupsWithChoice == 0
+            ? "> **PLACEMENT IS NOT THE LEVER.** Within any one lineup, every formation leaves the same "
+              + "Oathbound standing — the survivor is decided by which heroes you brought, not where you put "
+              + "them. The decision exists, but it belongs to the Hall, not the deployment screen."
+            : $"> **PLACEMENT IS THE LEVER for {lineupsWithChoice}/{rows.Select(r => r.Lineup).Distinct().Count()} lineups** — "
+              + "the same three heroes leave a different Oathbound enraged depending only on where they stand. "
+              + "That is the encounter's pitch, expressed on the deployment screen.");
 
         Console.Write(report.ToString());
     }
+
+    /// <summary>Formation names for one side of the placement table — "—" reads better than an
+    /// empty cell when a lineup never leaves that Oathbound standing.</summary>
+    private static string Fmt(List<string> names) => names.Count == 0 ? "—" : string.Join(", ", names);
 
     private readonly struct Outcome
     {
