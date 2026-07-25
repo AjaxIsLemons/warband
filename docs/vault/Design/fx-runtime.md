@@ -44,8 +44,36 @@ agents (event schema empirically checked against real fights) + the architecture
   in `Cast.Aux` (free — Aux serializes everywhere, log is write-only).
 - **S4 authoring note:** `Cause.Trigger` is the 2nd-most-common damage cause in real fights
   (measured 218 Attack / 110 Trigger / 20 Ability) and has **no tell today** — the rider
-  echo language in [[combat-spectacle]] fills it. No field TTL added (no free slot on
-  FieldCreated); expiry animates on the FieldExpired event instead.
+  echo language in [[combat-spectacle]] fills it (built in P6). No field TTL added (no free
+  slot on FieldCreated); expiry animates on the FieldExpired event instead.
+- **S5 byWeapon filter (SPEC'D, NOT BUILT — the unlock for §6 per-weapon attack language).**
+  Tells can't filter on weapon, so the [[combat-spectacle]] §6 table (dagger crossing
+  nicks, greataxe 1-frame hang, musket instant smoke line, censer mote, staff wisp) is
+  direction without a data path. The fix, mirroring the chassis filter EXACTLY:
+  1. `sim/Warband.Sim/TellMatch.cs`: `Matches(...)` gains trailing optional
+     `string? weapon = null, string? sourceWeapon = null` — OrdinalIgnoreCase compare;
+     **a byWeapon rule never matches when sourceWeapon context is null** (view-context
+     law, same as ranged/chassis/ability). `Specificity` counts weapon at **+1** (a peer
+     of chassis, unlike ability's +2) — a byWeapon row TIES a byChassis row and falls to
+     registry order; if authoring ever needs weapon>chassis precedence, bump consciously
+     and document, don't discover it. Headless tests: match/mismatch, null context never
+     matches, tie-with-chassis behavior, combined weapon+cause.
+  2. `TuningData.cs` TellDef: `byWeapon` / `weapon` fields (F1 auto-UI free).
+  3. Client `FeedbackDirector.Handle`: pass `sourceWeapon = su?.WeaponName` alongside the
+     chassis/ability context — **WeaponName is already on the wire** (fold, replay v3+);
+     direct field, no memoization needed. Zero sim-event/format change, no replay bump,
+     no fixture regen (DLL copy only via `make unity-sim`).
+  4. Then pure authoring: one Attack row per weapon class (match on the catalog's
+     WeaponName strings — verify exact casing from Kits/weapons content first) with
+     arc/tracer recipe + impact sting per §6. Recipes: `arrow-streak`/`slash-arc` exist;
+     `smoke-line` (musket) and arc VARIANTS (width/hang timing) are new VfxLibrary
+     entries. Fixtures: scenarios.json units accept a `weapon` field — author one
+     per-weapon-class duel fixture and probe its attack ticks.
+  5. **Adjacent, separate items:** Honed +20% tracer brightness = scale the tell glow by
+     `WeaponTier` in the Director when firing weapon-matched rows (small code touch, not
+     a filter); Relic edge-glow lives on the PROP in `TryBuildModel`, not in tells.
+  Estimate: filter+tests ~30 min · recipes + 11 authored rows + fixtures ~1-2 h ·
+  standard gates (headless compile, probes, sheet ×2 diff).
 
 ## TellDef growth (TuningData.cs; DebugMenu auto-UI needs zero edits)
 - Filter: `byAbility` / `ability` (resolved id, e.g. `"pyromancer"`, `"pyro.starfall"`).

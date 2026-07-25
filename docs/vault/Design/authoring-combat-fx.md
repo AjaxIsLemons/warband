@@ -53,14 +53,11 @@ Autos key on `byRanged` + chassis today (melee lunge / ranged tracer / per-chass
 swing clips via the weapon-class animator states). The [[combat-spectacle]] §6 per-weapon
 table (dagger crossing nicks, greataxe 1-frame hang, musket instant smoke line, censer
 mote to lowest ally, Relic edge-glow) is **authored direction, not yet reachable from
-data**: tells have no weapon filter. To build it:
-1. Sim: add `byWeapon`/`weapon` to `TellMatch` (mirror the chassis filter exactly —
-   null context never matches; +1 specificity; headless tests). `WeaponName`/`WeaponTier`
-   are already on the wire (fold), so the client just passes source context. ~30 min.
-2. Then it's pure authoring: one row per weapon class with a `projectileVfx`/arc recipe
-   + impact sound. Recipes needed: slash-arc variants (exists: slash-arc), smoke-line,
-   lobbed-arrow (exists: arrow-streak). Relic prop edge-glow is a TryBuildModel touch,
-   not a tell.
+data**: tells have no weapon filter. The full implementation spec is
+**[[fx-runtime]] §S5** (filter signature, +1 specificity + tie law, context passing,
+tests, fixture strategy, the Honed/Relic adjacent items, estimates). Short version:
+~30 min of sim filter work unlocks it, then it's one authored row + recipe per weapon
+class — no replay bump, no fixture regen.
 
 ## Statuses, fields, deaths — where their looks live
 - **Status icons:** glyph shape/priority in `StatusIconRow.cs`; color stays in the
