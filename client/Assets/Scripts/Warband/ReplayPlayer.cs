@@ -181,6 +181,7 @@ public class ReplayPlayer : MonoBehaviour
         private readonly Action<Burst> _recycleBurst;
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
+        private readonly Action<string> _playSfx;
         // Motion/windup times are authored at 10 ticks/s; compress on fast-forward so tells stay
         // crisp instead of smearing (flash/punch stay real-seconds, decayed in ReplayPlayer.Update).
         private readonly float _speedScale;
@@ -193,6 +194,11 @@ public class ReplayPlayer : MonoBehaviour
             public Vector3 SourcePos, TargetPos; // ground-level world endpoints, captured at handle
             public float StartAt, Windup, Motion; // director-clock start + scaled phase durations
             public bool MotionStarted, Fired;
+            // KayKit combat clip fired at StartAt with Animator.speed fitted so the swing fills
+            // exactly the windup+motion gap (render-contract §4: the renderer fits its swing
+            // animation into the sim's gap). Null on primitives / non-origin tells.
+            public string AnimState;
+            public bool AnimStarted;
         }
 
         /// <summary>A number waiting for its lane to clear. Everything but the anchor is decided at
@@ -235,10 +241,11 @@ public class ReplayPlayer : MonoBehaviour
                                 Action<FloatingNumber> recycleNumber,
                                 Func<int, PlaybackUnit> unitById, Func<Hex, Vector3> hexToWorld,
                                 Func<Tracer> getTracer, Action<Tracer> recycleTracer,
-                                Func<Burst> getBurst, Action<Burst> recycleBurst, float ticksPerSecond)
+                                Func<Burst> getBurst, Action<Burst> recycleBurst, float ticksPerSecond,
+                                Action<string> playSfx = null)
         {
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
-            _unitById = unitById; _hexToWorld = hexToWorld;
+            _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx;
             _getTracer = getTracer; _recycleTracer = recycleTracer;
             _getBurst = getBurst; _recycleBurst = recycleBurst;
             _impact = data?.impact ?? new ImpactTune();
@@ -284,12 +291,19 @@ public class ReplayPlayer : MonoBehaviour
                 ? _hexToWorld(new Hex(e.Amount, e.Aux))              // wall hex / landing hex
                 : (tu != null ? Where(e.Target, tu) : srcPos);       // Death: victim's retained fold pos
 
+            // Combat clip for the origin moment: per-weapon-class swing on Attack, spellcast on
+            // Cast. Chassis → state; primitives (no ModelAnimator) simply never consume it.
+            string animState = null;
+            if (e.Kind == EventKind.Attack) animState = AttackAnimFor(su);
+            else if (e.Kind == EventKind.Cast) animState = "Cast";
+
             _pending.Add(new PendingTell
             {
                 Def = best, Event = e,
                 SideUid = best.side == FeedbackSide.Source ? e.Source : e.Target,
                 SourcePos = srcPos, TargetPos = tgtPos,
                 StartAt = startAt, Windup = windup, Motion = motion,
+                AnimState = animState,
             });
 
             // Latch write — ORIGIN tells only. A swing/cast stamps its contact time so the victim's
@@ -322,6 +336,44 @@ public class ReplayPlayer : MonoBehaviour
         private Vector3 Where(int unitId, PlaybackUnit u) =>
             _views.TryGetValue(unitId, out var v) ? v.Target : _hexToWorld(u.Pos);
 
+        private static readonly int ActionSpeedHash = Animator.StringToHash("ActionSpeed");
+        // Animator state → KayKit clip (for length lookup when fitting the swing into the gap).
+        private static readonly Dictionary<string, string> StateClipName = new Dictionary<string, string>
+        {
+            ["Attack1H"] = "Melee_1H_Attack_Slice_Diagonal",
+            ["Attack2H"] = "Melee_2H_Attack_Chop",
+            ["AttackDual"] = "Melee_Dualwield_Attack_Stab",
+            ["AttackBow"] = "Ranged_Bow_Release",
+            ["Cast"] = "Ranged_Magic_Spellcasting",
+        };
+        private static Dictionary<string, float> _clipLen;
+
+        private static float ClipLength(Animator a, string state)
+        {
+            if (_clipLen == null)
+            {
+                _clipLen = new Dictionary<string, float>();
+                var rc = a.runtimeAnimatorController;
+                if (rc != null) foreach (var c in rc.animationClips) _clipLen[c.name] = c.length;
+            }
+            return StateClipName.TryGetValue(state, out var cn) && _clipLen.TryGetValue(cn, out var l) ? l : 0f;
+        }
+
+        /// <summary>Per-weapon-class swing state for an auto attack. Pyromancer/Cleric autos are
+        /// staff work — the spellcast clip reads truer than a sword swing.</summary>
+        private static string AttackAnimFor(PlaybackUnit su)
+        {
+            switch ((su?.ChassisId ?? "").ToLowerInvariant())
+            {
+                case "berserker": return "Attack2H";
+                case "shade": return "AttackDual";
+                case "sharpshot": return "AttackBow";
+                case "pyromancer": case "cleric": return "Cast";
+                case "bulwark": case "phalanx": case "banneret": return "Attack1H";
+                default: return null;
+            }
+        }
+
         /// <summary>Contact time RELATIVE to the end of windup: lunge connects ~55% through the
         /// out-and-back, a tracer's impact is its arrival, None/Burst land immediately.</summary>
         private static float ContactOffset(TellDef d, float motion)
@@ -344,6 +396,23 @@ public class ReplayPlayer : MonoBehaviour
                 var pt = _pending[i];
                 if (_clock < pt.StartAt) continue;
                 float local = _clock - pt.StartAt;
+
+                if (!pt.AnimStarted)
+                {
+                    pt.AnimStarted = true;
+                    if (pt.AnimState != null && _views.TryGetValue(pt.Event.Source, out var av)
+                        && av.ModelAnimator != null && av.ModelAnimator.runtimeAnimatorController != null
+                        && av.Root.gameObject.activeSelf)
+                    {
+                        // Fit the clip into the sim's gap (render-contract §4): a Hasted unit's
+                        // denser events simply play faster swings.
+                        float span = Mathf.Max(0.12f, pt.Windup + pt.Motion + 0.15f);
+                        float len = ClipLength(av.ModelAnimator, pt.AnimState);
+                        if (len > 0f)
+                            av.ModelAnimator.SetFloat(ActionSpeedHash, Mathf.Clamp(len / span, 0.8f, 3.5f));
+                        av.ModelAnimator.CrossFadeInFixedTime(pt.AnimState, 0.05f);
+                    }
+                }
 
                 if (!pt.MotionStarted && local >= pt.Windup)
                 {
@@ -475,6 +544,8 @@ public class ReplayPlayer : MonoBehaviour
             // How big this hit reads, 0..1 — the single knob every spectacle channel keys off.
             float t = _impact.Intensity(e.Amount);
 
+            if (!string.IsNullOrEmpty(def.sound) || !string.IsNullOrEmpty(def.critSound))
+                _playSfx?.Invoke(e.Crit && !string.IsNullOrEmpty(def.critSound) ? def.critSound : def.sound);
             if (def.flash) { v.FlashColor = e.Crit ? def.critFlashColor : def.flashColor; v.FlashT = 1f; v.FlashDur = def.flashSeconds; }
             if (def.punch) { v.PunchT = 1f; v.PunchDur = def.punchSeconds; v.PunchAmt = def.punchAmount * (1f + _impact.punchBoost * t); }
             if (def.number && Mathf.Abs(e.Amount) >= def.minAmount)
@@ -985,7 +1056,29 @@ public class ReplayPlayer : MonoBehaviour
     private FeedbackDirector MakeDirector() => new FeedbackDirector(
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
-        GetTracer, RecycleTracer, GetBurst, RecycleBurst, ticksPerSecond);
+        GetTracer, RecycleTracer, GetBurst, RecycleBurst, ticksPerSecond, PlaySfx);
+
+    // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
+    private AudioSource _audio;
+    private readonly Dictionary<string, AudioClip> _sfxCache = new Dictionary<string, AudioClip>();
+
+    /// <summary>One-shot sting by clip name under Resources/Board/SFX. Missing clip = silent no-op,
+    /// so tells can be authored before audio exists. Single source + PlayOneShot handles overlap.</summary>
+    private void PlaySfx(string name)
+    {
+        if (!Application.isPlaying || string.IsNullOrEmpty(name)) return;
+        if (!_sfxCache.TryGetValue(name, out var clip))
+            _sfxCache[name] = clip = Resources.Load<AudioClip>("Board/SFX/" + name);
+        if (clip == null) return;
+        if (_audio == null)
+        {
+            var go = new GameObject("~sfx");
+            go.transform.SetParent(transform, false);
+            _audio = go.AddComponent<AudioSource>();
+            _audio.playOnAwake = false; _audio.spatialBlend = 0f;
+        }
+        _audio.PlayOneShot(clip, 0.85f);
+    }
 
     private Tracer GetTracer() => _tracerPool.Count > 0 ? _tracerPool.Pop() : Tracer.Create(_generated);
     private void RecycleTracer(Tracer t) { if (t != null) { t.gameObject.SetActive(false); _tracerPool.Push(t); } }

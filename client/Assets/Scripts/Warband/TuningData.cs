@@ -293,6 +293,11 @@ public class TellDef
     // Motion — how the tell travels source→target. Defaults (None / defer false) preserve today's
     // in-place flash, so existing tells need no edits. Times are authored at 10 ticks/s and
     // compressed on fast-forward. New fields auto-appear in the F1 cockpit, so the bounds matter.
+    // Audio sting played at IMPACT (with the flash), by clip name under Resources/Board/SFX.
+    // Empty = silent. critSound overrides on a crit. Missing clips no-op, so authoring can lead audio.
+    public string sound = "";
+    public string critSound = "";
+
     public MotionKind motion = MotionKind.None;
     [Range(0.02f, 1f)] public float motionSeconds = 0.15f;   // travel / lunge out-and-back duration
     public Color motionColor = new Color(1f, 0.95f, 0.82f);

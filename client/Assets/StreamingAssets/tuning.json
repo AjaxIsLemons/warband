@@ -114,7 +114,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "critSound": "crit"
     },
     {
       "eventKind": "DamageDealt",
@@ -176,7 +177,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.12,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -196,7 +198,8 @@
       "motionGlow": 6.0,
       "motionScale": 1.6,
       "windupSeconds": 0.3,
-      "defer": true
+      "defer": true,
+      "sound": "cast_fire"
     },
     {
       "eventKind": "Cast",
@@ -214,7 +217,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.1,
       "windupSeconds": 0.22,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -230,7 +234,8 @@
       "punchSeconds": 0.2,
       "motion": "None",
       "windupSeconds": 0.2,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -248,7 +253,8 @@
       "motionGlow": 4.0,
       "motionScale": 1.2,
       "windupSeconds": 0.18,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -262,7 +268,8 @@
       "punch": false,
       "motion": "None",
       "windupSeconds": 0.24,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -282,7 +289,8 @@
       "motionGlow": 5.0,
       "motionScale": 1.4,
       "windupSeconds": 0.28,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -298,7 +306,8 @@
       "punchSeconds": 0.2,
       "motion": "None",
       "windupSeconds": 0.22,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Cast",
@@ -316,7 +325,8 @@
       "motionGlow": 3.5,
       "motionScale": 1.8,
       "windupSeconds": 0.26,
-      "defer": true
+      "defer": true,
+      "sound": "cast_generic"
     },
     {
       "eventKind": "Heal",
@@ -347,7 +357,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "sound": "heal"
     },
     {
       "eventKind": "StatusApplied",
@@ -502,7 +513,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": true
+      "defer": true,
+      "sound": "hit_melee"
     },
     {
       "eventKind": "Attack",
@@ -533,7 +545,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": true
+      "defer": true,
+      "sound": "hit_arrow"
     },
     {
       "eventKind": "DamageDealt",
@@ -626,7 +639,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.6,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "sound": "death"
     },
     {
       "eventKind": "Leap",
@@ -684,7 +698,8 @@
       "flashColor": "#7FD4FFFF",
       "critFlashColor": "#7FD4FFFF",
       "flashSeconds": 0.18,
-      "motion": "None"
+      "motion": "None",
+      "sound": "shield"
     },
     {
       "eventKind": "CheatDeath",
@@ -700,7 +715,8 @@
       "motionSeconds": 0.5,
       "motionColor": "#FFF2DBFF",
       "motionGlow": 6.0,
-      "motionScale": 2.0
+      "motionScale": 2.0,
+      "sound": "cheatdeath"
     },
     {
       "eventKind": "FieldCreated",
