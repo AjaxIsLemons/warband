@@ -30,6 +30,17 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Design/fight-legibility.md](Design/fight-legibility.md) — **2026-07-25 researched plan for
   roadmap item 1**: three failure modes, genre laws, five phases (repair → grammar → KayKit
   models → per-ability VFX → comprehension), costs, and Jake's six pending decisions.
+- [Design/combat-spectacle.md](Design/combat-spectacle.md) — **2026-07-25 spectacle direction**
+  (fight-legibility Phase 3 expanded): palette law + intensity tiers, cast grammar + era
+  sigils, per-signature specs, field/status/attack language, ranked go-big proposals,
+  asset manifest, Jake's decision points.
+- [Design/fx-runtime.md](Design/fx-runtime.md) — engine spec for combat-spectacle: VfxLibrary
+  recipes, Director-stepped particles, hand-written URP shader set, ground substrate,
+  status icon row, death linger, sim/wire changes (incl. the Burn fold bug), build phases.
+- [Design/hall-polish.md](Design/hall-polish.md) — **approved Hall polish direction; foundation
+  built**: obsidian Tower instrument + living Sand language, preview/selection/commit grammar,
+  reusable motion/feedback/Painter2D FX/audio-haptic seams, live UI FX tuning, mobile/accessibility
+  contracts, and remaining P3–P5 slices.
 
 - [Design/sauce.md](Design/sauce.md) — PARKED: class-identity sauce noodling (two rounds cold);
   superseded by the "wears different hats" quality bar.
@@ -91,6 +102,9 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0020-run-flow-and-rules-language.md](Decisions/0020-run-flow-and-rules-language.md) —
   distinct Management/Wager/Deployment/Combat states, staged encounter disclosure, exact
   Signature/Passive grammar, and large modal inspection.
+- [Decisions/0021-hourstone-table-and-result-gate.md](Decisions/0021-hourstone-table-and-result-gate.md) —
+  spatial Hourstone Table, frozen-battlefield result gate, data-driven station routing,
+  bespoke workspaces, and landscape phone/tablet interaction law.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,

@@ -23,10 +23,13 @@ endless pressure can push it.**
 
 **STATE, 2026-07-25 (honest):** the first-playable run shape and between-fight UX are
 walkable end to end: Menu → five-card Draft → full-screen Management Hall → stakes-first Wager
-→ formation-reveal Deployment → Fight/replay → Management Hall → Victory/Defeat. Three acts × five
+→ formation-reveal Deployment → Fight/replay → blocking result report → spatial Hourstone Table
+→ Victory/Defeat. Three acts × five
 beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **278 tests
 green.** The workspace has data-first cards/inspector, portraits, explicit economic actions,
-responsive touch/compact rules, reduced motion, and timing polish. **Combat viewing still
+responsive landscape phone/tablet compositions, safe-area rules, reduced motion, and timing
+polish. The old Management drawer has been replaced by stable Market/Warband/Armory/Hourstone
+geography and bespoke workspaces; the Armory previews exact equipment deltas. **Combat viewing still
 does not read well enough, and authored encounters still do not make deployment matter.**
 
 1. **FEEL & READABILITY — the fight does not read** — **DESIGN → then BUILD. THE TOP ITEM.**
@@ -44,9 +47,11 @@ does not read well enough, and authored encounters still do not make deployment 
    what statuses are on it, or why it did what it did. ③ **UI quality** — the shell screens are
    functional-but-plain; density, hierarchy and typography were never passed over.
    Likely all three, in different measure. **Name which before spending a session on any.**
-   **Candidate ③ now has its second real pass:** ADR 0020 replaces the over-dense board-first
+   **Candidate ③ now has its third real pass:** ADRs 0020–0021 replace the over-dense board-first
    workspace with distinct Management / Wager / Deployment / Combat states, exact card grammar,
-   runtime hover/focus disclosure, and large management/combat inspectors. Treat
+   a result gate that preserves the fight receipt, a spatial Hourstone Table, bespoke station
+   workspaces, landscape mobile compositions, runtime hover/focus/tap disclosure, and large
+   management/combat inspectors. Treat
    between-fight UX as VERIFY/polish from play, not as the same untouched problem.
    **First cause named and fixed, 2026-07-24 — movement (ADR 0018).** Jake: *"everyone
    teleports instantly."* It was structural: a move was decided and applied in the same tick,
@@ -72,10 +77,49 @@ does not read well enough, and authored encounters still do not make deployment 
    story (40eb076) · **Phase 2 slice: KayKit FREE-tier minis render on the board** — model
    route settled at $0 (same shared rig + 173 CC0 clips as the declined $150 bundle),
    chassis-mapped bodies + handslot kitbash props + Idle↔Walk controller, primitive fallback
-   intact (82b7a6b). **Still open:** per-event animation crossfades from the tell director ·
-   Phase 3 VFX packs (Asset Store needs Jake) · Phase 4 client UI · sound stings ·
-   camera/framing pass · **live play-mode eyeball of beats/hit-stop + minis in motion
-   (static captures can't verify time — first thing next Jake session).**
+   intact (82b7a6b). **Rounds 2-3 same day:** Attack/Cast crossfades + 9 SFX stings + grim
+   atlas recolor + bridge portraits (b3898e8) · Jake's three play-note rounds fixed — text
+   sharpness, board-spacing tuning, battle-speed persistence, DoF off (transparent-text
+   depth), T-pose/lock-in teleport (through 9b4f861).
+   **NEXT ARC — combat spectacle (Jake, 2026-07-25 evening: "go big — the reward for
+   playing IS the combat"): BUILD, P0-P4 LANDED same evening.** Scope: core systems +
+   proposals 1/2/3/4/5/9; 6/7/10 shelved next wave; 8 (Overtime) its own later slice; full
+   asset batch approved. Commits: P0 sim f2ea2f4 (Burn fold bug fixed w/ guardrail, 313
+   tests, durations on wire, AbilityIdentity, replay v5) · P1 FX foundation 3c7ab1a
+   (VfxLibrary + 6 hand-HLSL shaders + TellDef vfx bindings + ProbeShots harness) · P2
+   fields 4841f59 (FieldView: edge rings, scrolling floors, pulses, expiry) · P3 icons
+   6590382 (icon rows: glyphs, stacks, countdown rings) · P4 casts 14d3d4b+d205c6a (26
+   byAbility rows, era sigils, rationed announce) · P5 death pipeline 6fd1a06 (slump /
+   ember dissolve / ash-death graves) · P6 dress f074a1c + assets d18399c (rider echoes,
+   Deathless dress, fight-ender slow-mo, camera law, 8 era risers). **ARC BUILT END TO END
+   — nine commits, every phase gated: headless compile + event-derived probes + contact
+   sheet ×2 → 28/28 byte-identical. Stage → VERIFY: needs Jake's live play pass**
+   (fight-ender/camera feel, riser mix + announce density in motion, F1 knobs: field
+   brightness / icon size / wall tint / cleric sigil, HP-bar snap vs T3 windups → bar
+   tween if wrong; Heal carries no Cause so Boon pulses stay dormant — one-line sim change
+   when wanted). Detail: Daily/2026-07-25.
+   `Design/combat-spectacle.md` (direction: palette law + intensity tiers, cast grammar +
+   era sigils, per-signature specs, field/status/attack language, ranked go-big proposals,
+   asset manifest) + `Design/fx-runtime.md` (engine: VfxLibrary recipes, Director-stepped
+   particles, hand-HLSL shaders, ground substrate, status icon row, death linger, phases
+   P0-P6). **Inventory found a real shipped bug: the playback fold diverges from sim truth
+   at the first Burn tick** (fold Burn magnitude frozen, icon never clears; affects
+   castfest/statusstorm/glyphwar/skirmish fixtures) — fix is P0 regardless of the rest.
+   Also: `Cause.Trigger` (2nd-most-common damage cause) has no tell · status durations need
+   StatusApplied.Aux2 + replay v5 · ability identity derivable with ZERO sim change (last
+   SignatureOverride trait wins; resolver belongs in Warband.Content).
+   **Still open from earlier rounds:** Phase 4 client UI (damage chart/forecast) ·
+   camera/framing pass · live play-mode eyeball of beats/hit-stop + minis in motion.
+   **Management Hall polish, 2026-07-25 → `Design/hall-polish.md` (BUILD/VERIFY).**
+   Jake approved the obsidian Tower instrument / living Sand direction and asked for the deep
+   reusable system. Foundation now built and Unity-verified: shared theme tokens + dark scrollers ·
+   five code-native vector station sigils · payload-bearing semantic feedback · interruption-safe
+   reveal/preview/press/select/attention/route/commit/error recipes · identity-aware staggered
+   card/choice reveals · one bounded Painter2D pulse/arc/Sand plane · reduced-motion substitutes ·
+   audio/haptic interfaces · F1 UI FX live tuning/Save/Reload/preview tab + F2 Flow Lab previews.
+   Clean compile/console; contracts, route spam, forced phone, and reduced motion passed.
+   **Open polish slices:** real sound/haptic providers · exhaustive per-transaction choreography ·
+   Rule Preview diagrams · result count-ups · real-device safe-area/finger pass · live feel tune.
 2. **Authored PvE content** — **DESIGN/BUILD; the biggest gameplay gap.** Deployment works but
    does not yet MATTER, because every normal fight is random kits-as-monsters and every act
    boss is the same act-scaled Last Oath. A small enemy-role grammar + 3–4 encounters that pose
