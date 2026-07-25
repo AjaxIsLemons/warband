@@ -29,6 +29,9 @@ namespace Warband.Content
         {
             Cleric(); Bulwark(); Shade(); Sharpshot();
             Pyromancer(); Berserker(); Phalanx(); Banneret();
+            // The dictionary key IS the chassis id — stamp it rather than repeating it in every
+            // definition, so the two can never drift.
+            foreach (var kv in Chassis) kv.Value.Id = kv.Key;
         }
 
         // ---- Cleric — Sister Maren of the Waning Bell (dive #1) --------------------

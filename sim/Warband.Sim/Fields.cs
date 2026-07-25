@@ -5,6 +5,14 @@ namespace Warband.Sim
     public enum Affects { All, Allies, Enemies }
 
     /// <summary>
+    /// What a field DOES to whoever stands in it, in render terms. The client colors zones by
+    /// meaning, not by which hero made them (render-polish.md color language: green=heal ·
+    /// cyan=buff · purple=debuff · red=damage), so this is the field half of that vocabulary.
+    /// Orthogonal to <see cref="FieldDef.IsWall"/> — a burning wall is a wall AND a Hazard.
+    /// </summary>
+    public enum FieldFlavor { Neutral, Hazard, Boon, Buff, Debuff }
+
+    /// <summary>
     /// Content-side glyph spec (combat-grammar.md pillar 2). A field is area + rule +
     /// duration. Three rule channels, any combination:
     /// - Pulse: effects applied to occupants every pulse (fire, healing ground, font)
@@ -24,6 +32,33 @@ namespace Warband.Sim
         public Affects ProjectileAffects = Affects.All;
         public int ProjectileBonus;                                       // flat damage added to crossing shots
         public List<EffectDef> ProjectileRiders = new List<EffectDef>(); // applied to the hit target
+
+        /// <summary>Derived, not authored: the renderer's read on this glyph. Pulse is the loud
+        /// channel (it acts on occupants every pulse) so it wins; Presence is the quiet one.
+        /// <see cref="Affects"/> already states the author's intent — a glyph aimed at Enemies is
+        /// hostile whatever it applies — so only the ambiguous <see cref="Affects.All"/> case has
+        /// to look at the effects themselves, and no status good/bad table is needed anywhere.</summary>
+        public FieldFlavor Flavor()
+        {
+            if (Pulse.Count > 0)
+            {
+                if (PulseAffects == Affects.Enemies) return FieldFlavor.Hazard;
+                if (PulseAffects == Affects.Allies) return FieldFlavor.Boon;
+                foreach (var e in Pulse)
+                    if (e.Kind == EffectKind.Damage || e.Kind == EffectKind.Execute || e.Kind == EffectKind.Swing)
+                        return FieldFlavor.Hazard;
+                foreach (var e in Pulse)
+                    if (e.Kind == EffectKind.Heal || e.Kind == EffectKind.GrantShield || e.Kind == EffectKind.GrantMana)
+                        return FieldFlavor.Boon;
+                // An everyone-field that only applies statuses: whether that's a gift or a
+                // punishment needs a status good/bad table we deliberately don't keep. Stay
+                // Neutral (grey) rather than confidently coloring it wrong.
+                return FieldFlavor.Neutral;
+            }
+            if (Presence.Count > 0)
+                return PresenceAffects == Affects.Enemies ? FieldFlavor.Debuff : FieldFlavor.Buff;
+            return FieldFlavor.Neutral;   // a bare wall, a projectile-only blessing, a marker
+        }
     }
 
     public sealed class Field
@@ -46,6 +81,7 @@ namespace Warband.Sim
     {
         public int Id;
         public bool IsWall;
+        public FieldFlavor Flavor;         // what it does to occupants — drives the zone's color
         public int AttachedTo = -1;
         public int Radius;
         public List<Hex> Hexes = new List<Hex>();   // static fields only; attached derive from the anchor

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Warband.Sim;
 using Xunit;
 
@@ -67,7 +68,10 @@ namespace Warband.Sim.Tests
             skirmisher.Triggers.Add(new Trigger
             {
                 On = EventKind.BattleStart,
-                Do = { new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.Haste, Amount = 400, StatusTicks = 60, Select = new Selector { Kind = SelKind.Self } } },
+                // Short on purpose: this window only exists to drive the expiry path through the
+                // fold, and its holder is the first unit to die (~t60). At 60 ticks the death beat
+                // the expiry and the fixture silently stopped covering StatusExpired.
+                Do = { new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.Haste, Amount = 400, StatusTicks = 40, Select = new Selector { Kind = SelKind.Self } } },
             });
 
             var units = new List<UnitState>
@@ -85,6 +89,115 @@ namespace Warband.Sim.Tests
             Assert.Contains(result.Events, e => e.Kind == EventKind.StatusExpired); // timed haste ran out
             Assert.Contains(result.Events, e => e.Kind == EventKind.Death);
             AssertLogReconstructsState(result);
+        }
+
+        [Fact]
+        public void BurnPoolLogReconstructsEveryTick()
+        {
+            // Burn is the one status that merges into a SINGLE pool per unit and decays
+            // silently each pulse. No other guardrail fixture used it, which is how a fold
+            // that appends per apply and removes on kind+Mag shipped diverging.
+            var pyro = BattleTests.Grunt(hp: 120, atk: 3);
+            pyro.Range = 3;
+            pyro.ManaMax = 12; // ~2 casts before the pool has drained: stacking AND draining
+            pyro.Signature.Add(new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.Burn, Amount = 5 });
+
+            var units = BattleTests.Duel(pyro, BattleTests.Grunt(hp: 260, atk: 6));
+            var result = new Battle(units).Run();
+
+            Assert.Contains(result.Events, e => e.Kind == EventKind.StatusApplied && e.Aux == (int)StatusKind.Burn);
+            Assert.Contains(result.Events, e => e.Kind == EventKind.DamageDealt && e.Cause == Cause.Burn);
+            AssertLogReconstructsState(result);
+        }
+
+        [Fact]
+        public void BurnFoldReplacesThePoolWhileOtherKindsStack()
+        {
+            var fold = PlaybackState.From(new[] { new PlaybackUnit { Id = 0 } });
+            var events = new List<BattleEvent>
+            {
+                Status(0, EventKind.StatusApplied, StatusKind.Burn, 5),
+                Status(0, EventKind.StatusApplied, StatusKind.Burn, 8), // merged pool total, not a second stack
+                Status(1, EventKind.StatusApplied, StatusKind.Dot, 3),
+                Status(1, EventKind.StatusApplied, StatusKind.Dot, 3),
+                Status(2, EventKind.StatusExpired, StatusKind.Burn, 0), // drained: Amount can't identify the pool
+            };
+
+            fold.AdvanceToTick(events, 0);
+            Assert.Single(fold.Units[0].Statuses);
+            Assert.Equal(8, fold.Units[0].Statuses[0].Mag);
+
+            fold.AdvanceToTick(events, 1);
+            Assert.Equal(2, fold.Units[0].Statuses.FindAll(s => s.Kind == StatusKind.Dot).Count);
+
+            fold.AdvanceToTick(events, 2);
+            Assert.DoesNotContain(fold.Units[0].Statuses, s => s.Kind == StatusKind.Burn);
+        }
+
+        private static BattleEvent Status(int tick, EventKind kind, StatusKind status, int amount) =>
+            new BattleEvent { Tick = tick, Kind = kind, Target = 0, Amount = amount, Aux = (int)status };
+
+        [Fact]
+        public void StatusAppliedCarriesItsDurations()
+        {
+            var caster = BattleTests.Grunt(hp: 200, atk: 5);
+            caster.Triggers.Add(new Trigger
+            {
+                On = EventKind.BattleStart,
+                Do =
+                {
+                    new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.Haste, Amount = 100, StatusTicks = 40, Select = new Selector { Kind = SelKind.Self } },
+                    new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.AttackUp, Amount = 2, StatusTicks = -1, Select = new Selector { Kind = SelKind.Self } },
+                    new EffectDef { Kind = EffectKind.ApplyStatus, Status = StatusKind.NextSwingCrit, StatusSwings = 2, Select = new Selector { Kind = SelKind.Self } },
+                },
+            });
+            var events = new Battle(BattleTests.Duel(caster, BattleTests.Grunt(150))).Run().Events;
+
+            BattleEvent Applied(StatusKind k) =>
+                events.Find(e => e.Kind == EventKind.StatusApplied && e.Aux == (int)k);
+
+            Assert.Equal(40, Applied(StatusKind.Haste).Aux2);
+            Assert.Equal(-1, Applied(StatusKind.Haste).Aux3);
+            Assert.Equal(-1, Applied(StatusKind.AttackUp).Aux2);       // whole fight
+            Assert.Equal(-1, Applied(StatusKind.NextSwingCrit).Aux2);  // not on the tick clock
+            Assert.Equal(2, Applied(StatusKind.NextSwingCrit).Aux3);
+        }
+
+        [Fact]
+        public void FoldStampsAnExpiryTickAndLeavesItOutOfTheHash()
+        {
+            var fold = PlaybackState.From(new[] { new PlaybackUnit { Id = 0 } });
+            fold.AdvanceToTick(Timed(5), 5);
+            Assert.Equal(45, fold.Units[0].Statuses[0].ExpiryTick); // applied at 5, 40 ticks left
+            Assert.Equal(-1, fold.Units[0].Statuses[1].ExpiryTick); // permanent
+
+            // Identical view, countdowns 25 ticks apart: the ring is decoration, so the hash —
+            // and with it the replay round-trip check — must not see the difference.
+            var later = PlaybackState.From(new[] { new PlaybackUnit { Id = 0 } });
+            later.AdvanceToTick(Timed(30), 30);
+            Assert.Equal(70, later.Units[0].Statuses[0].ExpiryTick);
+            Assert.Equal(fold.ViewHash(), later.ViewHash());
+        }
+
+        private static List<BattleEvent> Timed(int tick) => new List<BattleEvent>
+        {
+            new BattleEvent { Tick = tick, Kind = EventKind.StatusApplied, Target = 0, Amount = 3, Aux = (int)StatusKind.Dot, Aux2 = 40 },
+            new BattleEvent { Tick = tick, Kind = EventKind.StatusApplied, Target = 0, Amount = 2, Aux = (int)StatusKind.AttackUp },
+        };
+
+        [Fact]
+        public void ReplayCarriesStatusExpiryTicks()
+        {
+            var units = BattleTests.Duel(BattleTests.Grunt(), BattleTests.Grunt(90));
+            units[0].Statuses.Add(new Status { Kind = StatusKind.AttackUp, Mag = 5, TicksLeft = 120, SourceId = 0 });
+            var result = new Battle(units).Run();
+
+            var ms = new MemoryStream();
+            Replay.Write(ms, result.InitialUnits, result.Events);
+            var (initial, _) = Replay.Read(new MemoryStream(ms.ToArray()));
+
+            Assert.Contains(initial[0].Statuses,
+                s => s.Kind == StatusKind.AttackUp && s.Mag == 5 && s.ExpiryTick == 120);
         }
 
         [Fact]

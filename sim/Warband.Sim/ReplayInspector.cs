@@ -23,9 +23,11 @@ namespace Warband.Sim
             public readonly StatusKind Status; // meaningful for Status* events
             public readonly bool Crit;         // a critical auto-attack DamageDealt
             public readonly bool Wall;         // FieldCreated that raised a wall
+            public readonly FieldFlavor Flavor; // FieldCreated: what the zone does to occupants
 
-            public Signature(EventKind kind, Cause cause, StatusKind status, bool crit, bool wall)
-            { Kind = kind; Cause = cause; Status = status; Crit = crit; Wall = wall; }
+            public Signature(EventKind kind, Cause cause, StatusKind status, bool crit, bool wall,
+                             FieldFlavor flavor = FieldFlavor.Neutral)
+            { Kind = kind; Cause = cause; Status = status; Crit = crit; Wall = wall; Flavor = flavor; }
 
             /// <summary>The renderer-facing label for this signature (also the tuning key we'd
             /// author a tell against).</summary>
@@ -36,7 +38,10 @@ namespace Warband.Sim
                     case EventKind.DamageDealt: return $"Damage/{Cause}{(Crit ? "/crit" : "")}";
                     case EventKind.StatusApplied: return $"Status+/{Status}";
                     case EventKind.StatusExpired: return $"Status-/{Status}";
-                    case EventKind.FieldCreated: return $"Field/{(Wall ? "wall" : "zone")}";
+                    // wall-ness and flavor are orthogonal: a burning wall is "wall+Hazard".
+                    case EventKind.FieldCreated:
+                        if (Flavor == FieldFlavor.Neutral) return $"Field/{(Wall ? "wall" : "zone")}";
+                        return $"Field/{(Wall ? "wall+" : "")}{Flavor}";
                     default: return Kind.ToString();
                 }
             }
@@ -63,7 +68,7 @@ namespace Warband.Sim
                 case EventKind.StatusExpired:
                     return new Signature(e.Kind, Cause.None, (StatusKind)e.Aux, false, false);
                 case EventKind.FieldCreated:
-                    return new Signature(e.Kind, Cause.None, default, false, e.Amount == 1);
+                    return new Signature(e.Kind, Cause.None, default, false, e.Amount == 1, e.Flavor);
                 default:
                     return new Signature(e.Kind, Cause.None, default, false, false);
             }

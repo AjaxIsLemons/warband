@@ -98,7 +98,25 @@ namespace Warband.Content
             return list;
         }
 
-        public GhostSnapshot BossGhost(int act, int bossWins, Rng rng) =>
-            BotGhosts.Generate(this, _cfg, act, bossWins, rng);
+        /// <summary>
+        /// The act boss (ADR 0016). AUTHORED, not generated — but there is exactly ONE authored
+        /// encounter today (The Last Oath), so every act currently faces the same bonded pair
+        /// with an act-scaled stat multiplier. That is deliberate scaffolding for the walkable
+        /// PoC spine, NOT a claim about content: the authored encounter families, the enemy-role
+        /// grammar, and per-act bosses are still the open work on roadmap item 5.
+        /// </summary>
+        public List<(UnitDef Def, Hex Pos)> Boss(int act, Rng rng)
+        {
+            int scalePct = 100 + 25 * (act - 1);
+            var list = new List<(UnitDef, Hex)>();
+            foreach (var e in Encounters.BondedPair().Enemies)
+            {
+                var def = e.Def;
+                def.MaxHp = def.MaxHp * scalePct / 100;
+                def.Attack = def.Attack * scalePct / 100;
+                list.Add((def, e.Pos));
+            }
+            return list;
+        }
     }
 }

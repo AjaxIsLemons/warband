@@ -3,41 +3,68 @@ using Warband.Sim;
 namespace Warband.Run
 {
     /// <summary>
-    /// Economy shape per ADR 0006/0007. EVERY number here is a placeholder (content
-    /// doctrine) — the shapes are the decisions, the values are for the sweep harness
-    /// and playtests to move.
+    /// First-playable run and economy shape. These are deliberately explicit initial tuning
+    /// values, not balance claims: friends playtest #1 is expected to move them.
     /// </summary>
     public sealed class RunConfig
     {
-        public int Acts = 5;
-        public int NodesPerAct = 4;              // fight/event nodes before the act boss
-        public int EventsPerAct = 1;             // rest are wager fights
+        public int Acts = 3;
+        public int NodesPerAct = 4;              // Fight, Fight, Interlude, Fight, then boss
+        public int EventsPerAct = 1;
+        public int InterludeNodeIndex = 2;
 
-        public int StartingFieldSlots = 3;       // ADR 0006: start 3
-        public int MaxFieldSlots = 6;            //           cap 6
-        public int BenchSlots = 2;               //           bench of 2
-        public int[] SlotCosts = { 6, 10, 14 };  // escalating, indexed by slots already bought
+        public int StartingSand = 4;
+        public int StartingFieldSlots = 3;
+        public int MaxFieldSlots = 6;
+        public int BenchSlots = 2;
+        public int[] SlotCosts = { 8, 12, 16 };
 
-        public int[] BaseIncomeByAct = { 3, 4, 5, 6, 7 };    // per node, act-anchored (ADR 0006)
-        public int[] PotBaseByAct = { 10, 14, 18, 22, 26 };  // wager pot base (ADR 0007)
-        public int[] TierPotPct = { 100, 150, 225 };         // Safe / Even / Greedy pot multiplier
-        public int[] TierKillSharePct = { 70, 50, 30 };      // pot % paid per-kill; rest is the win bonus
-                                                             // (greed shifts weight to on-win — ADR 0007 §5)
+        // [act-1][Stable/Fraying/Collapsing]. A loss ends the run and pays nothing, so the
+        // old kill-share/pot split is intentionally gone.
+        public int[][] FightRewardsByAct =
+        {
+            new[] { 4, 5, 7 },
+            new[] { 5, 6, 8 },
+            new[] { 6, 7, 9 },
+        };
+        public int InterludeTreasurySand = 5;
+        public int[] BossSandByAct = { 6, 8, 0 };
 
-        public int HeroSlots = 3;                // shop layout (ADR 0009): 3 hero cards…
-        public int ItemSlots = 2;                // …+ 2 item cards per tick
-        public int HeroPrice = 3;                // flat v1; a dupe costs the same as the card
-        public int WeaponPrice = 3;
-        public int TrinketPrice = 2;
-        public int BannerPrice = 6;
-        public int RerollCost = 1;               // flat (ADR 0006)
-        public int BannerChancePct = 25;         // per item slot, banner instead of an item
-        public int SellPct = 50;                 // sell-back refund (ADR 0009)
-        public int[] ReforgeCosts = { 4, 8 };    // Worn→Honed, Honed→Relic (ADR 0015, placeholder)
+        public int HeroSlots = 3;
+        public int ItemSlots = 2;
+        public int HeroPrice = 5;
+        public int WeaponPrice = 4;
+        public int TrinketPrice = 3;
+        public int InscriptionPrice = 7;
+        public int RerollCost = 1;
+        public int WeaponChancePct = 45;
+        public int TrinketChancePct = 35;
+        public int InscriptionChancePct = 20;
+        public int SellPct = 50;
+        public int[] ReforgeCosts = { 4, 8 };    // retained but not surfaced in the first playable
+        public int RewardChoices = 3;
 
-        public int BaseIncome(int act) => BaseIncomeByAct[act - 1];
-        public int Pot(int act, FightTier tier) => PotBaseByAct[act - 1] * TierPotPct[(int)tier] / 100;
+        public int FightReward(int act, FightTier tier) => FightRewardsByAct[act - 1][(int)tier];
+        public int BossReward(int act) => BossSandByAct[act - 1];
         public int SlotCost(int slotsBought) => SlotCosts[slotsBought];
+
+        // Compatibility shims for the shell/tests landing in parallel with this economy pass.
+        // New code uses Sand/Inscription/FightReward terminology.
+        public int BannerPrice { get => InscriptionPrice; set => InscriptionPrice = value; }
+        public int BannerChancePct
+        {
+            get => InscriptionChancePct;
+            set
+            {
+                InscriptionChancePct = value;
+                int remainder = 100 - value;
+                WeaponChancePct = remainder * 56 / 100;
+                TrinketChancePct = remainder - WeaponChancePct;
+            }
+        }
+        public int BaseIncome(int act) => FightRewardsByAct[act - 1][(int)FightTier.Fraying];
+        public int Pot(int act, FightTier tier) => FightReward(act, tier);
+        public int[] TierKillSharePct = { 100, 100, 100 };
 
         /// <summary>ADR 0015: the forge follows the front — stock and reforge are both
         /// capped by act (never by record). Placeholder curve.</summary>

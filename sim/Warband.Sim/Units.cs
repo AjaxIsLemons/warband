@@ -21,6 +21,15 @@ namespace Warband.Sim
         public List<EffectDef> Signature = new List<EffectDef>();
         public List<Trigger> Triggers = new List<Trigger>();   // innate + fork riders
         public List<StatRule> StatRules = new List<StatRule>(); // conditional stats ("+speed below half HP")
+
+        // Identity block — descriptive only. The sim NEVER branches on these; they exist so the
+        // renderer can say what a unit IS (placement needs "reach 4, Honed Longbow" before the
+        // fight starts). Loadout.Compose fills them; authored content may overwrite Name freely
+        // without breaking chassis-keyed art, because ChassisId is the stable key.
+        public string ChassisId = "";
+        public string WeaponName = "";
+        public WeaponTier WeaponTier;
+        public List<string> Traits = new List<string>();  // spec nodes + trinkets, in merge order
     }
 
     public sealed class UnitState
@@ -33,13 +42,29 @@ namespace Warband.Sim
         public int Shield;
         public int Mana;
         public int TargetId = -1;
+        public int BlockedTargetId = -1; // block-then-adapt: enemy id whose shot a wall fizzled. Live-sim state only — never serialized, never hashed (transient decision state, like NextAttackTick).
         public int NextAttackTick;
-        public int NextMoveTick;
         public bool Dead;            // set only by the death phase
         public int SwingCount;       // lifetime swings — Nth-swing riders + charge decrement
         public int LastDamagedBy = -1; // killer attribution on the Death event
         public List<(int Tick, int Amount)> RecentDamage = new List<(int, int)>(); // Phase-entry window
         public List<Status> Statuses = new List<Status>();
+
+        // ---- committed step (movement law) ----
+        // A unit that decides to move DEPARTS now and ARRIVES StepEnd ticks later. Pos does not
+        // change for the whole walk — you are where you were until you get there — and StepTo is
+        // reserved, so nothing paths into the hex being walked into. A committed step always
+        // completes: Root/Stun gate STARTING one, never finishing one, which is what keeps the
+        // renderer free of rubber-banding.
+        private Hex _stepTo;
+        public int StepStart;
+        public int StepEnd;
+        public bool Walking => StepEnd > StepStart;
+
+        /// <summary>Where this unit is headed — its own hex whenever it isn't walking. The standing
+        /// case is derived, not stored, so "StepTo == Pos when still" holds by construction and no
+        /// spawn path can leave a stale destination behind.</summary>
+        public Hex StepTo { get => Walking ? _stepTo : Pos; set => _stepTo = value; }
 
         public bool Alive => !Dead;
 

@@ -76,7 +76,7 @@ namespace Warband.Run.Tests
             var state = Kit.PlayOut(new RunController(
                 21, new StubContent { UseBotGhosts = true }, Kit.Warband()));
             Assert.Equal(RunPhase.Complete, state.Phase);
-            Assert.Equal(5, state.BossWins + state.BossLosses);
+            Assert.Equal(3, state.BossWins + state.BossLosses);
         }
     }
 
@@ -87,8 +87,8 @@ namespace Warband.Run.Tests
         {
             var report = RunHarness.Play(9, new StubContent { UseBotGhosts = true });
             Assert.Equal(RunPhase.Complete, report.Final.Phase);
-            Assert.Equal(20, report.Fights.Count);            // 15 wager fights + 5 bosses
-            Assert.Equal(5, report.Fights.Count(f => f.IsBoss));
+            Assert.Equal(12, report.Fights.Count);            // 9 risk fights + 3 bosses
+            Assert.Equal(3, report.Fights.Count(f => f.IsBoss));
             Assert.True(report.GoldFromNodes > 0);
         }
 
@@ -120,18 +120,18 @@ namespace Warband.Run.Tests
             var reports = RunHarness.PlayMany(5, 100, new StubContent { UseBotGhosts = true });
             var agg = AggregateReport.From(reports);
             Assert.Equal(5, agg.Runs);
-            Assert.InRange(agg.AvgBossWins, 0, 5);
-            Assert.Equal(75, agg.Tiers[FightTier.Even].Chosen);   // 15 wager fights × 5 runs
+            Assert.InRange(agg.AvgBossWins, 0, 3);
+            Assert.Equal(45, agg.Tiers[FightTier.Fraying].Chosen); // 9 risk fights × 5 runs
             Assert.True(agg.AvgFightTicks > 0);
         }
 
         [Fact]
         public void PolicyHooksOverrideTheDefaults()
         {
-            var policy = new RunPolicy { Tier = _ => FightTier.Greedy };
+            var policy = new RunPolicy { Tier = _ => FightTier.Collapsing };
             var report = RunHarness.Play(9, new StubContent { UseBotGhosts = true }, policy: policy);
             Assert.All(report.Fights.Where(f => !f.IsBoss),
-                       f => Assert.Equal(FightTier.Greedy, f.Tier));
+                       f => Assert.Equal(FightTier.Collapsing, f.Tier));
         }
     }
 }

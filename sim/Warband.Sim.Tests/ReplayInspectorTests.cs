@@ -16,6 +16,9 @@ namespace Warband.Sim.Tests
             Cause cause = Cause.None, StatusKind status = default, bool crit = false, int aux = -1)
             => new BattleEvent { Kind = kind, Tick = tick, Amount = amount, Cause = cause, Crit = crit, Aux = aux == -1 ? (int)status : aux };
 
+        private static BattleEvent Field(int tick, FieldFlavor flavor, bool wall = false)
+            => new BattleEvent { Kind = EventKind.FieldCreated, Tick = tick, Amount = wall ? 1 : 0, Aux3 = (int)flavor };
+
         [Fact]
         public void DamageSplitsByCauseAndCrit()
         {
@@ -60,12 +63,33 @@ namespace Warband.Sim.Tests
         {
             var events = new List<BattleEvent>
             {
-                Ev(EventKind.FieldCreated, 0, amount: 0),  // zone
-                Ev(EventKind.FieldCreated, 1, amount: 1),  // wall
+                Ev(EventKind.FieldCreated, 0, amount: 0),  // flavorless zone
+                Ev(EventKind.FieldCreated, 1, amount: 1),  // flavorless wall
             };
             var labels = ReplayInspector.Summarize(events).Select(s => s.Label).ToList();
             Assert.Contains("Field/zone", labels);
             Assert.Contains("Field/wall", labels);
+        }
+
+        [Fact]
+        public void FieldSplitsByFlavorAndComposesWithWallness()
+        {
+            var events = new List<BattleEvent>
+            {
+                Field(0, FieldFlavor.Hazard),
+                Field(1, FieldFlavor.Boon),
+                Field(2, FieldFlavor.Debuff),
+                Field(3, FieldFlavor.Hazard, wall: true),   // a burning wall is both
+                Field(4, FieldFlavor.Hazard),               // merges with row 1
+            };
+            var stats = ReplayInspector.Summarize(events);
+            var labels = stats.Select(s => s.Label).ToList();
+
+            Assert.Contains("Field/Hazard", labels);
+            Assert.Contains("Field/Boon", labels);
+            Assert.Contains("Field/Debuff", labels);
+            Assert.Contains("Field/wall+Hazard", labels);
+            Assert.Equal(2, stats.First(s => s.Label == "Field/Hazard").Count);
         }
 
         [Fact]

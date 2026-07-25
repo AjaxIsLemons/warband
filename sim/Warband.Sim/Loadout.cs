@@ -8,6 +8,7 @@ namespace Warband.Sim
 
     public sealed class ChassisDef
     {
+        public string Id = "";       // stable content key ("bulwark"); Name is the display label
         public string Name = "hero";
         public int MaxHp;
         public int MoveInterval = 5;
@@ -114,6 +115,9 @@ namespace Warband.Sim
                 CritMultFp = w.CritMultFp,
                 HealAutos = w.HealAutos,
                 CleavePct = w.CleavePct,
+                ChassisId = chassis.Id,
+                WeaponName = w.Name,
+                WeaponTier = tier,
             };
             def.Signature.AddRange(chassis.Signature);
             def.Triggers.AddRange(chassis.Passives);
@@ -139,6 +143,7 @@ namespace Warband.Sim
                     def.ManaMax += t.ManaMaxDelta;
                     def.Triggers.AddRange(t.Triggers);
                     def.StatRules.AddRange(t.StatRules);
+                    def.Traits.Add(t.Name);
                     foreach (var (kind, mag) in t.SpawnStatuses)
                         result.SpawnStatuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1 });
                 }
@@ -150,6 +155,7 @@ namespace Warband.Sim
                     def.CleavePct += n.CleaveBonusPct;
                     def.Triggers.AddRange(n.Triggers);
                     def.StatRules.AddRange(n.StatRules);
+                    def.Traits.Add(n.Name);
                     foreach (var (kind, mag) in n.SpawnStatuses)
                         result.SpawnStatuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1 });
                     if (n.SignatureOverride != null)

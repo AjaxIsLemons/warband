@@ -158,5 +158,52 @@ namespace Warband.Sim.Tests
             Assert.Equal(1, TellMatch.Specificity(null, null, null, null, "pyromancer"));
             Assert.Equal(0, TellMatch.Specificity(null, null, null, null, ""));
         }
+
+        [Fact]
+        public void AbilityFilterKeysOnTheResolvedSourceAbility()
+        {
+            Assert.True(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                ability: "pyro.starfall", sourceAbility: "pyro.starfall"));
+            Assert.False(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                ability: "pyro.starfall", sourceAbility: "pyromancer"));
+            Assert.True(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                ability: "Pyro.Starfall", sourceAbility: "pyro.starfall"));
+        }
+
+        [Fact]
+        public void AbilityFilterNeverMatchesWithoutSourceContext()
+        {
+            Assert.False(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                ability: "pyro.starfall", sourceAbility: null));
+            Assert.False(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                ability: "pyro.starfall", sourceAbility: ""));
+            // the filterless fallback still catches an event that HAS ability context
+            Assert.True(TellMatch.Matches(Cast(), EventKind.Cast, null, null,
+                sourceAbility: "pyro.starfall"));
+        }
+
+        [Fact]
+        public void AbilityAndChassisFiltersCompose()
+        {
+            // both declared: both must hold
+            Assert.True(TellMatch.Matches(Cast(), EventKind.Cast, Cause.Ability, null,
+                chassis: "pyromancer", sourceChassis: "pyromancer",
+                ability: "pyro.starfall", sourceAbility: "pyro.starfall"));
+            Assert.False(TellMatch.Matches(Cast(), EventKind.Cast, Cause.Ability, null,
+                chassis: "cleric", sourceChassis: "pyromancer",
+                ability: "pyro.starfall", sourceAbility: "pyro.starfall"));
+        }
+
+        [Fact]
+        public void AbilityOutranksChassisInSpecificity()
+        {
+            // the whole point of the +2: an override's tell must beat its own chassis tell
+            // rather than tying it and losing to whichever row was registered first.
+            Assert.Equal(2, TellMatch.Specificity(null, null, null, null, null, "pyro.starfall"));
+            Assert.True(TellMatch.Specificity(null, null, null, null, null, "pyro.starfall")
+                      > TellMatch.Specificity(null, null, null, null, "pyromancer"));
+            Assert.Equal(3, TellMatch.Specificity(null, null, null, null, "pyromancer", "pyro.starfall"));
+            Assert.Equal(0, TellMatch.Specificity(null, null, null, null, null, ""));
+        }
     }
 }

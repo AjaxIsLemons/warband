@@ -48,6 +48,19 @@
       ]
     },
     {
+      "// glyphwar": "the FIELD contact sheet: every FieldFlavor on the board at once — Pyromancer Blaze (Hazard), Cleric lifebinder.grace healing ground (Boon), Banneret warcaller.dreadpresence aura (Debuff). Exists so the zone colors can be eyes-checked in one capture.",
+      "name": "glyphwar",
+      "seed": 13,
+      "units": [
+        { "team": 0, "chassis": "pyromancer", "picks": [0, 0, 0], "row": 1, "col": 1 },
+        { "team": 0, "chassis": "cleric",     "picks": [1, 0, 0], "row": 2, "col": 2 },
+        { "team": 0, "chassis": "banneret",   "picks": [1, 1, 0], "row": 1, "col": 3 },
+        { "team": 1, "chassis": "phalanx",    "picks": [0, 0, 0], "row": 5, "col": 2 },
+        { "team": 1, "chassis": "berserker",  "picks": [0, 0, 0], "row": 6, "col": 1 },
+        { "team": 1, "chassis": "sharpshot",  "picks": [0, 0, 0], "row": 6, "col": 3 }
+      ]
+    },
+    {
       "name": "skirmish",
       "seed": 1,
       "units": [
@@ -57,6 +70,18 @@
         { "team": 1, "chassis": "phalanx",    "picks": [0, 0, 0], "row": 5, "col": 2 },
         { "team": 1, "chassis": "cleric",     "picks": [0, 0, 0], "row": 6, "col": 2 },
         { "team": 1, "chassis": "banneret",   "picks": [0, 0, 0], "row": 5, "col": 3 }
+      ]
+    },
+    {
+      "// wallfort": "exercises the AttackBlocked (blocked-shot) tell: a static wall at (2,2) sits on the interior of the (0,2)->(4,2) line, so team0's Sharpshot (bow range 4) fires into the wall at team1's Sharpshot every interval. The Shade/Bulwark are the melee resolvers so the fight ends. Walls are a Viewer fixture feature (no kit creates one) — see Scenarios.cs.",
+      "name": "wallfort",
+      "seed": 9,
+      "walls": [{ "row": 2, "col": 2 }],
+      "units": [
+        { "team": 0, "chassis": "sharpshot", "picks": [0, 0, 0], "row": 0, "col": 2 },
+        { "team": 0, "chassis": "shade",     "picks": [0, 0, 0], "row": 1, "col": 0 },
+        { "team": 1, "chassis": "sharpshot", "picks": [0, 0, 0], "row": 4, "col": 2 },
+        { "team": 1, "chassis": "bulwark",   "picks": [0, 0, 0], "row": 6, "col": 4 }
       ]
     }
   ]

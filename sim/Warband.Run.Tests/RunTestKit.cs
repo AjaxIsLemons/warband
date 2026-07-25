@@ -13,7 +13,7 @@ namespace Warband.Run.Tests
         public int MonsterHp = 40;
         public int MonsterAttack = 4;
         public bool WeakBoss = true;             // weak ghost = player wins bosses by default
-        public Hex GhostPos = Hex.FromRowCol(0, 2);   // owner-half coords, mirrored at fight time
+        public Hex BossPos = Hex.FromRowCol(Battle.BoardRows - 1, 2);   // enemy half, stated directly
 
         public ChassisDef Chassis(string id) => new ChassisDef
         {
@@ -82,30 +82,28 @@ namespace Warband.Run.Tests
             return list;
         }
 
-        public List<string> GhostBanners = new List<string>();
-        public bool UseBotGhosts;                // route bosses through BotGhosts.Generate
+        public bool UseBotGhosts;                // legacy knob: bot-generated comps as the boss
 
-        public GhostSnapshot BossGhost(int act, int bossWins, Rng rng)
+        /// <summary>
+        /// Authored act boss (ADR 0016). WeakBoss = one body the player beats by default;
+        /// otherwise a three-body comp. Positions are enemy-half rows, stated directly now that
+        /// nothing mirrors an owner-half snapshot in.
+        /// </summary>
+        public List<(UnitDef Def, Hex Pos)> Boss(int act, Rng rng)
         {
-            if (UseBotGhosts) return BotGhosts.Generate(this, new RunConfig(), act, bossWins, rng);
-            var hero = new HeroInstance { ChassisId = WeakBoss ? "ghost-weak" : "ghost" };
-            var snap = new GhostSnapshot { Act = act };
-            snap.BannerIds.AddRange(GhostBanners);
-            snap.Units.Add(new GhostUnit { Hero = hero, Pos = GhostPos });
+            var list = new List<(UnitDef, Hex)>();
+            // The armed bodies carry a weapon, matching the old ghost comp (HeroInstance with
+            // WeaponId "greatblade") — without it the boss is too weak to ever beat the player.
+            UnitDef Body(string id, string? weaponId = null) =>
+                Loadout.Compose(Chassis(id), weaponId == null ? null : Weapon(weaponId)).Def;
+
+            list.Add((Body(WeakBoss ? "ghost-weak" : "ghost"), BossPos));
             if (!WeakBoss)
             {
-                snap.Units.Add(new GhostUnit
-                {
-                    Hero = new HeroInstance { ChassisId = "ghost", WeaponId = "greatblade" },
-                    Pos = Hex.FromRowCol(0, 3),
-                });
-                snap.Units.Add(new GhostUnit
-                {
-                    Hero = new HeroInstance { ChassisId = "ghost", WeaponId = "greatblade" },
-                    Pos = Hex.FromRowCol(1, 2),
-                });
+                list.Add((Body("ghost", "greatblade"), Hex.FromRowCol(Battle.BoardRows - 1, 3)));
+                list.Add((Body("ghost", "greatblade"), Hex.FromRowCol(Battle.BoardRows - 2, 2)));
             }
-            return snap;
+            return list;
         }
     }
 
@@ -122,26 +120,24 @@ namespace Warband.Run.Tests
         public static List<Hex> AutoPlace(RunController run) =>
             Enumerable.Range(0, run.State.Field.Count).Select(i => Hex.FromRowCol(1, i)).ToList();
 
-        /// <summary>Scripted full-run driver: fixed tier, auto-place, buy every affordable slot.</summary>
-        public static RunState PlayOut(RunController run, FightTier tier = FightTier.Even)
+        /// <summary>Scripted full-run driver for the unified Planning workspace.</summary>
+        public static RunState PlayOut(RunController run, FightTier tier = FightTier.Fraying)
         {
-            while (run.State.Phase != RunPhase.Complete)
+            while (!run.State.Over)   // Complete or Defeated
             {
-                switch (run.State.Phase)
+                if (run.State.Phase == RunPhase.Reward)
                 {
-                    case RunPhase.Node:
-                        switch (run.CurrentNodeKind)
-                        {
-                            case NodeKind.Fight: run.ResolveFight(tier, AutoPlace(run)); break;
-                            case NodeKind.Event: run.ResolveEvent(); break;
-                            case NodeKind.Boss: run.ResolveBoss(AutoPlace(run)); break;
-                        }
-                        break;
-                    case RunPhase.Shop:
-                        if (run.SlotOfferOpen && run.State.Gold >= run.SlotOfferCost)
-                            run.BuySlot();
-                        run.LeaveShop();
-                        break;
+                    run.ChooseBossReward(0);
+                    continue;
+                }
+
+                if (run.SlotOfferOpen && run.State.Gold >= run.SlotOfferCost)
+                    run.BuySlot();
+                switch (run.CurrentNodeKind)
+                {
+                    case NodeKind.Fight: run.ResolveFight(tier, AutoPlace(run)); break;
+                    case NodeKind.Event: run.ResolveEvent(); break;
+                    case NodeKind.Boss: run.ResolveBoss(AutoPlace(run)); break;
                 }
             }
             return run.State;

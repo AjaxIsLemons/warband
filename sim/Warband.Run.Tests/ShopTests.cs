@@ -65,10 +65,9 @@ namespace Warband.Run.Tests
             var run = ShopRun();
             run.ToggleFreeze(1);
             string frozenId = run.State.ShopOffers[1]!.Id;
-            run.LeaveShop();
             switch (run.CurrentNodeKind)
             {
-                case NodeKind.Fight: run.ResolveFight(FightTier.Even, Kit.AutoPlace(run)); break;
+                case NodeKind.Fight: run.ResolveFight(FightTier.Fraying, Kit.AutoPlace(run)); break;
                 case NodeKind.Event: run.ResolveEvent(); break;
             }
             Assert.Equal(frozenId, run.State.ShopOffers[1]!.Id);
@@ -197,22 +196,20 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
-        public void BannerBuysApplyToBattleAndTravelInSnapshots()
+        public void InscriptionBuysApplyToBattle()
         {
             var cfg = new RunConfig { BannerChancePct = 100 };
             var run = ShopRun(cfg: cfg);
             int slot;
-            while ((slot = SlotOf(run, OfferKind.Banner)) < 0) run.Reroll();
+            while ((slot = SlotOf(run, OfferKind.Inscription)) < 0) run.Reroll();
             run.BuyOffer(slot);
             Assert.Contains("warbanner", run.State.Banners);
-            run.LeaveShop();
 
             FightOutcome? fight = null;
             while (run.State.Phase != RunPhase.Complete && fight == null)
             {
-                if (run.State.Phase == RunPhase.Shop) { run.LeaveShop(); continue; }
                 if (run.CurrentNodeKind == NodeKind.Fight)
-                    fight = run.ResolveFight(FightTier.Even, Kit.AutoPlace(run));
+                    fight = run.ResolveFight(FightTier.Fraying, Kit.AutoPlace(run));
                 else if (run.CurrentNodeKind == NodeKind.Event) run.ResolveEvent();
                 else run.ResolveBoss(Kit.AutoPlace(run));
             }
@@ -220,39 +217,14 @@ namespace Warband.Run.Tests
             Assert.Contains(fight!.Battle.Events,
                 e => e.Kind == EventKind.ShieldChanged && e.Target == 0 && e.Tick == 0);
 
-            while (run.State.CapturedGhosts.Count == 0)
-            {
-                if (run.State.Phase == RunPhase.Shop) { run.LeaveShop(); continue; }
-                if (run.CurrentNodeKind == NodeKind.Fight) run.ResolveFight(FightTier.Even, Kit.AutoPlace(run));
-                else if (run.CurrentNodeKind == NodeKind.Event) run.ResolveEvent();
-                else run.ResolveBoss(Kit.AutoPlace(run));
-            }
-            Assert.Contains("warbanner", run.State.CapturedGhosts[0].BannerIds);
         }
 
-        [Fact]
-        public void GhostBannersApplyToTheEnemyTeam()
-        {
-            var content = new StubContent { GhostBanners = new List<string> { "warbanner" } };
-            var run = new RunController(7, content, Kit.Warband());
-            while (!run.AtBoss)
-            {
-                switch (run.CurrentNodeKind)
-                {
-                    case NodeKind.Fight: run.ResolveFight(FightTier.Even, Kit.AutoPlace(run)); break;
-                    case NodeKind.Event: run.ResolveEvent(); break;
-                }
-                run.LeaveShop();
-            }
-            var boss = run.ResolveBoss(Kit.AutoPlace(run));
-            Assert.Contains(boss.Battle.Events,
-                e => e.Kind == EventKind.ShieldChanged && e.Target >= 100 && e.Tick == 0);
-        }
 
         [Fact]
-        public void ShopActionsRequireShopPhase()
+        public void MarketActionsRequireALivePlanningRun()
         {
             var run = new RunController(7, new StubContent(), Kit.Warband());
+            run.State.Phase = RunPhase.Defeated;
             Assert.Throws<InvalidOperationException>(() => run.BuyOffer(0));
             Assert.Throws<InvalidOperationException>(() => run.Reroll());
             Assert.Throws<InvalidOperationException>(() => run.SellItem(0));

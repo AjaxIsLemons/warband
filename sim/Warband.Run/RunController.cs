@@ -11,20 +11,22 @@ namespace Warband.Run
         public int EnemiesKilled;
         public int EnemyCount;
         public int BaseIncome;
-        public int KillPayout;                   // per-kill slice of the pot (ADR 0007)
-        public int WinBonus;                     // tier-scaled, only on a win
+        public int KillPayout;                   // compatibility: terminal losses no longer pay
+        public int WinBonus;                     // compatibility: reward is now one visible amount
         public int GoldEarned => BaseIncome + KillPayout + WinBonus;
+        public int SandEarned => GoldEarned;
         public BattleResult Battle = null!;      // full log — playback, folds, inspection
     }
 
     /// <summary>
-    /// The run state machine (roadmap 1a; ADRs 0002/0006/0007/0008). Node loop:
-    /// pick tier → fight/event → payout → shop tick → next node; act close = ghost boss,
-    /// snapshot capture, slot offer. Pure and deterministic: state + choices in, state out.
+    /// The run state machine. Planning is one persistent phase: market, roster, intel, loadout,
+    /// and deployment remain available around the current beat. A successful beat advances the
+    /// authored act track and refreshes unfrozen market stock; defeat is terminal.
     /// </summary>
     public sealed class RunController
     {
-        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltGhost = 4, SaltShop = 5;
+        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltShop = 5,
+                            SaltInterlude = 6, SaltBossReward = 7;
         private const int EnemyIdBase = 100;     // player heroes are 0..5, so no collision
 
         public RunState State { get; }
@@ -36,11 +38,20 @@ namespace Warband.Run
         {
             _content = content;
             _cfg = config ?? new RunConfig();
-            State = new RunState { Seed = seed, FieldSlots = _cfg.StartingFieldSlots };
+            ValidateConfig();
+            State = new RunState
+            {
+                Seed = seed,
+                Gold = _cfg.StartingSand,
+                FieldSlots = _cfg.StartingFieldSlots,
+                UnlockedFieldSlots = _cfg.StartingFieldSlots,
+                Phase = RunPhase.Planning,
+            };
             State.Field.AddRange(warband);
             if (State.Field.Count < 1 || State.Field.Count > _cfg.StartingFieldSlots)
                 throw new ArgumentException($"starting warband must be 1..{_cfg.StartingFieldSlots} heroes");
             State.ActMaps = GenerateMaps();
+            GenerateShop();
         }
 
         public bool AtBoss => State.NodeIndex == _cfg.NodesPerAct;
@@ -49,63 +60,184 @@ namespace Warband.Run
         {
             get
             {
-                Require(State.Phase == RunPhase.Node, "no current node outside the Node phase");
+                Require(State.Phase == RunPhase.Planning, "no current beat outside Planning");
                 return AtBoss ? NodeKind.Boss : State.ActMaps[State.Act - 1][State.NodeIndex];
             }
         }
 
         // ---- Node resolution -------------------------------------------------------
 
-        /// <summary>Wager fight (ADR 0007): placement[i] positions Field[i], own half (rows 0-3).</summary>
+        /// <summary>
+        /// Resolve the selected risk variant. A win pays its one visible Sand reward; a loss ends
+        /// the run and pays nothing because there is no later market in which to spend it.
+        /// </summary>
         public FightOutcome ResolveFight(FightTier tier, IReadOnlyList<Hex> placement)
         {
-            Require(State.Phase == RunPhase.Node && !AtBoss, "not at a node");
+            Require(State.Phase == RunPhase.Planning && !AtBoss, "not at a normal encounter");
             Require(CurrentNodeKind == NodeKind.Fight, "current node is not a fight");
 
             var enemies = _content.Encounter(State.Act, State.NodeIndex, tier,
                                              RngFor(SaltEncounter, State.Act, State.NodeIndex));
-            var outcome = RunBattle(placement, enemies, pot: _cfg.Pot(State.Act, tier),
-                                    killSharePct: _cfg.TierKillSharePct[(int)tier]);
-            State.Gold += outcome.GoldEarned;
-            EnterShop(bossJustClosed: false);
+            var outcome = RunBattle(placement, enemies);
+            if (!outcome.Won)
+            {
+                State.Phase = RunPhase.Defeated;
+                return outcome;
+            }
+
+            outcome.BaseIncome = _cfg.FightReward(State.Act, tier);
+            State.Gold += outcome.SandEarned;
+            AdvanceAfterBeat();
             return outcome;
         }
 
-        /// <summary>Events are undesigned (placeholder doctrine): base income only, for now.</summary>
+        /// <summary>
+        /// Compatibility convenience for old automated drivers. New clients preview the full
+        /// Interlude and call <see cref="ResolveInterlude"/> with the player's chosen path.
+        /// </summary>
         public int ResolveEvent()
         {
-            Require(State.Phase == RunPhase.Node && !AtBoss, "not at a node");
-            Require(CurrentNodeKind == NodeKind.Event, "current node is not an event");
-            int gold = _cfg.BaseIncome(State.Act);
-            State.Gold += gold;
-            EnterShop(bossJustClosed: false);
-            return gold;
+            return ResolveInterlude(InterludePath.Treasury).Sand;
         }
 
-        /// <summary>Act-boss ghost fight (ADR 0002). Captures the player's board into the
-        /// ghost pool regardless of result. Boss reward beyond the record is an open
-        /// question — base income only, for now.</summary>
+        /// <summary>
+        /// Deterministic, fully visible Interlude reward groups. Armory and Hourstone each expose
+        /// up to three distinct content choices; Treasury is the fixed Sand alternative.
+        /// </summary>
+        public InterludePreview PreviewInterlude()
+        {
+            Require(State.Phase == RunPhase.Planning && !AtBoss, "not at an Interlude");
+            Require(CurrentNodeKind == NodeKind.Event, "current beat is not an Interlude");
+
+            var preview = new InterludePreview { TreasurySand = _cfg.InterludeTreasurySand };
+            var rng = RngFor(SaltInterlude, State.Act, State.NodeIndex);
+
+            var armory = new List<RewardOffer>();
+            foreach (var id in _content.WeaponPool(State.Act))
+                armory.Add(new RewardOffer { Path = InterludePath.Armory, Kind = OfferKind.Weapon, Id = id });
+            foreach (var id in _content.TrinketPool(State.Act))
+                armory.Add(new RewardOffer { Path = InterludePath.Armory, Kind = OfferKind.Trinket, Id = id });
+            DrawDistinct(armory, preview.Armory, _cfg.RewardChoices, rng);
+
+            var hourstone = new List<RewardOffer>();
+            foreach (var id in _content.BannerPool(State.Act))
+                if (!State.Banners.Contains(id))
+                    hourstone.Add(new RewardOffer
+                    {
+                        Path = InterludePath.Hourstone,
+                        Kind = OfferKind.Inscription,
+                        Id = id,
+                    });
+            DrawDistinct(hourstone, preview.Hourstone, _cfg.RewardChoices, rng);
+            return preview;
+        }
+
+        /// <summary>
+        /// Take one visible Interlude path. For Armory/Hourstone, optionIndex selects the item
+        /// from the corresponding preview group.
+        /// </summary>
+        public RewardOffer ResolveInterlude(InterludePath path, int optionIndex = 0)
+        {
+            var preview = PreviewInterlude();
+            RewardOffer reward;
+            switch (path)
+            {
+                case InterludePath.Treasury:
+                    Require(optionIndex == 0, "Treasury has one fixed reward");
+                    reward = new RewardOffer
+                    {
+                        Path = path,
+                        Sand = preview.TreasurySand,
+                    };
+                    State.Gold += reward.Sand;
+                    break;
+                case InterludePath.Armory:
+                    reward = At(preview.Armory, optionIndex, "Armory reward");
+                    State.Inventory.Add(new ItemRef
+                    {
+                        Kind = reward.Kind == OfferKind.Weapon ? ItemKind.Weapon : ItemKind.Trinket,
+                        Id = reward.Id,
+                        Tier = WeaponTier.Worn,
+                    });
+                    break;
+                case InterludePath.Hourstone:
+                    reward = At(preview.Hourstone, optionIndex, "Hourstone reward");
+                    State.Banners.Add(reward.Id);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(path));
+            }
+
+            State.UnlockedFieldSlots = Math.Min(_cfg.MaxFieldSlots,
+                                                _cfg.StartingFieldSlots + State.Act);
+            State.SlotOfferPending = State.FieldSlots < State.UnlockedFieldSlots;
+            AdvanceAfterBeat();
+            return reward;
+        }
+
+        /// <summary>
+        /// The act boss — an AUTHORED encounter (ADR 0016). Win advances the act; lose and the
+        /// run is over. The old ghost path (capture the player's board, mirror a ghost in,
+        /// accumulate a best-of-5 record) is gone: PvP is Deferred and the snapshot seam stays
+        /// unused rather than wired. Boss reward beyond base income is still an open question.
+        /// </summary>
         public FightOutcome ResolveBoss(IReadOnlyList<Hex> placement)
         {
-            Require(State.Phase == RunPhase.Node && AtBoss, "not at the act boss");
+            Require(State.Phase == RunPhase.Planning && AtBoss, "not at the act boss");
 
-            var ghost = _content.BossGhost(State.Act, State.BossWins, RngFor(SaltGhost, State.Act));
-            var enemies = new List<(UnitDef Def, Hex Pos)>();
-            foreach (var g in ghost.Units)
-                enemies.Add((ComposeDef(g.Hero), MirrorToEnemyHalf(g.Pos)));
+            var enemies = _content.Boss(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct));
+            var outcome = RunBattle(placement, enemies);
+            if (!outcome.Won) { State.BossLosses++; State.Phase = RunPhase.Defeated; return outcome; }
+            State.BossWins++;
 
-            CaptureSnapshot(placement);
-            int ghostBannerCopies = 1;
-            foreach (var g in ghost.Units)
-                foreach (var nodeId in g.Hero.SpecNodeIds)
-                    if (_content.Node(nodeId).DoublesBanners) { ghostBannerCopies = 2; break; }
-            var outcome = RunBattle(placement, enemies, pot: 0, killSharePct: 0,
-                                    enemyBanners: ghost.BannerIds, enemyBannerCopies: ghostBannerCopies);
-            outcome.BaseIncome = _cfg.BaseIncome(State.Act);
-            State.Gold += outcome.GoldEarned;
-            if (outcome.Won) State.BossWins++; else State.BossLosses++;
-            EnterShop(bossJustClosed: true);
+            if (State.Act == _cfg.Acts)
+            {
+                State.Phase = RunPhase.Complete;
+                return outcome;
+            }
+
+            outcome.BaseIncome = _cfg.BossReward(State.Act);
+            State.Gold += outcome.SandEarned;
+            State.PendingBossSand = outcome.SandEarned;
+            State.PendingBossRewards = PreviewBossRewardIds();
+            if (State.PendingBossRewards.Count == 0)
+                AdvanceToNextAct();
+            else
+                State.Phase = RunPhase.Reward;
             return outcome;
+        }
+
+        public IReadOnlyList<string> PreviewBossRewards()
+        {
+            Require(State.Phase == RunPhase.Reward, "no boss reward pending");
+            return State.PendingBossRewards;
+        }
+
+        public void ChooseBossReward(int index)
+        {
+            Require(State.Phase == RunPhase.Reward, "no boss reward pending");
+            string id = At(State.PendingBossRewards, index, "boss reward");
+            State.Banners.Add(id);
+            State.PendingBossRewards.Clear();
+            State.PendingBossSand = 0;
+            AdvanceToNextAct();
+        }
+
+        /// <summary>
+        /// The enemies the current node WILL field, without resolving it. Every encounter is
+        /// previewed before deployment (pve-encounters law), and the preview has to be the same
+        /// comp the fight uses — which only this class can guarantee, because the rng derivation
+        /// is stateless-by-salt and private. Callers outside would have to guess it and would
+        /// silently show the player a different army than they are about to fight.
+        /// </summary>
+        public List<(UnitDef Def, Hex Pos)> PreviewEnemies(FightTier tier)
+        {
+            Require(State.Phase == RunPhase.Planning, "no encounter to preview outside Planning");
+            Require(CurrentNodeKind != NodeKind.Event, "events field no enemies");
+            return AtBoss
+                ? _content.Boss(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct))
+                : _content.Encounter(State.Act, State.NodeIndex, tier,
+                                     RngFor(SaltEncounter, State.Act, State.NodeIndex));
         }
 
         // ---- Shop phase (ADR 0006 cadence, ADR 0009 stock) --------------------------
@@ -116,7 +248,7 @@ namespace Warband.Run
         {
             RequireShopActionable();
             var offer = OfferAt(index);
-            Require(State.Gold >= offer.Price, "not enough gold");
+            Require(State.Gold >= offer.Price, "not enough Sand");
             switch (offer.Kind)
             {
                 case OfferKind.Hero: BuyHero(offer); break;
@@ -124,7 +256,7 @@ namespace Warband.Run
                     State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = offer.Id, Tier = offer.Tier }); break;
                 case OfferKind.Trinket:
                     State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = offer.Id }); break;
-                case OfferKind.Banner: State.Banners.Add(offer.Id); break;
+                case OfferKind.Inscription: State.Banners.Add(offer.Id); break;
             }
             State.Gold -= offer.Price;
             State.ShopOffers[index] = null;
@@ -133,7 +265,7 @@ namespace Warband.Run
         public void Reroll()
         {
             RequireShopActionable();
-            Require(State.Gold >= _cfg.RerollCost, "not enough gold to reroll");
+            Require(State.Gold >= _cfg.RerollCost, "not enough Sand to reroll");
             State.Gold -= _cfg.RerollCost;
             GenerateShop();
         }
@@ -148,7 +280,8 @@ namespace Warband.Run
         /// <summary>Resolve the pending rank-up choice: 0 = OptionA, 1 = OptionB.</summary>
         public void ChooseSpec(int which)
         {
-            Require(State.Phase == RunPhase.Shop && State.PendingSpec != null, "no spec choice pending");
+            Require(State.Phase == RunPhase.Planning && State.PendingSpec != null,
+                    "no spec choice pending");
             var p = State.PendingSpec!;
             var hero = Zone(p.Zone)[p.Index];
             string chosen = which == 0 ? p.OptionA : p.OptionB;
@@ -223,7 +356,7 @@ namespace Warband.Run
             var hero = Zone(zone)[index];
             Require(hero.WeaponTier < _cfg.TierCeiling(State.Act), "the forge follows the front");
             int cost = _cfg.ReforgeCosts[(int)hero.WeaponTier];
-            Require(State.Gold >= cost, "not enough gold to reforge");
+            Require(State.Gold >= cost, "not enough Sand to reforge");
             State.Gold -= cost;
             hero.WeaponTier = hero.WeaponTier + 1;
         }
@@ -237,7 +370,10 @@ namespace Warband.Run
             hero.TrinketIds.RemoveAt(0);
         }
 
-        public bool SlotOfferOpen => State.Phase == RunPhase.Shop && State.SlotOfferPending;
+        public bool SlotOfferOpen =>
+            State.Phase == RunPhase.Planning &&
+            State.SlotOfferPending &&
+            State.FieldSlots < State.UnlockedFieldSlots;
 
         public int SlotOfferCost
         {
@@ -249,11 +385,11 @@ namespace Warband.Run
             RequireShopActionable();
             Require(SlotOfferOpen, "no slot offer open");
             int cost = _cfg.SlotCost(State.SlotsBought);
-            Require(State.Gold >= cost, "not enough gold for the slot");
+            Require(State.Gold >= cost, "not enough Sand for the slot");
             State.Gold -= cost;
             State.FieldSlots++;
             State.SlotsBought++;
-            State.SlotOfferPending = false;
+            State.SlotOfferPending = State.FieldSlots < State.UnlockedFieldSlots;
         }
 
         public bool HasRoomForRecruit =>
@@ -275,31 +411,30 @@ namespace Warband.Run
             State.Field.RemoveAt(fieldIndex);
         }
 
-        /// <summary>Advance to the next node / act / run end. Leaving declines any open slot offer.</summary>
+        /// <summary>
+        /// Compatibility no-op. The old shell used a blocking Shop screen and called LeaveShop to
+        /// advance. The unified Planning workspace advances on reward settlement instead.
+        /// </summary>
         public void LeaveShop()
         {
-            Require(State.Phase == RunPhase.Shop, "not in the shop phase");
+            Require(State.Phase == RunPhase.Planning, "not in Planning");
             Require(State.PendingSpec == null, "resolve the spec choice before leaving");
-            State.SlotOfferPending = false;
-            if (State.JustClosedBoss)
-            {
-                State.JustClosedBoss = false;
-                if (State.Act == _cfg.Acts) { State.Phase = RunPhase.Complete; return; }
-                State.Act++;
-                State.NodeIndex = 0;
-            }
-            else
-                State.NodeIndex++;
-            State.Phase = RunPhase.Node;
         }
 
         // ---- Internals -------------------------------------------------------------
 
-        private void EnterShop(bool bossJustClosed)
+        private void AdvanceAfterBeat()
         {
-            State.Phase = RunPhase.Shop;
-            State.JustClosedBoss = bossJustClosed;
-            State.SlotOfferPending = bossJustClosed && State.FieldSlots < _cfg.MaxFieldSlots;
+            State.NodeIndex++;
+            State.Phase = RunPhase.Planning;
+            GenerateShop();
+        }
+
+        private void AdvanceToNextAct()
+        {
+            State.Act++;
+            State.NodeIndex = 0;
+            State.Phase = RunPhase.Planning;
             GenerateShop();
         }
 
@@ -333,40 +468,52 @@ namespace Warband.Run
 
         private ShopOffer? RollItem(Rng rng)
         {
-            // Draw order is fixed (banner roll, then kind, then id) — determinism law.
-            bool tryBanner = rng.Next(100) < _cfg.BannerChancePct;
-            if (tryBanner)
-            {
-                var banners = new List<string>();
-                foreach (var id in _content.BannerPool(State.Act))
-                    if (!State.Banners.Contains(id)) banners.Add(id);
-                if (banners.Count > 0)
-                    return new ShopOffer
-                    {
-                        Kind = OfferKind.Banner, Id = banners[rng.Next(banners.Count)],
-                        Price = _cfg.BannerPrice,
-                    };
-            }
+            // Draw one typed Workshop category using the explicit 45/35/20 weights. Empty
+            // categories fall through in stable order without introducing a second random draw.
             var weapons = _content.WeaponPool(State.Act);
             var trinkets = _content.TrinketPool(State.Act);
-            bool weapon = weapons.Count > 0 && (trinkets.Count == 0 || rng.Next(2) == 0);
-            if (weapon)
-            {
-                // Temper rolls uniformly up to the act ceiling (ADR 0015 act-gated stock;
-                // higher tiers cost more — placeholder: price scales with the tier scale).
-                var tier = (WeaponTier)rng.Next((int)_cfg.TierCeiling(State.Act) + 1);
-                int price = _cfg.WeaponPrice + (int)tier * _cfg.ReforgeCosts[0];
+            var inscriptions = new List<string>();
+            foreach (var id in _content.BannerPool(State.Act))
+                if (!State.Banners.Contains(id)) inscriptions.Add(id);
+
+            int category = rng.Next(100);
+            if (category < _cfg.WeaponChancePct && weapons.Count > 0)
+                return RollWeapon(rng, weapons);
+            if (category < _cfg.WeaponChancePct + _cfg.TrinketChancePct && trinkets.Count > 0)
                 return new ShopOffer
                 {
-                    Kind = OfferKind.Weapon, Id = weapons[rng.Next(weapons.Count)],
-                    Price = price, Tier = tier,
+                    Kind = OfferKind.Trinket, Id = trinkets[rng.Next(trinkets.Count)],
+                    Price = _cfg.TrinketPrice,
                 };
-            }
-            if (trinkets.Count == 0) return null;
+            if (inscriptions.Count > 0)
+                return new ShopOffer
+                {
+                    Kind = OfferKind.Inscription,
+                    Id = inscriptions[rng.Next(inscriptions.Count)],
+                    Price = _cfg.InscriptionPrice,
+                };
+            if (weapons.Count > 0)
+                return RollWeapon(rng, weapons);
+            if (trinkets.Count > 0)
+                return new ShopOffer
+                {
+                    Kind = OfferKind.Trinket, Id = trinkets[rng.Next(trinkets.Count)],
+                    Price = _cfg.TrinketPrice,
+                };
+            return null;
+        }
+
+        private ShopOffer RollWeapon(Rng rng, IReadOnlyList<string> weapons)
+        {
+            // Temper rolls uniformly up to the act ceiling (ADR 0015 act-gated stock).
+            var tier = (WeaponTier)rng.Next((int)_cfg.TierCeiling(State.Act) + 1);
+            int price = _cfg.WeaponPrice + (int)tier * _cfg.ReforgeCosts[0];
             return new ShopOffer
             {
-                Kind = OfferKind.Trinket, Id = trinkets[rng.Next(trinkets.Count)],
-                Price = _cfg.TrinketPrice,
+                Kind = OfferKind.Weapon,
+                Id = weapons[rng.Next(weapons.Count)],
+                Price = price,
+                Tier = tier,
             };
         }
 
@@ -413,15 +560,26 @@ namespace Warband.Run
         private int ItemPrice(ItemKind kind) =>
             kind == ItemKind.Weapon ? _cfg.WeaponPrice : _cfg.TrinketPrice;
 
+        private List<string> PreviewBossRewardIds()
+        {
+            var source = new List<string>();
+            foreach (var id in _content.BannerPool(State.Act))
+                if (!State.Banners.Contains(id))
+                    source.Add(id);
+            var rewards = new List<string>();
+            DrawDistinct(source, rewards, _cfg.RewardChoices,
+                         RngFor(SaltBossReward, State.Act, _cfg.NodesPerAct));
+            return rewards;
+        }
+
         private void RequireShopActionable()
         {
-            Require(State.Phase == RunPhase.Shop, "only available in the shop phase");
+            Require(State.Phase == RunPhase.Planning, "only available in Planning");
             Require(State.PendingSpec == null, "resolve the pending spec choice first");
         }
 
         private FightOutcome RunBattle(IReadOnlyList<Hex> placement,
                                        List<(UnitDef Def, Hex Pos)> enemies,
-                                       int pot, int killSharePct,
                                        List<string>? enemyBanners = null,
                                        int enemyBannerCopies = 1)
         {
@@ -479,9 +637,9 @@ namespace Warband.Run
                 Won = won,
                 EnemiesKilled = killed,
                 EnemyCount = enemies.Count,
-                BaseIncome = _cfg.BaseIncome(State.Act),
-                KillPayout = enemies.Count > 0 ? pot * killSharePct * killed / (100 * enemies.Count) : 0,
-                WinBonus = won ? pot * (100 - killSharePct) / 100 : 0,
+                BaseIncome = 0,
+                KillPayout = 0,
+                WinBonus = 0,
                 Battle = result,
             };
         }
@@ -498,36 +656,6 @@ namespace Warband.Run
                 tier: hero.WeaponTier,
                 mastered: chassis.Specializations.Contains(weapon.Category),
                 rankSteps: (int)hero.Rank);
-        }
-
-        private UnitDef ComposeDef(HeroInstance hero)
-        {
-            var composed = Compose(hero);
-            // Ghost run-earned bonuses ride along the same way the owner's did.
-            foreach (var s in hero.Earned)
-                composed.SpawnStatuses.Add(new Status { Kind = s.Kind, Mag = s.Mag, TicksLeft = -1 });
-            return composed.Def;
-        }
-
-        /// <summary>Ghost placements are stored in owner-half rows (0-3); flip the row to
-        /// field them as team 1. Col kept as-is — placeholder mirroring, revisit if hex
-        /// parity ever makes flipped boards feel wrong.</summary>
-        private static Hex MirrorToEnemyHalf(Hex h) =>
-            Hex.FromRowCol(Battle.BoardRows - 1 - h.Row, h.Col);
-
-        private void CaptureSnapshot(IReadOnlyList<Hex> placement)
-        {
-            ValidatePlacement(placement);
-            var snap = new GhostSnapshot
-            {
-                Act = State.Act,
-                WinsAtCapture = State.BossWins,
-                LossesAtCapture = State.BossLosses,
-            };
-            snap.BannerIds.AddRange(State.Banners);
-            for (int i = 0; i < State.Field.Count; i++)
-                snap.Units.Add(new GhostUnit { Hero = State.Field[i].Clone(), Pos = placement[i] });
-            State.CapturedGhosts.Add(snap);
         }
 
         private void ValidatePlacement(IReadOnlyList<Hex> placement)
@@ -551,17 +679,47 @@ namespace Warband.Run
             var maps = new NodeKind[_cfg.Acts][];
             for (int act = 1; act <= _cfg.Acts; act++)
             {
-                var rng = RngFor(SaltMap, act);
                 var nodes = new NodeKind[_cfg.NodesPerAct];
-                for (int e = 0; e < _cfg.EventsPerAct; e++)
-                {
-                    int slot;
-                    do { slot = rng.Next(_cfg.NodesPerAct); } while (nodes[slot] == NodeKind.Event);
-                    nodes[slot] = NodeKind.Event;
-                }
+                nodes[_cfg.InterludeNodeIndex] = NodeKind.Event;
                 maps[act - 1] = nodes;
             }
             return maps;
+        }
+
+        private void ValidateConfig()
+        {
+            if (_cfg.Acts < 1 || _cfg.FightRewardsByAct.Length != _cfg.Acts ||
+                _cfg.BossSandByAct.Length != _cfg.Acts)
+                throw new ArgumentException("economy tables must contain exactly one row per act");
+            if (_cfg.NodesPerAct != 4 || _cfg.EventsPerAct != 1 ||
+                _cfg.InterludeNodeIndex < 0 || _cfg.InterludeNodeIndex >= _cfg.NodesPerAct)
+                throw new ArgumentException("an act must be Fight, Fight, Interlude, Fight, Boss");
+            if (_cfg.StartingFieldSlots + _cfg.Acts != _cfg.MaxFieldSlots)
+                throw new ArgumentException("one Interlude capacity unlock per act must reach the field cap");
+            if (_cfg.SlotCosts.Length != _cfg.MaxFieldSlots - _cfg.StartingFieldSlots)
+                throw new ArgumentException("slot cost table must cover every field expansion");
+            if (_cfg.WeaponChancePct + _cfg.TrinketChancePct + _cfg.InscriptionChancePct != 100)
+                throw new ArgumentException("Workshop category chances must total 100");
+            foreach (var rewards in _cfg.FightRewardsByAct)
+                if (rewards.Length != 3)
+                    throw new ArgumentException("each act needs Stable, Fraying, and Collapsing rewards");
+        }
+
+        private static T At<T>(IReadOnlyList<T> list, int index, string label)
+        {
+            if (index < 0 || index >= list.Count)
+                throw new ArgumentOutOfRangeException(nameof(index), $"{label} index is out of range");
+            return list[index];
+        }
+
+        private static void DrawDistinct<T>(List<T> source, List<T> destination, int count, Rng rng)
+        {
+            while (destination.Count < count && source.Count > 0)
+            {
+                int index = rng.Next(source.Count);
+                destination.Add(source[index]);
+                source.RemoveAt(index);
+            }
         }
 
         private Rng RngFor(ulong salt, int act, int node = 0) =>

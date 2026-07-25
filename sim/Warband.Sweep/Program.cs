@@ -12,6 +12,8 @@ using Warband.Sim;
 //   mirror asymmetries · per-node catastrophes · tier EV anomalies.
 // Emits markdown on stdout; the session pipes it into the vault.
 
+if (args.FirstOrDefault() == "--oath") { OathProbe.Run(); return; }
+
 var cat = new Catalog();
 var report = new StringBuilder();
 report.AppendLine($"# Outlier sweep — {args.FirstOrDefault() ?? "undated"}");

@@ -5,18 +5,67 @@ namespace Warband.Run
 {
     public enum Rank { C, B, A, S }
 
-    /// <summary>Placeholder tier names (ADR 0007) — rename with theme/lore.</summary>
-    public enum FightTier { Safe, Even, Greedy }
+    public enum FightTier
+    {
+        Stable = 0,
+        Fraying = 1,
+        Collapsing = 2,
+
+        // Source compatibility while the current client shell migrates its labels.
+        Safe = Stable,
+        Even = Fraying,
+        Greedy = Collapsing,
+    }
 
     public enum NodeKind { Fight, Event, Boss }
 
-    public enum RunPhase { Node, Shop, Complete }
+    /// <summary>
+    /// Defeated is terminal, alongside Complete. ADR 0016 gave the run a real ending, and the
+    /// PoC rule (Jake, 2026-07-24) is that losing any fight ends the run — so there is no
+    /// best-of-5 record to accumulate and no way back to Node from here.
+    /// </summary>
+    public enum RunPhase
+    {
+        Planning,
+        Reward,
+        Complete,
+        Defeated,
 
-    public enum OfferKind { Hero, Weapon, Trinket, Banner }
+        // Compatibility values for older snapshots and the shell landing in parallel. New runs
+        // never enter them; the client maps both to the unified Planning workspace while loading.
+        Node,
+        Shop,
+    }
+
+    public enum OfferKind
+    {
+        Hero,
+        Weapon,
+        Trinket,
+        Inscription,
+        Banner = Inscription,
+    }
 
     public enum ItemKind { Weapon, Trinket }
 
     public enum RosterZone { Field, Bench }
+
+    public enum InterludePath { Treasury, Armory, Hourstone }
+
+    public sealed class RewardOffer
+    {
+        public InterludePath Path;
+        public OfferKind Kind;
+        public string Id = "";
+        public int Sand;
+    }
+
+    public sealed class InterludePreview
+    {
+        public int TreasurySand;
+        public List<RewardOffer> Armory = new List<RewardOffer>();
+        public List<RewardOffer> Hourstone = new List<RewardOffer>();
+    }
 
     public sealed class ShopOffer
     {
@@ -53,7 +102,7 @@ namespace Warband.Run
         public string ChassisId = "";
         public Rank Rank = Rank.C;
         public string? PathId;                   // set by the B fork (ADR 0009)
-        public int GoldSpent;                    // card + dupes — sell-back refunds 50% of this
+        public int GoldSpent;                    // legacy storage name: Sand sunk into card + dupes
         public string? WeaponId;                 // null = chassis starter weapon
         public WeaponTier WeaponTier = WeaponTier.Worn; // temper of the weapon in hand (starter included)
         public List<string> TrinketIds = new List<string>();
@@ -101,12 +150,13 @@ namespace Warband.Run
         public ulong Seed;
         public int Act = 1;                      // 1-based
         public int NodeIndex;                    // 0..NodesPerAct-1; == NodesPerAct means act boss
-        public RunPhase Phase = RunPhase.Node;
+        public RunPhase Phase = RunPhase.Planning;
         public int Gold;
         public int FieldSlots;
+        public int UnlockedFieldSlots;
         public int SlotsBought;                  // indexes escalating slot cost (ADR 0006)
-        public bool SlotOfferPending;            // open during the post-boss shop while under cap
-        public bool JustClosedBoss;              // shop-exit routing: next act vs next node
+        public bool SlotOfferPending;
+        public bool JustClosedBoss;              // compatibility only; unified Planning advances directly
         public List<HeroInstance> Field = new List<HeroInstance>();
         public List<HeroInstance> Bench = new List<HeroInstance>();
         public List<ShopOffer?> ShopOffers = new List<ShopOffer?>();  // null = bought/empty slot
@@ -114,12 +164,19 @@ namespace Warband.Run
         public List<ItemRef> Inventory = new List<ItemRef>();
         public List<string> Banners = new List<string>();
         public PendingSpec? PendingSpec;
-        public int BossWins;
+        public List<string> PendingBossRewards = new List<string>();
+        public int PendingBossSand;
+        public int BossWins;                     // plain tally now — NOT a best-of-5 record
         public int BossLosses;
         public NodeKind[][] ActMaps = new NodeKind[0][];   // [act-1][nodeIndex], generated at start
-        public List<GhostSnapshot> CapturedGhosts = new List<GhostSnapshot>();
 
-        public bool Victory => BossWins >= 3;    // best-of-5 (ADR 0002)
-        public bool Flawless => BossWins == 5;
+        /// <summary>ADR 0016: a completed run is a real PvE victory — every act's boss beaten.
+        /// (Was best-of-5 `BossWins >= 3` under the superseded ghost-boss design.)</summary>
+        public bool Victory => Phase == RunPhase.Complete;
+
+        public bool Over => Phase == RunPhase.Complete || Phase == RunPhase.Defeated;
+
+        public int Sand { get => Gold; set => Gold = value; }
+        public List<string> Inscriptions => Banners;
     }
 }

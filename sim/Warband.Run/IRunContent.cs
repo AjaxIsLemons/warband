@@ -42,7 +42,12 @@ namespace Warband.Run
         /// Difficulty must anchor to act + tier, never W/L (ADR 0002 law).</summary>
         List<(UnitDef Def, Hex Pos)> Encounter(int act, int nodeIndex, FightTier tier, Rng rng);
 
-        /// <summary>Act-boss ghost from the pool keyed by act + record (ADR 0002).</summary>
-        GhostSnapshot BossGhost(int act, int bossWins, Rng rng);
+        /// <summary>
+        /// The act boss: an AUTHORED comp, same shape as a node encounter (ADR 0016 replaced
+        /// mandatory ghost bosses — the encounter itself is the boss). Anchored to the act and
+        /// nothing else: difficulty must never key off the player's record (ADR 0002 law), and
+        /// with no best-of-5 there is no record to key off anyway.
+        /// </summary>
+        List<(UnitDef Def, Hex Pos)> Boss(int act, Rng rng);
     }
 }

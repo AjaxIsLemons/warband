@@ -12,7 +12,10 @@ namespace Warband.Sim
     public static class Replay
     {
         private const uint Magic = 0x57425250; // "WBRP"
-        private const int Version = 1;
+        private const int Version = 5;   // v5: + PlaybackUnit status ExpiryTick (countdown rings)
+                                         // v4: + PlaybackUnit committed step (StepTo/StepStart/StepEnd)
+                                         // v3: + PlaybackUnit stat/identity block (range, weapon, traits)
+                                         // v2: + BattleEvent.Aux3 (FieldCreated carries FieldFlavor)
 
         public static void Write(Stream stream, IReadOnlyList<PlaybackUnit> initial, IReadOnlyList<BattleEvent> events)
         {
@@ -27,8 +30,14 @@ namespace Warband.Sim
                 w.Write(u.MaxHp); w.Write(u.Hp); w.Write(u.Shield);
                 w.Write(u.Mana); w.Write(u.ManaMax);
                 w.Write(u.Pos.Q); w.Write(u.Pos.R); w.Write(u.Dead);
+                w.Write(u.StepTo.Q); w.Write(u.StepTo.R); w.Write(u.StepStart); w.Write(u.StepEnd);
+                w.Write(u.Range); w.Write(u.Attack); w.Write(u.AttackInterval);
+                w.Write(u.MoveInterval); w.Write(u.CritChance); w.Write(u.HealAutos);
+                w.Write(u.ChassisId ?? ""); w.Write(u.WeaponName ?? ""); w.Write((int)u.WeaponTier);
+                w.Write(u.Traits.Count);
+                foreach (var t in u.Traits) w.Write(t ?? "");
                 w.Write(u.Statuses.Count);
-                foreach (var s in u.Statuses) { w.Write((int)s.Kind); w.Write(s.Mag); }
+                foreach (var s in u.Statuses) { w.Write((int)s.Kind); w.Write(s.Mag); w.Write(s.ExpiryTick); }
             }
 
             w.Write(events.Count);
@@ -36,7 +45,7 @@ namespace Warband.Sim
             {
                 w.Write(e.Tick); w.Write((int)e.Kind); w.Write(e.Source); w.Write(e.Target);
                 w.Write(e.Amount); w.Write((int)e.Cause); w.Write(e.Depth); w.Write(e.Root);
-                w.Write(e.Aux); w.Write(e.Aux2); w.Write(e.Crit);
+                w.Write(e.Aux); w.Write(e.Aux2); w.Write(e.Aux3); w.Write(e.Crit);
                 w.Write(e.PostHp); w.Write(e.PostShield); w.Write(e.PostMana);
             }
         }
@@ -58,10 +67,21 @@ namespace Warband.Sim
                     MaxHp = r.ReadInt32(), Hp = r.ReadInt32(), Shield = r.ReadInt32(),
                     Mana = r.ReadInt32(), ManaMax = r.ReadInt32(),
                     Pos = new Hex(r.ReadInt32(), r.ReadInt32()), Dead = r.ReadBoolean(),
+                    // Initializer order IS the read order — StepTo's setter only stores; the
+                    // standing-still fold-back is derived from StepStart/StepEnd assigned next.
+                    StepTo = new Hex(r.ReadInt32(), r.ReadInt32()),
+                    StepStart = r.ReadInt32(), StepEnd = r.ReadInt32(),
+                    Range = r.ReadInt32(), Attack = r.ReadInt32(), AttackInterval = r.ReadInt32(),
+                    MoveInterval = r.ReadInt32(), CritChance = r.ReadInt32(), HealAutos = r.ReadBoolean(),
+                    ChassisId = r.ReadString(), WeaponName = r.ReadString(),
+                    WeaponTier = (WeaponTier)r.ReadInt32(),
                 };
+                int traitCount = r.ReadInt32();
+                for (int t = 0; t < traitCount; t++)
+                    u.Traits.Add(r.ReadString());
                 int statusCount = r.ReadInt32();
                 for (int s = 0; s < statusCount; s++)
-                    u.Statuses.Add(((StatusKind)r.ReadInt32(), r.ReadInt32()));
+                    u.Statuses.Add(((StatusKind)r.ReadInt32(), r.ReadInt32(), r.ReadInt32()));
                 initial.Add(u);
             }
 
@@ -74,7 +94,7 @@ namespace Warband.Sim
                     Tick = r.ReadInt32(), Kind = (EventKind)r.ReadInt32(),
                     Source = r.ReadInt32(), Target = r.ReadInt32(), Amount = r.ReadInt32(),
                     Cause = (Cause)r.ReadInt32(), Depth = r.ReadInt32(), Root = r.ReadInt32(),
-                    Aux = r.ReadInt32(), Aux2 = r.ReadInt32(), Crit = r.ReadBoolean(),
+                    Aux = r.ReadInt32(), Aux2 = r.ReadInt32(), Aux3 = r.ReadInt32(), Crit = r.ReadBoolean(),
                     PostHp = r.ReadInt32(), PostShield = r.ReadInt32(), PostMana = r.ReadInt32(),
                 });
             }

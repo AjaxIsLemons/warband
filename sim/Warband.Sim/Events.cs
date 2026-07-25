@@ -7,12 +7,20 @@ namespace Warband.Sim
         BattleStart, Move, Attack, DamageDealt, Heal, Cast,
         StatusApplied, StatusExpired, ShieldChanged, ManaChanged,
         Death, StormTick, End,
-        FieldCreated,   // Target=field id, Amount=IsWall(0/1), Source=creator, Aux=attached unit id (-1 static), Aux2=radius
+        FieldCreated,   // Target=field id, Amount=IsWall(0/1), Source=creator, Aux=attached unit id (-1 static), Aux2=radius, Aux3=FieldFlavor
         FieldHex,       // Target=field id, Amount=Q, Aux=R (one per covered hex)
         FieldExpired,   // Target=field id
         AttackBlocked,  // Source=attacker, Target=intended victim, Amount=Q, Aux=R of the wall hex
-        Leap,           // Source=leaper, Amount=Q, Aux=R of the landing hex (Pikewall punish, Leap banners)
+        Leap,           // Source=leaper, Amount=Q, Aux=R of the LANDING hex; Aux2=Q, Aux3=R of the hex it
+                        // left (Pikewall punish, Leap banners). Both endpoints ride the event because the
+                        // renderer arcs the body between them, and by dispatch time the fold has already
+                        // applied the landing — the take-off is not recoverable from view state.
         CheatDeath,     // Target=the unit that refused to die (Deathless — Berserker dive)
+        MoveStart,      // Source=walker, Amount=Q, Aux=R of the DESTINATION, Aux2=step duration in ticks.
+                        // Movement law: a step is committed here and lands as a Move at Tick+Aux2. The
+                        // unit's position stays put until then. A Move with no preceding MoveStart is a
+                        // teleport (Leap) — that distinction is the renderer's whole slide-vs-blink rule.
+                        // Appended, never inserted: the ordinal is the wire encoding (Replay).
     }
 
     public enum Cause
@@ -42,6 +50,11 @@ namespace Warband.Sim
         public int Root = -1;
         public int Aux = -1;      // StatusKind for Status* events; absorbed-by-shield for DamageDealt
         public int Aux2 = -1;     // FieldCreated: radius (attached fields); else unused
+        public int Aux3 = -1;     // FieldCreated: FieldFlavor (what the zone does — render color); else unused
+
+        /// <summary>FieldCreated's flavor, honoring the -1 "unused" slot default as Neutral so an
+        /// event built without one reads as an uncolored zone rather than a bogus enum value.</summary>
+        public FieldFlavor Flavor => Aux3 < 0 ? FieldFlavor.Neutral : (FieldFlavor)Aux3;
         public bool Crit;         // DamageDealt from a critical auto-attack
         public const int Unset = int.MinValue; // Post* sentinel — HP can legitimately go negative
         public int PostHp = Unset;

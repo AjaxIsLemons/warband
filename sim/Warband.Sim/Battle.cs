@@ -92,6 +92,7 @@ namespace Warband.Sim
             {
                 Kind = EventKind.FieldCreated, Source = ownerId, Target = field.Id,
                 Amount = def.IsWall ? 1 : 0, Aux = field.AttachedUnitId, Aux2 = def.Radius,
+                Aux3 = (int)def.Flavor(),
             });
             foreach (var h in field.StaticHexes)
                 Emit(new BattleEvent { Kind = EventKind.FieldHex, Target = field.Id, Amount = h.Q, Aux = h.R });
@@ -120,18 +121,7 @@ namespace Warband.Sim
             Emit(new BattleEvent { Kind = EventKind.FieldExpired, Target = f.Id });
         }
 
-        private static PlaybackUnit ViewOf(UnitState u)
-        {
-            var view = new PlaybackUnit
-            {
-                Id = u.Id, Team = u.Team, Name = u.Def.Name, MaxHp = u.Def.MaxHp,
-                Hp = u.Hp, Shield = u.Shield, Mana = u.Mana, ManaMax = u.Def.ManaMax,
-                Pos = u.Pos, Dead = u.Dead,
-            };
-            foreach (var s in u.Statuses)
-                view.Statuses.Add((s.Kind, s.Mag));
-            return view;
-        }
+        private static PlaybackUnit ViewOf(UnitState u) => PlaybackUnit.From(u);
 
         public BattleResult Run()
         {
@@ -162,8 +152,26 @@ namespace Warband.Sim
             }
         }
 
+        /// <summary>
+        /// Land every committed step whose arrival tick has come — BEFORE anything decides, so a
+        /// unit that arrives this tick may depart again this tick. That back-to-back handoff is what
+        /// makes a chase one continuous slide instead of a stutter every MoveInterval ticks.
+        /// Deliberately blind to Root/Stun: control gates STARTING a step, never finishing one.
+        /// </summary>
+        private void Arrivals()
+        {
+            foreach (var u in _units)
+            {
+                if (!u.Alive || !u.Walking || _tick < u.StepEnd) continue;
+                u.Pos = u.StepTo;
+                u.StepStart = u.StepEnd = _tick;   // Walking false ⇒ StepTo folds back to Pos
+                Emit(new BattleEvent { Kind = EventKind.Move, Source = u.Id, Amount = u.Pos.Q, Aux = u.Pos.R });
+            }
+        }
+
         private void Step()
         {
+            Arrivals();
             EnginePhase();
             Drain();
             DeathPhase();
@@ -172,7 +180,12 @@ namespace Warband.Sim
             var attacks = new List<(UnitState u, UnitState target)>();
             var casts = new List<UnitState>();
             var moves = new List<(UnitState u, Hex dest)>();
-            var occupied = new HashSet<Hex>(_units.Where(x => x.Alive).Select(x => x.Pos));
+            // A walker blocks BOTH hexes: the one it still stands on and the one it has reserved.
+            // That single rule is what stops two units sliding through each other or converging on
+            // the same tile mid-walk — the thing hex-teleporting never had to think about.
+            var occupied = new HashSet<Hex>();
+            foreach (var x in _units)
+                if (x.Alive) { occupied.Add(x.Pos); occupied.Add(x.StepTo); }
             foreach (var f in _fields)
                 if (f.Def.IsWall)
                     occupied.UnionWith(HexesOf(f));
@@ -191,39 +204,89 @@ namespace Warband.Sim
                 if (target == null) continue;
 
                 int dist = Hex.Distance(u.Pos, target.Pos);
-                if (dist <= u.Def.Range)
+                bool inRange = dist <= u.Def.Range;
+
+                // Block-then-adapt: a target this unit already learned is wall-blocked is not
+                // satisfiable from here. Re-check with resolution's exact verdict (shared
+                // TraceProjectile) — a still-blocked line falls through to the move branch and
+                // advances; a cleared line (or melee, dist < 2, which never blocks) drops the
+                // flag and resumes fire. Keyed to the target id, so any retarget (death, Taunt,
+                // Phase re-acquire) self-invalidates it — no extra clearing logic.
+                bool blockedByWall = false;
+                if (inRange && u.BlockedTargetId == target.Id)
+                {
+                    if (TraceProjectile(u.Team, u.Pos, target.Pos, out _, out _) != null)
+                        { inRange = false; blockedByWall = true; }
+                    else
+                        u.BlockedTargetId = -1;
+                }
+
+                if (inRange)
                 {
                     bool ready = _tick >= u.NextAttackTick || u.Has(StatusKind.Frenzied);
                     if (ready && !u.Has(StatusKind.Disarm))
                         attacks.Add((u, target));
                 }
-                else if (_tick >= u.NextMoveTick && !u.Has(StatusKind.Root))
+                else if (!u.Walking && !u.Has(StatusKind.Root))
                 {
-                    // Greedy step: strictly closer, unoccupied (origins stay blocked this
-                    // tick — no same-tick train-following), fixed direction order ties.
                     Hex? best = null;
-                    int bestDist = dist;
-                    for (int d = 0; d < 6; d++)
+                    // Firing-angle seek (only when a wall fizzled the shot from here): the wall hex
+                    // is the sole distance-reducer, so the greedy step below finds nothing and the
+                    // shooter freezes staring at the wall. Instead step to a neighbor it could FIRE
+                    // from — in reach AND a clear line to the target. Nearest such hex wins, fixed
+                    // direction order breaks ties; a plateau/backstep is legal because it buys the
+                    // shot (a clear line means the next decision fires, not moves — no oscillation).
+                    // ≤6 traces, only for wall-blocked units on their move tick.
+                    if (blockedByWall)
                     {
-                        Hex n = u.Pos.Neighbor(d);
-                        if (!InBounds(n) || occupied.Contains(n)) continue;
-                        int nd = Hex.Distance(n, target.Pos);
-                        if (nd < bestDist) { bestDist = nd; best = n; }
+                        int bestDist = int.MaxValue;
+                        for (int d = 0; d < 6; d++)
+                        {
+                            Hex n = u.Pos.Neighbor(d);
+                            if (!InBounds(n) || occupied.Contains(n)) continue;
+                            int nd = Hex.Distance(n, target.Pos);
+                            if (nd > u.Def.Range) continue;
+                            if (TraceProjectile(u.Team, n, target.Pos, out _, out _) != null) continue;
+                            if (nd < bestDist) { bestDist = nd; best = n; }
+                        }
+                    }
+                    // Greedy step: strictly closer, unoccupied (origins stay blocked this
+                    // tick — no same-tick train-following), fixed direction order ties. Also the
+                    // fallback when no firing angle exists (a pocketed shooter just stands).
+                    if (best == null)
+                    {
+                        int bestDist = dist;
+                        for (int d = 0; d < 6; d++)
+                        {
+                            Hex n = u.Pos.Neighbor(d);
+                            if (!InBounds(n) || occupied.Contains(n)) continue;
+                            int nd = Hex.Distance(n, target.Pos);
+                            if (nd < bestDist) { bestDist = nd; best = n; }
+                        }
                     }
                     if (best != null)
                     {
                         occupied.Add(best.Value);
                         moves.Add((u, best.Value));
-                        u.NextMoveTick = _tick + u.Def.MoveInterval;
                     }
                 }
             }
 
             // ---- apply ----
+            // Commit, don't teleport: the unit departs now and lands MoveInterval ticks later (see
+            // Arrivals). Cadence is untouched — depart T, arrive T+MI, free to depart again at T+MI
+            // is still one hex per MoveInterval — but the walk now occupies real time, so the
+            // renderer has an exact window to move through and never has to invent one.
             foreach (var (u, dest) in moves)
             {
-                u.Pos = dest;
-                Emit(new BattleEvent { Kind = EventKind.Move, Source = u.Id, Amount = dest.Q, Aux = dest.R });
+                u.StepTo = dest;
+                u.StepStart = _tick;
+                u.StepEnd = _tick + (u.Def.MoveInterval < 1 ? 1 : u.Def.MoveInterval);
+                Emit(new BattleEvent
+                {
+                    Kind = EventKind.MoveStart, Source = u.Id,
+                    Amount = dest.Q, Aux = dest.R, Aux2 = u.StepEnd - u.StepStart,
+                });
             }
             foreach (var (u, target) in attacks)
             {
@@ -247,30 +310,14 @@ namespace Warband.Sim
                 // Projectile rule: any attack over ≥2 hexes traces the hex line; fields
                 // along the interior of the path may block or modify it (render-contract:
                 // resolution stays instant, the PATH is the gameplay).
-                int bonus = 0;
-                List<EffectDef>? riders = null;
-                Hex? blockedAt = null;
-                if (Hex.Distance(u.Pos, target.Pos) >= 2)
-                {
-                    var path = Hex.Line(u.Pos, target.Pos);
-                    var footprints = _fields.Select(f => (f, Hexes: HexesOf(f))).ToList();
-                    var crossed = new HashSet<int>(); // each field acts once, not per hex
-                    for (int i = 1; i < path.Count - 1 && blockedAt == null; i++)
-                        foreach (var (f, hexes) in footprints)
-                        {
-                            if (!hexes.Contains(path[i]) || !crossed.Add(f.Id)) continue;
-                            if (f.Def.IsWall) { blockedAt = path[i]; break; }
-                            if (Field.TeamMatches(f.Def.ProjectileAffects, f.OwnerTeam, u.Team))
-                            {
-                                bonus += f.Def.ProjectileBonus;
-                                if (f.Def.ProjectileRiders.Count > 0)
-                                    (riders ??= new List<EffectDef>()).AddRange(f.Def.ProjectileRiders);
-                            }
-                        }
-                }
+                Hex? blockedAt = TraceProjectile(u.Team, u.Pos, target.Pos, out int bonus, out List<EffectDef>? riders);
 
                 if (blockedAt != null)
                 {
+                    // Block-then-adapt: the fizzle is information (render-contract §6). Mark this
+                    // target wall-blocked so the DECISION phase stops standing here whiffing and
+                    // advances until the line clears. The swing still burns (NextAttackTick above).
+                    u.BlockedTargetId = target.Id;
                     Emit(new BattleEvent
                     {
                         Kind = EventKind.AttackBlocked, Source = u.Id, Target = target.Id,
@@ -342,11 +389,40 @@ namespace Warband.Sim
             foreach (var f in _fields)
                 views.Add(new PlaybackField
                 {
-                    Id = f.Id, IsWall = f.Def.IsWall,
+                    Id = f.Id, IsWall = f.Def.IsWall, Flavor = f.Def.Flavor(),
                     AttachedTo = f.AttachedUnitId, Radius = f.Def.Radius,
                     Hexes = f.StaticHexes,
                 });
             return views;
+        }
+
+        /// <summary>The projectile-path trace (render-contract §4: resolution is instant, the
+        /// PATH is the gameplay). A shot over ≥2 hexes walks its hex line; each interior field
+        /// (endpoints excluded) acts once — a wall blocks (returns where it stopped), a
+        /// friendly/enemy field adds ProjectileBonus + riders. The SAME trace backs attack
+        /// resolution AND the block-then-adapt decision re-check, so the block verdict the two
+        /// see can never drift.</summary>
+        private Hex? TraceProjectile(int shooterTeam, Hex from, Hex to, out int bonus, out List<EffectDef>? riders)
+        {
+            bonus = 0;
+            riders = null;
+            if (Hex.Distance(from, to) < 2) return null;
+            var path = Hex.Line(from, to);
+            var footprints = _fields.Select(f => (f, Hexes: HexesOf(f))).ToList();
+            var crossed = new HashSet<int>(); // each field acts once, not per hex
+            for (int i = 1; i < path.Count - 1; i++)
+                foreach (var (f, hexes) in footprints)
+                {
+                    if (!hexes.Contains(path[i]) || !crossed.Add(f.Id)) continue;
+                    if (f.Def.IsWall) return path[i];
+                    if (Field.TeamMatches(f.Def.ProjectileAffects, f.OwnerTeam, shooterTeam))
+                    {
+                        bonus += f.Def.ProjectileBonus;
+                        if (f.Def.ProjectileRiders.Count > 0)
+                            (riders ??= new List<EffectDef>()).AddRange(f.Def.ProjectileRiders);
+                    }
+                }
+            return null;
         }
 
         private void EnginePhase()
@@ -383,8 +459,13 @@ namespace Warband.Sim
                             if (--s.Mag <= 0)
                             {
                                 u.Statuses.Remove(s);
-                                Emit(new BattleEvent { Kind = EventKind.StatusExpired, Target = u.Id, Amount = 0, Aux = (int)StatusKind.Burn });
+                                Emit(new BattleEvent { Kind = EventKind.StatusExpired, Target = u.Id, Amount = s.Mag, Aux = (int)StatusKind.Burn, Cause = Cause.Burn });
                             }
+                            else
+                                // The pool is one merged instance, so the only way its magnitude
+                                // reaches a log-folding client is an event. Cause.Burn marks this as
+                                // the decay pulse rather than a fresh stack.
+                                Emit(new BattleEvent { Kind = EventKind.StatusApplied, Target = u.Id, Amount = s.Mag, Aux = (int)StatusKind.Burn, Aux2 = Countdown(s.TicksLeft), Aux3 = Countdown(s.SwingsLeft), Cause = Cause.Burn });
                         }
                     }
                     GainMana(u, ManaTrickle);
@@ -411,8 +492,9 @@ namespace Warband.Sim
                     if (inside && !has)
                         foreach (var (kind, mag) in f.Def.Presence)
                         {
-                            u.Statuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1, SourceId = f.Id });
-                            Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = f.OwnerId, Target = u.Id, Amount = mag, Aux = (int)kind });
+                            var granted = new Status { Kind = kind, Mag = mag, TicksLeft = -1, SourceId = f.Id };
+                            u.Statuses.Add(granted);
+                            Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = f.OwnerId, Target = u.Id, Amount = mag, Aux = (int)kind, Aux2 = Countdown(granted.TicksLeft), Aux3 = Countdown(granted.SwingsLeft) });
                         }
                     else if (!inside && has)
                         for (int i = u.Statuses.Count - 1; i >= 0; i--)
@@ -453,6 +535,11 @@ namespace Warband.Sim
             ev.Tick = _tick;
             _queue.Enqueue(ev);
         }
+
+        /// <summary>StatusApplied's duration slots (Aux2 = ticks, Aux3 = swings): -1 means "not on
+        /// this clock", so a client can tell a running countdown from a permanent hold without
+        /// knowing which statuses are which.</summary>
+        private static int Countdown(int left) => left > 0 ? left : -1;
 
         private void Drain()
         {
@@ -734,20 +821,33 @@ namespace Warband.Sim
         /// re-acquires nearest from the new position. No free hex = no leap.</summary>
         private void LeapTo(UnitState leaper, UnitState target)
         {
-            var occupied = new HashSet<Hex>(_units.Where(x => x.Alive).Select(x => x.Pos));
+            var occupied = new HashSet<Hex>();
+            foreach (var x in _units)
+                if (x.Alive) { occupied.Add(x.Pos); occupied.Add(x.StepTo); } // reserved hexes are taken
             foreach (var f in _fields)
                 if (f.Def.IsWall)
                     occupied.UnionWith(HexesOf(f));
+            Hex from = leaper.Pos;
             for (int d = 0; d < 6; d++)
             {
                 Hex n = target.Pos.Neighbor(d);
                 if (!InBounds(n) || occupied.Contains(n)) continue;
                 leaper.Pos = n;
+                // Displacement outranks a walk: drop the commitment and release the reserved hex, so
+                // the Move below stands alone. A Move with no MoveStart is exactly the renderer's
+                // teleport signal — a leap blinks, it does not slide.
+                leaper.StepStart = leaper.StepEnd = _tick;
                 leaper.TargetId = -1;
                 Emit(new BattleEvent { Kind = EventKind.Move, Source = leaper.Id, Amount = n.Q, Aux = n.R });
                 // Distinct Leap event: Pikewall's landing punish and Leap banners hook
-                // this without parsing Moves.
-                Emit(new BattleEvent { Kind = EventKind.Leap, Source = leaper.Id, Target = target.Id, Amount = n.Q, Aux = n.R });
+                // this without parsing Moves. It carries BOTH endpoints — the renderer arcs the
+                // body from `from` to `n`, and by the time it sees this the fold has already
+                // applied the landing, so the take-off would otherwise be unrecoverable.
+                Emit(new BattleEvent
+                {
+                    Kind = EventKind.Leap, Source = leaper.Id, Target = target.Id,
+                    Amount = n.Q, Aux = n.R, Aux2 = from.Q, Aux3 = from.R,
+                });
                 return;
             }
         }
@@ -776,12 +876,16 @@ namespace Warband.Sim
                         foreach (var s in target.Statuses)
                             if (s.Kind == StatusKind.Burn) { pool = s; break; }
                         if (pool != null) pool.Mag += amount;
-                        else target.Statuses.Add(new Status { Kind = StatusKind.Burn, Mag = amount, TicksLeft = -1, SourceId = sourceId });
-                        Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = amount, Aux = (int)StatusKind.Burn, Depth = depth, Root = root });
+                        else target.Statuses.Add(pool = new Status { Kind = StatusKind.Burn, Mag = amount, TicksLeft = -1, SourceId = sourceId });
+                        // Absolute pool, not the delta: a merged instance has no identity of its
+                        // own, so the total is the only value a log-folding client can SET (ADR
+                        // 0004 — clients never accumulate).
+                        Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = pool.Mag, Aux = (int)StatusKind.Burn, Aux2 = Countdown(pool.TicksLeft), Aux3 = Countdown(pool.SwingsLeft), Depth = depth, Root = root });
                         break;
                     }
-                    target.Statuses.Add(new Status { Kind = eff.Status, Mag = amount, TicksLeft = eff.StatusTicks, SwingsLeft = eff.StatusSwings, SourceId = sourceId });
-                    Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = amount, Aux = (int)eff.Status, Depth = depth, Root = root });
+                    var applied = new Status { Kind = eff.Status, Mag = amount, TicksLeft = eff.StatusTicks, SwingsLeft = eff.StatusSwings, SourceId = sourceId };
+                    target.Statuses.Add(applied);
+                    Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = amount, Aux = (int)eff.Status, Aux2 = Countdown(applied.TicksLeft), Aux3 = Countdown(applied.SwingsLeft), Depth = depth, Root = root });
                     break;
                 case EffectKind.RemoveStatus:
                     for (int i = target.Statuses.Count - 1; i >= 0; i--)
@@ -1002,6 +1106,7 @@ namespace Warband.Sim
                 foreach (var u in newly)
                 {
                     u.Dead = true;
+                    u.StepStart = u.StepEnd = _tick; // a corpse never arrives, and frees its reserved hex
                     // Source = killer, Amount = overkill — on-kill triggers and
                     // overkill-carry riders read straight off the event.
                     Emit(new BattleEvent

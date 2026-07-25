@@ -26,34 +26,35 @@ namespace Warband.Run.Tests
         private static void DriveToBoss(RunController run)
         {
             while (!run.AtBoss)
-            {
                 ResolveCurrent(run);
-                run.LeaveShop();
-            }
         }
 
         // ---- Structure -------------------------------------------------------------
 
         [Fact]
-        public void FullRunCompletesWithBestOfFiveRecord()
+        public void FullRunCompletesByBeatingEveryActBoss()
         {
+            // ADR 0016: victory is reaching the end of the last act alive, not a best-of-5 record.
             var state = Kit.PlayOut(NewRun());
             Assert.Equal(RunPhase.Complete, state.Phase);
-            Assert.Equal(5, state.BossWins + state.BossLosses);
-            Assert.Equal(5, state.CapturedGhosts.Count);
-            Assert.Equal(5, state.BossWins);          // weak bot-ghosts: clean sweep
+            Assert.Equal(3, state.BossWins);          // one authored boss per act, all beaten
+            Assert.Equal(0, state.BossLosses);
             Assert.True(state.Victory);
-            Assert.True(state.Flawless);
+            Assert.True(state.Over);
         }
 
         [Fact]
-        public void LosingEveryBossStillCompletesTheRun()
+        public void LosingABossEndsTheRunImmediately()
         {
+            // PoC defeat rule (Jake, 2026-07-24): lose any fight and the run is over. The old
+            // behaviour — lose all five bosses and still "complete" the run — was best-of-5.
             var state = Kit.PlayOut(NewRun(content: new StubContent { WeakBoss = false }));
-            Assert.Equal(RunPhase.Complete, state.Phase);
+            Assert.Equal(RunPhase.Defeated, state.Phase);
             Assert.Equal(0, state.BossWins);
-            Assert.Equal(5, state.BossLosses);
+            Assert.Equal(1, state.BossLosses);        // it ends at the FIRST loss
+            Assert.Equal(1, state.Act);
             Assert.False(state.Victory);
+            Assert.True(state.Over);
         }
 
         [Fact]
@@ -61,12 +62,13 @@ namespace Warband.Run.Tests
         {
             var a = NewRun(seed: 42).State.ActMaps;
             var b = NewRun(seed: 42).State.ActMaps;
-            Assert.Equal(5, a.Length);
-            for (int act = 0; act < 5; act++)
+            Assert.Equal(3, a.Length);
+            for (int act = 0; act < 3; act++)
             {
                 Assert.Equal(4, a[act].Length);
                 Assert.Equal(1, a[act].Count(k => k == NodeKind.Event));
                 Assert.Equal(3, a[act].Count(k => k == NodeKind.Fight));
+                Assert.Equal(NodeKind.Event, a[act][2]);
                 Assert.Equal(a[act], b[act]);
             }
         }
@@ -104,31 +106,29 @@ namespace Warband.Run.Tests
         private static FightOutcome FirstFightOutcome(RunController run)
         {
             while (run.CurrentNodeKind != NodeKind.Fight)
-            {
                 ResolveCurrent(run);
-                run.LeaveShop();
-            }
-            return run.ResolveFight(FightTier.Even, Kit.AutoPlace(run));
+            return run.ResolveFight(FightTier.Fraying, Kit.AutoPlace(run));
         }
 
-        // ---- Wager payout (ADR 0007) ----------------------------------------------
+        // ---- Visible terminal-risk rewards -----------------------------------------
 
         [Fact]
-        public void WinningFightPaysKillShareAndBonus()
+        public void WinningFightPaysTheVisibleTierReward()
         {
             var run = NewRun();
             var cfg = new RunConfig();
+            int before = run.State.Sand;
             var o = FirstFightOutcome(run);
             Assert.True(o.Won);
             Assert.Equal(o.EnemyCount, o.EnemiesKilled);
-            Assert.Equal(cfg.BaseIncome(1), o.BaseIncome);
-            Assert.Equal(cfg.Pot(1, FightTier.Even) * cfg.TierKillSharePct[1] / 100, o.KillPayout);
-            Assert.Equal(cfg.Pot(1, FightTier.Even) * (100 - cfg.TierKillSharePct[1]) / 100, o.WinBonus);
-            Assert.Equal(o.GoldEarned, run.State.Gold);
+            Assert.Equal(cfg.FightReward(1, FightTier.Fraying), o.SandEarned);
+            Assert.Equal(0, o.KillPayout);
+            Assert.Equal(0, o.WinBonus);
+            Assert.Equal(before + o.SandEarned, run.State.Sand);
         }
 
         [Fact]
-        public void LosingFightStillPaysForKillsButNoBonus()
+        public void LosingFightEndsTheRunAndPaysNothing()
         {
             var content = new StubContent();
             content.EncounterOverride = (act, node, tier, rng) => new List<(UnitDef, Hex)>
@@ -139,83 +139,92 @@ namespace Warband.Run.Tests
                                Range = 1, MoveInterval = 5 }, Hex.FromRowCol(6, 5)),
             };
             var run = NewRun(content: content);
-            var cfg = new RunConfig();
+            int before = run.State.Sand;
             var o = FirstFightOutcome(run);
             Assert.False(o.Won);
             Assert.Equal(1, o.EnemiesKilled);
-            Assert.Equal(cfg.Pot(1, FightTier.Even) * cfg.TierKillSharePct[1] * 1 / (100 * 2), o.KillPayout);
+            Assert.Equal(0, o.KillPayout);
             Assert.Equal(0, o.WinBonus);
-            Assert.True(o.GoldEarned > 0);        // never zeroed on a loss (ADR 0007)
-            Assert.Equal(RunPhase.Shop, run.State.Phase);   // loss consumes the node, run continues
+            Assert.Equal(0, o.SandEarned);
+            Assert.Equal(before, run.State.Sand);
+            Assert.Equal(RunPhase.Defeated, run.State.Phase);
         }
 
         [Fact]
-        public void GreedierTierPaysMoreOnAFullClearWin()
+        public void CollapsingPaysMoreOnAFullClearWin()
         {
             var safe = FirstFightOutcome(NewRun(seed: 11));
             var greedy = NewRun(seed: 11);
-            while (greedy.CurrentNodeKind != NodeKind.Fight) { ResolveCurrent(greedy); greedy.LeaveShop(); }
-            var g = greedy.ResolveFight(FightTier.Greedy, Kit.AutoPlace(greedy));
+            while (greedy.CurrentNodeKind != NodeKind.Fight) ResolveCurrent(greedy);
+            var g = greedy.ResolveFight(FightTier.Collapsing, Kit.AutoPlace(greedy));
             Assert.True(safe.Won && g.Won);
-            Assert.True(g.KillPayout + g.WinBonus > safe.KillPayout + safe.WinBonus);
+            Assert.True(g.SandEarned > safe.SandEarned);
         }
 
         [Fact]
-        public void EventPaysBaseIncome()
+        public void InterludeTreasuryPaysSandAndUnlocksCapacity()
         {
             var run = NewRun();
             var cfg = new RunConfig();
-            while (run.CurrentNodeKind != NodeKind.Event) { ResolveCurrent(run); run.LeaveShop(); }
-            int before = run.State.Gold;
-            int gold = run.ResolveEvent();
-            Assert.Equal(cfg.BaseIncome(run.State.Act), gold);
-            Assert.Equal(before + gold, run.State.Gold);
+            while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            int before = run.State.Sand;
+            var reward = run.ResolveInterlude(InterludePath.Treasury);
+            Assert.Equal(cfg.InterludeTreasurySand, reward.Sand);
+            Assert.Equal(before + reward.Sand, run.State.Sand);
+            Assert.Equal(4, run.State.UnlockedFieldSlots);
+            Assert.True(run.SlotOfferOpen);
         }
 
         // ---- Slots (ADR 0006) ------------------------------------------------------
 
         [Fact]
-        public void SlotOfferedAtActCloseWithEscalatingCostUpToCap()
+        public void InterludesUnlockEscalatingSlotsBeforeEachBoss()
         {
             var run = NewRun();
             var cfg = new RunConfig();
-            for (int act = 1; act <= 4; act++)
+            for (int act = 1; act <= 3; act++)
             {
+                while (run.CurrentNodeKind != NodeKind.Event)
+                    ResolveCurrent(run);
+                run.ResolveInterlude(InterludePath.Treasury);
+                Assert.Equal(3 + act, run.State.UnlockedFieldSlots);
+                Assert.True(run.SlotOfferOpen);
+                Assert.Equal(cfg.SlotCosts[act - 1], run.SlotOfferCost);
+                int sandBefore = run.State.Sand;
+                run.BuySlot();
+                Assert.Equal(sandBefore - cfg.SlotCosts[act - 1], run.State.Sand);
+                Assert.Equal(3 + act, run.State.FieldSlots);
+                Assert.False(run.SlotOfferOpen);
+
                 DriveToBoss(run);
                 run.ResolveBoss(Kit.AutoPlace(run));
-                if (act <= 3)
-                {
-                    Assert.True(run.SlotOfferOpen);
-                    Assert.Equal(cfg.SlotCosts[act - 1], run.SlotOfferCost);
-                    int goldBefore = run.State.Gold;
-                    run.BuySlot();
-                    Assert.Equal(goldBefore - cfg.SlotCosts[act - 1], run.State.Gold);
-                    Assert.Equal(3 + act, run.State.FieldSlots);
-                    Assert.False(run.SlotOfferOpen);
-                }
-                else
-                    Assert.False(run.SlotOfferOpen);   // already at cap 6 — no fourth offer
-                run.LeaveShop();
+                if (run.State.Phase == RunPhase.Reward)
+                    run.ChooseBossReward(0);
             }
             Assert.Equal(6, run.State.FieldSlots);
         }
 
         [Fact]
-        public void DecliningOneOfferStillReachesMaxWidth()
+        public void SkippedCapacityCanBeBoughtLaterInSequence()
         {
             var run = NewRun();
-            for (int act = 1; act <= 4; act++)
-            {
-                DriveToBoss(run);
-                run.ResolveBoss(Kit.AutoPlace(run));
-                if (act > 1 && run.SlotOfferOpen) run.BuySlot();   // decline only the first
-                run.LeaveShop();                                    // leaving declines act 1's offer
-            }
-            Assert.Equal(6, run.State.FieldSlots);
+            while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            run.ResolveInterlude(InterludePath.Treasury);          // unlock 4, skip purchase
+            DriveToBoss(run);
+            run.ResolveBoss(Kit.AutoPlace(run));
+            run.ChooseBossReward(0);
+
+            while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            run.ResolveInterlude(InterludePath.Treasury);          // cap now 5
+            run.State.Sand = 100;
+            run.BuySlot();
+            Assert.True(run.SlotOfferOpen);                         // fifth remains available
+            run.BuySlot();
+            Assert.Equal(5, run.State.FieldSlots);
         }
 
         [Fact]
-        public void SlotOfferNeverAppearsMidAct()
+        public void CapacityIsLockedBeforeTheInterlude()
         {
             var run = NewRun();
             ResolveCurrent(run);
@@ -227,8 +236,8 @@ namespace Warband.Run.Tests
         {
             var cfg = new RunConfig { SlotCosts = new[] { 9999, 9999, 9999 } };
             var run = NewRun(cfg: cfg);
-            DriveToBoss(run);
-            run.ResolveBoss(Kit.AutoPlace(run));
+            while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            run.ResolveInterlude(InterludePath.Treasury);
             Assert.True(run.SlotOfferOpen);
             Assert.Throws<InvalidOperationException>(() => run.BuySlot());
         }
@@ -239,7 +248,7 @@ namespace Warband.Run.Tests
         public void PlacementIsValidated()
         {
             var run = NewRun();
-            while (run.CurrentNodeKind != NodeKind.Fight) { ResolveCurrent(run); run.LeaveShop(); }
+            while (run.CurrentNodeKind != NodeKind.Fight) ResolveCurrent(run);
             var tooFew = new List<Hex> { Hex.FromRowCol(0, 0) };
             var enemyHalf = new List<Hex> { Hex.FromRowCol(0, 0), Hex.FromRowCol(1, 0), Hex.FromRowCol(4, 0) };
             var dupes = new List<Hex> { Hex.FromRowCol(0, 0), Hex.FromRowCol(0, 0), Hex.FromRowCol(1, 0) };
@@ -256,11 +265,9 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
-        public void BenchStoresHeroesWithinCapsDuringShopOnly()
+        public void PlanningAllowsRosterChangesWithinCaps()
         {
             var run = NewRun();
-            Assert.Throws<InvalidOperationException>(() => run.FieldToBench(0));  // not in shop
-            ResolveCurrent(run);                                                   // → shop
             run.FieldToBench(0);
             run.FieldToBench(0);
             Assert.Equal(2, run.State.Bench.Count);
@@ -285,9 +292,8 @@ namespace Warband.Run.Tests
             FirstFightOutcome(run);
             int after1 = hero.Earned.Sum(s => s.Kind == StatusKind.AttackUp ? s.Mag : 0);
             Assert.True(after1 > 0);
-            run.LeaveShop();
-            while (run.CurrentNodeKind != NodeKind.Fight) { ResolveCurrent(run); run.LeaveShop(); }
-            run.ResolveFight(FightTier.Even, Kit.AutoPlace(run));
+            while (run.CurrentNodeKind != NodeKind.Fight) ResolveCurrent(run);
+            run.ResolveFight(FightTier.Fraying, Kit.AutoPlace(run));
             int after2 = hero.Earned.Sum(s => s.Kind == StatusKind.AttackUp ? s.Mag : 0);
             Assert.True(after2 > after1);
         }
@@ -295,9 +301,9 @@ namespace Warband.Run.Tests
         [Fact]
         public void DrawnBossFightCountsAsAWin()
         {
-            // 1 hero vs 1 identical ghost, adjacent across the midline: the sim's proven
-            // mutual-KO draw. Your board wasn't beaten — the record credits a win.
-            var content = new StubContent { GhostPos = Hex.FromRowCol(3, 2) };
+            // 1 hero vs 1 identical boss body, adjacent across the midline: the sim's proven
+            // mutual-KO draw. Your board wasn't beaten, so the run continues.
+            var content = new StubContent { BossPos = Hex.FromRowCol(4, 2) };
             var run = NewRun(content: content, heroes: 1);
             DriveToBoss(run);
             var o = run.ResolveBoss(new List<Hex> { Hex.FromRowCol(3, 2) });
@@ -307,21 +313,5 @@ namespace Warband.Run.Tests
             Assert.Equal(0, run.State.BossLosses);
         }
 
-        [Fact]
-        public void BossCapturesGhostSnapshotOfTheBoardGoingIn()
-        {
-            var run = NewRun();
-            DriveToBoss(run);
-            var placement = Kit.AutoPlace(run);
-            run.ResolveBoss(placement);
-            var snap = Assert.Single(run.State.CapturedGhosts);
-            Assert.Equal(1, snap.Act);
-            Assert.Equal(0, snap.WinsAtCapture);
-            Assert.Equal(run.State.Field.Count, snap.Units.Count);
-            Assert.Equal(placement[0], snap.Units[0].Pos);
-            // Snapshot is a value copy — later run mutation must not leak into the pool.
-            run.State.Field[0].Rank = Rank.S;
-            Assert.Equal(Rank.C, snap.Units[0].Hero.Rank);
-        }
     }
 }

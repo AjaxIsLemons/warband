@@ -19,10 +19,14 @@ namespace Warband.Sim
         /// endpoints, e.g. a field tick or a status expiry). <paramref name="sourceChassis"/> is the
         /// same kind of view context: the SOURCE unit's ChassisId from the fold, so a rule can give
         /// the Pyromancer's cast a different tell than the Cleric's without the event carrying
-        /// ability identity (the flagged growth path in directed-tells).</summary>
+        /// ability identity (the flagged growth path in directed-tells). <paramref name="sourceAbility"/>
+        /// is the same context one level narrower: the source's RESOLVED ability id
+        /// (Content.AbilityIdentity), so the Pyromancer's Starfall can look different from her
+        /// stock bolt.</summary>
         public static bool Matches(BattleEvent e, EventKind kind, Cause? cause, StatusKind? status,
                                    FieldFlavor? flavor = null, bool? ranged = null, int? distance = null,
-                                   string? chassis = null, string? sourceChassis = null)
+                                   string? chassis = null, string? sourceChassis = null,
+                                   string? ability = null, string? sourceAbility = null)
         {
             if (e.Kind != kind) return false;
             if (cause.HasValue && e.Cause != cause.Value) return false;
@@ -55,15 +59,27 @@ namespace Warband.Sim
                     || !string.Equals(chassis, sourceChassis, System.StringComparison.OrdinalIgnoreCase))
                     return false;
             }
+            if (!string.IsNullOrEmpty(ability))
+            {
+                // Same law again: an ability-specific look must not fire for an unresolved caster.
+                if (string.IsNullOrEmpty(sourceAbility)
+                    || !string.Equals(ability, sourceAbility, System.StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
             return true;
         }
 
         /// <summary>How specific a rule is — more declared filters win ties toward the narrower
         /// rule. Kind is always required so it isn't counted. Equal specificity keeps the FIRST
-        /// matching rule in registry order (the dispatcher uses a strict &gt;).</summary>
+        /// matching rule in registry order (the dispatcher uses a strict &gt;).
+        /// <para>Ability is the one WEIGHTED filter: it counts 2, not 1, so this is no longer a
+        /// plain count of declared filters. Every ability belongs to exactly one chassis, so a
+        /// byAbility rule is strictly narrower than a byChassis one — at 1 the two would tie and
+        /// the winner would fall to registry order, which is not a decision anyone authored.</para></summary>
         public static int Specificity(Cause? cause, StatusKind? status, FieldFlavor? flavor = null,
-                                      bool? ranged = null, string? chassis = null)
+                                      bool? ranged = null, string? chassis = null, string? ability = null)
             => (cause.HasValue ? 1 : 0) + (status.HasValue ? 1 : 0) + (flavor.HasValue ? 1 : 0)
-               + (ranged.HasValue ? 1 : 0) + (string.IsNullOrEmpty(chassis) ? 0 : 1);
+               + (ranged.HasValue ? 1 : 0) + (string.IsNullOrEmpty(chassis) ? 0 : 1)
+               + (string.IsNullOrEmpty(ability) ? 0 : 2);
     }
 }

@@ -27,7 +27,17 @@ namespace Warband.Viewer
         public ulong seed { get; set; } = 1;
         /// <summary>Optional per-team banners, keyed by team index as a string ("0"/"1").</summary>
         public Dictionary<string, List<string>>? banners { get; set; }
+        /// <summary>Optional static wall hexes placed before the fight (impassable + block projectile
+        /// paths). This is the ONLY way to author an IsWall field — no kit creates one — so it exists
+        /// for render fixtures like the blocked-shot tell, not as content. Absent → today's behavior.</summary>
+        public List<WallSpec>? walls { get; set; }
         public List<UnitSpec> units { get; set; } = new List<UnitSpec>();
+    }
+
+    public sealed class WallSpec
+    {
+        public int row { get; set; }
+        public int col { get; set; }
     }
 
     public sealed class UnitSpec
@@ -95,7 +105,23 @@ namespace Warband.Viewer
                     }
                 }
 
-            return new Battle(units, teamTriggers, seed: s.seed).Run();
+            // Static walls → the Battle's existing initialFields param. Permanent (Ticks -1), zero
+            // radius, neutral owner — the wall FieldDef shape FieldTests proves round-trips through
+            // FieldCreated into the fold. null when absent, so a wall-less scenario is byte-identical.
+            List<(FieldDef Def, Hex Center, int OwnerTeam)>? initialFields = null;
+            if (s.walls != null && s.walls.Count > 0)
+            {
+                initialFields = new List<(FieldDef, Hex, int)>();
+                foreach (var w in s.walls)
+                {
+                    var pos = Hex.FromRowCol(w.row, w.col);
+                    if (!Battle.InBounds(pos))
+                        throw new InvalidDataException($"scenario '{s.name}': wall row {w.row}, col {w.col} is off the {Battle.BoardRows}x{Battle.BoardCols} board");
+                    initialFields.Add((new FieldDef { Radius = 0, Ticks = -1, IsWall = true }, pos, -1));
+                }
+            }
+
+            return new Battle(units, teamTriggers, initialFields, seed: s.seed).Run();
         }
 
         private static UnitState BuildUnit(int id, UnitSpec spec, Catalog cat)

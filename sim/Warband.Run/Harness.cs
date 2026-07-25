@@ -6,7 +6,7 @@ using Warband.Sim;
 namespace Warband.Run
 {
     /// <summary>Player decisions for a harness run. Null hooks fall back to the default
-    /// bot: Even tier, range-aware placement, greedy-legal shopping.</summary>
+    /// bot: Fraying tier, range-aware placement, greedy-legal shopping.</summary>
     public sealed class RunPolicy
     {
         public Func<RunController, FightTier>? Tier;
@@ -47,7 +47,7 @@ namespace Warband.Run
     {
         public int Runs;
         public int Victories;
-        public int Flawless;
+        public int Defeats;          // ADR 0016: a run now ends in victory OR defeat
         public double AvgBossWins;
         public double AvgFinalGold;
         public double AvgFightTicks;
@@ -60,7 +60,7 @@ namespace Warband.Run
             foreach (var r in reports)
             {
                 if (r.Final.Victory) agg.Victories++;
-                if (r.Final.Flawless) agg.Flawless++;
+                if (r.Final.Phase == RunPhase.Defeated) agg.Defeats++;
                 agg.AvgBossWins += r.Final.BossWins;
                 agg.AvgFinalGold += r.Final.Gold;
                 foreach (var f in r.Fights)
@@ -99,35 +99,44 @@ namespace Warband.Run
             var run = new RunController(seed, content, StarterWarband(content, cfg), cfg);
             var report = new RunReport { Seed = seed, Final = run.State };
 
-            while (run.State.Phase != RunPhase.Complete)
+            while (!run.State.Over)   // Complete or Defeated — both terminal
             {
-                if (run.State.Phase == RunPhase.Node)
+                if (run.State.Phase == RunPhase.Reward)
                 {
-                    var kind = run.CurrentNodeKind;
-                    if (kind == NodeKind.Event)
-                    {
-                        report.GoldFromNodes += run.ResolveEvent();
-                        continue;
-                    }
-                    var placement = policy?.Place?.Invoke(run) ?? DefaultPlacement(run, content);
-                    bool isBoss = kind == NodeKind.Boss;
-                    var tier = isBoss ? default : policy?.Tier?.Invoke(run) ?? FightTier.Even;
-                    var o = isBoss ? run.ResolveBoss(placement) : run.ResolveFight(tier, placement);
-                    report.GoldFromNodes += o.GoldEarned;
-                    report.Fights.Add(new FightRecord
-                    {
-                        Act = run.State.Act, Node = run.State.NodeIndex, IsBoss = isBoss,
-                        Tier = tier, Won = o.Won, Kills = o.EnemiesKilled,
-                        Enemies = o.EnemyCount, Gold = o.GoldEarned, EndTick = o.Battle.EndTick,
-                    });
+                    run.ChooseBossReward(0);
+                    continue;
                 }
-                else
+
+                int before = run.State.Gold;
+                (policy?.Shop ?? DefaultShop)(run);
+                report.GoldSpentInShops += before - run.State.Gold;
+
+                int act = run.State.Act;
+                int node = run.State.NodeIndex;
+                var kind = run.CurrentNodeKind;
+                if (kind == NodeKind.Event)
                 {
-                    int before = run.State.Gold;
-                    (policy?.Shop ?? DefaultShop)(run);
-                    report.GoldSpentInShops += before - run.State.Gold;
-                    run.LeaveShop();
+                    report.GoldFromNodes += run.ResolveEvent();
+                    continue;
                 }
+
+                var placement = policy?.Place?.Invoke(run) ?? DefaultPlacement(run, content);
+                bool isBoss = kind == NodeKind.Boss;
+                var tier = isBoss ? default : policy?.Tier?.Invoke(run) ?? FightTier.Fraying;
+                var o = isBoss ? run.ResolveBoss(placement) : run.ResolveFight(tier, placement);
+                report.GoldFromNodes += o.SandEarned;
+                report.Fights.Add(new FightRecord
+                {
+                    Act = act,
+                    Node = node,
+                    IsBoss = isBoss,
+                    Tier = tier,
+                    Won = o.Won,
+                    Kills = o.EnemiesKilled,
+                    Enemies = o.EnemyCount,
+                    Gold = o.SandEarned,
+                    EndTick = o.Battle.EndTick,
+                });
             }
             return report;
         }
