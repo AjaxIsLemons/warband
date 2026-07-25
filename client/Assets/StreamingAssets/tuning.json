@@ -239,7 +239,8 @@
       "motionGlow": 6.0,
       "motionScale": 1.6,
       "windupSeconds": 0.3,
-      "defer": true
+      "defer": true,
+      "vfx": "cast-aura"
     },
     {
       "eventKind": "Cast",
@@ -757,7 +758,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.0,
       "windupSeconds": 0.0,
-      "defer": true
+      "defer": true,
+      "projectileVfx": "arrow-streak"
     },
     {
       "eventKind": "DamageDealt",
@@ -868,7 +870,8 @@
       "motionGlow": 3.0,
       "motionScale": 1.6,
       "windupSeconds": 0.0,
-      "defer": false
+      "defer": false,
+      "impactVfx": "death-dissolve-burst"
     },
     {
       "eventKind": "Leap",

@@ -59,6 +59,9 @@ public class ReplayPlayer : MonoBehaviour
     private readonly Stack<FloatingNumber> _numberPool = new Stack<FloatingNumber>();
     private readonly Stack<Tracer> _tracerPool = new Stack<Tracer>();
     private readonly Stack<Burst> _burstPool = new Stack<Burst>();
+    // One pool PER RECIPE: a VfxInstance owns the object graph its recipe needs, so it can only ever
+    // replay that recipe. Same lifetime as the other pools — under _generated, dropped by Build.
+    private readonly Dictionary<string, Stack<VfxInstance>> _vfxPools = new Dictionary<string, Stack<VfxInstance>>();
     private Transform _generated;
     private FeedbackDirector _director;
     private Mesh _hexMesh;
@@ -179,6 +182,11 @@ public class ReplayPlayer : MonoBehaviour
         private readonly Action<Tracer> _recycleTracer;
         private readonly Func<Burst> _getBurst;
         private readonly Action<Burst> _recycleBurst;
+        private readonly Func<VfxDef, VfxInstance> _getVfx;
+        private readonly Action<VfxInstance> _recycleVfx;
+        // Camera-facing rotation for billboard elements — read through a delegate so an orbit yaw
+        // change (FrameCamera recomputes it) reaches recipes without rebuilding the Director.
+        private readonly Func<Quaternion> _billboard;
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
         private readonly Action<string> _playSfx;
@@ -199,6 +207,10 @@ public class ReplayPlayer : MonoBehaviour
             // animation into the sim's gap). Null on primitives / non-origin tells.
             public string AnimState;
             public bool AnimStarted;
+            // VFX recipes fired at StartAt (source + ground). Sustained holds the source instance so
+            // the windup's end can close it — the cast sentence's "release" beat.
+            public bool FxStarted;
+            public VfxInstance Sustained;
         }
 
         /// <summary>A number waiting for its lane to clear. Everything but the anchor is decided at
@@ -228,8 +240,12 @@ public class ReplayPlayer : MonoBehaviour
         private readonly HashSet<int> _arcing = new HashSet<int>();
         private readonly List<Tracer> _activeTracers = new List<Tracer>();
         private readonly List<Burst> _activeBursts = new List<Burst>();
+        private readonly List<VfxInstance> _activeVfx = new List<VfxInstance>();
         private readonly List<FloatingNumber> _activeNumbers = new List<FloatingNumber>();
         private readonly Dictionary<int, float> _readyAt = new Dictionary<int, float>();
+        // Resolved ability identity per unit id — a chassis+traits fold that never changes inside a
+        // fight, so it is computed once per unit rather than per event, and dropped on Reset.
+        private readonly Dictionary<int, string> _abilityById = new Dictionary<int, string>();
         private float _clock;
 
         private const float FlightY = 0.8f;   // tracer/spark chest height
@@ -241,13 +257,16 @@ public class ReplayPlayer : MonoBehaviour
                                 Action<FloatingNumber> recycleNumber,
                                 Func<int, PlaybackUnit> unitById, Func<Hex, Vector3> hexToWorld,
                                 Func<Tracer> getTracer, Action<Tracer> recycleTracer,
-                                Func<Burst> getBurst, Action<Burst> recycleBurst, float ticksPerSecond,
-                                Action<string> playSfx = null)
+                                Func<Burst> getBurst, Action<Burst> recycleBurst,
+                                Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
+                                Func<Quaternion> billboard,
+                                float ticksPerSecond, Action<string> playSfx = null)
         {
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
             _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx;
             _getTracer = getTracer; _recycleTracer = recycleTracer;
             _getBurst = getBurst; _recycleBurst = recycleBurst;
+            _getVfx = getVfx; _recycleVfx = recycleVfx; _billboard = billboard;
             _impact = data?.impact ?? new ImpactTune();
             _numbers = data?.numbers ?? new NumberTune();
             _speedScale = Mathf.Min(1f, 10f / Mathf.Max(0.01f, ticksPerSecond));
@@ -263,12 +282,18 @@ public class ReplayPlayer : MonoBehaviour
             var tu = _unitById(e.Target);
             int? distance = (su != null && tu != null) ? Hex.Distance(su.Pos, tu.Pos) : (int?)null;
 
+            // Ability identity is the same class of view context as chassis: resolved from the fold's
+            // (ChassisId, Traits) by the shared content DLL, so the client and the sim can never
+            // disagree about what "pyro.starfall" means. Null context never matches a byAbility rule.
+            string srcAbility = AbilityOf(e.Source, su);
+
             TellDef best = null;
             int bestSpec = -1;
             foreach (var def in _tells)
             {
                 if (!TellMatch.Matches(e, def.eventKind, def.CauseFilter, def.StatusFilter, def.FlavorFilter,
-                                       def.RangedFilter, distance, def.ChassisFilter, su?.ChassisId)) continue;
+                                       def.RangedFilter, distance, def.ChassisFilter, su?.ChassisId,
+                                       ability: def.AbilityFilter, sourceAbility: srcAbility)) continue;
                 if (def.Specificity > bestSpec) { best = def; bestSpec = def.Specificity; }
             }
             if (best == null) return;
@@ -336,6 +361,17 @@ public class ReplayPlayer : MonoBehaviour
         private Vector3 Where(int unitId, PlaybackUnit u) =>
             _views.TryGetValue(unitId, out var v) ? v.Target : _hexToWorld(u.Pos);
 
+        /// <summary>The unit's resolved ability id (last SignatureOverride trait, else the chassis),
+        /// memoized: a unit's kit can't change mid-fight, so this folds once per unit per fight.</summary>
+        private string AbilityOf(int unitId, PlaybackUnit u)
+        {
+            if (u == null) return null;
+            if (_abilityById.TryGetValue(unitId, out var a)) return a;
+            a = Warband.Content.AbilityIdentity.Resolve(u.ChassisId, u.Traits);
+            _abilityById[unitId] = a;
+            return a;
+        }
+
         private static readonly int ActionSpeedHash = Animator.StringToHash("ActionSpeed");
         // Animator state → KayKit clip (for length lookup when fitting the swing into the gap).
         private static readonly Dictionary<string, string> StateClipName = new Dictionary<string, string>
@@ -397,6 +433,13 @@ public class ReplayPlayer : MonoBehaviour
                 if (_clock < pt.StartAt) continue;
                 float local = _clock - pt.StartAt;
 
+                if (!pt.FxStarted)
+                {
+                    pt.FxStarted = true;
+                    pt.Sustained = StartSourceVfx(pt);
+                    StartGroundVfx(pt);
+                }
+
                 if (!pt.AnimStarted)
                 {
                     pt.AnimStarted = true;
@@ -417,6 +460,9 @@ public class ReplayPlayer : MonoBehaviour
                 if (!pt.MotionStarted && local >= pt.Windup)
                 {
                     pt.MotionStarted = true;
+                    // The windup is over: a sustained source recipe (the cast aura) stops here and
+                    // runs out its fade, which IS the release beat of the cast sentence.
+                    if (pt.Sustained != null) { pt.Sustained.EndSustain(); pt.Sustained = null; }
                     SpawnMotion(pt);
                 }
 
@@ -429,7 +475,7 @@ public class ReplayPlayer : MonoBehaviour
                 if (!pt.Fired && local >= contact)
                 {
                     pt.Fired = true;
-                    ApplyImpact(pt.Def, pt.Event, pt.SideUid);
+                    ApplyImpact(in pt);
                 }
 
                 if (pt.Fired && local >= pt.Windup + pt.Motion)
@@ -464,8 +510,54 @@ public class ReplayPlayer : MonoBehaviour
             }
             for (int i = _activeBursts.Count - 1; i >= 0; i--)
                 if (!_activeBursts[i].Step(dt)) _activeBursts.RemoveAt(i);
+            for (int i = _activeVfx.Count - 1; i >= 0; i--)
+                if (!_activeVfx[i].Step(dt)) _activeVfx.RemoveAt(i);
             for (int i = _activeNumbers.Count - 1; i >= 0; i--)
                 if (!_activeNumbers[i].Step(dt)) _activeNumbers.RemoveAt(i);
+        }
+
+        /// <summary>Particle seed for one recipe firing: a pure function of (tick, side unit, slot),
+        /// never of the run. Same events → same pixels, which is what lets the contact sheet be
+        /// binary-diffed as a determinism proof.</summary>
+        private static uint Seed(int tick, int uid, int slot) =>
+            unchecked((uint)(tick * 397) ^ (uint)(uid * 31) ^ (uint)slot);
+
+        /// <summary>Play a recipe id, tinted by the tell (motionColor/motionGlow/motionScale reach
+        /// every recipe, so the F1 loop retunes VFX with no recompile). Null when the id isn't
+        /// authored yet — the caller then keeps whatever primitive it would have drawn.</summary>
+        private VfxInstance PlayVfx(string id, Vector3 pos, Vector3 dir, TellDef def, uint seed, Transform follow)
+        {
+            var recipe = VfxLibrary.Get(id);
+            if (recipe == null || _getVfx == null) return null;
+            var fx = _getVfx(recipe);
+            if (fx == null) return null;
+            fx.Play(pos, dir, def.motionColor, def.motionGlow, def.motionScale, seed,
+                    _billboard != null ? _billboard() : Quaternion.identity, follow, _recycleVfx);
+            _activeVfx.Add(fx);
+            return fx;
+        }
+
+        /// <summary>The tell's own recipe at the SOURCE, at StartAt. FollowUnit elements anchor to the
+        /// source view's Root, so a cast aura rides a caster that is still walking. Returns the
+        /// instance only when it is Sustained — that is the one the caller has to close.</summary>
+        private VfxInstance StartSourceVfx(in PendingTell pt)
+        {
+            if (string.IsNullOrEmpty(pt.Def.vfx)) return null;
+            _views.TryGetValue(pt.Event.Source, out var sv);
+            var fx = PlayVfx(pt.Def.vfx, pt.SourcePos, pt.TargetPos - pt.SourcePos, pt.Def,
+                             Seed(pt.Event.Tick, pt.SideUid, 0), sv != null ? sv.Root : null);
+            return fx != null && fx.IsSustained ? fx : null;
+        }
+
+        /// <summary>Hex-anchored recipe under the tell's side unit (field-hex anchoring arrives with
+        /// FieldView in P2). Snapped to the hex CENTRE, not the body, so a decal lands on the grid.</summary>
+        private void StartGroundVfx(in PendingTell pt)
+        {
+            if (string.IsNullOrEmpty(pt.Def.groundVfx)) return;
+            var u = _unitById(pt.SideUid);
+            if (u == null) return;
+            PlayVfx(pt.Def.groundVfx, _hexToWorld(u.Pos), pt.TargetPos - pt.SourcePos, pt.Def,
+                    Seed(pt.Event.Tick, pt.SideUid, 3), null);
         }
 
         private void SpawnMotion(PendingTell pt)
@@ -473,8 +565,25 @@ public class ReplayPlayer : MonoBehaviour
             switch (pt.Def.motion)
             {
                 case MotionKind.Tracer:
-                    PlayTracer(pt.SourcePos + Vector3.up * FlightY, pt.TargetPos + Vector3.up * FlightY,
-                               pt.Def.motionColor, pt.Def.motionGlow, pt.Def.motionScale, pt.Motion);
+                    Vector3 from = pt.SourcePos + Vector3.up * FlightY;
+                    Vector3 to = pt.TargetPos + Vector3.up * FlightY;
+                    // A projectile recipe REPLACES the cube tracer's visual over the same window, so
+                    // ContactOffset (and every latch that reads it) is untouched by the swap. The
+                    // recipe then owns its own arrival — it does not inherit the cube's auto spark.
+                    var proj = string.IsNullOrEmpty(pt.Def.projectileVfx) ? null : VfxLibrary.Get(pt.Def.projectileVfx);
+                    if (proj != null && _getVfx != null)
+                    {
+                        var fx = _getVfx(proj);
+                        if (fx != null)
+                        {
+                            fx.PlayProjectile(from, to, pt.Motion, pt.Def.motionColor, pt.Def.motionGlow,
+                                              pt.Def.motionScale, Seed(pt.Event.Tick, pt.SideUid, 1),
+                                              _billboard != null ? _billboard() : Quaternion.identity, _recycleVfx);
+                            _activeVfx.Add(fx);
+                            break;
+                        }
+                    }
+                    PlayTracer(from, to, pt.Def.motionColor, pt.Def.motionGlow, pt.Def.motionScale, pt.Motion);
                     break;
                 case MotionKind.Burst:
                     PlayBurst(pt.TargetPos + Vector3.up * BurstY,
@@ -537,8 +646,11 @@ public class ReplayPlayer : MonoBehaviour
 
         /// <summary>The impact payload — flash/punch/number on the tell's side unit, unchanged from
         /// the pre-motion behavior; motion-None tells with no latch fire it the same frame as before.</summary>
-        private void ApplyImpact(TellDef def, BattleEvent e, int sideUid)
+        private void ApplyImpact(in PendingTell pt)
         {
+            var def = pt.Def;
+            var e = pt.Event;
+            int sideUid = pt.SideUid;
             if (!_views.TryGetValue(sideUid, out var v)) return;
 
             // How big this hit reads, 0..1 — the single knob every spectacle channel keys off.
@@ -556,7 +668,27 @@ public class ReplayPlayer : MonoBehaviour
                 EnqueueNumber(def, sideUid, v, Mathf.Abs(e.Amount).ToString(),
                               col, def.numberScale * mag * (e.Crit ? 1.4f : 1f), t);
             }
+
+            // Contact recipe, at the victim's chest and aimed along the blow so directional sprays
+            // throw away from the hit. Empty id leaves today's rendering (flash/punch/number, plus a
+            // cube tracer's own arrival spark) exactly as it is.
+            if (!string.IsNullOrEmpty(def.impactVfx))
+                PlayVfx(def.impactVfx, v.Target + Vector3.up * FlightY, pt.TargetPos - pt.SourcePos,
+                        def, Seed(e.Tick, sideUid, 2), null);
+
+            // Flinch, gated on how hard the hit READ (ImpactTune t) so a DoT tick can't spasm the
+            // body. The "Hit" state is built in P5; HasState keeps this a silent no-op until then.
+            if (def.hitAnim && t >= def.hitAnimMinT && v.ModelAnimator != null
+                && v.ModelAnimator.runtimeAnimatorController != null
+                && v.Root.gameObject.activeSelf
+                && v.ModelAnimator.HasState(0, HitStateHash))
+                v.ModelAnimator.CrossFadeInFixedTime("Hit", 0.05f);
+
+            // TODO(P4 cast choreography): def.announce pushes "«X» casts Y" into the kill-feed slots.
+            // TODO(P2 ground substrate): def.pulseGround flares the FieldView covering this hex.
         }
+
+        private static readonly int HitStateHash = Animator.StringToHash("Hit");
 
         /// <summary>Book a number into the first free launch lane on this unit. NOTHING is merged or
         /// dropped — every instance keeps its own number; the schedule only decides when and where it
@@ -625,11 +757,15 @@ public class ReplayPlayer : MonoBehaviour
             _readyAt.Clear();
             _numberQueue.Clear();
             _laneFreeAt.Clear(); // stale lane reservations would hold the next fight's first numbers
+            _abilityById.Clear(); // a scenario switch brings different units under the same ids
             foreach (var v in _views.Values) v.MotionOffset = Vector3.zero;
             foreach (var tr in _activeTracers) _recycleTracer(tr);
             _activeTracers.Clear();
             foreach (var b in _activeBursts) _recycleBurst(b);
             _activeBursts.Clear();
+            // Stop() hands back the light budget; the pool delegate does the deactivate/push.
+            foreach (var fx in _activeVfx) { if (fx != null) fx.Stop(); _recycleVfx(fx); }
+            _activeVfx.Clear();
             foreach (var n in _activeNumbers) _recycleNumber(n);
             _activeNumbers.Clear();
         }
@@ -760,8 +896,8 @@ public class ReplayPlayer : MonoBehaviour
         DispatchUpTo(tick);
 
         float dt = Time.deltaTime;
-        _director?.Tick(dt); // advance the FX clock: pending tells, lunges, tracers, bursts
-        TickFeed(dt);        // age kill-feed lines toward their fade
+        StepFx(dt);   // the one FX clock — see StepFx
+        TickFeed(dt); // age kill-feed lines toward their fade (play mode only; a frozen preview pins alpha)
         var mo = _data.motion;
         foreach (var v in _views.Values)
         {
@@ -789,6 +925,18 @@ public class ReplayPlayer : MonoBehaviour
             v.ApplyVisual();
         }
         LayoutStory(false);
+    }
+
+    /// <summary>
+    /// THE FX clock. Every decorative system advances here and nowhere else: pending tells, lunges,
+    /// tracers, bursts, VFX recipes — and, as they land, field views (P2) and death sequences (P5).
+    /// Both call sites route through it (Update's real dt, BuildLoadedPreview's fixed 0.01 s loop),
+    /// which is what makes a frozen contact sheet reproduce a live frame BY CONSTRUCTION rather than
+    /// by two code paths agreeing. Nothing below this line may read Time.deltaTime.
+    /// </summary>
+    private void StepFx(float dt)
+    {
+        _director?.Tick(dt);
     }
 
     /// <summary>Editor scrub: freeze the fold at <paramref name="tick"/>, snap the view, and replay
@@ -832,10 +980,10 @@ public class ReplayPlayer : MonoBehaviour
                 RecordEvent(e); // populate the Events tab for edit-mode scrubs too (ResetAnim cleared it)
                 if (e.Kind == EventKind.Death) PushKill(e); // feed lines in the window capture too
             }
-        // Fast-forward the one Director clock so a frozen capture shows tracers mid-flight and
-        // landed flashes — everything is Director-stepped, so this works with no self-Update.
+        // Fast-forward the one FX clock so a frozen capture shows tracers mid-flight and landed
+        // flashes — everything is Director-stepped, so this works with no self-Update.
         int steps = Mathf.Max(1, Mathf.RoundToInt(previewAdvanceSeconds / 0.01f));
-        for (int i = 0; i < steps; i++) _director.Tick(0.01f);
+        for (int i = 0; i < steps; i++) StepFx(0.01f);
         foreach (var v in _views.Values)
         {
             if (v.Root.gameObject.activeSelf)
@@ -895,7 +1043,10 @@ public class ReplayPlayer : MonoBehaviour
     public void ClearGenerated()
     {
         _views.Clear(); _fieldTiles.Clear(); _numberPool.Clear();
-        _tracerPool.Clear(); _burstPool.Clear();
+        _tracerPool.Clear(); _burstPool.Clear(); _vfxPools.Clear();
+        // The VFX light budget is a static live count; destroying the pools underneath it would
+        // otherwise leak the lights of a board that no longer exists.
+        VfxInstance.ResetLightBudget();
         if (_generated != null) DestroyImmediate(_generated.gameObject);
         _generated = null;
     }
@@ -1105,7 +1256,8 @@ public class ReplayPlayer : MonoBehaviour
     private FeedbackDirector MakeDirector() => new FeedbackDirector(
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
-        GetTracer, RecycleTracer, GetBurst, RecycleBurst, ticksPerSecond, PlaySfx);
+        GetTracer, RecycleTracer, GetBurst, RecycleBurst,
+        GetVfx, RecycleVfx, () => _numberFace, ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
     private AudioSource _audio;
@@ -1133,6 +1285,21 @@ public class ReplayPlayer : MonoBehaviour
     private void RecycleTracer(Tracer t) { if (t != null) { t.gameObject.SetActive(false); _tracerPool.Push(t); } }
     private Burst GetBurst() => _burstPool.Count > 0 ? _burstPool.Pop() : Burst.Create(_generated);
     private void RecycleBurst(Burst b) { if (b != null) { b.gameObject.SetActive(false); _burstPool.Push(b); } }
+
+    private VfxInstance GetVfx(VfxDef def)
+    {
+        if (def == null || _generated == null) return null;
+        if (_vfxPools.TryGetValue(def.Id, out var pool) && pool.Count > 0) return pool.Pop();
+        return VfxInstance.Create(_generated, def);
+    }
+
+    private void RecycleVfx(VfxInstance fx)
+    {
+        if (fx == null) return;
+        fx.gameObject.SetActive(false);
+        if (!_vfxPools.TryGetValue(fx.Id, out var pool)) _vfxPools[fx.Id] = pool = new Stack<VfxInstance>();
+        pool.Push(fx);
+    }
 
     // ---- fight story: kill feed + win banner ---------------------------------
 

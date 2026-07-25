@@ -35,6 +35,7 @@ public class TuningData
     public ModelsTune models = new ModelsTune();
     public BoardTune board = new BoardTune();
     public PlaybackTune playback = new PlaybackTune();
+    public FxTune fx = new FxTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
     // references to them survive a reload — see TuningIO.Settings().
@@ -285,6 +286,11 @@ public class TellDef
     // without the event carrying an ability id (directed-tells' flagged growth path).
     public bool byChassis = false;
     public string chassis = "";
+    // Ability := the SOURCE unit's resolved ability identity (Warband.Content.AbilityIdentity:
+    // its last SignatureOverride trait, else the chassis) — "pyromancer" vs "pyro.starfall". A
+    // strictly narrower filter than chassis, so it carries +2 specificity, not +1.
+    public bool byAbility = false;
+    public string ability = "";
     // Flavor := FieldCreated's derived FieldFlavor (Aux3) — a hazard glyph vs a boon glyph.
     public bool byFlavor = false;
     public FieldFlavor flavor = FieldFlavor.Hazard;
@@ -293,8 +299,9 @@ public class TellDef
     [Newtonsoft.Json.JsonIgnore] public StatusKind? StatusFilter => byStatus ? status : (StatusKind?)null;
     [Newtonsoft.Json.JsonIgnore] public bool? RangedFilter => byRanged ? ranged : (bool?)null;
     [Newtonsoft.Json.JsonIgnore] public string ChassisFilter => byChassis && !string.IsNullOrEmpty(chassis) ? chassis : null;
+    [Newtonsoft.Json.JsonIgnore] public string AbilityFilter => byAbility && !string.IsNullOrEmpty(ability) ? ability : null;
     [Newtonsoft.Json.JsonIgnore] public FieldFlavor? FlavorFilter => byFlavor ? flavor : (FieldFlavor?)null;
-    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter);
+    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter, ability: AbilityFilter);
 
     public bool flash = true;
     public Color flashColor = Color.white;
@@ -332,4 +339,38 @@ public class TellDef
     [Range(0.2f, 4f)] public float motionScale = 1f;         // tracer thickness / burst size / ARC HEIGHT
     [Range(0f, 1f)] public float windupSeconds = 0f;         // pre-motion anticipation (casts)
     public bool defer = false;                               // ORIGIN tells only (Attack/Cast): set the impact latch
+
+    // VFX recipe ids (VfxLibrary). EMPTY = today's Tracer/Burst primitives, so migration is
+    // per-tell and every existing row keeps rendering exactly as it does now. motionColor/
+    // motionGlow/motionScale tint whichever recipe fires, so the F1 loop still retunes without a
+    // recompile. An unknown id logs once and falls back to the primitive.
+    public string vfx = "";              // at the SOURCE at StartAt; a Sustained recipe runs through the windup
+    public string projectileVfx = "";    // replaces the cube Tracer visual (same start/end/seconds)
+    public string impactVfx = "";        // at contact, on the tell's side unit
+    public string groundVfx = "";        // hex-anchored under the side unit
+
+    // Riders. hitAnim gates a flinch on ImpactTune intensity so DoT ticks don't spasm; the "Hit"
+    // animator state arrives in P5 and this is a silent no-op until then.
+    public bool hitAnim = false;
+    [Range(0f, 1f)] public float hitAnimMinT = 0.35f;
+    public bool announce = false;        // story-feed "«X» casts Y" — wired in P4 (cast choreography)
+    public bool pulseGround = false;     // flare fields covering the impact hex — wired in P2 (FieldView)
+}
+
+/// <summary>
+/// Timings for the FX systems that outlive a single tell: the death sequence's corpse linger, the
+/// field spawn/expire animations, and the status icon row. Grouped here (rather than per-tell)
+/// because they are presentation LAWS — every death dissolves for the same length, or the eye stops
+/// reading it as "a death". Auto-appears in the F1 cockpit like every other group.
+/// </summary>
+[Serializable]
+public class FxTune
+{
+    [Range(0f, 4f)] public float deathLingerSeconds = 1.6f;    // corpse stays before it is hidden
+    [Range(0.1f, 3f)] public float dissolveSeconds = 0.8f;     // _Cutoff 0→1 inside the linger
+    [Range(0.05f, 1.5f)] public float fieldSpawnSeconds = 0.35f;
+    [Range(0.05f, 1.5f)] public float fieldExpireSeconds = 0.45f;
+    [Range(1f, 4f)] public float fieldPulseBoost = 1.5f;       // brightness multiplier on a pulseGround hit
+    [Range(0.05f, 0.6f)] public float statusIconSize = 0.22f;
+    [Min(1)] public int statusIconCap = 5;                     // icons before the "+N" chip
 }
