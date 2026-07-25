@@ -32,6 +32,7 @@ public class TuningData
     public MotionTune motion = new MotionTune();
     public BeatTune beats = new BeatTune();
     public BarsTune bars = new BarsTune();
+    public ModelsTune models = new ModelsTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
     // references to them survive a reload — see TuningIO.Settings().
@@ -108,6 +109,16 @@ public class CameraTune
     [Range(5f, 89f)] public float pitch = 52f;        // elevation angle
     [Range(0.4f, 3f)] public float distance = 1.25f;  // multiple of board span
     public Color background = new Color(0.055f, 0.06f, 0.08f);
+}
+
+/// <summary>KayKit board models (fight-legibility Phase 2). enabled=false collapses every unit
+/// back to the primitive silhouettes; a chassis with no model entry falls back automatically.</summary>
+[Serializable]
+public class ModelsTune
+{
+    public bool enabled = true;
+    [Range(0.3f, 1.5f)] public float scale = 0.75f;   // KayKit minis are ~1.9u tall at 1.0
+    [Range(0f, 1.2f)] public float barLift = 0.35f;   // extra bar/pip height over the model
 }
 
 /// <summary>Unit bar conventions (fight-legibility Phase 1). Ally-green/enemy-red HP (the TFT

@@ -122,6 +122,8 @@ public class ReplayPlayer : MonoBehaviour
         // brief scale-pop on the mana bar so the flip is an EVENT, not a state you must notice.
         public bool ManaReady;
         public float ManaPulseT, ManaFillBaseH;
+        // Non-null only on the KayKit model path — drives Idle/Walk; null for primitives.
+        public Animator ModelAnimator;
         private MaterialPropertyBlock _mpb;
 
         public void ApplyVisual()
@@ -711,6 +713,8 @@ public class ReplayPlayer : MonoBehaviour
             if (v.FlashT > 0f) v.FlashT -= dt / v.FlashDur;
             if (v.PunchT > 0f) v.PunchT -= dt / v.PunchDur;
             if (v.ManaPulseT > 0f) v.ManaPulseT -= dt / 0.35f;
+            if (v.ModelAnimator != null && v.Root.gameObject.activeSelf)
+                v.ModelAnimator.SetBool(WalkingHash, v.Walking);
             v.ApplyVisual();
         }
         LayoutStory(false);
@@ -737,7 +741,19 @@ public class ReplayPlayer : MonoBehaviour
         Build();
         ApplyFold(tick);
         ResetAnim();
-        foreach (var v in _views.Values) { v.Smoothed = v.Target; v.Root.position = v.Target; }
+        foreach (var v in _views.Values)
+        {
+            v.Smoothed = v.Target; v.Root.position = v.Target;
+            // Pose the mini for a frozen capture — the Animator doesn't tick in edit mode, so
+            // without this every model renders in bind pose. Manual Update() samples the graph.
+            // Dead units' roots are inactive: Animator.Update would warn and do nothing.
+            if (v.ModelAnimator != null && v.Root.gameObject.activeSelf)
+            {
+                v.ModelAnimator.SetBool(WalkingHash, v.Walking);
+                v.ModelAnimator.Update(0f);
+                v.ModelAnimator.Update(0.4f);
+            }
+        }
         foreach (var e in _events)
             if (e.Tick > tick - 2 && e.Tick <= tick)
             {
@@ -827,6 +843,7 @@ public class ReplayPlayer : MonoBehaviour
     }
 
     private Vector3 _boardCenter;
+    private static readonly int WalkingHash = Animator.StringToHash("Walking");
 
     private void ResetAnim()
     {
@@ -1295,10 +1312,15 @@ public class ReplayPlayer : MonoBehaviour
         // fold's lunge stays on Root.position, so MotionOffset and body yaw compose without fighting.
         var body = new GameObject("body").transform;
         body.SetParent(root, false);
-        // Key on the stable content id (replay v3+ carries it); Name is the fallback for older
-        // fixtures — a flavor-named authored enemy must not silently render as the default capsule.
-        var torso = BuildSilhouette(body, string.IsNullOrEmpty(u.ChassisId) ? u.Name : u.ChassisId,
-                                    team, out float barOff, out float leanDeg);
+        // Model first (fight-legibility Phase 2, KayKit shared-rig minis), primitives as the
+        // automatic fallback — a missing model/chassis can never break the board. Key on the
+        // stable content id (replay v3+); Name is the fallback for older fixtures.
+        float barOff, leanDeg;
+        var modelRend = TryBuildModel(body, u, team, out barOff, out leanDeg);
+        var torso = modelRend != null
+            ? modelRend
+            : BuildSilhouette(body, string.IsNullOrEmpty(u.ChassisId) ? u.Name : u.ChassisId,
+                              team, out barOff, out leanDeg);
 
         float barY = 1.55f + barOff, manaY = 1.40f + barOff, pipY = 1.72f + barOff;
         var bars = _data != null ? _data.bars : new BarsTune();
@@ -1340,10 +1362,94 @@ public class ReplayPlayer : MonoBehaviour
             PlanningMarker = planningMarker,
             HpFill = hp, ShieldFill = shield, ManaFill = mana, Pips = pips, Nameplate = nameplate,
             ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
-            MaxHp = u.MaxHp, ManaMax = u.ManaMax, TeamColor = team,
+            // Models flash off WHITE (a team tint would permanently recolor the texture; team reads
+            // via the ground disc + ally/enemy bars). Primitives keep the team-colored torso.
+            MaxHp = u.MaxHp, ManaMax = u.ManaMax, TeamColor = modelRend != null ? Color.white : team,
             Target = HexToWorld(u.Pos), Smoothed = HexToWorld(u.Pos),
             TargetYaw = yaw0, LeanDeg = leanDeg,
+            ModelAnimator = modelRend != null ? body.GetComponentInChildren<Animator>() : null,
         };
+    }
+
+    // ---- KayKit board models (fight-legibility Phase 2) -----------------------
+    // 6 of 8 chassis get their own body; phalanx/banneret are Knight kitbashes with a prop on the
+    // rig's dedicated handslot bone; cleric reuses the Mage body (weak seat — $7.95 EXTRA tier adds
+    // a Druid if it reads poorly). All bodies share one 23-joint Rig_Medium skeleton.
+    private static readonly Dictionary<string, string> ModelByChassis = new Dictionary<string, string>
+    {
+        ["bulwark"] = "Knight", ["berserker"] = "Barbarian", ["pyromancer"] = "Mage",
+        ["sharpshot"] = "Ranger", ["shade"] = "Rogue_Hooded", ["cleric"] = "Mage",
+        ["phalanx"] = "Knight", ["banneret"] = "Knight",
+    };
+    private static readonly Dictionary<string, string> PropByChassis = new Dictionary<string, string>
+    {
+        ["bulwark"] = "shield_A", ["berserker"] = "axe_C", ["pyromancer"] = "staff_A",
+        ["sharpshot"] = "bow_A_withString", ["shade"] = "dagger_A", ["cleric"] = "hammer_A",
+        ["phalanx"] = "spear_A", ["banneret"] = "banner_triple_white",
+    };
+
+    /// <summary>Instantiate the chassis' KayKit mini under the body container. Returns the flash
+    /// renderer, or null → caller falls back to the primitive silhouette (missing model, unknown
+    /// chassis, models disabled). Contracts preserved: Body stays the scale/yaw container, Root owns
+    /// position, no colliders, one renderer carries the flash. The view's TeamColor is set WHITE by
+    /// the caller for models (flash lerps off the texture, not a tint); team reads via a ground disc
+    /// + the ally/enemy bars.</summary>
+    private Renderer TryBuildModel(Transform body, PlaybackUnit u, Color team, out float barOff, out float leanDeg)
+    {
+        barOff = 0f; leanDeg = 0f;
+        var mt = _data != null ? _data.models : null;
+        if (mt == null || !mt.enabled) return null;
+        string chassis = (string.IsNullOrEmpty(u.ChassisId) ? u.Name : u.ChassisId).ToLowerInvariant();
+        if (!ModelByChassis.TryGetValue(chassis, out var modelName)) return null;
+        var model = Resources.Load<GameObject>("Board/KayKit/Characters/" + modelName);
+        if (model == null) return null;
+
+        var inst = Instantiate(model, body, false);
+        inst.name = "model";
+        inst.transform.localScale = Vector3.one * mt.scale;
+        var rend = inst.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (rend == null) { DestroyImmediate(inst); return null; }
+        foreach (var col in inst.GetComponentsInChildren<Collider>()) DestroyImmediate(col); // picking is screen-space, no physics
+
+        // One shared controller (Idle/Run) drives every body — the shared-rig payoff. Missing
+        // controller just means bind pose; the board still renders.
+        var animator = inst.GetComponent<Animator>();
+        if (animator == null) animator = inst.AddComponent<Animator>();
+        var controller = Resources.Load<RuntimeAnimatorController>("Board/KayKit/BoardUnit");
+        if (controller != null) animator.runtimeAnimatorController = controller;
+        animator.applyRootMotion = false; // the sim owns position (render-contract §1, ADR 0018)
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate; // unfocused remote editor still animates
+
+        // Kitbash prop on the rig's dedicated attach bone.
+        if (PropByChassis.TryGetValue(chassis, out var propName))
+        {
+            var prop = Resources.Load<GameObject>("Board/KayKit/Props/" + propName);
+            var slot = FindDeep(inst.transform, "handslot.r") ?? FindDeep(inst.transform, "handslot_r");
+            if (prop != null && slot != null)
+            {
+                var p = Instantiate(prop, slot, false);
+                p.name = "prop_" + propName;
+                foreach (var c in p.GetComponentsInChildren<Collider>()) DestroyImmediate(c);
+            }
+        }
+
+        // Team read: a flat disc at the feet (textured minis can't carry a torso tint honestly).
+        MakePrimitive(PrimitiveType.Cylinder, body, new Vector3(0f, 0.015f, 0f),
+                      new Vector3(0.66f, 0.012f, 0.66f), team).name = "teamdisc";
+
+        barOff = mt.barLift;
+        return rend;
+    }
+
+    private static Transform FindDeep(Transform t, string name)
+    {
+        if (string.Equals(t.name, name, StringComparison.OrdinalIgnoreCase)) return t;
+        for (int i = 0; i < t.childCount; i++)
+        {
+            var hit = FindDeep(t.GetChild(i), name);
+            if (hit != null) return hit;
+        }
+        return null;
     }
 
     /// <summary>Builds the chassis-specific primitive silhouette under the body container: a torso

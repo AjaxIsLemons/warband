@@ -71,6 +71,11 @@
     "deathHold": 0.14,
     "critHold": 0.06
   },
+  "models": {
+    "enabled": true,
+    "scale": 0.75,
+    "barLift": 0.35
+  },
   "bars": {
     "hpPerSegment": 25,
     "allyHp": "#59D959FF",
