@@ -30,6 +30,8 @@ public class TuningData
     public NameplateTune nameplates = new NameplateTune();
     public StoryTune story = new StoryTune();
     public MotionTune motion = new MotionTune();
+    public BeatTune beats = new BeatTune();
+    public BarsTune bars = new BarsTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
     // references to them survive a reload — see TuningIO.Settings().
@@ -106,6 +108,38 @@ public class CameraTune
     [Range(5f, 89f)] public float pitch = 52f;        // elevation angle
     [Range(0.4f, 3f)] public float distance = 1.25f;  // multiple of board span
     public Color background = new Color(0.055f, 0.06f, 0.08f);
+}
+
+/// <summary>Unit bar conventions (fight-legibility Phase 1). Ally-green/enemy-red HP (the TFT
+/// convention), segment ticks every hpPerSegment so absolute HP reads without text, and the
+/// Underlords mana law: the bar COLOR-FLIPS + pulses the instant a cast is ready — a discrete
+/// event the eye can't miss, instead of an analog fill it has to measure.</summary>
+[Serializable]
+public class BarsTune
+{
+    [Min(0)] public int hpPerSegment = 25;
+    public Color allyHp = new Color(0.35f, 0.85f, 0.35f);
+    public Color enemyHp = new Color(0.90f, 0.36f, 0.30f);
+    public Color mana = new Color(0.35f, 0.55f, 0.95f);
+    public Color manaReady = new Color(0.91f, 0.96f, 1.00f);
+    [Range(0f, 2f)] public float manaReadyPulse = 0.9f;
+}
+
+/// <summary>Beat sequencing + hit-stop (render-polish "the spine", fight-legibility Phase 1).
+/// A beat = every event of one sim tick. Distinct causal chains inside a beat fire with a small
+/// stagger so simultaneous casts don't visually cancel; blocking events (Death, crits) HOLD the
+/// playhead for a few real ms while Director-stepped FX keep animating — never Time.timeScale.
+/// Stagger/holds are authored at 10 t/s and compress on fast-forward like tell motion.</summary>
+[Serializable]
+public class BeatTune
+{
+    public bool enabled = true;
+    // Seconds between distinct causal chains (Root groups) inside one tick's beat.
+    [Range(0f, 0.1f)] public float stagger = 0.045f;
+    // Real-seconds playhead hold on a Death — the loudest beat buys silence around it.
+    [Range(0f, 0.4f)] public float deathHold = 0.14f;
+    // Smaller hold on a crit landing.
+    [Range(0f, 0.3f)] public float critHold = 0.06f;
 }
 
 [Serializable]

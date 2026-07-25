@@ -114,16 +114,32 @@ public class ReplayPlayer : MonoBehaviour
         public float WalkPhase;
         public float FlashT, FlashDur = 0.2f, PunchT, PunchDur = 0.18f, PunchAmt;
         public Color FlashColor = Color.white;
+        // Status-as-material (Underlords law: at this zoom the BODY carries the status, not a
+        // 16px icon). Set from the fold each apply; a flash still rides on top.
+        public Color StatusTint = Color.white;
+        public float StatusTintAmt;
+        // The cast sentence's threshold flip: ManaReady flips the fill color; the pulse is a
+        // brief scale-pop on the mana bar so the flip is an EVENT, not a state you must notice.
+        public bool ManaReady;
+        public float ManaPulseT, ManaFillBaseH;
         private MaterialPropertyBlock _mpb;
 
         public void ApplyVisual()
         {
             if (_mpb == null) _mpb = new MaterialPropertyBlock();
             BodyRenderer.GetPropertyBlock(_mpb);
-            _mpb.SetColor("_BaseColor", Color.Lerp(TeamColor, FlashColor, Mathf.Clamp01(FlashT)));
+            Color baseCol = Color.Lerp(TeamColor, StatusTint, Mathf.Clamp01(StatusTintAmt));
+            _mpb.SetColor("_BaseColor", Color.Lerp(baseCol, FlashColor, Mathf.Clamp01(FlashT)));
             BodyRenderer.SetPropertyBlock(_mpb);
             Body.localScale = BodyBaseScale * (1f + Mathf.Clamp01(PunchT) * PunchAmt);
+            if (ManaFill != null && ManaFillBaseH > 0f)
+            {
+                var s = ManaFill.localScale;
+                s.y = ManaFillBaseH * (1f + Mathf.Clamp01(ManaPulseT) * ManaPulse);
+                ManaFill.localScale = s;
+            }
         }
+        public float ManaPulse = 0.9f; // magnitude, set from BarsTune at spawn
     }
 
     /// <summary>One combat number, already scheduled: the Director has picked its release time and
@@ -229,7 +245,7 @@ public class ReplayPlayer : MonoBehaviour
             if (data?.tells != null) _tells.AddRange(data.tells);
         }
 
-        public void Handle(BattleEvent e)
+        public void Handle(BattleEvent e, float delay = 0f)
         {
             // Ranged is a VIEW fact: the hex distance between the two endpoints at fold-dispatch time.
             // Null when either endpoint is absent from the fold — a ranged-filtered rule then can't
@@ -249,7 +265,7 @@ public class ReplayPlayer : MonoBehaviour
             if (best == null) return;
 
             int key = e.Root >= 0 ? e.Root : e.Source; // causality root: children read this latch
-            float startAt = _clock;
+            float startAt = _clock + delay;            // beat stagger from the dispatcher
             if (_readyAt.TryGetValue(key, out var ready) && ready > startAt) startAt = ready;
 
             float windup = best.windupSeconds * _speedScale;
@@ -586,7 +602,7 @@ public class ReplayPlayer : MonoBehaviour
     {
         if (!Load()) return;
         Build();
-        _clock = 0f; _fxCursor = 0; _playing = true;
+        _clock = 0f; _fxCursor = 0; _playing = true; _holdSeconds = 0f;
         _ending = false; _endHold = 0f;
         ClearRecent();  // a fresh fight starts the Events tab clean (no ResetAnim on this path)
         ApplyFold(0);
@@ -639,7 +655,7 @@ public class ReplayPlayer : MonoBehaviour
         _endTick = endTick;
         PrepareLoadedData();
         Build();
-        _clock = 0f; _fxCursor = 0; _playing = autoplay;
+        _clock = 0f; _fxCursor = 0; _playing = autoplay; _holdSeconds = 0f;
         _ending = false; _endHold = 0f;
         ClearRecent();
         ApplyFold(0);
@@ -649,7 +665,11 @@ public class ReplayPlayer : MonoBehaviour
     private void Update()
     {
         if (!_playing || _fold == null) return;
-        _clock += Time.deltaTime * ticksPerSecond;
+        // Hit-stop: a blocking beat (Death, crit) freezes the PLAYHEAD for a few real ms while the
+        // Director keeps stepping — decorative FX animate through the hold, sim time stands still.
+        // Never Time.timeScale (render-polish law): that would couple juice to Unity's clock.
+        if (_holdSeconds > 0f) _holdSeconds -= Time.deltaTime;
+        else _clock += Time.deltaTime * ticksPerSecond;
         if (_clock >= _endTick)
         {
             // Reach the end → freeze the playhead and HOLD, showing the win banner + readout, instead
@@ -690,6 +710,7 @@ public class ReplayPlayer : MonoBehaviour
             }
             if (v.FlashT > 0f) v.FlashT -= dt / v.FlashDur;
             if (v.PunchT > 0f) v.PunchT -= dt / v.PunchDur;
+            if (v.ManaPulseT > 0f) v.ManaPulseT -= dt / 0.35f;
             v.ApplyVisual();
         }
         LayoutStory(false);
@@ -810,6 +831,7 @@ public class ReplayPlayer : MonoBehaviour
     private void ResetAnim()
     {
         foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; }
+        _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
         ClearStory();       // clears kill-feed lines + hides the banner, unlatches _ending
         ClearRecent();      // Events-tab buffer too (loop-wrap + edit-mode scrub route through here)
@@ -836,16 +858,50 @@ public class ReplayPlayer : MonoBehaviour
         }
     }
 
+    // Hit-stop remaining (real seconds) + per-beat causal-chain ordering scratch. The playhead
+    // holds while _holdSeconds drains; the Director keeps ticking so FX animate through it.
+    private float _holdSeconds;
+    private readonly Dictionary<int, int> _beatRootOrder = new Dictionary<int, int>();
+
     private void DispatchUpTo(int tick)
     {
+        var bt = _data != null ? _data.beats : null;
+        bool beats = bt != null && bt.enabled;
+        // Same compression law as tell motion: authored at 10 t/s, tighter on fast-forward.
+        float scale = Mathf.Min(1f, 10f / Mathf.Max(0.01f, ticksPerSecond));
+
         while (_fxCursor < _events.Count && _events[_fxCursor].Tick <= tick)
         {
-            var e = _events[_fxCursor++];
-            _director.Handle(e);
-            RecordEvent(e); // ring buffer for the debug Events tab
-            // Kill feed hooks Death at dispatch level — unconditional, independent of whether a Death
-            // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
-            if (e.Kind == EventKind.Death) PushKill(e);
+            // One BEAT = every event of a single tick. Distinct causal chains (Root groups) get a
+            // small stagger so simultaneous chains don't visually cancel; events INSIDE a chain keep
+            // the same offset — their internal ordering already comes from the Director's impact
+            // latch, and staggering them individually would fight it.
+            int beatTick = _events[_fxCursor].Tick;
+            _beatRootOrder.Clear();
+            while (_fxCursor < _events.Count && _events[_fxCursor].Tick == beatTick)
+            {
+                var e = _events[_fxCursor++];
+                float delay = 0f;
+                if (beats && bt.stagger > 0f)
+                {
+                    int chain = e.Root >= 0 ? e.Root : e.Source;
+                    if (!_beatRootOrder.TryGetValue(chain, out int order))
+                    { order = _beatRootOrder.Count; _beatRootOrder[chain] = order; }
+                    delay = order * bt.stagger * scale;
+                }
+                _director.Handle(e, delay);
+                RecordEvent(e); // ring buffer for the debug Events tab
+                // Kill feed hooks Death at dispatch level — unconditional, independent of whether a Death
+                // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
+                if (e.Kind == EventKind.Death) PushKill(e);
+                // Blocking events hold the playhead. Play mode only — a frozen BuildPreview has no
+                // playhead to hold, and a stale hold must not leak into the next scrub.
+                if (beats && Application.isPlaying)
+                {
+                    if (e.Kind == EventKind.Death) _holdSeconds = Mathf.Max(_holdSeconds, bt.deathHold * scale);
+                    else if (e.Crit) _holdSeconds = Mathf.Max(_holdSeconds, bt.critHold * scale);
+                }
+            }
         }
     }
 
@@ -1237,12 +1293,27 @@ public class ReplayPlayer : MonoBehaviour
                                     team, out float barOff, out float leanDeg);
 
         float barY = 1.55f + barOff, manaY = 1.40f + barOff, pipY = 1.72f + barOff;
+        var bars = _data != null ? _data.bars : new BarsTune();
         MakeBarBack(root, barY);
-        var hp = MakeFill(root, barY, new Color(0.35f, 0.85f, 0.35f));
+        var hp = MakeFill(root, barY, u.Team == 0 ? bars.allyHp : bars.enemyHp);
         var shield = MakeFill(root, barY, new Color(0.55f, 0.80f, 1.00f));
         shield.localPosition += new Vector3(0f, 0f, -0.04f);
         MakeBarBack(root, manaY, 0.09f);
-        var mana = MakeFill(root, manaY, new Color(0.35f, 0.55f, 0.95f), 0.06f);
+        var mana = MakeFill(root, manaY, bars.mana, 0.06f);
+        // Segment ticks every hpPerSegment (TFT: one divider per fixed HP) — absolute magnitude
+        // readable at a glance with no text. Capped so huge health pools don't turn into a comb.
+        if (bars.hpPerSegment > 0 && u.MaxHp > bars.hpPerSegment)
+        {
+            int marks = Mathf.Min(11, u.MaxHp / bars.hpPerSegment);
+            for (int m = 1; m <= marks; m++)
+            {
+                float fx = (float)(m * bars.hpPerSegment) / u.MaxHp;
+                if (fx >= 0.999f) break;
+                MakePrimitive(PrimitiveType.Cube, root,
+                    new Vector3(-BarWidth * 0.5f + BarWidth * fx, barY, -0.06f),
+                    new Vector3(0.02f, 0.13f, 0.02f), new Color(0.05f, 0.05f, 0.06f));
+            }
+        }
 
         var pips = new GameObject("pips").transform;
         pips.SetParent(root, false);
@@ -1260,6 +1331,7 @@ public class ReplayPlayer : MonoBehaviour
             Root = root, Body = body, BodyRenderer = torso, BodyBaseScale = Vector3.one,
             PlanningMarker = planningMarker,
             HpFill = hp, ShieldFill = shield, ManaFill = mana, Pips = pips, Nameplate = nameplate,
+            ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
             MaxHp = u.MaxHp, ManaMax = u.ManaMax, TeamColor = team,
             Target = HexToWorld(u.Pos), Smoothed = HexToWorld(u.Pos),
             TargetYaw = yaw0, LeanDeg = leanDeg,
@@ -1423,9 +1495,43 @@ public class ReplayPlayer : MonoBehaviour
             SetFill(v.HpFill, v.MaxHp > 0 ? (float)u.Hp / v.MaxHp : 0f);
             SetFill(v.ShieldFill, v.MaxHp > 0 ? Mathf.Clamp01((float)u.Shield / v.MaxHp) : 0f);
             SetFill(v.ManaFill, v.ManaMax > 0 ? (float)u.Mana / v.ManaMax : 0f);
+            // The cast sentence's first word: "about to cast" is a discrete FLIP (color change +
+            // one pulse at full), not an analog quantity the viewer has to measure (Underlords law).
+            bool ready = v.ManaMax > 0 && u.Mana >= v.ManaMax;
+            if (ready != v.ManaReady)
+            {
+                v.ManaReady = ready;
+                if (ready) v.ManaPulseT = 1f;
+                var bars = _data != null ? _data.bars : new BarsTune();
+                Paint(v.ManaFill.GetComponent<Renderer>(), ready ? bars.manaReady : bars.mana);
+            }
+            SetStatusTint(v, u);
             UpdatePips(v, u);
         }
         SyncFields();
+    }
+
+    /// <summary>Status-as-material (Underlords: frozen units LOOK stony, silenced units wear the
+    /// mask). At autobattler zoom the body is the only surface big enough to carry a status, so the
+    /// heaviest active status tints the whole torso; pips stay as the detailed secondary read.
+    /// Priority: hard control (grey, the unit is OFF) > Phase (icy, the unit is elsewhere) >
+    /// burning (ember). A tell's flash still rides on top.</summary>
+    private static void SetStatusTint(UnitView v, PlaybackUnit u)
+    {
+        bool control = false, phase = false, burning = false;
+        foreach (var s in u.Statuses)
+        {
+            switch (s.Kind)
+            {
+                case StatusKind.Stun: case StatusKind.Root: control = true; break;
+                case StatusKind.Phase: phase = true; break;
+                case StatusKind.Burn: case StatusKind.Dot: burning = true; break;
+            }
+        }
+        if (control) { v.StatusTint = new Color(0.47f, 0.47f, 0.52f); v.StatusTintAmt = 0.65f; }
+        else if (phase) { v.StatusTint = new Color(0.75f, 0.95f, 1.00f); v.StatusTintAmt = 0.60f; }
+        else if (burning) { v.StatusTint = new Color(1.00f, 0.45f, 0.20f); v.StatusTintAmt = 0.40f; }
+        else v.StatusTintAmt = 0f;
     }
 
     private void UpdatePips(UnitView v, PlaybackUnit u)
@@ -1548,14 +1654,34 @@ public class ReplayPlayer : MonoBehaviour
         return t;
     }
 
+    /// <summary>Pip color per status FAMILY — every one of the 27 kinds gets a meaningful family
+    /// color (22 used to fall through to grey). Families follow the tell color language: control =
+    /// purple, offense-up = warm red, defense = cyan, DoT = ember, heal = green, Phase = ice,
+    /// CheatDeath = white-hot (gold stays reserved for crit).</summary>
     private static Color StatusColor(StatusKind k)
     {
         switch (k)
         {
-            case StatusKind.Dot: case StatusKind.Burn: return new Color(0.95f, 0.45f, 0.15f);
+            case StatusKind.Dot: case StatusKind.Burn: case StatusKind.BurnAmp:
+                return new Color(0.95f, 0.45f, 0.15f);
             case StatusKind.Haste: return new Color(0.95f, 0.90f, 0.35f);
-            case StatusKind.AttackUp: return new Color(0.95f, 0.30f, 0.30f);
-            case StatusKind.Root: case StatusKind.Silence: case StatusKind.Disarm: return new Color(0.55f, 0.35f, 0.75f);
+            case StatusKind.Slow: case StatusKind.AttackDown:
+                return new Color(0.55f, 0.62f, 0.78f);
+            case StatusKind.AttackUp: case StatusKind.CritUp: case StatusKind.CritMultUp:
+            case StatusKind.MultiShotRamp: case StatusKind.MultiShotWindow:
+            case StatusKind.SwingAmpPct: case StatusKind.Frenzied: case StatusKind.NextSwingCrit:
+                return new Color(0.95f, 0.30f, 0.30f);
+            case StatusKind.Root: case StatusKind.Silence: case StatusKind.Disarm:
+            case StatusKind.Stun: case StatusKind.Taunt:
+                return new Color(0.55f, 0.35f, 0.75f);
+            case StatusKind.Regen: case StatusKind.OverhealToShield:
+                return new Color(0.40f, 0.85f, 0.45f);
+            case StatusKind.DamageTakenDown: case StatusKind.CounterCharge:
+                return new Color(0.40f, 0.80f, 0.95f);
+            case StatusKind.DamageTakenUp: return new Color(0.85f, 0.30f, 0.50f);
+            case StatusKind.Phase: return new Color(0.50f, 0.90f, 1.00f);
+            case StatusKind.CheatDeath: return new Color(1.00f, 0.95f, 0.85f);
+            case StatusKind.Mark: return new Color(0.90f, 0.40f, 0.70f);
             default: return new Color(0.8f, 0.8f, 0.8f);
         }
     }

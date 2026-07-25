@@ -65,6 +65,20 @@
     "turnSpeed": 14.0,
     "snapSpeed": 12.0
   },
+  "beats": {
+    "enabled": true,
+    "stagger": 0.045,
+    "deathHold": 0.14,
+    "critHold": 0.06
+  },
+  "bars": {
+    "hpPerSegment": 25,
+    "allyHp": "#59D959FF",
+    "enemyHp": "#E65C4DFF",
+    "mana": "#598CF2FF",
+    "manaReady": "#E8F5FFFF",
+    "manaReadyPulse": 0.9
+  },
   "tells": [
     {
       "eventKind": "DamageDealt",
@@ -639,6 +653,93 @@
       "motionScale": 1.0,
       "windupSeconds": 0.1,
       "defer": false
+    },
+    {
+      "eventKind": "StatusApplied",
+      "side": "Target",
+      "flash": true,
+      "flashColor": "#C9B8E8FF",
+      "critFlashColor": "#C9B8E8FF",
+      "flashSeconds": 0.18,
+      "motion": "None"
+    },
+    {
+      "eventKind": "StatusExpired",
+      "side": "Target",
+      "flash": true,
+      "flashColor": "#9AA0AAFF",
+      "critFlashColor": "#9AA0AAFF",
+      "flashSeconds": 0.12,
+      "motion": "None"
+    },
+    {
+      "eventKind": "ShieldChanged",
+      "side": "Target",
+      "flash": true,
+      "flashColor": "#7FD4FFFF",
+      "critFlashColor": "#7FD4FFFF",
+      "flashSeconds": 0.18,
+      "motion": "None"
+    },
+    {
+      "eventKind": "CheatDeath",
+      "side": "Target",
+      "flash": true,
+      "flashColor": "#FFF2DBFF",
+      "critFlashColor": "#FFF2DBFF",
+      "flashSeconds": 0.5,
+      "punch": true,
+      "punchAmount": 0.5,
+      "punchSeconds": 0.3,
+      "motion": "Burst",
+      "motionSeconds": 0.5,
+      "motionColor": "#FFF2DBFF",
+      "motionGlow": 6.0,
+      "motionScale": 2.0
+    },
+    {
+      "eventKind": "FieldCreated",
+      "side": "Source",
+      "byFlavor": true,
+      "flavor": "Hazard",
+      "flash": true,
+      "flashColor": "#F25933FF",
+      "critFlashColor": "#F25933FF",
+      "flashSeconds": 0.3,
+      "motion": "None"
+    },
+    {
+      "eventKind": "FieldCreated",
+      "side": "Source",
+      "byFlavor": true,
+      "flavor": "Boon",
+      "flash": true,
+      "flashColor": "#59E673FF",
+      "critFlashColor": "#59E673FF",
+      "flashSeconds": 0.3,
+      "motion": "None"
+    },
+    {
+      "eventKind": "FieldCreated",
+      "side": "Source",
+      "byFlavor": true,
+      "flavor": "Buff",
+      "flash": true,
+      "flashColor": "#59D9F2FF",
+      "critFlashColor": "#59D9F2FF",
+      "flashSeconds": 0.3,
+      "motion": "None"
+    },
+    {
+      "eventKind": "FieldCreated",
+      "side": "Source",
+      "byFlavor": true,
+      "flavor": "Debuff",
+      "flash": true,
+      "flashColor": "#A666D9FF",
+      "critFlashColor": "#A666D9FF",
+      "flashSeconds": 0.3,
+      "motion": "None"
     }
   ]
 }
