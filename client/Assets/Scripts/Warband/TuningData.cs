@@ -179,10 +179,15 @@ public class BeatTune
 public class PostTune
 {
     [Range(0f, 3f)] public float bloomIntensity = 0.7f;
-    [Range(0f, 2f)] public float bloomThreshold = 0.9f;
+    [Range(0f, 2f)] public float bloomThreshold = 1.1f;
     [Range(0f, 1f)] public float vignette = 0.30f;
     [Range(-60f, 60f)] public float saturation = 14f;
-    public float dofStart = 16f;
+    // OFF by default (2026-07-25): world-space text is transparent and writes no depth, so DoF
+    // blurs text pixels by whatever is BEHIND them — text over the void gets far-plane blur,
+    // which split half-on/half-off-board text boxes down the middle. Tilt-shift needs a
+    // text-overlay camera stack before it can come back.
+    public bool dofEnabled = false;
+    public float dofStart = 26f;
     public float dofEnd = 44f;
 }
 

@@ -10,6 +10,7 @@
     "bloomThreshold": 1.1,
     "vignette": 0.32,
     "saturation": 16.0,
+    "dofEnabled": false,
     "dofStart": 26.0,
     "dofEnd": 44.0
   },

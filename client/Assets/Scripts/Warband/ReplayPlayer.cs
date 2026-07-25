@@ -937,6 +937,21 @@ public class ReplayPlayer : MonoBehaviour
         _hexMesh = null; // vertices bake hexSize — regenerate per build so a tuned size shows
         BuildBoard();
         foreach (var u in _initial) SpawnView(u);
+        // The first rendered frame after a rebuild must already be PLACED and POSED. The shell
+        // rebuilds this board inside UI events (every planning click re-snapshots; lock-in swaps
+        // to the fight), and without this the frame between Build and the next Update draws every
+        // fresh model stacked at the origin in bind pose — Jake's "they all T-pose when I click"
+        // and "lock-in teleports everyone to one square".
+        foreach (var v in _views.Values)
+        {
+            v.Root.position = v.Target;
+            v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f);
+            if (v.ModelAnimator != null && v.Root.gameObject.activeSelf)
+            {
+                v.ModelAnimator.SetBool(WalkingHash, false);
+                v.ModelAnimator.Update(0f); // bind + evaluate Idle so no bind-pose frame renders
+            }
+        }
         BuildStory();
         FrameCamera();
         ApplyPost();
@@ -1370,7 +1385,12 @@ public class ReplayPlayer : MonoBehaviour
         if (p.TryGet<Bloom>(out var b)) { b.intensity.value = _data.post.bloomIntensity; b.threshold.value = _data.post.bloomThreshold; }
         if (p.TryGet<Vignette>(out var v)) v.intensity.value = _data.post.vignette;
         if (p.TryGet<ColorAdjustments>(out var ca)) ca.saturation.value = _data.post.saturation;
-        if (p.TryGet<DepthOfField>(out var d)) { d.gaussianStart.value = _data.post.dofStart; d.gaussianEnd.value = _data.post.dofEnd; }
+        if (p.TryGet<DepthOfField>(out var d))
+        {
+            d.active = _data.post.dofEnabled; // see PostTune: transparent text inherits background depth
+            d.gaussianStart.value = _data.post.dofStart;
+            d.gaussianEnd.value = _data.post.dofEnd;
+        }
     }
 
     // ---- board (hex grid) ----------------------------------------------------
