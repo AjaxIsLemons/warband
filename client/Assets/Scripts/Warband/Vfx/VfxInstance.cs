@@ -48,6 +48,8 @@ public sealed class VfxInstance : MonoBehaviour
     {
         public QuadElement E; public Transform T; public Renderer R;
         public MaterialPropertyBlock Mpb;
+        public Texture2D Tex;   // resolved once at Create — Play must not hit Resources.Load
+        public bool Suppressed; // RequireTexture with nothing to show: this element never draws
     }
     private sealed class LightPart { public LightElement E; public Light L; public bool Held; }
 
@@ -212,7 +214,18 @@ public sealed class VfxInstance : MonoBehaviour
         mr.lightProbeUsage = LightProbeUsage.Off;
         mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
 
-        _quads.Add(new QuadPart { E = e, T = go.transform, R = mr, Mpb = new MaterialPropertyBlock() });
+        // The texture is resolved HERE, once per pooled instance, rather than per Play: pools are
+        // dropped and rebuilt by Build(), so an asset imported mid-session still lands on the next
+        // board rebuild.
+        var tex = VfxLibrary.SigilTexture(e.Texture);
+        bool suppressed = e.RequireTexture && tex == null;
+        if (suppressed) mr.enabled = false;
+
+        _quads.Add(new QuadPart
+        {
+            E = e, T = go.transform, R = mr, Mpb = new MaterialPropertyBlock(),
+            Tex = tex, Suppressed = suppressed,
+        });
     }
 
     private void BuildLight(LightElement e, Transform group, int index)
@@ -306,6 +319,7 @@ public sealed class VfxInstance : MonoBehaviour
     /// tracks are written every Step in <see cref="ApplyTracks"/>.</summary>
     private void SetupQuad(QuadPart q)
     {
+        if (q.Suppressed) return;
         var e = q.E;
         q.Mpb.SetFloat(ThicknessId, e.Thickness);
         q.Mpb.SetFloat(SoftnessId, e.Softness);
@@ -313,8 +327,7 @@ public sealed class VfxInstance : MonoBehaviour
         q.Mpb.SetFloat(EdgeFadeId, e.EdgeFade);
         q.Mpb.SetFloat(FalloffId, e.Falloff);
         if (e.Noise && VfxLibrary.Noise != null) q.Mpb.SetTexture(NoiseTexId, VfxLibrary.Noise);
-        var tex = VfxLibrary.SigilTexture(e.Texture);
-        if (tex != null) q.Mpb.SetTexture(MainTexId, tex);
+        if (q.Tex != null) q.Mpb.SetTexture(MainTexId, q.Tex);
 
         switch (e.Orientation)
         {
@@ -374,6 +387,7 @@ public sealed class VfxInstance : MonoBehaviour
         for (int i = 0; i < _quads.Count; i++)
         {
             var q = _quads[i];
+            if (q.Suppressed) continue;
             var e = q.E;
             float lt = _t - e.Delay;
             if (lt < 0f) { if (q.R.enabled) q.R.enabled = false; continue; }

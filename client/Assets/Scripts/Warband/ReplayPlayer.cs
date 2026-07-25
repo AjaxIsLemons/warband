@@ -200,8 +200,12 @@ public class ReplayPlayer : MonoBehaviour
         // Camera-facing rotation for billboard elements — read through a delegate so an orbit yaw
         // change (FrameCamera recomputes it) reaches recipes without rebuilding the Director.
         private readonly Func<Quaternion> _billboard;
+        // Story-feed router for `announce` tells — (caster unit id, resolved ability id) at the
+        // START of the windup, so the line reads while the sigil is still turning under the caster.
+        private readonly Action<int, string> _announce;
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
+        private readonly FxTune _fx;
         private readonly Action<string> _playSfx;
         // Motion/windup times are authored at 10 ticks/s; compress on fast-forward so tells stay
         // crisp instead of smearing (flash/punch stay real-seconds, decayed in ReplayPlayer.Update).
@@ -220,6 +224,9 @@ public class ReplayPlayer : MonoBehaviour
             // animation into the sim's gap). Null on primitives / non-origin tells.
             public string AnimState;
             public bool AnimStarted;
+            // The source's resolved ability id, captured at Handle (where it is already looked up
+            // for the byAbility match) so the announce line costs nothing extra at StartAt.
+            public string Ability;
             // VFX recipes fired at StartAt (source + ground). Sustained holds the source instance so
             // the windup's end can close it — the cast sentence's "release" beat.
             public bool FxStarted;
@@ -259,6 +266,9 @@ public class ReplayPlayer : MonoBehaviour
         // Resolved ability identity per unit id — a chassis+traits fold that never changes inside a
         // fight, so it is computed once per unit rather than per event, and dropped on Reset.
         private readonly Dictionary<int, string> _abilityById = new Dictionary<int, string>();
+        // Director-clock time each caster last named itself in the feed — the announce ration's
+        // whole state (FxTune.announceCooldownSeconds). Dropped on Reset with everything else.
+        private readonly Dictionary<int, float> _announcedAt = new Dictionary<int, float>();
         private float _clock;
 
         private const float FlightY = 0.8f;   // tracer/spark chest height
@@ -273,6 +283,7 @@ public class ReplayPlayer : MonoBehaviour
                                 Func<Burst> getBurst, Action<Burst> recycleBurst,
                                 Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
                                 Func<Quaternion> billboard, Action<Hex> pulseGround,
+                                Action<int, string> announce,
                                 float ticksPerSecond, Action<string> playSfx = null)
         {
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
@@ -280,9 +291,10 @@ public class ReplayPlayer : MonoBehaviour
             _getTracer = getTracer; _recycleTracer = recycleTracer;
             _getBurst = getBurst; _recycleBurst = recycleBurst;
             _getVfx = getVfx; _recycleVfx = recycleVfx; _billboard = billboard;
-            _pulseGround = pulseGround;
+            _pulseGround = pulseGround; _announce = announce;
             _impact = data?.impact ?? new ImpactTune();
             _numbers = data?.numbers ?? new NumberTune();
+            _fx = data?.fx ?? new FxTune();
             _speedScale = Mathf.Min(1f, 10f / Mathf.Max(0.01f, ticksPerSecond));
             if (data?.tells != null) _tells.AddRange(data.tells);
         }
@@ -342,7 +354,7 @@ public class ReplayPlayer : MonoBehaviour
                 SideUid = best.side == FeedbackSide.Source ? e.Source : e.Target,
                 SourcePos = srcPos, TargetPos = tgtPos,
                 StartAt = startAt, Windup = windup, Motion = motion,
-                AnimState = animState,
+                AnimState = animState, Ability = srcAbility,
             });
 
             // Latch write — ORIGIN tells only. A swing/cast stamps its contact time so the victim's
@@ -447,11 +459,16 @@ public class ReplayPlayer : MonoBehaviour
                 if (_clock < pt.StartAt) continue;
                 float local = _clock - pt.StartAt;
 
+                // Beat 1 of the cast sentence (combat-spectacle §2): the sigil lights, the riser
+                // starts, and the feed names the cast — all at StartAt, all one frame, so the
+                // windup the player then watches has already been explained.
                 if (!pt.FxStarted)
                 {
                     pt.FxStarted = true;
                     pt.Sustained = StartSourceVfx(pt);
                     StartGroundVfx(pt);
+                    if (!string.IsNullOrEmpty(pt.Def.castSound)) _playSfx?.Invoke(pt.Def.castSound);
+                    if (pt.Def.announce) TryAnnounce(in pt);
                 }
 
                 if (!pt.AnimStarted)
@@ -528,6 +545,21 @@ public class ReplayPlayer : MonoBehaviour
                 if (!_activeVfx[i].Step(dt)) _activeVfx.RemoveAt(i);
             for (int i = _activeNumbers.Count - 1; i >= 0; i--)
                 if (!_activeNumbers[i].Step(dt)) _activeNumbers.RemoveAt(i);
+        }
+
+        /// <summary>Name this cast in the feed — unless its caster already did, inside the ration
+        /// window. The FIRST cast is the news; the fourth Great Chorus in six seconds is wallpaper,
+        /// and there are only four feed slots for it to take from the kills. Per CASTER rather than
+        /// per ability, which is the same thing today (a unit has one signature) and stays right if
+        /// a unit ever gains a second one. Window in FxTune.announceCooldownSeconds; 0 = no ration.</summary>
+        private void TryAnnounce(in PendingTell pt)
+        {
+            if (_announce == null) return;
+            int uid = pt.Event.Source;
+            float window = Mathf.Max(0f, _fx.announceCooldownSeconds);
+            if (window > 0f && _announcedAt.TryGetValue(uid, out var last) && _clock - last < window) return;
+            _announcedAt[uid] = _clock;
+            _announce(uid, pt.Ability);
         }
 
         /// <summary>Particle seed for one recipe firing: a pure function of (tick, side unit, slot),
@@ -710,8 +742,6 @@ public class ReplayPlayer : MonoBehaviour
                 var su = _unitById(sideUid);
                 if (su != null) _pulseGround(su.Pos);
             }
-
-            // TODO(P4 cast choreography): def.announce pushes "«X» casts Y" into the kill-feed slots.
         }
 
         private static readonly int HitStateHash = Animator.StringToHash("Hit");
@@ -784,6 +814,7 @@ public class ReplayPlayer : MonoBehaviour
             _numberQueue.Clear();
             _laneFreeAt.Clear(); // stale lane reservations would hold the next fight's first numbers
             _abilityById.Clear(); // a scenario switch brings different units under the same ids
+            _announcedAt.Clear(); // ditto the ration: a loop-wrap's first cast is news again
             foreach (var v in _views.Values) v.MotionOffset = Vector3.zero;
             foreach (var tr in _activeTracers) _recycleTracer(tr);
             _activeTracers.Clear();
@@ -1319,7 +1350,7 @@ public class ReplayPlayer : MonoBehaviour
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
         GetTracer, RecycleTracer, GetBurst, RecycleBurst,
-        GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, ticksPerSecond, PlaySfx);
+        GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, PushAnnounce, ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
     private AudioSource _audio;
@@ -1423,6 +1454,27 @@ public class ReplayPlayer : MonoBehaviour
             line = $"«{killer}» felled «{victim}»";
             if (e.Amount > 0) line += $" — overkill {e.Amount}";
         }
+        PushFeedLine(line);
+    }
+
+    /// <summary>Push the cast line for an `announce` tell, at the START of its windup — the Director
+    /// calls this while the sigil is turning, so the name arrives with the telegraph rather than
+    /// with the damage. The display name comes from the same content DLL that resolved the id, so
+    /// the feed can never disagree with the tell that fired. Announce lines share the kill-feed
+    /// slots (fx-runtime "Cast choreography"), which is what rations them: a cast line ages out
+    /// like a kill and a busy fight simply pushes the oldest line off the bottom.</summary>
+    private void PushAnnounce(int unitId, string abilityId)
+    {
+        if (string.IsNullOrEmpty(abilityId)) return;
+        string caster = _fold?.ById(unitId)?.Name;
+        if (string.IsNullOrEmpty(caster)) return;
+        PushFeedLine($"«{caster}» casts {Warband.Content.AbilityIdentity.DisplayName(abilityId)}");
+    }
+
+    /// <summary>Newest line first, capped at the slot count — the one place feed lines are added, so
+    /// kills and cast announces can never grow the feed past what LayoutStory can draw.</summary>
+    private void PushFeedLine(string line)
+    {
         _feedLines.Insert(0, (line, 0f));
         while (_feedLines.Count > FeedSlots) _feedLines.RemoveAt(_feedLines.Count - 1);
     }

@@ -331,6 +331,11 @@ public class TellDef
     // Empty = silent. critSound overrides on a crit. Missing clips no-op, so authoring can lead audio.
     public string sound = "";
     public string critSound = "";
+    // The windup channel (combat-spectacle §2 beat 1): played at StartAt, when the cast aura lights
+    // up, NOT at contact. The era risers are in the asset manifest but not generated yet — a missing
+    // clip is the same silent no-op as `sound`, so the rows can name them now and they just start
+    // sounding once the batch lands.
+    public string castSound = "";
 
     public MotionKind motion = MotionKind.None;
     [Range(0.02f, 1f)] public float motionSeconds = 0.15f;   // travel / lunge out-and-back duration
@@ -353,7 +358,9 @@ public class TellDef
     // animator state arrives in P5 and this is a silent no-op until then.
     public bool hitAnim = false;
     [Range(0f, 1f)] public float hitAnimMinT = 0.35f;
-    public bool announce = false;        // story-feed "«X» casts Y" — wired in P4 (cast choreography)
+    // Story-feed line at StartAt: "«X» casts Y", Y being the resolved ability's display name. Rides
+    // the kill-feed slots, so it obeys the same cap + fade — ration it (T2/T3 casts, never riders).
+    public bool announce = false;
     public bool pulseGround = false;     // flare fields covering the impact hex — wired in P2 (FieldView)
 }
 
@@ -381,4 +388,12 @@ public class FxTune
     [Range(0.05f, 0.6f)] public float statusIconSize = 0.22f;
     [Range(0f, 0.3f)] public float statusIconGap = 0.06f;
     [Min(1)] public int statusIconCap = 5;                     // icons before the "+N" chip
+    // The announce ration (combat-spectacle §7.3 rations callouts to S-crown moments; the feed obeys
+    // the same law). A caster announcing every time its mana refills turns the four feed slots into
+    // wallpaper and pushes the kills — the lines that matter — off the bottom: measured at 1.06
+    // lines/s in glyphwar, where one Lifebinder casts Great Chorus six times in 6.6 s. The FIRST
+    // cast is the news, so a caster that announced inside this window casts silently.
+    // REAL seconds, not ticks: how fast a feed can be read doesn't change with the battle speed, so
+    // a fast-forwarded fight simply announces a smaller fraction of its casts. 0 disables the ration.
+    [Range(0f, 20f)] public float announceCooldownSeconds = 6f;
 }

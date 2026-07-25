@@ -203,6 +203,17 @@ public static class VfxLibrary
                 ShapeRotation = Up, Gravity = -0.25f,
             }));
 
+        // ...and the eight era sigils that specialize it, one per chassis (combat-spectacle §2:
+        // "one 4-beat sentence, eight sigils").
+        Add(CastAura("cleric"));
+        Add(CastAura("bulwark"));
+        Add(CastAura("shade"));
+        Add(CastAura("sharpshot"));
+        Add(CastAura("pyromancer"));
+        Add(CastAura("berserker"));
+        Add(CastAura("phalanx"));
+        Add(CastAura("banneret"));
+
         // Impacts.
         Add(Def("impact-spark", 0.2f,
             new ParticleElement
@@ -375,6 +386,58 @@ public static class VfxLibrary
 
         return d;
     }
+
+    /// <summary>The windup half of ONE chassis's cast sentence: the same double rim and rising wisps
+    /// as the generic <c>cast-aura</c>, plus that chassis's era sigil turning slowly under the
+    /// caster. Every hero therefore speaks the same sentence and is told apart by its engraving and
+    /// by the lane color the tell brings — which is why no element here authors a Tint: the tell's
+    /// motionColor IS the lane (combat-spectacle §1-2).
+    ///
+    /// The sigil is <see cref="QuadElement.RequireTexture"/>: until the GenerateAsset batch has
+    /// produced <c>Board/FX/Sigils/&lt;chassis&gt;</c> this recipe degrades to exactly today's
+    /// cast-aura instead of drawing a white disc.
+    ///
+    /// Tiers sit a little under the generic recipe's (0.6-0.85 vs 0.7-1.0) because these recipes are
+    /// shared with the S-crowns, whose motionGlow runs to ~5: at the T2 authoring glow
+    /// (<see cref="GlowRef"/>) the windup reads T0/T1 exactly as §2 asks, and at a T3 glow it lifts
+    /// to ~1.3 rather than ~2 — a windup that warns without out-shouting its own release.</summary>
+    private static VfxDef CastAura(string chassis) => Sustained("cast-aura-" + chassis, 0.25f,
+        new QuadElement
+        {
+            Shader = ShaderSigil, Orientation = QuadOrientation.Ground, Anchor = VfxAnchor.FollowUnit,
+            Size = 1.75f, Tier = 0.8f,
+            Texture = "Board/FX/Sigils/" + chassis, RequireTexture = true,
+            Offset = new Vector3(0f, 0.05f, 0f),
+            Rotation = Loop(AnimationCurve.Linear(0f, 0f, 9f, 1f)),   // one slow turn per 9 s
+            Alpha = Curve(0f, 0f, 0.22f, 1f),
+        },
+        new QuadElement
+        {
+            Shader = ShaderRing, Orientation = QuadOrientation.Ground, Anchor = VfxAnchor.FollowUnit,
+            Size = 2.0f, Tier = 0.8f, Thickness = 0.06f, Softness = 0.20f,
+            Offset = new Vector3(0f, 0.06f, 0f),
+            Radius = Curve(0f, 0.85f),
+            Arc = Curve(0f, 0.85f),
+            Rotation = Loop(AnimationCurve.Linear(0f, 0f, 3f, 1f)),
+            Alpha = Curve(0f, 0f, 0.15f, 1f),
+        },
+        new QuadElement
+        {
+            Shader = ShaderRing, Orientation = QuadOrientation.Ground, Anchor = VfxAnchor.FollowUnit,
+            Size = 1.3f, Tier = 0.6f, Thickness = 0.05f, Softness = 0.18f,
+            Offset = new Vector3(0f, 0.06f, 0f),
+            Radius = Curve(0f, 0.8f),
+            Arc = Curve(0f, 0.6f),
+            Rotation = Loop(AnimationCurve.Linear(0f, 1f, 4f, 0f)),
+            Alpha = Curve(0f, 0f, 0.20f, 0.9f),
+        },
+        new ParticleElement
+        {
+            Anchor = VfxAnchor.FollowUnit, Rate = 8f, Burst = 0, Tier = 0.85f, MaxParticles = 24,
+            LifeMin = 0.6f, LifeMax = 1.0f, SpeedMin = 0.6f, SpeedMax = 1.1f,
+            SizeMin = 0.05f, SizeMax = 0.10f, ShapeAngle = 12f, ShapeRadius = 0.45f,
+            ShapeRotation = Up, Gravity = -0.25f,
+        });
 
     private static readonly Vector3 Up = new Vector3(-90f, 0f, 0f); // aim a cone/circle at the sky
 

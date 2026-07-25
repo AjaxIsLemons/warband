@@ -96,6 +96,11 @@ public sealed class QuadElement : VfxElement
     // Static shader inputs, set once at Play.
     public float Thickness = 0.12f, Softness = 0.15f, Intensity = 1f, EdgeFade = 0.35f, Falloff = 2.5f;
     public string Texture;              // _MainTex for the sigil shader (Resources path)
+    /// <summary>This element is nothing WITHOUT its texture — a missing one disables it outright
+    /// instead of falling back to the shader's white default. That is what lets a recipe name an
+    /// asset the GenerateAsset batch hasn't produced yet (the era sigils) and still degrade to
+    /// exactly the recipe minus that element, rather than to a white disc under the caster.</summary>
+    public bool RequireTexture;
     public bool Noise;                  // bind the generated noise to _NoiseTex
 
     // Animated tracks (seconds). Set postWrapMode = Loop on a track to keep it running under a
