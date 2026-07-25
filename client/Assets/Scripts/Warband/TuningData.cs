@@ -376,6 +376,9 @@ public class FxTune
     // expiry — raise these and the board goes back to reading as solid slabs.
     [Range(0f, 1f)] public float fieldIdleAlpha = 0.30f;       // floor fill opacity at rest
     [Range(0f, 1f)] public float fieldEdgeAlpha = 0.55f;       // footprint rim brightness at rest
+    // The status roster (§5): ~24 px at the real camera, and a gap wide enough that adjacent icons
+    // read as separate glyphs rather than one strip. Control icons draw 1.2× on top of this.
     [Range(0.05f, 0.6f)] public float statusIconSize = 0.22f;
+    [Range(0f, 0.3f)] public float statusIconGap = 0.06f;
     [Min(1)] public int statusIconCap = 5;                     // icons before the "+N" chip
 }

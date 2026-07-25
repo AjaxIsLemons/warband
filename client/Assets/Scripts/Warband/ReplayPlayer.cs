@@ -104,8 +104,10 @@ public class ReplayPlayer : MonoBehaviour
         public Transform Root, Body;
         public Transform PlanningMarker;
         public Renderer BodyRenderer;
-        public Transform HpFill, ShieldFill, ManaFill, Pips;
+        public Transform HpFill, ShieldFill, ManaFill;
         public TextMesh Nameplate;
+        // The status roster over the head — fold-driven, stepped by StepFx, popped by the Director.
+        public StatusIconRow Icons;
         public int MaxHp, ManaMax;
         public Color TeamColor;
         public Vector3 BodyBaseScale, Target;
@@ -672,6 +674,10 @@ public class ReplayPlayer : MonoBehaviour
                 _playSfx?.Invoke(e.Crit && !string.IsNullOrEmpty(def.critSound) ? def.critSound : def.sound);
             if (def.flash) { v.FlashColor = e.Crit ? def.critFlashColor : def.flashColor; v.FlashT = 1f; v.FlashDur = def.flashSeconds; }
             if (def.punch) { v.PunchT = 1f; v.PunchDur = def.punchSeconds; v.PunchAmt = def.punchAmount * (1f + _impact.punchBoost * t); }
+            // The icon pops at the moment the status LANDS, not when the fold gained it — same law
+            // as the flash above, and the same reason the mana bar pulses on its threshold flip.
+            // Aux carries the StatusKind (the fold's own decode).
+            if (e.Kind == EventKind.StatusApplied) v.Icons?.Pop((StatusKind)e.Aux);
             if (def.number && Mathf.Abs(e.Amount) >= def.minAmount)
             {
                 var col = e.Crit ? def.critNumberColor : def.numberColor;
@@ -936,6 +942,7 @@ public class ReplayPlayer : MonoBehaviour
                 var rot = Quaternion.Euler(lean, v.TargetYaw, 0f);
                 v.Body.localRotation = Quaternion.Slerp(v.Body.localRotation, rot, Mathf.Clamp01(mo.turnSpeed * dt));
                 StyleNameplate(v);
+                v.Icons.FaceCamera(_numberFace);
             }
             if (v.FlashT > 0f) v.FlashT -= dt / v.FlashDur;
             if (v.PunchT > 0f) v.PunchT -= dt / v.PunchDur;
@@ -957,6 +964,10 @@ public class ReplayPlayer : MonoBehaviour
     private void StepFx(float dt)
     {
         _director?.Tick(dt);
+        // Status rows: the countdown rings drain and any apply-pop runs out on this clock, which is
+        // why two frozen captures of the SAME tick at different previewAdvanceSeconds show the
+        // clocks at different fills instead of one static ring.
+        foreach (var v in _views.Values) v.Icons?.Step(dt);
         if (_fieldViews.Count == 0) return;
         _expiredFields.Clear();
         foreach (var kv in _fieldViews) if (!kv.Value.Step(dt)) _expiredFields.Add(kv.Key);
@@ -1036,6 +1047,7 @@ public class ReplayPlayer : MonoBehaviour
                 v.Root.position = v.Smoothed + v.MotionOffset + Vector3.up * Footfall(v, _data.motion);
                 v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f); // SNAP (no slerp) so a frozen capture shows facing
                 StyleNameplate(v);
+                v.Icons.FaceCamera(_numberFace);
             }
             v.ApplyVisual();
         }
@@ -1166,7 +1178,7 @@ public class ReplayPlayer : MonoBehaviour
 
     private void ResetAnim()
     {
-        foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; }
+        foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; v.Icons?.Reset(); }
         _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
         ClearFieldViews();  // ditto the fields — the next fight traces its own glyphs in
@@ -1191,6 +1203,7 @@ public class ReplayPlayer : MonoBehaviour
             v.Root.position = v.Target + Vector3.up * Footfall(v, _data.motion);
             v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f);
             StyleNameplate(v);
+            v.Icons.FaceCamera(_numberFace);
             v.ApplyVisual();
         }
     }
@@ -1716,9 +1729,10 @@ public class ReplayPlayer : MonoBehaviour
             }
         }
 
-        var pips = new GameObject("pips").transform;
-        pips.SetParent(root, false);
-        pips.localPosition = new Vector3(-0.45f, pipY, 0f);
+        // Status icons take over the old pip anchor (and its barOff law, so a Banneret's row still
+        // clears its own flag). The row centres itself on the bar and lifts clear of it — see
+        // StatusIconRow.Layout — hence the anchor x of 0 where the pip strip started at its left end.
+        var icons = StatusIconRow.Create(root, pipY, _font, StatusColor);
 
         var nameplate = MakeNameplate(root, pipY + 0.30f, u.Name);
 
@@ -1731,7 +1745,7 @@ public class ReplayPlayer : MonoBehaviour
         {
             Root = root, Body = body, BodyRenderer = torso, BodyBaseScale = Vector3.one,
             PlanningMarker = planningMarker,
-            HpFill = hp, ShieldFill = shield, ManaFill = mana, Pips = pips, Nameplate = nameplate,
+            HpFill = hp, ShieldFill = shield, ManaFill = mana, Icons = icons, Nameplate = nameplate,
             ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
             // Models flash off WHITE (a team tint would permanently recolor the texture; team reads
             // via the ground disc + ally/enemy bars). Primitives keep the team-colored torso.
@@ -1994,14 +2008,16 @@ public class ReplayPlayer : MonoBehaviour
                 Paint(v.ManaFill.GetComponent<Renderer>(), ready ? bars.manaReady : bars.mana);
             }
             SetStatusTint(v, u);
-            UpdatePips(v, u);
+            // Detailed read: which statuses, how many, how long left. Cheap on the unchanged path
+            // (an element-wise compare against the last multiset), so it can run every frame.
+            v.Icons.Sync(u, clock, ticksPerSecond, _data != null ? _data.fx : null);
         }
         SyncFields(clock);
     }
 
     /// <summary>Status-as-material (Underlords: frozen units LOOK stony, silenced units wear the
     /// mask). At autobattler zoom the body is the only surface big enough to carry a status, so the
-    /// heaviest active status tints the whole torso; pips stay as the detailed secondary read.
+    /// heaviest active status tints the whole torso; the icon row stays the detailed secondary read.
     /// Priority: hard control (grey, the unit is OFF) > Phase (icy, the unit is elsewhere) >
     /// burning (ember). A tell's flash still rides on top.</summary>
     private static void SetStatusTint(UnitView v, PlaybackUnit u)
@@ -2020,21 +2036,6 @@ public class ReplayPlayer : MonoBehaviour
         else if (phase) { v.StatusTint = new Color(0.75f, 0.95f, 1.00f); v.StatusTintAmt = 0.60f; }
         else if (burning) { v.StatusTint = new Color(1.00f, 0.45f, 0.20f); v.StatusTintAmt = 0.40f; }
         else v.StatusTintAmt = 0f;
-    }
-
-    private void UpdatePips(UnitView v, PlaybackUnit u)
-    {
-        var kinds = new List<StatusKind>();
-        foreach (var s in u.Statuses) if (!kinds.Contains(s.Kind)) kinds.Add(s.Kind);
-        for (int i = v.Pips.childCount; i < kinds.Count; i++)
-            MakePrimitive(PrimitiveType.Cube, v.Pips, new Vector3(0.14f * i, 0f, 0f), Vector3.one * 0.1f, Color.white);
-        for (int i = 0; i < v.Pips.childCount; i++)
-        {
-            var pip = v.Pips.GetChild(i);
-            bool on = i < kinds.Count;
-            pip.gameObject.SetActive(on);
-            if (on) Paint(pip.GetComponent<Renderer>(), StatusColor(kinds[i]));
-        }
     }
 
     /// <summary>Point every FieldView at the fold's current fields, creating and retiring views as
