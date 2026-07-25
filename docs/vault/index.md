@@ -11,12 +11,25 @@ Read this first. One line per page; open only what's relevant. Update on every a
   identity, forks, encounter contribution, dependencies, weaknesses, and playtest watches.
 - [Design/weapons.md](Design/weapons.md) — current 11-weapon system: attack physics,
   universal equip, mastery riders, Worn→Honed→Relic temper, forge law, and fidelity seams.
+- [Design/inscriptions.md](Design/inscriptions.md) — Hourstone fiction and persistent
+  Inscriptions: ownership, authoring families, cascade law, 24-effect rollout, and badge UI.
 - [Design/combat-grammar.md](Design/combat-grammar.md) — THE SOUL: clock + field, full effect vocabulary.
 - [Design/pve-encounters.md](Design/pve-encounters.md) — partial PvE authoring law: the
   encounter is the boss, it rules and teaches its act, mechanics are disclosed, shared
   combat verbs work unless an authored passive explicitly says otherwise.
+- [Design/preparation-and-deployment.md](Design/preparation-and-deployment.md) — accepted
+  board-first Planning workspace: persistent formations, capacity-driven Muster Drawer,
+  combined roster/loadout/position editing, direct-manipulation rules, one Fight commitment,
+  undo/validation, architecture, and polish ladder.
 - [Design/sim-framework.md](Design/sim-framework.md) — sim architecture: content atom, cascade semantics, fields, determinism, metrics.
 - [Design/render-contract.md](Design/render-contract.md) — how the client is guaranteed accurate: tick=100ms, bars set from absolutes, fold-as-view-model.
+- [Design/render-polish.md](Design/render-polish.md) — juice/readability systems design: decoupled
+  playback clock, Feedback Director + beat sequencer, tell vocabulary, diorama post stack.
+- [Design/directed-tells.md](Design/directed-tells.md) — motion tells (lunge/tracer/burst) + the
+  Root-keyed impact latch spec on the JSON tell system.
+- [Design/fight-legibility.md](Design/fight-legibility.md) — **2026-07-25 researched plan for
+  roadmap item 1**: three failure modes, genre laws, five phases (repair → grammar → KayKit
+  models → per-ability VFX → comprehension), costs, and Jake's six pending decisions.
 
 - [Design/sauce.md](Design/sauce.md) — PARKED: class-identity sauce noodling (two rounds cold);
   superseded by the "wears different hats" quality bar.
@@ -49,7 +62,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0008-run-layer-architecture.md](Decisions/0008-run-layer-architecture.md) — run layer =
   pure host-agnostic lib; serializable state, ids-only content, stateless rng; hosting deferred.
 - [Decisions/0009-shop-stock.md](Decisions/0009-shop-stock.md) — 3 hero + 2 item offers, per-offer
-  freeze, dupe→rank-up forks, banners in rotation (team triggers), 50% sell-back.
+  freeze, dupe→rank-up forks, legacy team-rule rotation, 50% sell-back; naming/system amended
+  by ADR 0017.
 - [Decisions/0010-theme-last-hour.md](Decisions/0010-theme-last-hour.md) — theme: The Last Hour
   frame, three binding laws, class/champion naming split; flavor-name candidates pending.
 - [Decisions/0011-spec-tree-impact-model.md](Decisions/0011-spec-tree-impact-model.md) — dive
@@ -65,9 +79,26 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0016-pve-first-asymmetric-endless.md](Decisions/0016-pve-first-asymmetric-endless.md) —
   **current identity:** PvE is the product; asymmetric trials, system-breaking builds,
   authored victory into optional endless; PvP deferred.
+- [Decisions/0017-hourstone-and-inscriptions.md](Decisions/0017-hourstone-and-inscriptions.md) —
+  Hourstone lore, unlimited persistent Inscriptions, chain safety, badge presentation, and
+  staged 24-effect target.
+- [Decisions/0018-movement-law.md](Decisions/0018-movement-law.md) — movement is a COMMITTED
+  STEP: depart now, arrive MoveInterval ticks later, position stays at the origin the whole
+  way, destination reserved. A `Move` with no `MoveStart` is a teleport.
+- [Decisions/0019-first-playable-run-and-workspace.md](Decisions/0019-first-playable-run-and-workspace.md) —
+  three-act/five-beat run cadence, terminal loss, initial Sand economy, Interludes, and the
+  persistent data-first Planning workspace.
+- [Decisions/0020-run-flow-and-rules-language.md](Decisions/0020-run-flow-and-rules-language.md) —
+  distinct Management/Wager/Deployment/Combat states, staged encounter disclosure, exact
+  Signature/Passive grammar, and large modal inspection.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
   open questions, done log. Sessions plan from here (CLAUDE.md Planning SOP).
+- [Projects/unity-mcp-playtests.md](Projects/unity-mcp-playtests.md) — stable editor bridge,
+  deterministic remote stepping, UI capture, and domain-reload rules for Unity verification.
+- [Projects/planning-system.md](Projects/planning-system.md) — live Planning implementation:
+  boundary map, transactional actions, commit law, consumable/economy extension recipes,
+  Unity seams, verification, and remaining integrations.
 
 *(Daily/ and Bugs/ get created when first needed.)*
