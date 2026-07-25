@@ -33,6 +33,7 @@ public class TuningData
     public BeatTune beats = new BeatTune();
     public BarsTune bars = new BarsTune();
     public ModelsTune models = new ModelsTune();
+    public BoardTune board = new BoardTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
     // references to them survive a reload — see TuningIO.Settings().
@@ -65,7 +66,7 @@ public class FieldTune
 public class NameplateTune
 {
     public bool show = true;
-    [Range(0.02f, 0.2f)] public float characterSize = 0.045f;
+    [Range(0.005f, 0.2f)] public float characterSize = 0.018f;
     public Color color = new Color(0.88f, 0.88f, 0.82f); // soft off-white — reads on the dark board
 }
 
@@ -79,8 +80,8 @@ public class StoryTune
 {
     public bool feedShow = true;
     [Range(1f, 10f)] public float feedLifeSeconds = 5f;
-    [Range(0.02f, 0.2f)] public float feedSize = 0.05f;
-    [Range(0.04f, 0.4f)] public float bannerSize = 0.14f;
+    [Range(0.005f, 0.2f)] public float feedSize = 0.02f;
+    [Range(0.01f, 0.4f)] public float bannerSize = 0.056f;
     [Range(0f, 15f)] public float endHoldSeconds = 4f;
 }
 
@@ -109,6 +110,16 @@ public class CameraTune
     [Range(5f, 89f)] public float pitch = 52f;        // elevation angle
     [Range(0.4f, 3f)] public float distance = 1.25f;  // multiple of board span
     public Color background = new Color(0.055f, 0.06f, 0.08f);
+}
+
+/// <summary>Board geometry (Jake 2026-07-25: "space the hexes out — things feel cluttered").
+/// hexSize = world spacing between hex centers (units reposition live; tiles rebuild on
+/// reload); tileScale = tile footprint within its cell (smaller = wider gap lines).</summary>
+[Serializable]
+public class BoardTune
+{
+    [Range(0.6f, 2f)] public float hexSize = 1.15f;
+    [Range(0.5f, 1f)] public float tileScale = 0.9f;
 }
 
 /// <summary>KayKit board models (fight-legibility Phase 2). enabled=false collapses every unit

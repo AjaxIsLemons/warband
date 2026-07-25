@@ -858,9 +858,37 @@ public class ReplayPlayer : MonoBehaviour
         {
             _director?.Reset();   // recycle in-flight FX + clear offsets before swapping the Director
             _director = MakeDirector();
+            ApplyBoardTune();     // hexSize/tileScale live: tiles rebuild, units re-place via ApplyFold
             FrameCamera(); ApplyPost();
         }
         else BuildPreview(_lastPreviewTick);
+    }
+
+    /// <summary>Live board-geometry reload: rebuild the tile mesh set at the tuned hexSize/tileScale.
+    /// Units re-place themselves on the next ApplyFold (HexToWorld reads the field live) and field
+    /// tiles re-position on the next SyncFields pass — only the static tiles need rebuilding.</summary>
+    private void ApplyBoardTune()
+    {
+        var bd = _data != null ? _data.board : null;
+        if (bd == null || _generated == null) return;
+        bool changed = !Mathf.Approximately(hexSize, bd.hexSize);
+        hexSize = bd.hexSize;
+        var tiles = _generated.Find("Tiles");
+        var slab = _generated.Find("BoardBase");
+        if (changed || tiles == null)
+        {
+            if (tiles != null) DestroyImmediate(tiles.gameObject);
+            if (slab != null) DestroyImmediate(slab.gameObject);
+            _hexMesh = null; // vertices bake hexSize — force regeneration
+            BuildBoard();
+            // Field tiles hold the OLD shared hex mesh — drop them; SyncFields recreates next apply.
+            foreach (var kv in _fieldTiles) DestroyImmediate(kv.Value);
+            _fieldTiles.Clear();
+            _boardCenter = (HexToWorld(new Hex(0, 0))
+                          + HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1))) * 0.5f;
+            RecomputeStoryAnchors();
+            if (Application.isPlaying && _fold != null) ApplyFold(Mathf.FloorToInt(_clock), _clock);
+        }
     }
 
     public void ClearGenerated()
@@ -901,6 +929,8 @@ public class ReplayPlayer : MonoBehaviour
         _generated.SetParent(transform, false);
         _generated.gameObject.hideFlags = HideFlags.DontSave;
 
+        if (_data != null && _data.board != null) hexSize = _data.board.hexSize;
+        _hexMesh = null; // vertices bake hexSize — regenerate per build so a tuned size shows
         BuildBoard();
         foreach (var u in _initial) SpawnView(u);
         BuildStory();
@@ -1092,12 +1122,7 @@ public class ReplayPlayer : MonoBehaviour
     /// gives a fresh, empty feed + hidden banner.</summary>
     private void BuildStory()
     {
-        Vector3 min = HexToWorld(new Hex(0, 0));
-        Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
-        Vector3 center = (min + max) * 0.5f;
-        _feedAnchor = new Vector3(max.x + 1.6f * hexSize, 3.0f, center.z);  // to the board's +X side
-        _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
-        _readoutAnchor = new Vector3(center.x, 2.7f, center.z);            // just under the banner
+        RecomputeStoryAnchors();
 
         _feedSlots = new TextMesh[FeedSlots];
         for (int i = 0; i < FeedSlots; i++) _feedSlots[i] = MakeWorldText(TextAnchor.UpperLeft);
@@ -1105,6 +1130,18 @@ public class ReplayPlayer : MonoBehaviour
         _readoutText = MakeWorldText(TextAnchor.UpperCenter);
         _feedLines.Clear();
         _ending = false; _endHold = 0f;
+    }
+
+    /// <summary>Story overlay anchors from the board bounds (mirrors FrameCamera's min/max) —
+    /// separate from BuildStory so a live board-size reload can re-anchor without recreating texts.</summary>
+    private void RecomputeStoryAnchors()
+    {
+        Vector3 min = HexToWorld(new Hex(0, 0));
+        Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
+        Vector3 center = (min + max) * 0.5f;
+        _feedAnchor = new Vector3(max.x + 1.6f * hexSize, 3.0f, center.z);  // to the board's +X side
+        _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
+        _readoutAnchor = new Vector3(center.x, 2.7f, center.z);            // just under the banner
     }
 
     /// <summary>A pooled-free world-space TextMesh (FloatingNumber font path), styled + positioned
@@ -1119,7 +1156,7 @@ public class ReplayPlayer : MonoBehaviour
         tm.anchor = anchor;
         tm.alignment = anchor == TextAnchor.UpperLeft ? TextAlignment.Left : TextAlignment.Center;
         tm.fontStyle = FontStyle.Bold;
-        tm.fontSize = 72;
+        tm.fontSize = 180; // high-res glyph texture; world size comes from characterSize (crisp text fix)
         tm.text = "";
         go.SetActive(false);
         return tm;
@@ -1357,7 +1394,8 @@ public class ReplayPlayer : MonoBehaviour
                 var tile = new GameObject($"tile_{row}_{col}");
                 tile.transform.SetParent(tiles, false);
                 tile.transform.position = HexToWorld(Hex.FromRowCol(row, col));
-                tile.transform.localScale = new Vector3(0.9f, 1f, 0.9f);
+                float ts = _data != null && _data.board != null ? _data.board.tileScale : 0.9f;
+                tile.transform.localScale = new Vector3(ts, 1f, ts);
                 tile.AddComponent<MeshFilter>().sharedMesh = HexMesh();
                 Color c = row <= 2 ? TileTeam0 : row >= Battle.BoardRows - 3 ? TileTeam1 : TileNeutral;
                 PaintTile(tile.AddComponent<MeshRenderer>(), c);
@@ -1522,6 +1560,9 @@ public class ReplayPlayer : MonoBehaviour
             {
                 var p = Instantiate(prop, slot, false);
                 p.name = "prop_" + propName;
+                // The banner is a dungeon WALL prop, sized for architecture — hand-held it dwarfs
+                // the mini (Jake 2026-07-25). Weapons Bits props are hand-scaled already.
+                if (propName.StartsWith("banner")) p.transform.localScale = Vector3.one * 0.38f;
                 foreach (var c in p.GetComponentsInChildren<Collider>()) DestroyImmediate(c);
             }
         }
@@ -1634,7 +1675,7 @@ public class ReplayPlayer : MonoBehaviour
         tm.anchor = TextAnchor.LowerCenter;
         tm.alignment = TextAlignment.Center;
         tm.fontStyle = FontStyle.Bold;
-        tm.fontSize = 72;
+        tm.fontSize = 180; // high-res glyph texture; world size comes from characterSize (crisp text fix)
         tm.text = text;
         var np = _data.nameplates;
         tm.characterSize = np.characterSize;
