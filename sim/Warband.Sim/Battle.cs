@@ -190,12 +190,22 @@ namespace Warband.Sim
             // A walker blocks BOTH hexes: the one it still stands on and the one it has reserved.
             // That single rule is what stops two units sliding through each other or converging on
             // the same tile mid-walk — the thing hex-teleporting never had to think about.
-            var occupied = new HashSet<Hex>();
+            var bodies = new HashSet<Hex>();
             foreach (var x in _units)
-                if (x.Alive) { occupied.Add(x.Pos); occupied.Add(x.StepTo); }
+                if (x.Alive) { bodies.Add(x.Pos); bodies.Add(x.StepTo); }
+            var walls = new HashSet<Hex>();
             foreach (var f in _fields)
                 if (f.Def.IsWall)
-                    occupied.UnionWith(HexesOf(f));
+                    walls.UnionWith(HexesOf(f));
+            var occupied = new HashSet<Hex>(bodies);
+            occupied.UnionWith(walls);
+
+            // Routing reads the board FROZEN at the top of the phase: a unit's route must not
+            // change because an ally decided behind it. `occupied` keeps growing with this tick's
+            // reservations and governs only which hex may actually be stepped into.
+            Pathing.EnterCost enter = h => walls.Contains(h) ? -1
+                                         : bodies.Contains(h) ? Pathing.BodyCost : 1;
+            var routes = new Dictionary<(int Target, int Range), int[]>();
 
             AcquireTargets();
             foreach (var u in _units)
@@ -215,15 +225,15 @@ namespace Warband.Sim
 
                 // Block-then-adapt: a target this unit already learned is wall-blocked is not
                 // satisfiable from here. Re-check with resolution's exact verdict (shared
-                // TraceProjectile) — a still-blocked line falls through to the move branch and
-                // advances; a cleared line (or melee, dist < 2, which never blocks) drops the
+                // TraceProjectile) — a still-blocked line falls through to the move branch, where
+                // the engage ring only contains hexes with a CLEAR line and the route field walks
+                // it to one; a cleared line (or melee, dist < 2, which never blocks) drops the
                 // flag and resumes fire. Keyed to the target id, so any retarget (death, Taunt,
                 // Phase re-acquire) self-invalidates it — no extra clearing logic.
-                bool blockedByWall = false;
                 if (inRange && u.BlockedTargetId == target.Id)
                 {
                     if (TraceProjectile(u.Team, u.Pos, target.Pos, out _, out _) != null)
-                        { inRange = false; blockedByWall = true; }
+                        inRange = false;
                     else
                         u.BlockedTargetId = -1;
                 }
@@ -259,47 +269,41 @@ namespace Warband.Sim
                         }
                     }
                 }
-                else if (!u.Walking && !u.Has(StatusKind.Root))
+                else
                 {
+                    // Route, don't hill-climb. The flow field runs out from every hex this unit
+                    // could ATTACK the target from — clear projectile line included — so closing,
+                    // walking around a crowd and hunting a firing angle are all one behaviour, and
+                    // a body in the one closing direction is a detour instead of a life sentence.
+                    // Origins still stay blocked for the tick: no same-tick train-following.
                     Hex? best = null;
-                    // Firing-angle seek (only when a wall fizzled the shot from here): the wall hex
-                    // is the sole distance-reducer, so the greedy step below finds nothing and the
-                    // shooter freezes staring at the wall. Instead step to a neighbor it could FIRE
-                    // from — in reach AND a clear line to the target. Nearest such hex wins, fixed
-                    // direction order breaks ties; a plateau/backstep is legal because it buys the
-                    // shot (a clear line means the next decision fires, not moves — no oscillation).
-                    // ≤6 traces, only for wall-blocked units on their move tick.
-                    if (blockedByWall)
+                    if (!u.Walking && !u.Has(StatusKind.Root))
                     {
-                        int bestDist = int.MaxValue;
-                        for (int d = 0; d < 6; d++)
-                        {
-                            Hex n = u.Pos.Neighbor(d);
-                            if (!InBounds(n) || occupied.Contains(n)) continue;
-                            int nd = Hex.Distance(n, target.Pos);
-                            if (nd > u.Def.Range) continue;
-                            if (TraceProjectile(u.Team, n, target.Pos, out _, out _) != null) continue;
-                            if (nd < bestDist) { bestDist = nd; best = n; }
-                        }
-                    }
-                    // Greedy step: strictly closer, unoccupied (origins stay blocked this
-                    // tick — no same-tick train-following), fixed direction order ties. Also the
-                    // fallback when no firing angle exists (a pocketed shooter just stands).
-                    if (best == null)
-                    {
-                        int bestDist = dist;
-                        for (int d = 0; d < 6; d++)
-                        {
-                            Hex n = u.Pos.Neighbor(d);
-                            if (!InBounds(n) || occupied.Contains(n)) continue;
-                            int nd = Hex.Distance(n, target.Pos);
-                            if (nd < bestDist) { bestDist = nd; best = n; }
-                        }
+                        var field = RouteTo(routes, target, u.Def.Range, walls, enter);
+                        best = Pathing.Step(field, u.Pos, n => !occupied.Contains(n));
                     }
                     if (best != null)
                     {
                         occupied.Add(best.Value);
                         moves.Add((u, best.Value));
+                    }
+                    else if (!u.Walking && !u.Has(StatusKind.Taunt))
+                    {
+                        // The engagement law. A unit that can neither strike its pick nor take a
+                        // step toward it fights whatever it CAN strike from where it stands —
+                        // otherwise a body boxed in by enemies stands and dies while the thing it
+                        // wanted is on the far side of them, which is exactly what a diver that
+                        // lands in a full backline used to do. Retargeting (rather than a free
+                        // swing at someone else) keeps ONE intent per unit: the signature, the
+                        // renderer and DistanceToTarget all read the enemy it is really fighting.
+                        // Taunt is exempt — a taunt is not negotiable.
+                        var reachable = u.Def.HealAutos ? LowestHpAllyInReach(u) : BestEnemyInReach(u);
+                        if (reachable != null)
+                        {
+                            if (!u.Def.HealAutos) u.TargetId = reachable.Id;
+                            if (_tick >= u.NextAttackTick && !u.Has(StatusKind.Disarm))
+                                attacks.Add((u, reachable));
+                        }
                     }
                 }
             }
@@ -848,9 +852,15 @@ namespace Warband.Sim
 
         private static int CritMult(UnitState u) => u.Def.CritMultFp + u.Sum(StatusKind.CritMultUp);
 
-        /// <summary>Teleport the leaper to the first free in-bounds hex adjacent to the
-        /// target (fixed direction order = deterministic); drop its sticky target so it
-        /// re-acquires nearest from the new position. No free hex = no leap.</summary>
+        /// <summary>Teleport the leaper to the first free in-bounds hex adjacent to the target
+        /// (fixed direction order = deterministic), and make that target its fight. No free hex =
+        /// no leap.
+        ///
+        /// The leap used to clear TargetId and re-acquire by preference from the landing hex, which
+        /// pre-dates TargetPref and inverts every diver that has one: a Farthest-seeking stalker
+        /// leaps into your backline and immediately re-acquires the far side of the board — the
+        /// front line it just jumped over — so it turns round and walks back. The selector already
+        /// chose who to jump on; landing on someone and then hunting someone else is not a dive.</summary>
         private void LeapTo(UnitState leaper, UnitState target)
         {
             var occupied = new HashSet<Hex>();
@@ -869,7 +879,7 @@ namespace Warband.Sim
                 // the Move below stands alone. A Move with no MoveStart is exactly the renderer's
                 // teleport signal — a leap blinks, it does not slide.
                 leaper.StepStart = leaper.StepEnd = _tick;
-                leaper.TargetId = -1;
+                leaper.TargetId = target.Id;
                 Emit(new BattleEvent { Kind = EventKind.Move, Source = leaper.Id, Amount = n.Q, Aux = n.R });
                 // Distinct Leap event: Pikewall's landing punish and Leap banners hook
                 // this without parsing Moves. It carries BOTH endpoints — the renderer arcs the
@@ -1185,17 +1195,74 @@ namespace Warband.Sim
                 foreach (var e in _units)
                 {
                     if (!Targetable(e) || e.Team == u.Team) continue;
-                    int score = u.Def.TargetPref switch
-                    {
-                        TargetPref.Farthest => Hex.Distance(u.Pos, e.Pos),
-                        TargetPref.LowestHp => -(e.Hp + e.Shield),
-                        TargetPref.HighestHp => e.Hp + e.Shield,
-                        _ => -Hex.Distance(u.Pos, e.Pos),   // Nearest
-                    };
+                    int score = TargetScore(u, e);
                     if (best == null || score > bestScore) { bestScore = score; best = e; }
                 }
                 u.TargetId = best?.Id ?? -1;
             }
+        }
+
+        /// <summary>How much this unit wants to fight that one — higher wins, ties fall to the
+        /// lowest id because iteration is by ascending id and every comparison is strict.</summary>
+        private int TargetScore(UnitState u, UnitState e) => u.Def.TargetPref switch
+        {
+            TargetPref.Farthest => Hex.Distance(u.Pos, e.Pos),
+            TargetPref.LowestHp => -(e.Hp + e.Shield),
+            TargetPref.HighestHp => e.Hp + e.Shield,
+            _ => -Hex.Distance(u.Pos, e.Pos),   // Nearest
+        };
+
+        /// <summary>The engage ring: every in-bounds hex this unit could attack `target` from —
+        /// inside weapon reach, not inside a wall, and with a projectile line that actually
+        /// arrives. Cached per (target, range) for the tick: the ring depends on neither the
+        /// shooter's identity nor its team, because a wall blocks every team's shot alike.</summary>
+        private int[] RouteTo(Dictionary<(int Target, int Range), int[]> cache, UnitState target,
+                              int range, HashSet<Hex> walls, Pathing.EnterCost enter)
+        {
+            var key = (target.Id, range);
+            if (cache.TryGetValue(key, out var cached)) return cached;
+
+            var ring = new List<Hex>();
+            foreach (var h in Hex.Range(target.Pos, range))
+            {
+                if (!InBounds(h) || walls.Contains(h)) continue;
+                // Only worth tracing when a wall exists at all; nothing else stops a shot.
+                if (walls.Count > 0 && TraceProjectile(target.Team, h, target.Pos, out _, out _) != null)
+                    continue;
+                ring.Add(h);
+            }
+            var field = Pathing.Field(ring, enter);
+            cache[key] = field;
+            return field;
+        }
+
+        /// <summary>Best enemy strikeable from exactly where this unit stands, by its own
+        /// TargetPref — the engagement law's shortlist.</summary>
+        private UnitState? BestEnemyInReach(UnitState u)
+        {
+            UnitState? best = null;
+            int bestScore = 0;
+            foreach (var e in _units)
+            {
+                if (!Targetable(e) || e.Team == u.Team) continue;
+                if (Hex.Distance(u.Pos, e.Pos) > u.Def.Range) continue;
+                if (TraceProjectile(u.Team, u.Pos, e.Pos, out _, out _) != null) continue;
+                int score = TargetScore(u, e);
+                if (best == null || score > bestScore) { bestScore = score; best = e; }
+            }
+            return best;
+        }
+
+        /// <summary>The censer's version of the engagement law (ADR 0012): a boxed-in heal-auto
+        /// unit still mends whoever it can actually reach.</summary>
+        private UnitState? LowestHpAllyInReach(UnitState u)
+        {
+            UnitState? best = null;
+            foreach (var a in _units)
+                if (a.Alive && a.Team == u.Team && Hex.Distance(u.Pos, a.Pos) <= u.Def.Range)
+                    if (best == null || a.Hp < best.Hp)
+                        best = a;
+            return best;
         }
 
         private static bool Targetable(UnitState u) => u.Alive && !u.Has(StatusKind.Phase);

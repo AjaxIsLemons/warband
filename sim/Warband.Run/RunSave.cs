@@ -64,6 +64,7 @@ namespace Warband.Run
             Put(b, "slotOfferPending", s.SlotOfferPending);
             Put(b, "justClosedBoss", s.JustClosedBoss);
             Put(b, "shopRolls", s.ShopRolls);
+            Put(b, "nextHeroInstanceId", s.NextHeroInstanceId.ToString(CultureInfo.InvariantCulture));
             Put(b, "nextItemInstanceId", s.NextItemInstanceId.ToString(CultureInfo.InvariantCulture));
             Put(b, "bossWins", s.BossWins);
             Put(b, "bossLosses", s.BossLosses);
@@ -129,6 +130,7 @@ namespace Warband.Run
             {
                 var h = heroes[i];
                 string k = $"{prefix}.{i}";
+                Put(b, $"{k}.instanceId", h.InstanceId.ToString(CultureInfo.InvariantCulture));
                 Put(b, $"{k}.chassis", Safe(h.ChassisId, "chassis id"));
                 Put(b, $"{k}.rank", h.Rank);
                 if (h.PathId != null) Put(b, $"{k}.path", Safe(h.PathId, "path id"));
@@ -223,6 +225,7 @@ namespace Warband.Run
                 SlotOfferPending = Bool(kv, "slotOfferPending"),
                 JustClosedBoss = Bool(kv, "justClosedBoss"),
                 ShopRolls = Int(kv, "shopRolls"),
+                NextHeroInstanceId = Long(kv, "nextHeroInstanceId", 1),
                 NextItemInstanceId = Long(kv, "nextItemInstanceId", 1),
                 BossWins = Int(kv, "bossWins"),
                 BossLosses = Int(kv, "bossLosses"),
@@ -281,8 +284,42 @@ namespace Warband.Run
                     OptionB = Str(kv, "pendingSpec.optionB"),
                 };
 
+            AssignMissingHeroIdentities(s);
             Validate(s);
             return s;
+        }
+
+        /// <summary>
+        /// Saves written before hero identities existed omit every instanceId. Assign them in
+        /// field-then-bench order so migration is deterministic. Positive duplicates indicate
+        /// corruption and are refused instead of risking commands targeting the wrong hero.
+        /// </summary>
+        private static void AssignMissingHeroIdentities(RunState state)
+        {
+            var seen = new HashSet<long>();
+            long next = Math.Max(1, state.NextHeroInstanceId);
+            foreach (HeroInstance hero in AllHeroes(state))
+            {
+                if (hero.InstanceId <= 0) continue;
+                if (!seen.Add(hero.InstanceId))
+                    throw new RunSaveException(
+                        $"save contains duplicate hero instance id {hero.InstanceId}");
+                if (hero.InstanceId >= next) next = hero.InstanceId + 1;
+            }
+            foreach (HeroInstance hero in AllHeroes(state))
+            {
+                if (hero.InstanceId > 0) continue;
+                while (seen.Contains(next)) next++;
+                hero.InstanceId = next;
+                seen.Add(next++);
+            }
+            state.NextHeroInstanceId = next;
+        }
+
+        private static IEnumerable<HeroInstance> AllHeroes(RunState state)
+        {
+            foreach (HeroInstance hero in state.Field) yield return hero;
+            foreach (HeroInstance hero in state.Bench) yield return hero;
         }
 
         private static void ReadHeroes(Dictionary<string, string> kv, string prefix, List<HeroInstance> into)
@@ -293,6 +330,7 @@ namespace Warband.Run
                 string k = $"{prefix}.{i}";
                 var h = new HeroInstance
                 {
+                    InstanceId = Long(kv, $"{k}.instanceId"),
                     ChassisId = Str(kv, $"{k}.chassis"),
                     Rank = Enum<Rank>(kv, $"{k}.rank", Rank.C),
                     PathId = kv.TryGetValue($"{k}.path", out string path) ? path : null,

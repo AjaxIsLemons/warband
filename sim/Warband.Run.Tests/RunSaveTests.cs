@@ -52,6 +52,7 @@ namespace Warband.Run.Tests
             Assert.Equal(before.SlotsBought, after.SlotsBought);
             Assert.Equal(before.SlotOfferPending, after.SlotOfferPending);
             Assert.Equal(before.ShopRolls, after.ShopRolls);
+            Assert.Equal(before.NextHeroInstanceId, after.NextHeroInstanceId);
             Assert.Equal(before.NextItemInstanceId, after.NextItemInstanceId);
             Assert.Equal(before.BossWins, after.BossWins);
             Assert.Equal(before.BossLosses, after.BossLosses);
@@ -84,6 +85,7 @@ namespace Warband.Run.Tests
             Assert.Equal(a.Count, b.Count);
             for (int i = 0; i < a.Count; i++)
             {
+                Assert.Equal(a[i].InstanceId, b[i].InstanceId);
                 Assert.Equal(a[i].ChassisId, b[i].ChassisId);
                 Assert.Equal(a[i].Rank, b[i].Rank);
                 Assert.Equal(a[i].PathId, b[i].PathId);
@@ -166,6 +168,28 @@ namespace Warband.Run.Tests
             var after = RunSave.Read(RunSave.Write(state));
             Assert.Null(after.Field[0].WeaponId);
             Assert.Null(after.Field[0].PathId);
+        }
+
+        [Fact]
+        public void LegacySaveWithoutHeroIdsMigratesDeterministically()
+        {
+            string legacy = RunSave.Write(MidRun().State);
+            var lines = legacy.Split('\n')
+                .Where(line => !line.StartsWith("nextHeroInstanceId=", StringComparison.Ordinal) &&
+                               !((line.StartsWith("field.", StringComparison.Ordinal) ||
+                                  line.StartsWith("bench.", StringComparison.Ordinal)) &&
+                                 line.Contains(".instanceId=", StringComparison.Ordinal)));
+
+            RunState migrated = RunSave.Read(string.Join("\n", lines));
+            long[] ids = migrated.Field.Concat(migrated.Bench)
+                .Select(hero => hero.InstanceId)
+                .ToArray();
+
+            Assert.Equal(Enumerable.Range(1, ids.Length).Select(value => (long)value), ids);
+            Assert.Equal(ids.Length + 1, migrated.NextHeroInstanceId);
+            RunState roundTripped = RunSave.Read(RunSave.Write(migrated));
+            Assert.Equal(ids, roundTripped.Field.Concat(roundTripped.Bench)
+                .Select(hero => hero.InstanceId));
         }
 
         // ---- refusing what it cannot trust ------------------------------------------

@@ -58,6 +58,7 @@ namespace Warband.Run
             _cfg = config ?? new RunConfig();
             ValidateConfig();
             State = state;
+            EnsureHeroIdentities();
         }
 
         /// <summary>Every id the resumed run will ask the catalog for, asked now. A save from a
@@ -141,6 +142,7 @@ namespace Warband.Run
             State.Field.AddRange(warband);
             if (State.Field.Count < 1 || State.Field.Count > _cfg.StartingFieldSlots)
                 throw new ArgumentException($"starting warband must be 1..{_cfg.StartingFieldSlots} heroes");
+            EnsureHeroIdentities();
             State.ActMaps = GenerateMaps();
             GenerateShop();
         }
@@ -490,6 +492,95 @@ namespace Warband.Run
             hero.TrinketSandInvested = item.SandInvested;
         }
 
+        /// <summary>
+        /// Equip one inventory item by stable identities. The destination's displaced explicit
+        /// item returns to the Armory atomically; an implicit starter weapon is chassis-owned and
+        /// never becomes an inventory item.
+        /// </summary>
+        public void EquipItem(long itemInstanceId, long heroInstanceId)
+        {
+            RequireShopActionable();
+            int inventoryIndex = IndexOfItem(itemInstanceId);
+            Require(inventoryIndex >= 0, "inventory item no longer exists");
+            Require(TryFindHero(heroInstanceId, out var zone, out int heroIndex),
+                    "hero no longer exists");
+            if (State.Inventory[inventoryIndex].Kind == ItemKind.Weapon)
+                EquipWeapon(zone, heroIndex, inventoryIndex);
+            else
+                EquipTrinket(zone, heroIndex, inventoryIndex);
+        }
+
+        /// <summary>
+        /// Move equipped gear directly between two heroes. Occupied matching sockets exchange
+        /// their explicit items; an empty trinket socket receives a move. A target using its
+        /// implicit starter receives the source weapon while the source returns to its own starter.
+        /// </summary>
+        public void TransferEquipment(long sourceHeroInstanceId, ItemKind kind,
+                                      long targetHeroInstanceId)
+        {
+            RequireShopActionable();
+            Require(sourceHeroInstanceId != targetHeroInstanceId,
+                    "source and destination are the same hero");
+            Require(TryFindHero(sourceHeroInstanceId, out var sourceZone, out int sourceIndex),
+                    "source hero no longer exists");
+            Require(TryFindHero(targetHeroInstanceId, out var targetZone, out int targetIndex),
+                    "destination hero no longer exists");
+
+            HeroInstance source = Zone(sourceZone)[sourceIndex];
+            HeroInstance target = Zone(targetZone)[targetIndex];
+            if (kind == ItemKind.Weapon)
+            {
+                Require(source.WeaponId != null, "starter weapons cannot be transferred");
+
+                string sourceId = source.WeaponId!;
+                WeaponTier sourceTier = source.WeaponTier;
+                long sourceItemId = source.WeaponInstanceId;
+                int sourceInvestment = source.WeaponSandInvested;
+
+                if (target.WeaponId == null)
+                {
+                    RestoreStarterWeapon(source);
+                }
+                else
+                {
+                    string targetId = target.WeaponId!;
+                    WeaponTier targetTier = target.WeaponTier;
+                    long targetItemId = target.WeaponInstanceId;
+                    int targetInvestment = target.WeaponSandInvested;
+                    SetExplicitWeapon(source, targetId, targetTier, targetItemId, targetInvestment);
+                }
+                SetExplicitWeapon(target, sourceId, sourceTier, sourceItemId, sourceInvestment);
+                return;
+            }
+
+            Require(source.TrinketIds.Count > 0, "source hero has no trinket");
+            string sourceTrinket = source.TrinketIds[0];
+            long sourceTrinketId = source.TrinketInstanceId;
+            int sourceTrinketInvestment = source.TrinketSandInvested;
+            if (target.TrinketIds.Count == 0)
+            {
+                ClearTrinket(source);
+            }
+            else
+            {
+                string targetTrinket = target.TrinketIds[0];
+                long targetTrinketId = target.TrinketInstanceId;
+                int targetTrinketInvestment = target.TrinketSandInvested;
+                SetTrinket(source, targetTrinket, targetTrinketId, targetTrinketInvestment);
+            }
+            SetTrinket(target, sourceTrinket, sourceTrinketId, sourceTrinketInvestment);
+        }
+
+        /// <summary>Unequip a transferable item by stable hero identity.</summary>
+        public void UnequipItem(long heroInstanceId, ItemKind kind)
+        {
+            RequireShopActionable();
+            Require(TryFindHero(heroInstanceId, out var zone, out int index),
+                    "hero no longer exists");
+            if (kind == ItemKind.Weapon) UnequipWeapon(zone, index);
+            else UnequipTrinket(zone, index);
+        }
+
         public void UnequipWeapon(RosterZone zone, int index)
         {
             RequireShopActionable();
@@ -731,7 +822,12 @@ namespace Warband.Run
                         return;
                     }
             }
-            var recruit = new HeroInstance { ChassisId = offer.Id, GoldSpent = offer.Price };
+            var recruit = new HeroInstance
+            {
+                InstanceId = State.NextHeroInstanceId++,
+                ChassisId = offer.Id,
+                GoldSpent = offer.Price,
+            };
             if (State.Field.Count < State.FieldSlots) State.Field.Add(recruit);
             else if (State.Bench.Count < _cfg.BenchSlots) State.Bench.Add(recruit);
             else throw new InvalidOperationException("no room — field and bench are full");
@@ -754,6 +850,74 @@ namespace Warband.Run
 
         public int IndexOfItem(long instanceId) =>
             State.Inventory.FindIndex(item => item.InstanceId == instanceId);
+
+        public bool TryFindHero(long instanceId, out RosterZone zone, out int index)
+        {
+            index = State.Field.FindIndex(hero => hero.InstanceId == instanceId);
+            if (index >= 0)
+            {
+                zone = RosterZone.Field;
+                return true;
+            }
+            index = State.Bench.FindIndex(hero => hero.InstanceId == instanceId);
+            zone = RosterZone.Bench;
+            return index >= 0;
+        }
+
+        private void EnsureHeroIdentities()
+        {
+            var used = new HashSet<long>();
+            long next = Math.Max(1, State.NextHeroInstanceId);
+            foreach (HeroInstance hero in State.Field.Concat(State.Bench))
+            {
+                if (hero.InstanceId <= 0) continue;
+                if (!used.Add(hero.InstanceId))
+                    throw new RunSaveException(
+                        $"run contains duplicate hero instance id {hero.InstanceId}");
+                if (hero.InstanceId >= next) next = hero.InstanceId + 1;
+            }
+            foreach (HeroInstance hero in State.Field.Concat(State.Bench))
+            {
+                if (hero.InstanceId > 0) continue;
+                while (used.Contains(next)) next++;
+                hero.InstanceId = next;
+                used.Add(next++);
+            }
+            State.NextHeroInstanceId = next;
+        }
+
+        private static void SetExplicitWeapon(HeroInstance hero, string id, WeaponTier tier,
+                                              long itemInstanceId, int sandInvested)
+        {
+            hero.WeaponId = id;
+            hero.WeaponTier = tier;
+            hero.WeaponInstanceId = itemInstanceId;
+            hero.WeaponSandInvested = sandInvested;
+        }
+
+        private static void RestoreStarterWeapon(HeroInstance hero)
+        {
+            hero.WeaponId = null;
+            hero.WeaponTier = hero.StarterWeaponTier;
+            hero.WeaponInstanceId = 0;
+            hero.WeaponSandInvested = hero.StarterWeaponSandInvested;
+        }
+
+        private static void SetTrinket(HeroInstance hero, string id, long itemInstanceId,
+                                       int sandInvested)
+        {
+            hero.TrinketIds.Clear();
+            hero.TrinketIds.Add(id);
+            hero.TrinketInstanceId = itemInstanceId;
+            hero.TrinketSandInvested = sandInvested;
+        }
+
+        private static void ClearTrinket(HeroInstance hero)
+        {
+            hero.TrinketIds.Clear();
+            hero.TrinketInstanceId = 0;
+            hero.TrinketSandInvested = 0;
+        }
 
         private ItemRef NewItem(ItemKind kind, string id, WeaponTier tier, int sandInvested) =>
             new ItemRef

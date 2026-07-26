@@ -22,9 +22,14 @@ breaking the game with a compounding warband, then seeing how far asymmetrical P
 endless pressure can push it.**
 
 ### ⇒ AGREED ORDER (Jake, 2026-07-26). Item numbers never change; this line does.
-**0. JAKE'S VERIFY PASS on item 1** — watch a fight. Three days of combat work is unwatched and
-nothing else in item 1 can be judged without it. This is the top of the board and it is not
-something a session can do.
+**0. JAKE'S VERIFY PASS on item 1 — STARTED 2026-07-26.** The first standalone fight exposed a
+build-only blocker before combat feel could be judged: board floor + HP/Mana bars were pink, and the
+generated audio was bad and much too long. URP Unlit stripping explained the effect exceptions, but
+build `0.1.260726.1658` disproved it as the whole pink-surface cause. The remaining bug was Unity
+UUM-136536: player-created primitives begin on `InternalErrorShader`, which our cache cloned.
+Build `0.1.260726.1706` explicitly replaces that material with registered URP Lit and mutes both
+combat and Hall/UI audio by default. **Rewatch one fight in this corrected build before choosing
+more work.** This remains the top of the board and requires Jake.
 **1. Items ~~7~~ → ~~8~~ → 9** (~~save/resume~~ · ~~standalone build + launcher~~ both **BUILT
 2026-07-26** · an options screen) — the invisible blockers on item 6. **Item 9 is next.** Item 8 did
 confirm item 7 on the real platform: `persistentDataPath` resolves, the save round-trips through
@@ -44,8 +49,9 @@ polish. The old Management drawer has been replaced by stable Market/Warband/Arm
 geography and bespoke workspaces; the Armory previews exact equipment deltas. **Combat viewing still does not read well enough.** Authored
 encounters landed 2026-07-25 (ADR 0023) and per-act bosses + full encounter disclosure landed
 2026-07-26 (ADR 0024) — deployment has real problems to answer and every fight now states its rule.
-**None of the last three days' combat work has been watched in Unity**, which is now the single
-biggest blocker on the board (see item 1).
+**The first standalone combat pass started 2026-07-26, but a build-only shader failure made it an
+invalid read of the combat work.** The corrected build is ready for the real pass; that remains the
+single biggest blocker on the board (see item 1).
 **Opening Muster readability pass built 2026-07-26:** its universal cards were replaced by a
 dedicated three-fact / two-rule scan grammar with code-native semantic glyphs, in-portrait exact
 mechanics, ordered party sockets, semantic select/deselect feedback, cancellable reveal/lens
@@ -78,14 +84,15 @@ deferred by Jake.
    AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**
    **The four live threads, so nobody has to read 90 lines to find them:**
    **1a — combat spectacle P0–P6** (casts, fields, status icons, deaths, dress): BUILT, machine-gated
-   green, **never seen in motion.** Needs one play pass; the specific knobs to judge are listed at
+   green. The first standalone pass was obscured by stripped URP shaders; **the corrected build has
+   not been seen in motion.** Needs one play pass; the specific knobs to judge are listed at
    the end of the arc paragraph below. **1b — Hall polish:** BUILT + Unity-verified; four named
    polish slices open (Bind choreography · Rule Preview diagrams · real-device safe-area/haptics ·
    audio/motion feel). **1c — fight-legibility Phase 4 client UI:** HALF built — the damage-share +
    died-to readout shipped (`40eb076`), but `BattleForecast` exists in the sim and is referenced by
    **zero** client code, so the win-probability half has no home. **1d — camera/framing pass:**
    unbuilt, and taste-gated on Jake.
-   **Nothing here needs a design conversation any more.** It needs Jake to watch a fight.
+   **Nothing here needs a design conversation any more.** It needs Jake to watch a corrected fight.
    **Jake, 2026-07-24, after playing it:** *"playing it now still does not feel great for a
    lot of reasons (UI is not great, sim viewing has some issues and is not quite clear what's
    happening)."* Take this at face value: **item 4b's entire render arc — signature-matched
@@ -98,7 +105,8 @@ deferred by Jake.
    cannot tell what a unit IS mid-fight, what statuses are on it, or why it did what it did.
    ③ **UI quality** — the shell screens are functional-but-plain; density, hierarchy and typography
    were never passed over. Likely all three, in different measure.
-   **STATUS 2026-07-26: all three have now been built against, and NONE has been watched.** The
+   **STATUS 2026-07-26: all three have now been built against. The first player pass found build
+   integrity failures before it could judge them; the corrected player has not been watched.** The
    "name which before building" instruction above was overtaken by events — three sessions built
    answers to all three candidates. So this item is no longer DESIGN or BUILD, it is **VERIFY, and
    the only person who can advance it is Jake** (see the four threads below). (Superseded detail:
@@ -117,6 +125,25 @@ deferred by Jake.
    interpolates across the sim's own window. **That is one item off candidate ①; the rest of
    ① (pacing, emphasis, hit-stop, the decoupled clock) is still unbuilt, and ② remains
    untouched.**
+   **Second cause of the SAME complaint, named and fixed 2026-07-26 — the opening (render-only).**
+   Jake, on the corrected build: *"the start of combat is really jarring — once you press start it
+   seems like every unit teleports somewhere; we need normal traversal."* ADR 0018 fixed *walking*;
+   this was **leaping**. Tick 0 is the busiest tick of a fight — both lines step off and every
+   AtStart trigger resolves — and among those triggers is Ambush (Shade passive) / the Diver role
+   (Gloamstalker), an authored cross-board Leap. Headless probe: **24% of run fights open with 1–2
+   instant leaps averaging 5.1 hexes** on a board whose longest traversal is 9. Three render defects
+   stacked, no sim change: (a) the Arc tell's air-time was a flat `motionSeconds`, so a 5-hex dive
+   and a 1-hex hop both took 0.34 s — the arc's HEIGHT already scaled with the jump but its DURATION
+   did not; (b) it fired on the first frame of playback, with nothing before it to read it against;
+   (c) between dispatch and the tell's beat-stagger/windup the body rendered on its LANDING hex,
+   then snapped back to take off — a second teleport inside the first. Fixed with
+   `TellDef.motionPerHexSeconds`/`motionMaxSeconds` (air-time scales with span, 0.34 s → 0.74 s for
+   a 5-hex dive), a tuning-owned `playback.openingHoldSeconds` (0.7 s of stillness on the deployed
+   formation, folded to tick −1 so the hold shows what the player deployed), and seating the arc's
+   offset at the take-off on dispatch. **Verified in the editor**: A/B at 0.45 s shows the Shade
+   grounded on the landing hex before vs airborne (y=2.39) mid-board after; play-mode frame
+   stepping shows the hold gate, its release, and no landing-hex pop. The Ambush/Diver MECHANIC is
+   untouched — Jake's call, 2026-07-26, over deleting the tick-0 leap.
    **Researched plan ready, 2026-07-25 (overnight session) → `Design/fight-legibility.md`.**
    Render-layer inventory + genre research (TFT/Underlords/HSBG/SAP/Mechabellum/BB/LTD2) +
    asset-pipeline survey, synthesized into five phases: 0 repair (post stack regressed —
@@ -266,8 +293,9 @@ cannot happen without them, and each is the kind of work that is discovered too 
    save/resume is the whole mitigation.
 8. **Standalone build + launcher/delivery** — **BUILT 2026-07-26. The first warband build exists,
    and the shader landmine was REAL.** See the Done entry. Remaining: two sudo steps and one
-   decision, all Jake's (`deploy/README.md` §"STILL NEEDS JAKE"), plus double-clicking the exe —
-   the built player's runtime behavior is the one thing a session cannot check.
+   decision, all Jake's (`deploy/README.md` §"STILL NEEDS JAKE"). Jake's first player pass reached a
+   fight and caught a second shader landmine: URP Lit/Unlit themselves were stripped. Corrected
+   build `0.1.260726.1648` is ready but not yet visually rechecked or published.
    *(Original entry, kept because its reasoning is what made this worth doing early:)*
    **SPEC'D (small, do it EARLY).** Every
    verification to date is in-Editor. One landmine is already known and written down in the FX
@@ -506,6 +534,21 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — ROUTING + THE ENGAGEMENT LAW (ADR 0025).** Jake's bug report — "units sit behind
+  others in line"; "jump units get stuck between two enemy units doing nothing". Both real, both
+  reproduced headlessly, both worse than reported: a flank body logged **0 swings in 1200 ticks**,
+  and a diver that leapt into a full backline stood **motionless for ~1000 ticks** while five enemies
+  killed it. Cause was never the renderer — movement was a greedy hill-climb on straight-line hex
+  distance (local minima everywhere on a 6-wide board), targeting had no notion of reachability and
+  no fallback, and `LeapTo` cleared the target it had just chosen (inverting every `Farthest` diver).
+  Replaced with a Dijkstra flow field to the **engage ring** (`sim/Warband.Sim/Pathing.cs`): walls
+  impassable, **bodies a detour at `BodyCost = 6`** — which doubles as a unit's patience for a queue.
+  Plus: a unit that can neither reach nor strike its target fights what it CAN reach (Taunt exempt),
+  and a leap keeps its victim. **440 tests green**, new `PathingTests.cs`. Watch `BodyCost` at
+  playtest — it is the one tuning constant in the system.
+  ⚠ **The Drop went FREE → POSES A PROBLEM (100-point placement swing)** and the naive-line bot now
+  dies in **act 1**, not act 2 (still 3/12 runs). That is the enemy AI working, not a regression —
+  **do not rebalance against it before the interactive playtest** (content doctrine).
 - **2026-07-26 — THE SITE IS LIVE AND THE LAUNCHER PULLS FROM IT (closes item 8).** Two failures, both
   mine, both now guarded in scripts rather than in notes.
   **(1) SSL protocol error.** Jake ran `setup-warband-site.sh` before the DNS record existed publicly.
@@ -567,10 +610,15 @@ revisit) · per-rank stat scaling.
   no download · cross-compiles to a 6.1 MB Windows PE32+ binary · **content fingerprint identical on
   homeserv and Windows** (closes the question left open by the version-stamp work) · a cold player
   correctly writes NO save.
-  **NOT verified — needs Jake to double-click the exe:** whether the built player boots to the menu
-  and whether the shaders render. Batchmode launches over SSH produced no player log and no visible
-  process, and a session cannot screenshot a player window. Everything around it is checked; the
-  runtime itself is one double-click.
+  **First real player pass, 2026-07-26:** the exe boots through the menu and reaches a fight. That
+  pass exposed a second build-only shader hole: runtime-created primitives use URP Lit and legacy
+  tracers/bursts use URP Unlit; both resolved in Editor but were stripped from the player. The board,
+  HP bars, and Mana bars rendered pink, while `Player.log` filled with
+  `ArgumentNullException: shader` from `Burst.Create` / `Tracer.Create`. The build guard now includes
+  URP Lit/Unlit alongside all six Warband shaders; post-build preflight passes and corrected build
+  `0.1.260726.1648` succeeded with 0 errors. Combat and Hall/UI audio are disabled by default after
+  the same pass found the generated clips bad and much too long. **Still needs one visual rerun of
+  the corrected build before publishing.**
   **Gotcha found, worth knowing:** the **Editor and the built player share
   `Application.persistentDataPath`** (`AppData/LocalLow/InhouseBoyz/Warband` holds both `run.save`
   and the Editor's own `Unity/…/Editor/Analytics`). So a dev Play Mode session and a friend build

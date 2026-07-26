@@ -20,13 +20,13 @@ using Debug = UnityEngine.Debug;
 /// render captures: a multi-hundred-MB player build inside the synced repo would sync straight back
 /// to homeserv and into git status. `deploy/ship-release.sh` scps them from there.
 ///
-/// **The self-healing bit that matters.** All six hand-written URP shaders are resolved at runtime by
-/// `Shader.Find("Warband/…")` and are referenced by NO material asset, so the player build strips
-/// every one of them and each `new Material(null)` silently degrades — the entire combat-spectacle arc
-/// renders as nothing, and it looks like a bug in the FX code rather than a build setting. Confirmed
-/// before the first build: `GraphicsSettings.asset` held seven always-included shaders and all seven
-/// were Unity built-ins. So this registers them itself, every build, and logs what it added. A build
-/// step cannot be forgotten; a wiki note can.
+/// **The self-healing bit that matters.** Runtime-created board materials use URP Lit/Unlit and the
+/// six hand-written Warband shaders. None has a reliable serialized material reference, so a player
+/// build may strip them even though all eight resolve in the Editor. The first shipped build proved
+/// URP Unlit was missing when every tracer/burst threw `new Material(null)`. A separate Unity player
+/// behavior (UUM-136536) replaces CreatePrimitive's default material with InternalErrorShader, so
+/// ReplayPlayer must explicitly replace it with registered URP Lit. Register every intended runtime
+/// shader on every build and log additions. A build step cannot be forgotten; a wiki note can.
 /// </summary>
 public static class WarbandBuild
 {
@@ -34,10 +34,15 @@ public static class WarbandBuild
     private const string GameScene = "Assets/Scenes/Game.unity";
     private const string ExeName = "Warband.exe";
 
-    /// <summary>Every shader reached only through `Shader.Find`. Keep in step with
-    /// `Assets/Shaders/Warband/*.shader`; the build fails if one is missing from the project.</summary>
+    /// <summary>Every shader used by a runtime-created material. Keep the Warband entries in step
+    /// with `Assets/Shaders/Warband/*.shader`; the build fails if any entry is missing.</summary>
     private static readonly string[] RuntimeShaders =
     {
+        // ReplayPlayer explicitly replaces GameObject.CreatePrimitive's broken player material
+        // with URP/Lit (UUM-136536); Burst/Tracer explicitly create URP/Unlit materials.
+        // Both resolve by name at runtime, so neither may be stripped.
+        "Universal Render Pipeline/Lit",
+        "Universal Render Pipeline/Unlit",
         "Warband/Ring",
         "Warband/GroundFill",
         "Warband/Sigil",
@@ -158,6 +163,11 @@ public static class WarbandBuild
 
         Check("Boot scene exists", File.Exists(BootScene), BootScene);
         Check("Game scene exists", File.Exists(GameScene), GameScene);
+
+        RenderPipelineAsset pipeline = GraphicsSettings.currentRenderPipeline;
+        Check("active render pipeline is URP",
+            pipeline != null && pipeline.GetType().Name.Contains("UniversalRenderPipelineAsset"),
+            pipeline != null ? pipeline.name : "none");
 
         foreach (string name in RuntimeShaders)
         {

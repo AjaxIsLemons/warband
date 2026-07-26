@@ -32,61 +32,17 @@ public static class BossProbe
 {
     private const int SeedsPerArrangement = 24;
 
-    /// <summary>Blue rows are 0-3. Same named shapes as `--enc`, so the two reports compare.</summary>
-    private static readonly (string Name, Hex[] Slots)[] Formations =
-    {
-        ("default",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(1, 1), Hex.FromRowCol(1, 4), Hex.FromRowCol(0, 2) }),
-        ("forward",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(3, 1), Hex.FromRowCol(3, 4), Hex.FromRowCol(2, 2) }),
-        ("turtle",     new[] { Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 1), Hex.FromRowCol(0, 3), Hex.FromRowCol(1, 2) }),
-        ("wall-first", new[] { Hex.FromRowCol(3, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 3), Hex.FromRowCol(1, 3) }),
-        ("split",      new[] { Hex.FromRowCol(3, 0), Hex.FromRowCol(1, 2), Hex.FromRowCol(3, 5), Hex.FromRowCol(0, 0) }),
-        ("back-line",  new[] { Hex.FromRowCol(2, 2), Hex.FromRowCol(0, 0), Hex.FromRowCol(0, 5), Hex.FromRowCol(1, 5) }),
-    };
-
-    /// <summary>
-    /// Four parties, four kinds of strength. Each is a legal, unremarkable build a player could
-    /// plausibly own at that act — NOT an optimised solution. If a boss can only be answered by one
-    /// column, the report says so and the author has a decision to make.
-    /// </summary>
-    private static readonly (string Axis, (string Chassis, string Node)[] Party)[] Answers =
-    {
-        ("balanced", new[]
-        {
-            ("bulwark", "bulwark.juggernaut"),
-            ("pyromancer", "pyromancer.inferno"),
-            ("sharpshot", "sharpshot.volleyer"),
-            ("cleric", "cleric.lifebinder"),
-        }),
-        ("reach", new[]
-        {
-            ("sharpshot", "sharpshot.sniper"),
-            ("sharpshot", "sharpshot.volleyer"),
-            ("shade", "shade.phantom"),
-            ("bulwark", "bulwark.warden"),
-        }),
-        ("control", new[]
-        {
-            ("bulwark", "bulwark.warden"),
-            ("phalanx", "phalanx.pikewall"),
-            ("banneret", "banneret.warcaller"),
-            ("cleric", "cleric.lifebinder"),
-        }),
-        ("damage", new[]
-        {
-            ("berserker", "berserker.bloodreaver"),
-            ("shade", "shade.reaper"),
-            ("pyromancer", "pyromancer.inferno"),
-            ("bulwark", "bulwark.juggernaut"),
-        }),
-    };
+    // Formations, answer axes and the party-size curve are shared with `--enc`
+    // (ProbeParties) so the two instruments can never describe two different players.
 
     public static void Run()
     {
         var report = new StringBuilder();
         report.AppendLine("# Boss probe — the act bosses as strength exams");
         report.AppendLine();
-        report.AppendLine($"{Formations.Length} formations × {SeedsPerArrangement} seeds, four " +
-                          "answer-axis parties, each sized to its act (rank C→A, forked from act 2). " +
+        report.AppendLine($"{ProbeParties.Formations.Length} formations × {SeedsPerArrangement} seeds, " +
+                          $"{ProbeParties.Axes.Length} answer-axis parties, each sized to its act " +
+                          "(rank C→A, forked from act 2). " +
                           "Crit is the sim's only RNG, so seeds are the whole distribution.");
         report.AppendLine();
         report.AppendLine("**Three bars, not one.** ① it must be an exam (not free) · ② placement " +
@@ -109,22 +65,11 @@ public static class BossProbe
             report.AppendLine("| answer axis | best formation | worst formation | spread | avg ticks | rule fired |");
             report.AppendLine("|---|---|---|---|---|---|");
 
-            var axisBest = new List<(string Axis, double Win, double Spread)>();
-            foreach (var (axis, party) in Answers)
-            {
-                var rows = Formations
-                    .Select(f => (f.Name, Result: Measure(act, party, f.Slots)))
-                    .OrderByDescending(r => r.Result.WinPct)
-                    .ToList();
-                var best = rows.First();
-                var worst = rows.Last();
-                double spread = best.Result.WinPct - worst.Result.WinPct;
-                axisBest.Add((axis, best.Result.WinPct, spread));
-                report.AppendLine($"| {axis} | {best.Name} {best.Result.WinPct:F0}% | " +
-                                  $"{worst.Name} {worst.Result.WinPct:F0}% | **{spread:F0}** | " +
-                                  $"{rows.Average(r => r.Result.AvgTicks):F0} | " +
-                                  $"{rows.Average(r => r.Result.RuleFiredPct):F0}% |");
-            }
+            var axisBest = Collect(act);
+            foreach (var a in axisBest)
+                report.AppendLine($"| {a.Axis} | {a.BestFormation} {a.BestWin:F0}% | " +
+                                  $"{a.WorstFormation} {a.WorstWin:F0}% | **{a.Spread:F0}** | " +
+                                  $"{a.AvgTicks:F0} | {a.RuleFiredPct:F0}% |");
 
             report.AppendLine();
             foreach (string line in Verdict(axisBest))
@@ -135,16 +80,17 @@ public static class BossProbe
         Console.WriteLine(report.ToString());
     }
 
+    /// <summary>Every axis measured against one act's boss, once — so the markdown report and the
+    /// committed baseline render the same numbers instead of re-running the fights.</summary>
+    public static List<ProbeParties.AxisResult> Collect(int act) => ProbeParties.Axes
+        .Select(a => ProbeParties.Across(a.Axis, slots => Measure(act, a.Party, slots)))
+        .ToList();
+
     /// <summary>The three bars, stated as findings rather than as a pass/fail gate — an author
     /// reads these, a build system does not.</summary>
-    private static IEnumerable<string> Verdict(List<(string Axis, double Win, double Spread)> axes)
+    public static IEnumerable<string> Verdict(List<ProbeParties.AxisResult> axes)
     {
-        // A "pass" is a real answer, not a coin flip: the axis clears it more often than not from
-        // its best formation. Anything between is named as marginal rather than rounded away.
-        var passing = axes.Where(a => a.Win >= 55).Select(a => a.Axis).ToList();
-        var marginal = axes.Where(a => a.Win >= 30 && a.Win < 55).Select(a => a.Axis).ToList();
-        double bestSpread = axes.Max(a => a.Spread);
-        double bestWin = axes.Max(a => a.Win);
+        var (passing, marginal, bestSpread, bestWin) = ProbeParties.Summarise(axes);
 
         if (bestWin < 20)
             yield return "**STAT WALL** — no axis clears it from any formation. That is numbers, not design.";
@@ -165,14 +111,7 @@ public static class BossProbe
             yield return $"Placement swings the result by up to {bestSpread:F0} points.";
     }
 
-    private readonly struct Outcome
-    {
-        public readonly double WinPct, AvgTicks, RuleFiredPct;
-        public Outcome(double win, double ticks, double fired)
-        { WinPct = win; AvgTicks = ticks; RuleFiredPct = fired; }
-    }
-
-    private static Outcome Measure(int act, (string Chassis, string Node)[] party, Hex[] slots)
+    private static ProbeParties.Outcome Measure(int act, (string Chassis, string Node)[] party, Hex[] slots)
     {
         int wins = 0, fired = 0;
         long ticks = 0;
@@ -180,19 +119,7 @@ public static class BossProbe
         for (int seed = 0; seed < SeedsPerArrangement; seed++)
         {
             var units = new List<UnitState>();
-            int id = 0;
-            // Party size follows the run's own capacity curve (ADR 0019: 3 → 6 across the run), not
-            // a fixed four. Measuring the act-1 boss against a four-hero warband describes a game
-            // nobody plays: the player meets it with the three they drafted.
-            int size = Math.Min(Math.Min(act + 2, party.Length), slots.Length);
-            for (int i = 0; i < size; i++)
-            {
-                var (chassis, node) = party[i];
-                var nodes = act >= 2 ? new[] { Kits.Nodes[node] } : Array.Empty<SpecNode>();
-                var composed = Loadout.Compose(
-                    Kits.Chassis[chassis], nodes: nodes, mastered: true, rankSteps: act - 1);
-                units.Add(Loadout.Spawn(id++, 0, composed, slots[i]));
-            }
+            int id = ProbeParties.Field(units, act, party, slots);
 
             // The catalog's OWN boss comp, scaling included — the probe must never measure a
             // different boss than the one that ships.
@@ -216,7 +143,7 @@ public static class BossProbe
             if (RuleFired(def.Id, result, enemyIds)) fired++;
         }
 
-        return new Outcome(
+        return new ProbeParties.Outcome(
             100.0 * wins / SeedsPerArrangement,
             (double)ticks / SeedsPerArrangement,
             100.0 * fired / SeedsPerArrangement);

@@ -353,9 +353,6 @@ public class ReplayPlayer : MonoBehaviour
             float startAt = _clock + delay;            // beat stagger from the dispatcher
             if (_readyAt.TryGetValue(key, out var ready) && ready > startAt) startAt = ready;
 
-            float windup = best.windupSeconds * _speedScale;
-            float motion = best.motionSeconds * _speedScale;
-
             // A Leap is the one event whose endpoints are BOTH on the event: the fold has already
             // teleported the leaper by the time this runs, so its take-off is not recoverable from
             // view state. Target here is the unit it leapt AT, not where it landed — hence the
@@ -366,6 +363,19 @@ public class ReplayPlayer : MonoBehaviour
             Vector3 tgtPos = e.Kind == EventKind.AttackBlocked || e.Kind == EventKind.Leap
                 ? _hexToWorld(new Hex(e.Amount, e.Aux))              // wall hex / landing hex
                 : (tu != null ? Where(e.Target, tu) : srcPos);       // Death: victim's retained fold pos
+
+            float windup = best.windupSeconds * _speedScale;
+            float motion = best.motionSeconds * _speedScale;
+            // Air-time buys the DISTANCE, not just the event. DriveArc already scales an arc's height
+            // with the jump; leaving its duration flat is what made a cross-board Ambush read as a
+            // teleport — same 0.34 s whether it hopped one hex or dove five. Endpoints are resolved
+            // above, so the span is exact for a Leap (its true take-off hex) as well as any other Arc.
+            if (best.motion == MotionKind.Arc && best.motionPerHexSeconds > 0f)
+            {
+                motion += best.motionPerHexSeconds * Mathf.Max(0f, HexSpan(srcPos, tgtPos) - 1f) * _speedScale;
+                if (best.motionMaxSeconds > 0f)
+                    motion = Mathf.Min(motion, best.motionMaxSeconds * _speedScale);
+            }
 
             // Combat clip for the origin moment: per-weapon-class swing on Attack, spellcast on
             // Cast. Chassis → state; primitives (no ModelAnimator) simply never consume it.
@@ -401,7 +411,20 @@ public class ReplayPlayer : MonoBehaviour
                 // the landing hex NOW so MotionOffset is the only thing moving it — otherwise the
                 // snap-lerp would be racing toward the destination underneath the arc and the two
                 // would compound into an overshoot.
-                if (best.motion == MotionKind.Arc) { srcView.Smoothed = srcView.Target; _arcing.Add(e.Source); }
+                //
+                // And seat the offset at the TAKE-OFF in the same breath. The fold teleported this
+                // unit the instant the Leap dispatched, but the arc does not begin driving until
+                // StartAt (a beat stagger) and then holds still through its windup — so without
+                // this the body renders on its landing hex for those frames, snaps back, and only
+                // then flies. That rewind is a second teleport bolted onto the one being fixed.
+                // (srcPos - tgtPos) is exactly the offset DriveArc itself produces at m=0, so the
+                // handoff from this seat into the arc is continuous by construction.
+                if (best.motion == MotionKind.Arc)
+                {
+                    srcView.Smoothed = srcView.Target;
+                    srcView.MotionOffset = srcPos - tgtPos;
+                    _arcing.Add(e.Source);
+                }
             }
         }
 
@@ -411,6 +434,15 @@ public class ReplayPlayer : MonoBehaviour
         /// and a death burst pops on the corpse. Falls back to the hex when the view is gone.</summary>
         private Vector3 Where(int unitId, PlaybackUnit u) =>
             _views.TryGetValue(unitId, out var v) ? v.Target : _hexToWorld(u.Pos);
+
+        /// <summary>How far a motion travels, in HEXES. Measured through the board's own projection
+        /// (two adjacent centres) rather than a cached hexSize, so retuning the board spacing in the
+        /// F1 cockpit can never desync an arc's air-time from the board it is crossing.</summary>
+        private float HexSpan(Vector3 a, Vector3 b)
+        {
+            float spacing = (_hexToWorld(new Hex(1, 0)) - _hexToWorld(new Hex(0, 0))).magnitude;
+            return spacing > 0.01f ? (b - a).magnitude / spacing : 0f;
+        }
 
         /// <summary>The unit's resolved ability id (last SignatureOverride trait, else the chassis),
         /// memoized: a unit's kit can't change mid-fight, so this folds once per unit per fight.</summary>
@@ -927,7 +959,7 @@ public class ReplayPlayer : MonoBehaviour
         _ending = false; _endHold = 0f;
         ResetDress();   // re-arms the once-per-fight ender latch (no ResetAnim on this path either)
         ClearRecent();  // a fresh fight starts the Events tab clean (no ResetAnim on this path)
-        ApplyFold(0);
+        ArmOpeningHold();
     }
 
     /// <summary>Debug-menu scenario switch: point at a new replay (relative to StreamingAssets) and
@@ -981,13 +1013,41 @@ public class ReplayPlayer : MonoBehaviour
         _ending = false; _endHold = 0f;
         ResetDress();
         ClearRecent();
-        ApplyFold(0);
-        if (!autoplay) SnapViews();
+        if (autoplay) ArmOpeningHold();
+        else { _preRoll = 0f; ApplyFold(0); SnapViews(); }
+    }
+
+    /// <summary>
+    /// Arm the opening beat and fold the board to the moment BEFORE tick 0.
+    ///
+    /// Tick -1 is not a cosmetic choice: tick 0 is where both lines step off and every AtStart
+    /// trigger resolves, Ambush's cross-board Leap among them. Folding to 0 here would land the
+    /// leapers in your backline before the hold has even elapsed — the held board would show the
+    /// fight's second frame, and the arc would then have to fly a body that was already there.
+    /// Advancing to -1 applies no events at all, so the hold shows exactly the formation the player
+    /// deployed, and tick 0 happens once, when the playhead actually starts.
+    /// </summary>
+    private void ArmOpeningHold()
+    {
+        _preRoll = _data != null && _data.playback != null
+            ? Mathf.Max(0f, _data.playback.openingHoldSeconds) : 0f;
+        ApplyFold(_preRoll > 0f ? -1 : 0);
+        SnapViews();   // the held board is placed and posed, never mid-lerp from a previous fight
     }
 
     private void Update()
     {
         if (!_playing || _fold == null) return;
+        // The opening beat. Nothing has happened yet — the fold is parked before tick 0 and the
+        // board is already placed and posed by ArmOpeningHold — so this returns outright rather
+        // than stepping clocks that have nothing to advance. Unlike the hit-stop below, the FX
+        // clock does NOT run through it: the point is stillness, and the Animators keep idling on
+        // Unity's own clock, so the board breathes without anything moving off its hex.
+        if (_preRoll > 0f)
+        {
+            _preRoll -= Time.deltaTime;
+            if (_preRoll > 0f) return;
+        }
         // Hit-stop: a blocking beat (Death, crit) freezes the PLAYHEAD for a few real ms while the
         // Director keeps stepping — decorative FX animate through the hold, sim time stands still.
         // Never Time.timeScale (render-polish law): that would couple juice to Unity's clock.
@@ -1558,6 +1618,9 @@ public class ReplayPlayer : MonoBehaviour
     // Hit-stop remaining (real seconds) + per-beat causal-chain ordering scratch. The playhead
     // holds while _holdSeconds drains; the Director keeps ticking so FX animate through it.
     private float _holdSeconds;
+    // Opening beat remaining (real seconds). Distinct from the hit-stop: this one holds the whole
+    // presentation, FX clock included, because the fight has not started yet. See ArmOpeningHold.
+    private float _preRoll;
     private readonly Dictionary<int, int> _beatRootOrder = new Dictionary<int, int>();
 
     private void DispatchUpTo(int tick)
@@ -1687,7 +1750,7 @@ public class ReplayPlayer : MonoBehaviour
     /// so tells can be authored before audio exists. Single source + PlayOneShot handles overlap.</summary>
     private void PlaySfx(string name)
     {
-        if (!Application.isPlaying || string.IsNullOrEmpty(name)) return;
+        if (!Application.isPlaying || _data?.audio?.enabled != true || string.IsNullOrEmpty(name)) return;
         if (!_sfxCache.TryGetValue(name, out var clip))
             _sfxCache[name] = clip = Resources.Load<AudioClip>("Board/SFX/" + name);
         if (clip == null) return;
@@ -2540,12 +2603,22 @@ public class ReplayPlayer : MonoBehaviour
     }
 
     private static readonly Dictionary<Color, Material> _matCache = new Dictionary<Color, Material>();
+    private static Shader _runtimeLitShader;
     private static Material CachedMat(Renderer r, Color c, bool doubleSided)
     {
         var key = doubleSided ? c + new Color(0.001f, 0f, 0f) : c;
         if (!_matCache.TryGetValue(key, out var mat) || mat == null)
         {
-            var shader = r.sharedMaterial != null ? r.sharedMaterial.shader : Shader.Find("Universal Render Pipeline/Lit");
+            // In a standalone player Unity replaces GameObject.CreatePrimitive's default material
+            // with Hidden/InternalErrorShader (UUM-136536). Never inherit that material's shader:
+            // every runtime primitive on the board would otherwise be deliberately repainted pink.
+            // URP/Lit is registered by WarbandBuild, so resolve and cache the intended shader itself.
+            var shader = _runtimeLitShader != null
+                ? _runtimeLitShader
+                : (_runtimeLitShader = Shader.Find("Universal Render Pipeline/Lit"));
+            if (shader == null)
+                throw new InvalidOperationException(
+                    "Universal Render Pipeline/Lit is required for runtime board materials.");
             mat = new Material(shader) { hideFlags = HideFlags.DontSave };
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c); else mat.color = c;
             if (doubleSided && mat.HasProperty("_Cull")) mat.SetFloat("_Cull", 0f);

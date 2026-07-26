@@ -20,16 +20,21 @@ Warband/Build Windows Client   →   make ship                   →   WarbandLa
 inside the Syncthing tree would sync straight back to homeserv and land in `git status`. Same rule
 the render captures already follow.
 
-## The one trap this pipeline exists to close
+## The shader traps this pipeline exists to close
 
-All six hand-written URP shaders are resolved at runtime by `Shader.Find("Warband/…")` and are
-referenced by **no material asset**, so a player build strips every one of them and each
-`new Material(null)` silently degrades — the entire combat-spectacle arc renders as nothing, and it
-looks like a bug in the FX code rather than a build setting. Verified before the first build:
-`GraphicsSettings.asset` held seven always-included shaders and **all seven were Unity built-ins**.
+Runtime-created board materials use URP Lit/Unlit plus six hand-written Warband shaders. They are
+not reliably reached through serialized material assets, so an Editor play pass can be perfect while
+a player build strips them. The first preflight caught the six Warband shaders. The first real player
+pass proved URP Unlit was also absent: every legacy tracer/burst threw `new Material(null)`.
 
 `WarbandBuild.EnsureRuntimeShadersAreIncluded()` therefore registers them itself on every build and
 logs anything it had to add. A build step cannot be forgotten; a wiki note can.
+
+There is a second, independent player-only trap. In Unity 6000.3, `GameObject.CreatePrimitive` can
+start with `Hidden/InternalErrorShader` in a player (UUM-136536). Cloning the primitive's default
+material therefore deliberately propagates pink to the board, HP bars, and Mana bars even when URP
+Lit is included. `ReplayPlayer` ignores that default and explicitly creates its replacement material
+from the registered `Universal Render Pipeline/Lit` shader.
 
 ## Commands
 
@@ -118,6 +123,9 @@ make launcher-release                      # publish WarbandLauncher.exe
 - **The gate:** signed out, `/` offers sign-in and `/launcher` 302s to Discord; `/releases/*` serves
   200. Signed in, `/` offers the download and `/launcher` returns the exe byte-identical to the
   published one. Tampered and expired session cookies are both rejected.
-- **Not verified:** the Discord round-trip itself (needs the OAuth app + credentials), and whether
-  the built player boots to the menu — batchmode launches over SSH produce no log and a session
-  cannot screenshot a player window. One double-click settles the latter.
+- **Player verification:** the first real player pass booted through the menu and reached a fight,
+  exposing the runtime shader failures described above. Build `0.1.260726.1658` proved that merely
+  including URP Lit/Unlit did not repair the pink primitives; build `0.1.260726.1706` now replaces
+  their `InternalErrorShader` explicitly, succeeded with 0 errors, and passes preflight. It still
+  needs one visual rerun before publishing. The Discord round-trip also remains unverified (needs
+  the OAuth app and credentials).

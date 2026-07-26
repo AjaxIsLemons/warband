@@ -46,6 +46,7 @@ public sealed class RunShell : MonoBehaviour
     private VisualElement _fightInspectorScrim;
     private InspectorPanel _fightInspector;
     private ResultGateView _resultGateView;
+    private WarbandBarView _warbandBarView;
     private PlaybackUnit _fightInspectedUnit;
     private BattleResult _lastBattle;
     private FightOutcome _lastFightOutcome;
@@ -87,6 +88,9 @@ public sealed class RunShell : MonoBehaviour
     private readonly Dictionary<int, Hex> _placement = new Dictionary<int, Hex>();
     private int _deploySelected = -1;
     private int _selectedItem = -1;
+    private long _focusedWarbandHeroId;
+    private long _selectedWarbandGearHeroId;
+    private int _selectedWarbandGearKind = -1;
     private string _feedback = "";
     private bool _feedbackIsError;
     private string _recruitFeedback = "";
@@ -117,6 +121,7 @@ public sealed class RunShell : MonoBehaviour
         if (_player != null) _player.PlaybackEnded -= OnFightWatched;   // never outlive the shell
         foreach (var view in _views)
             if (view is IDisposable disposable) disposable.Dispose();
+        _warbandBarView?.Dispose();
         if (_hallEnvironment != null) Destroy(_hallEnvironment.gameObject);
         if (_panelSettings != null) Destroy(_panelSettings);
     }
@@ -251,6 +256,9 @@ public sealed class RunShell : MonoBehaviour
             _conclusionReceipt = null;
             _equipNowItemInstanceId = 0;
             _equipNowOfferIndex = -1;
+            _focusedWarbandHeroId = _run.State.Field[0].InstanceId;
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
             Go(RunScreen.Management);
         };
 
@@ -280,6 +288,12 @@ public sealed class RunShell : MonoBehaviour
         _actions.CloseLoadout = CloseLoadout;
         _actions.SelectLoadoutHero = SelectLoadoutHero;
         _actions.SelectLoadoutItem = SelectLoadoutItem;
+        _actions.FocusWarbandHero = FocusWarbandHero;
+        _actions.ManageWarbandHero = ManageWarbandHero;
+        _actions.SelectWarbandEquipment = SelectWarbandEquipment;
+        _actions.TransferWarbandEquipment = TransferWarbandEquipment;
+        _actions.UnequipWarbandEquipment = UnequipWarbandEquipment;
+        _actions.EquipSelectedWarbandItem = EquipSelectedWarbandItem;
         _actions.SelectPlanningCard = SelectPlanningCard;
         _actions.OpenInspector = () =>
         {
@@ -406,6 +420,9 @@ public sealed class RunShell : MonoBehaviour
             _hubAttention.Reset();
             _equipNowItemInstanceId = 0;
             _equipNowOfferIndex = -1;
+            _focusedWarbandHeroId = 0;
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
             NewSeed();
             Go(RunScreen.Menu);
         };
@@ -511,6 +528,121 @@ public sealed class RunShell : MonoBehaviour
             targetId: "loadout-" + key, tone: UiFeedbackTone.Preview);
         Rebuild();
     }
+
+    private void FocusWarbandHero(long heroInstanceId)
+    {
+        if (_run == null ||
+            !_run.TryFindHero(heroInstanceId, out RosterZone zone, out int index))
+            return;
+        _focusedWarbandHeroId = heroInstanceId;
+        if (_model.Screen == RunScreen.Deploy)
+        {
+            if (zone == RosterZone.Field) _actions.SelectForDeploy?.Invoke(index);
+            return;
+        }
+        if (_model.Screen == RunScreen.Management)
+        {
+            string key = HeroKey(zone, index);
+            _selectedCardKey = key;
+            OpenLoadout(key);
+            return;
+        }
+        Rebuild();
+    }
+
+    private void ManageWarbandHero(long heroInstanceId)
+    {
+        if (_run == null) return;
+        if (heroInstanceId <= 0 ||
+            !_run.TryFindHero(heroInstanceId, out RosterZone zone, out int index))
+        {
+            HeroInstance first = _run.State.Field.FirstOrDefault() ??
+                                 _run.State.Bench.FirstOrDefault();
+            if (first == null) return;
+            heroInstanceId = first.InstanceId;
+            _run.TryFindHero(heroInstanceId, out zone, out index);
+        }
+        _focusedWarbandHeroId = heroInstanceId;
+        if (_model.Screen != RunScreen.Management || _hallOverview ||
+            _planningTab != PlanningTab.Muster)
+            OpenHallStation(HallStation.Warband);
+        string key = HeroKey(zone, index);
+        _selectedCardKey = key;
+        OpenLoadout(key);
+    }
+
+    private void SelectWarbandEquipment(long heroInstanceId, int kind)
+    {
+        if (!CanEditWarband() || (kind != (int)ItemKind.Weapon &&
+                                  kind != (int)ItemKind.Trinket))
+            return;
+        if (!_run.TryFindHero(heroInstanceId, out _, out _)) return;
+        if (_selectedWarbandGearHeroId == heroInstanceId &&
+            _selectedWarbandGearKind == kind)
+        {
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
+        }
+        else
+        {
+            _selectedWarbandGearHeroId = heroInstanceId;
+            _selectedWarbandGearKind = kind;
+            _selectedItem = -1;
+        }
+        Rebuild();
+    }
+
+    private void TransferWarbandEquipment(long sourceHeroInstanceId, int kind,
+                                          long targetHeroInstanceId)
+    {
+        if (!CanEditWarband() || (kind != (int)ItemKind.Weapon &&
+                                  kind != (int)ItemKind.Trinket))
+            return;
+        ShopAction(() => _run.TransferEquipment(
+            sourceHeroInstanceId, (ItemKind)kind, targetHeroInstanceId));
+        if (!_feedbackIsError)
+        {
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
+        }
+    }
+
+    private void UnequipWarbandEquipment(long heroInstanceId, int kind)
+    {
+        if (!CanEditWarband() || (kind != (int)ItemKind.Weapon &&
+                                  kind != (int)ItemKind.Trinket))
+            return;
+        ShopAction(() => _run.UnequipItem(heroInstanceId, (ItemKind)kind));
+        if (!_feedbackIsError)
+        {
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
+        }
+    }
+
+    private void EquipSelectedWarbandItem(long heroInstanceId)
+    {
+        if (!CanEditWarband() || _selectedItem < 0 ||
+            _selectedItem >= _run.State.Inventory.Count)
+            return;
+        long itemInstanceId = _run.State.Inventory[_selectedItem].InstanceId;
+        ShopAction(() => _run.EquipItem(itemInstanceId, heroInstanceId));
+        if (!_feedbackIsError)
+        {
+            _selectedItem = -1;
+            _selectedWarbandGearHeroId = 0;
+            _selectedWarbandGearKind = -1;
+        }
+    }
+
+    private bool CanEditWarband() =>
+        _run != null &&
+        _model.Screen == RunScreen.Management &&
+        _run.State.Phase == RunPhase.Planning &&
+        _run.State.PendingSpec == null;
+
+    private static string HeroKey(RosterZone zone, int index) =>
+        $"hero:{(zone == RosterZone.Bench ? "bench" : "field")}:{index}";
 
     private static PlanningTab StationTab(HallStation station) =>
         station == HallStation.Market ? PlanningTab.Market :
@@ -1253,7 +1385,8 @@ public sealed class RunShell : MonoBehaviour
         foreach (var sheet in new[]
                  { "UI/SkirmishStyles", "UI/RunShellStyles", "UI/PlanningWorkspaceStyles",
                    "UI/RunFlowStyles", "UI/HubStyles", "UI/LastHourTokens",
-                   "UI/HallPhysicalStyles", "UI/MarketOfferCardStyles" })
+                   "UI/HallPhysicalStyles", "UI/MarketOfferCardStyles",
+                   "UI/WarbandBarStyles" })
         {
             var uss = Resources.Load<StyleSheet>(sheet);
             if (uss != null) _root.styleSheets.Add(uss);
@@ -1270,6 +1403,7 @@ public sealed class RunShell : MonoBehaviour
         foreach (var v in _views) _root.Add(v.Root);
 
         BuildFightOverlay();
+        _warbandBarView = new WarbandBarView(_actions, _root);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         BuildFlowLab();
 #endif
@@ -1523,6 +1657,11 @@ public sealed class RunShell : MonoBehaviour
         _conclusionReceipt = null;
         _equipNowItemInstanceId = 0;
         _equipNowOfferIndex = -1;
+        _focusedWarbandHeroId = run.State.Field.Count > 0
+            ? run.State.Field[0].InstanceId
+            : run.State.Bench.Count > 0 ? run.State.Bench[0].InstanceId : 0;
+        _selectedWarbandGearHeroId = 0;
+        _selectedWarbandGearKind = -1;
         _placement.Clear();
         _deploySelected = -1;
         _selectedItem = -1;
@@ -1600,6 +1739,7 @@ public sealed class RunShell : MonoBehaviour
             _fightSkip.style.display = _resultGateOpen ? DisplayStyle.None : DisplayStyle.Flex;
         if (_resultGateView != null)
             _resultGateView.Bind(_model.Result, _reducedMotion);
+        _warbandBarView?.Bind(_model.WarbandBar);
     }
 
     private void ApplyShellLayoutClasses()
@@ -1643,7 +1783,217 @@ public sealed class RunShell : MonoBehaviour
             }
             BuildRunOver();
         }
+        _model.WarbandBar = BuildWarbandBar();
     }
+
+    private WarbandBarModel BuildWarbandBar()
+    {
+        var bar = new WarbandBarModel { Mode = WarbandBarMode.Hidden };
+        if (_run == null) return bar;
+
+        bar.Mode = _model.Screen switch
+        {
+            RunScreen.Management => WarbandBarMode.HallEditable,
+            RunScreen.Wager => WarbandBarMode.WagerReadOnly,
+            RunScreen.Deploy => WarbandBarMode.DeploymentSelect,
+            RunScreen.Fight when _resultGateOpen => WarbandBarMode.ResultReadOnly,
+            _ => WarbandBarMode.Hidden,
+        };
+        if (bar.Mode == WarbandBarMode.Hidden) return bar;
+
+        RunState state = _run.State;
+        bar.FieldCount = state.Field.Count;
+        bar.FieldCapacity = state.FieldSlots;
+        bar.MaxFieldCapacity = _cfg.MaxFieldSlots;
+        bar.ReserveCount = state.Bench.Count;
+        bar.ReserveCapacity = _cfg.BenchSlots;
+        bar.StoredItems = state.Inventory.Count;
+        bar.CanManage = bar.Mode == WarbandBarMode.HallEditable ||
+                        bar.Mode == WarbandBarMode.WagerReadOnly;
+        bar.CanEdit = bar.Mode == WarbandBarMode.HallEditable &&
+                      state.Phase == RunPhase.Planning &&
+                      state.PendingSpec == null;
+
+        if (_focusedWarbandHeroId <= 0 ||
+            !_run.TryFindHero(_focusedWarbandHeroId, out _, out _))
+            _focusedWarbandHeroId = state.Field.Count > 0
+                ? state.Field[0].InstanceId
+                : state.Bench.Count > 0 ? state.Bench[0].InstanceId : 0;
+        if (TryHeroAddress(_selectedCardKey, out bool selectedBench, out int selectedIndex))
+        {
+            List<HeroInstance> selectedZone = selectedBench ? state.Bench : state.Field;
+            if (selectedIndex >= 0 && selectedIndex < selectedZone.Count)
+                _focusedWarbandHeroId = selectedZone[selectedIndex].InstanceId;
+        }
+        bar.FocusedHeroInstanceId = _focusedWarbandHeroId;
+
+        if (_selectedItem >= 0 && _selectedItem < state.Inventory.Count)
+        {
+            ItemRef selected = state.Inventory[_selectedItem];
+            bar.ArmedInventoryItemInstanceId = selected.InstanceId;
+            bar.ArmedInventoryKind = (int)selected.Kind;
+        }
+
+        for (int i = 0; i < _cfg.MaxFieldSlots; i++)
+        {
+            if (i < state.Field.Count)
+                bar.Field.Add(BuildWarbandHero(state.Field[i], i, reserve: false, bar));
+            else
+                bar.Field.Add(new WarbandHeroModel
+                {
+                    FieldIndex = i,
+                    Empty = i < state.FieldSlots,
+                    Locked = i >= state.FieldSlots,
+                });
+        }
+        for (int i = 0; i < _cfg.BenchSlots; i++)
+        {
+            if (i < state.Bench.Count)
+                bar.Reserve.Add(BuildWarbandHero(state.Bench[i], i, reserve: true, bar));
+            else
+                bar.Reserve.Add(new WarbandHeroModel
+                {
+                    FieldIndex = i,
+                    Reserve = true,
+                    Empty = true,
+                });
+        }
+        return bar;
+    }
+
+    private WarbandHeroModel BuildWarbandHero(HeroInstance hero, int index, bool reserve,
+                                              WarbandBarModel bar)
+    {
+        var lex = ContentLexicon.Chassis(hero.ChassisId);
+        var presentation = _presentation.Unit(hero.ChassisId);
+        WeaponDef weapon = hero.WeaponId == null
+            ? _content.Chassis(hero.ChassisId).StarterWeapon
+            : _content.Weapon(hero.WeaponId);
+        string trinketId = hero.TrinketIds.Count > 0 ? hero.TrinketIds[0] : "";
+        var model = new WarbandHeroModel
+        {
+            HeroInstanceId = hero.InstanceId,
+            FieldIndex = reserve ? -1 : index,
+            Reserve = reserve,
+            Selected = bar.Mode == WarbandBarMode.DeploymentSelect
+                ? !reserve && index == _deploySelected
+                : hero.InstanceId == _focusedWarbandHeroId,
+            Placed = !reserve && _placement.ContainsKey(index),
+            Locked = bar.Mode == WarbandBarMode.DeploymentSelect && reserve,
+            ClassName = lex.Name,
+            Role = presentation.role,
+            Rank = hero.Rank.ToString(),
+            PortraitResource = presentation.portrait,
+            PortraitFallback = Initials(lex.Name),
+            Accent = presentation.accent,
+        };
+
+        model.Weapon = new WarbandEquipmentModel
+        {
+            Kind = (int)ItemKind.Weapon,
+            ItemInstanceId = hero.WeaponInstanceId,
+            Icon = "⚔",
+            Name = weapon.Name,
+            Tier = hero.WeaponTier.ToString().Substring(0, 1).ToUpperInvariant(),
+            Rule = WeaponSummary(weapon, hero.WeaponTier),
+            Starter = hero.WeaponId == null,
+            Transferable = bar.CanEdit && hero.WeaponId != null,
+            Selected = _selectedWarbandGearHeroId == hero.InstanceId &&
+                       _selectedWarbandGearKind == (int)ItemKind.Weapon,
+            ValidTarget = bar.CanEdit &&
+                ((bar.ArmedInventoryItemInstanceId > 0 &&
+                  bar.ArmedInventoryKind == (int)ItemKind.Weapon) ||
+                 (_selectedWarbandGearHeroId > 0 &&
+                  _selectedWarbandGearHeroId != hero.InstanceId &&
+                  _selectedWarbandGearKind == (int)ItemKind.Weapon)),
+        };
+
+        if (string.IsNullOrEmpty(trinketId))
+        {
+            model.Trinket = new WarbandEquipmentModel
+            {
+                Kind = (int)ItemKind.Trinket,
+                Icon = "◇",
+                Name = "Empty trinket socket",
+                Empty = true,
+                ValidTarget = bar.CanEdit &&
+                    ((bar.ArmedInventoryItemInstanceId > 0 &&
+                      bar.ArmedInventoryKind == (int)ItemKind.Trinket) ||
+                     (_selectedWarbandGearHeroId > 0 &&
+                      _selectedWarbandGearHeroId != hero.InstanceId &&
+                      _selectedWarbandGearKind == (int)ItemKind.Trinket)),
+            };
+        }
+        else
+        {
+            TrinketDef trinket = _content.Trinket(trinketId);
+            var trinketPresentation = _presentation.Content(trinketId);
+            model.Trinket = new WarbandEquipmentModel
+            {
+                Kind = (int)ItemKind.Trinket,
+                ItemInstanceId = hero.TrinketInstanceId,
+                Icon = trinketPresentation.icon,
+                Name = trinket.Name,
+                Rule = MechanicalRulePresenter.Trinket(trinket).Full,
+                Transferable = bar.CanEdit,
+                Selected = _selectedWarbandGearHeroId == hero.InstanceId &&
+                           _selectedWarbandGearKind == (int)ItemKind.Trinket,
+                ValidTarget = bar.CanEdit &&
+                    ((bar.ArmedInventoryItemInstanceId > 0 &&
+                      bar.ArmedInventoryKind == (int)ItemKind.Trinket) ||
+                     (_selectedWarbandGearHeroId > 0 &&
+                      _selectedWarbandGearHeroId != hero.InstanceId &&
+                      _selectedWarbandGearKind == (int)ItemKind.Trinket)),
+            };
+        }
+
+        for (int i = 0; i < hero.SpecNodeIds.Count; i++)
+        {
+            string nodeId = hero.SpecNodeIds[i];
+            var nodeLex = ContentLexicon.Node(nodeId);
+            model.Specs.Add(new WarbandSpecBadgeModel
+            {
+                Rank = ((Rank)Mathf.Clamp(i + 1, (int)Rank.B, (int)Rank.S)).ToString(),
+                Icon = SpecGlyph(nodeLex.Kind),
+                Name = nodeLex.Name,
+                Rule = MechanicalRulePresenter.Node(_content.Node(nodeId)).Full,
+                Accent = SpecAccent(nodeLex.Kind),
+            });
+        }
+        return model;
+    }
+
+    private static string SpecGlyph(LexKind kind) =>
+        kind switch
+        {
+            LexKind.Tempo => "ϟ",
+            LexKind.Control => "⬢",
+            LexKind.Power => "◆",
+            LexKind.Precision => "◈",
+            LexKind.Affliction => "♨",
+            LexKind.Ward => "⬡",
+            LexKind.Mending => "✦",
+            LexKind.Evasion => "◌",
+            LexKind.Reaction => "↶",
+            LexKind.Mark => "◎",
+            _ => "⚑",
+        };
+
+    private static string SpecAccent(LexKind kind) =>
+        kind switch
+        {
+            LexKind.Tempo => "tempo",
+            LexKind.Control => "control",
+            LexKind.Power => "power",
+            LexKind.Precision => "precision",
+            LexKind.Affliction => "affliction",
+            LexKind.Ward => "ward",
+            LexKind.Mending => "mending",
+            LexKind.Evasion => "evasion",
+            LexKind.Reaction => "reaction",
+            LexKind.Mark => "precision",
+            _ => "utility",
+        };
 
     private void BuildResultGate()
     {

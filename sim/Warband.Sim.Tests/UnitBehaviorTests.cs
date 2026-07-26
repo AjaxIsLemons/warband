@@ -25,10 +25,12 @@ namespace Warband.Sim.Tests
         // ---- TargetPref: kits override the acquire rule (ADR 0013's long-promised hook) ----
 
         /// <summary>Three enemies, deliberately arranged so nearest / farthest / weakest are three
-        /// DIFFERENT units — otherwise a preference test passes by coincidence.</summary>
+        /// DIFFERENT units — otherwise a preference test passes by coincidence. The hunter has NO
+        /// reach (and no attack): pure acquisition, with nothing for the engagement law to divert
+        /// it to. That law is pinned separately, in PathingTests.</summary>
         private static int AcquiredWith(TargetPref pref)
         {
-            var hunter = Fighter(range: 1);
+            var hunter = Fighter(range: 0);
             hunter.TargetPref = pref;
             hunter.Attack = 0;                       // never kills anyone: acquisition only
 

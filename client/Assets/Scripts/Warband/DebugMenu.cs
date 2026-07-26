@@ -14,9 +14,9 @@ using Warband.Sim;
 /// control per public field (sliders with editable ranges, color pickers, foldouts, list editor).
 /// Every edit writes back into <c>tuningConfig.data</c> and calls <c>ReplayPlayer.ReapplyTuning()</c>
 /// so changes show live. Save persists tuning.json + the slider-range map; Reload re-reads both.
-/// F1 toggles; the window is draggable (header) and resizable (bottom-right handle). See render-polish.md.
+/// F1 builds the cockpit on first use and toggles it thereafter; the window is draggable (header)
+/// and resizable (bottom-right handle). See render-polish.md.
 /// </summary>
-[RequireComponent(typeof(UIDocument))]
 public class DebugMenu : MonoBehaviour
 {
     // Startup order is owned by GameBoot — see that class before adding one back here.
@@ -57,6 +57,7 @@ public class DebugMenu : MonoBehaviour
 
     // ---- state ---------------------------------------------------------------
     private UIDocument _doc;
+    private PanelSettings _panelSettings;
     private VisualElement _panel;   // the whole window (absolute-positioned)
     private ScrollView _body;       // TUNING tab: reflected control region
     private ScrollView _uiBody;     // UI FX tab: Hall motion/feedback recipes
@@ -86,6 +87,7 @@ public class DebugMenu : MonoBehaviour
     private ReplayPlayer _player;
     private int _builtVersion = -1;   // _config.Version the current rows were generated from
     private int _builtUiVersion = -1;
+    private bool _rangesLoaded;
 
     // Editable slider ranges, keyed by stable field path ("post.bloomIntensity", "tells[0].flashSeconds").
     private readonly Dictionary<string, (float min, float max)> _ranges = new Dictionary<string, (float, float)>();
@@ -103,39 +105,65 @@ public class DebugMenu : MonoBehaviour
 
     // ---- lifecycle -----------------------------------------------------------
 
-    private void OnEnable()
+    /// <summary>
+    /// Keep the development cockpit inert until it is requested. Building its reflected controls
+    /// creates tens of thousands of UI Toolkit elements, so doing that from OnEnable made a hidden
+    /// debug surface dominate normal startup and the first interactive frame.
+    /// </summary>
+    private void EnsureBuilt()
     {
-        _doc = GetComponent<UIDocument>();
-        var ps = ScriptableObject.CreateInstance<PanelSettings>();
-        var theme = Resources.Load<ThemeStyleSheet>("DebugTheme");
-        if (theme != null) ps.themeStyleSheet = theme;
-        ps.scaleMode = PanelScaleMode.ConstantPixelSize;
-        // This UIDocument has its own PanelSettings. UIDocument.sortingOrder only orders
-        // documents on the same panel; cross-panel rendering AND picking use this value.
-        ps.sortingOrder = 1000;
-        _doc.panelSettings = ps;
-        _doc.sortingOrder = 1000;
+        if (_doc == null)
+        {
+            _doc = GetComponent<UIDocument>();
+            if (_doc == null) _doc = gameObject.AddComponent<UIDocument>();
+            _panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+            var theme = Resources.Load<ThemeStyleSheet>("DebugTheme");
+            if (theme != null) _panelSettings.themeStyleSheet = theme;
+            _panelSettings.scaleMode = PanelScaleMode.ConstantPixelSize;
+            // This UIDocument has its own PanelSettings. UIDocument.sortingOrder only orders
+            // documents on the same panel; cross-panel rendering AND picking use this value.
+            _panelSettings.sortingOrder = 1000;
+            _doc.panelSettings = _panelSettings;
+            _doc.sortingOrder = 1000;
+        }
 
-        _config = FindFirstObjectByType<TuningConfig>();
-        _uiConfig = HubPresentationConfig.Load();
-        _player = FindFirstObjectByType<ReplayPlayer>();
-        LoadRanges();
-        BuildUI();
+        if (_config == null) _config = FindFirstObjectByType<TuningConfig>();
+        if (_uiConfig == null ||
+            HubPresentationConfig.Revision != _builtUiVersion)
+            _uiConfig = HubPresentationConfig.Load();
+        if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
+        if (!_rangesLoaded)
+        {
+            LoadRanges();
+            _rangesLoaded = true;
+        }
+
+        if (_panel == null ||
+            (_config != null && _config.Version != _builtVersion) ||
+            HubPresentationConfig.Revision != _builtUiVersion)
+            BuildUI();
     }
 
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        var keyboard = Keyboard.current;
+        if (keyboard != null && keyboard.f1Key.wasPressedThisFrame)
         {
             _open = !_open;
+            if (_open) EnsureBuilt();
             if (_panel != null) _panel.style.display = _open ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
+        // Hidden means inactive, not merely invisible. In particular, do not regenerate the
+        // reflected tree in response to config revisions while the player is using normal UI.
+        if (!_open) return;
+        EnsureBuilt();
+
         // [ / ] cycle scenarios (like the dropdown), unless the user is typing in the search field.
-        if (Keyboard.current != null && _scenarioChoices.Count > 1 && !SearchFocused())
+        if (keyboard != null && _scenarioChoices.Count > 1 && !SearchFocused())
         {
-            if (Keyboard.current.leftBracketKey.wasPressedThisFrame) CycleScenario(-1);
-            else if (Keyboard.current.rightBracketKey.wasPressedThisFrame) CycleScenario(1);
+            if (keyboard.leftBracketKey.wasPressedThisFrame) CycleScenario(-1);
+            else if (keyboard.rightBracketKey.wasPressedThisFrame) CycleScenario(1);
         }
 
         // Config/player may spawn around the same time as us. We also build before ReplayPlayer
@@ -150,6 +178,11 @@ public class DebugMenu : MonoBehaviour
         }
         if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
         PollEvents();
+    }
+
+    private void OnDestroy()
+    {
+        if (_panelSettings != null) Destroy(_panelSettings);
     }
 
     /// <summary>Push edited data into the live scene.</summary>
@@ -1055,6 +1088,7 @@ public class DebugMenu : MonoBehaviour
         HubPresentationConfig.Reload();
         _uiConfig = HubPresentationConfig.Load();
         LoadRanges();     // reset ranges from disk; BuildBody re-adds any missing defaults
+        _rangesLoaded = true;
         BuildUI();
         Apply();
     }

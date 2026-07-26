@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -257,9 +258,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private bool _overviewRevealed;
     private string _choiceSignature = "";
     private readonly List<string> _trayTargetIds = new List<string>();
-    private IVisualElementScheduledItem _routeHandoff;
     private IVisualElementScheduledItem _marketScrollAnimation;
-    private int _routeGeneration;
     private int _marketScrollGeneration;
     private bool _routePending;
     private bool _reducedMotion;
@@ -267,6 +266,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private string _lastDetailKey = "";
     private bool _lastLoadoutOpen;
     private string _lastLoadoutHeroKey = "";
+    private string _partyShelfSignature = "";
     private readonly Dictionary<string, VisualElement> _shelfTargets =
         new Dictionary<string, VisualElement>();
 
@@ -678,15 +678,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
     private void BindPartyShelf(PartyShelfModel model)
     {
-        foreach (var target in _shelfTargets)
-            _polish.UnregisterTarget(target.Key, target.Value);
-        _shelfTargets.Clear();
-        _shelfField.Clear();
-        _shelfReserve.Clear();
-        _shelfStoredIcons.Clear();
-        _loadoutField.Clear();
-        _loadoutReserve.Clear();
-
         _shelfCapacity.text = $"FIELD  {model.FieldCount} / {model.FieldCapacity}";
         _shelfReserveLabel.text = $"RESERVE  {model.ReserveCount} / {model.ReserveCapacity}";
         _shelfStoredCount.text = model.StoredItems.Count == 1
@@ -695,32 +686,51 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _loadoutStoredCount.text = _shelfStoredCount.text;
         SetDisplayed(_loadoutInventoryEmpty, model.StoredItems.Count == 0);
 
-        foreach (PartySlotModel slot in model.Field)
+        // Most Hall actions rebuild the model even though the persistent party shelf did not
+        // change. Retain its compact and expanded visual trees in that common case: clearing and
+        // recreating both copies also reloaded every portrait and invalidated layout for the
+        // entire shelf.
+        string shelfSignature = PartyShelfSignature(model);
+        if (!string.Equals(_partyShelfSignature, shelfSignature, StringComparison.Ordinal))
         {
-            _shelfField.Add(PartySlot(slot, expanded: false));
-            _loadoutField.Add(PartySlot(slot, expanded: true));
-        }
-        foreach (PartySlotModel slot in model.Reserve)
-        {
-            _shelfReserve.Add(PartySlot(slot, expanded: false));
-            _loadoutReserve.Add(PartySlot(slot, expanded: true));
-        }
+            foreach (var target in _shelfTargets)
+                _polish.UnregisterTarget(target.Key, target.Value);
+            _shelfTargets.Clear();
+            _shelfField.Clear();
+            _shelfReserve.Clear();
+            _shelfStoredIcons.Clear();
+            _loadoutField.Clear();
+            _loadoutReserve.Clear();
 
-        int shown = Mathf.Min(3, model.StoredItems.Count);
-        for (int i = 0; i < shown; i++)
-        {
-            StoredItemSummaryModel item = model.StoredItems[i];
-            var icon = new Label(item.Icon);
-            icon.AddToClassList("warband-shelf__stored-icon");
-            icon.AddToClassList("accent--" + item.Accent);
-            icon.tooltip = $"{item.Name} · {item.Kind}";
-            _shelfStoredIcons.Add(icon);
-        }
-        if (model.StoredItems.Count > shown)
-        {
-            var overflow = new Label("+" + (model.StoredItems.Count - shown));
-            overflow.AddToClassList("warband-shelf__stored-overflow");
-            _shelfStoredIcons.Add(overflow);
+            foreach (PartySlotModel slot in model.Field)
+            {
+                _shelfField.Add(PartySlot(slot, expanded: false));
+                _loadoutField.Add(PartySlot(slot, expanded: true));
+            }
+            foreach (PartySlotModel slot in model.Reserve)
+            {
+                _shelfReserve.Add(PartySlot(slot, expanded: false));
+                _loadoutReserve.Add(PartySlot(slot, expanded: true));
+            }
+
+            int shown = Mathf.Min(3, model.StoredItems.Count);
+            for (int i = 0; i < shown; i++)
+            {
+                StoredItemSummaryModel item = model.StoredItems[i];
+                var icon = new Label(item.Icon);
+                icon.AddToClassList("warband-shelf__stored-icon");
+                icon.AddToClassList("accent--" + item.Accent);
+                icon.tooltip = $"{item.Name} · {item.Kind}";
+                _shelfStoredIcons.Add(icon);
+            }
+            if (model.StoredItems.Count > shown)
+            {
+                var overflow = new Label("+" + (model.StoredItems.Count - shown));
+                overflow.AddToClassList("warband-shelf__stored-overflow");
+                _shelfStoredIcons.Add(overflow);
+            }
+
+            _partyShelfSignature = shelfSignature;
         }
 
         _root.EnableInClassList("loadout--open", model.Expanded);
@@ -741,12 +751,58 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         }
         else
         {
-            _loadoutCards.Bind(EmptyCards, "armory");
+            if (_lastLoadoutOpen)
+                _loadoutCards.Bind(EmptyCards, "armory");
             if (_lastLoadoutOpen)
                 _polish.Reveal(_shelf, _presentation.shelfCollapse);
         }
         _lastLoadoutOpen = model.Expanded;
         _lastLoadoutHeroKey = model.Expanded ? model.FocusedHeroKey : "";
+    }
+
+    private static string PartyShelfSignature(PartyShelfModel model)
+    {
+        var signature = new StringBuilder(512);
+        AppendSlots(signature, model.Field);
+        AppendSlots(signature, model.Reserve);
+        for (int i = 0; i < model.StoredItems.Count; i++)
+        {
+            StoredItemSummaryModel item = model.StoredItems[i];
+            AppendSignatureText(signature, item.Key);
+            AppendSignatureText(signature, item.Name);
+            AppendSignatureText(signature, item.Kind);
+            AppendSignatureText(signature, item.Icon);
+            AppendSignatureText(signature, item.Accent);
+        }
+        return signature.ToString();
+    }
+
+    private static void AppendSlots(StringBuilder signature, IReadOnlyList<PartySlotModel> slots)
+    {
+        signature.Append(slots.Count).Append('|');
+        for (int i = 0; i < slots.Count; i++)
+        {
+            PartySlotModel slot = slots[i];
+            AppendSignatureText(signature, slot.Key);
+            signature.Append(slot.Index).Append('|')
+                .Append(slot.Reserve ? '1' : '0').Append('|')
+                .Append((int)slot.State).Append('|');
+            AppendSignatureText(signature, slot.Name);
+            AppendSignatureText(signature, slot.Rank);
+            AppendSignatureText(signature, slot.Role);
+            AppendSignatureText(signature, slot.PortraitResource);
+            AppendSignatureText(signature, slot.PortraitFallback);
+            AppendSignatureText(signature, slot.Accent);
+            AppendSignatureText(signature, slot.Weapon);
+            AppendSignatureText(signature, slot.Trinket);
+            signature.Append(slot.Focused ? '1' : '0').Append('|');
+        }
+    }
+
+    private static void AppendSignatureText(StringBuilder signature, string value)
+    {
+        value = value ?? "";
+        signature.Append(value.Length).Append(':').Append(value).Append('|');
     }
 
     private Button PartySlot(PartySlotModel model, bool expanded)
@@ -1013,9 +1069,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
     public void Dispose()
     {
-        _routeGeneration++;
-        _routeHandoff?.Pause();
-        _routeHandoff = null;
         CancelMarketScroll();
         _director.Cancel();
         _polish.Dispose();
@@ -1249,40 +1302,28 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     {
         if (_routePending || handoff == null) return;
         _routePending = true;
-        int generation = ++_routeGeneration;
-        _root.AddToClassList("hub--routing");
-        SetRouteControlsEnabled(false);
 
-        string target = destination == HallStation.Overview
-            ? "hub-workspace"
-            : "station-" + destination.ToString().ToLowerInvariant();
-        string source = _hallOverview
-            ? "station-hourstone"
-            : "anchor-" + _activeStation.ToString().ToLowerInvariant();
-        UiPolishSignals.Emit(UiPolishSignals.Cue.Route, source, target,
-            tone: UiFeedbackTone.Sand,
-            receipt: destination == HallStation.Overview
-                ? "Returned to the Hourstone Table."
-                : StationName(destination) + " opened.");
-
-        int delay = _reducedMotion
-            ? 40
-            : Mathf.Clamp(_presentation.route.durationMs / 2, 100, 160);
-        _routeHandoff = _root.schedule.Execute(() =>
+        // RunShell owns the standard Hall route feedback. Breach advances through a different
+        // action, so it still needs its cue here.
+        if (destination == HallStation.Breach)
         {
-            if (generation != _routeGeneration) return;
-            _routePending = false;
-            _root.RemoveFromClassList("hub--routing");
-            SetRouteControlsEnabled(true);
-            handoff();
-        });
-        _routeHandoff.ExecuteLater(delay);
-    }
+            string source = _hallOverview
+                ? "station-hourstone"
+                : "anchor-" + _activeStation.ToString().ToLowerInvariant();
+            UiPolishSignals.Emit(UiPolishSignals.Cue.Route, source, "station-breach",
+                tone: UiFeedbackTone.Sand, receipt: StationName(destination) + " opened.");
+        }
 
-    private void SetRouteControlsEnabled(bool enabled)
-    {
-        foreach (Button button in _stationButtons.Values) button.SetEnabled(enabled);
-        foreach (Button button in _anchorButtons.Values) button.SetEnabled(enabled);
+        try
+        {
+            // Change state in the click frame. HubFlowDirector still supplies the destination
+            // entrance motion, but input no longer sits behind an artificial 40–160 ms hold.
+            handoff();
+        }
+        finally
+        {
+            _routePending = false;
+        }
     }
 
     private void SetStationClass(HallStation station)

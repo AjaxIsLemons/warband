@@ -346,7 +346,7 @@
         "transactionMotes": 12
     },
     "audio": {
-        "enabled": true,
+        "enabled": false,
         "volume": 0.7200000286102295,
         "pitchVariance": 0.02500000037252903,
         "hoverCooldownMs": 45,

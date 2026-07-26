@@ -180,31 +180,41 @@ namespace Warband.Sim.Tests
         }
 
         [Fact]
-        public void PocketedShooterStandsInsteadOfOscillating()
+        public void PocketedShooterWalksOutToAnAngleInsteadOfStanding()
         {
-            // No firing angle exists: walls on the line AND on the one sidestep hex that would have
-            // a clear shot. With nothing closer and nothing clear, the shooter must simply stand —
-            // it does not thrash. (The rooted pacifist can never fire back, so the storm resolves it.)
+            // No firing angle is available ADJACENT to the shooter: walls sit on the line AND on the
+            // one sidestep hex that would have had a clear shot. The old one-hex angle seek could
+            // only look at its own six neighbours, so it gave up and stood there until the storm
+            // killed everyone. Routing plans the whole way instead: the engage ring is every hex
+            // with a live firing solution, so the shooter walks out of the pocket and takes the
+            // shot. (The rooted pacifist can never fire back — this is purely about the shooter.)
             var archer = new UnitDef { Name = "archer", MaxHp = 60, Attack = 12, AttackInterval = 10, Range = 4, MoveInterval = 5 };
+            var targetPos = Hex.FromRowCol(3, 2);
             var units = new List<UnitState>
             {
-                UnitState.Spawn(0, 0, archer, Hex.FromRowCol(1, 1)),  // free to move, but pocketed
-                Rooted(1, 1, BattleTests.Pacifist(40), Hex.FromRowCol(3, 2)),
+                UnitState.Spawn(0, 0, archer, Hex.FromRowCol(1, 1)),  // pocketed, but not trapped
+                Rooted(1, 1, BattleTests.Pacifist(40), targetPos),
             };
             var fields = new (FieldDef, Hex, int)[]
             {
                 (new FieldDef { Radius = 0, Ticks = -1, IsWall = true }, Hex.FromRowCol(2, 2), -1), // on the line
-                (new FieldDef { Radius = 0, Ticks = -1, IsWall = true }, Hex.FromRowCol(2, 1), -1), // the only clear-angle hex
+                (new FieldDef { Radius = 0, Ticks = -1, IsWall = true }, Hex.FromRowCol(2, 1), -1), // the adjacent clear-angle hex
             };
             var result = new Battle(units, initialFields: fields).Run();
 
+            // Learns the block once, then solves it by walking rather than by re-whiffing.
             Assert.Equal(1, result.Events.Count(e => e.Kind == EventKind.AttackBlocked && e.Source == 0));
-            // It stands: zero moves across the whole (well over 20-tick) fight — no oscillation.
-            Assert.Empty(result.Events.Where(e => e.Kind == EventKind.Move && e.Source == 0));
-            Assert.True(result.EndTick > Battle.OvertimeStartTick); // nobody could shoot; the storm ended it
-            // It never lands an arrow (no clear line ever opened).
-            Assert.DoesNotContain(result.Events, e =>
-                e.Kind == EventKind.DamageDealt && e.Source == 0 && e.Cause == Cause.Attack);
+            var moves = result.Events.Where(e => e.Kind == EventKind.Move && e.Source == 0).ToList();
+            Assert.NotEmpty(moves);
+            // A route, not a thrash: it walks a short way and stops once it can shoot.
+            Assert.True(moves.Count <= 4, $"took {moves.Count} steps to find an angle");
+            Assert.All(moves, e => Assert.True(
+                Hex.Distance(new Hex(e.Amount, e.Aux), targetPos) >= 2, "walked into melee"));
+            // Real arrows land, and the fight is decided long before overtime.
+            Assert.Contains(result.Events, e =>
+                e.Kind == EventKind.DamageDealt && e.Source == 0 && e.Target == 1 && e.Cause == Cause.Attack);
+            Assert.Equal(Winner.Team0, result.Winner);
+            Assert.True(result.EndTick < Battle.OvertimeStartTick);
             AssertReconstructs(result);
         }
 

@@ -67,6 +67,14 @@ internal sealed class RunShellActions
     public Action<string> SelectLoadoutHero = _ => { };
     public Action<string> SelectLoadoutItem = _ => { };
 
+    // Shell-owned Warband Bar. Stable identities are mandatory because roster indices move.
+    public Action<long> FocusWarbandHero = _ => { };
+    public Action<long> ManageWarbandHero = _ => { };
+    public Action<long, int> SelectWarbandEquipment = (_, __) => { };
+    public Action<long, int, long> TransferWarbandEquipment = (_, __, ___) => { };
+    public Action<long, int> UnequipWarbandEquipment = (_, __) => { };
+    public Action<long> EquipSelectedWarbandItem = _ => { };
+
     // Map / node
     public Action<int> ChooseTier = _ => { };
     public Action Advance = () => { };          // resolve the current node (fight, event, or boss)

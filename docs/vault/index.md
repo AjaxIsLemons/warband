@@ -111,6 +111,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0022-unit-behavior-and-item-axes.md](Decisions/0022-unit-behavior-and-item-axes.md) —
   the per-unit behavior layer (target preference, standoff, per-chassis speed), weapon cast
   cadence, signature patches vs overrides, the trinket layer, and the Frenzy fix.
+- [Decisions/0025-routing-and-the-engagement-law.md](Decisions/0025-routing-and-the-engagement-law.md) —
+  units follow a flow field to an engage ring instead of hill-climbing on hex distance (bodies are
+  detours, not walls), a unit that can neither reach nor strike its target fights what it can, and a
+  leap keeps the victim it jumped at. Fixes units idling entire fights.
 - [Decisions/0024-act-bosses-and-the-disclosure-contract.md](Decisions/0024-act-bosses-and-the-disclosure-contract.md) —
   three per-act bosses (Last Oath / Ashfall Battery / Waning Crown), bosses authored for their act,
   brief and spawn built by one method, per-body behavior disclosure, and enemy cards that stop

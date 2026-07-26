@@ -90,7 +90,11 @@
     "tileScale": 0.9
   },
   "playback": {
-    "ticksPerSecond": 5.0
+    "ticksPerSecond": 5.0,
+    "openingHoldSeconds": 0.7
+  },
+  "audio": {
+    "enabled": false
   },
   "fx": {
     "deathLingerSeconds": 1.6,
@@ -1379,6 +1383,8 @@
       "castSound": "",
       "motion": "Arc",
       "motionSeconds": 0.34,
+      "motionPerHexSeconds": 0.1,
+      "motionMaxSeconds": 1.0,
       "motionColor": "#9E8CD8FF",
       "motionGlow": 2.2,
       "motionScale": 1.0,

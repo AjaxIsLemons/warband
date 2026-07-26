@@ -283,6 +283,97 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
+        public void HeroIdentitiesSurviveRosterMoves()
+        {
+            var run = ShopRun();
+            long moved = run.State.Field[0].InstanceId;
+            Assert.All(run.State.Field, hero => Assert.True(hero.InstanceId > 0));
+            Assert.Equal(run.State.Field.Count,
+                run.State.Field.Select(hero => hero.InstanceId).Distinct().Count());
+
+            run.FieldToBench(0);
+            Assert.Equal(moved, run.State.Bench[0].InstanceId);
+            Assert.True(run.TryFindHero(moved, out RosterZone zone, out int index));
+            Assert.Equal(RosterZone.Bench, zone);
+            Assert.Equal(0, index);
+        }
+
+        [Fact]
+        public void StableIdentityWeaponTransferSwapsExplicitItemsAtomically()
+        {
+            var run = ShopRun();
+            HeroInstance source = run.State.Field[0];
+            HeroInstance target = run.State.Field[1];
+            run.State.Inventory.Add(new ItemRef
+            {
+                InstanceId = 101,
+                Kind = ItemKind.Weapon,
+                Id = "blade",
+                Tier = WeaponTier.Honed,
+                SandInvested = 7,
+            });
+            run.State.Inventory.Add(new ItemRef
+            {
+                InstanceId = 102,
+                Kind = ItemKind.Weapon,
+                Id = "bow",
+                Tier = WeaponTier.Relic,
+                SandInvested = 12,
+            });
+
+            run.EquipItem(101, source.InstanceId);
+            run.EquipItem(102, target.InstanceId);
+            run.TransferEquipment(source.InstanceId, ItemKind.Weapon, target.InstanceId);
+
+            Assert.Equal(("bow", WeaponTier.Relic, 102L, 12),
+                (source.WeaponId, source.WeaponTier, source.WeaponInstanceId,
+                 source.WeaponSandInvested));
+            Assert.Equal(("blade", WeaponTier.Honed, 101L, 7),
+                (target.WeaponId, target.WeaponTier, target.WeaponInstanceId,
+                 target.WeaponSandInvested));
+            Assert.Empty(run.State.Inventory);
+        }
+
+        [Fact]
+        public void StableIdentityEquipmentMoveHandlesEmptySocketsAndRejectsLockedState()
+        {
+            var run = ShopRun();
+            HeroInstance source = run.State.Field[0];
+            HeroInstance target = run.State.Field[1];
+            run.State.Inventory.Add(new ItemRef
+            {
+                InstanceId = 201,
+                Kind = ItemKind.Weapon,
+                Id = "blade",
+                Tier = WeaponTier.Honed,
+                SandInvested = 9,
+            });
+            run.State.Inventory.Add(new ItemRef
+            {
+                InstanceId = 202,
+                Kind = ItemKind.Trinket,
+                Id = "charm",
+                SandInvested = 5,
+            });
+            run.EquipItem(201, source.InstanceId);
+            run.EquipItem(202, source.InstanceId);
+
+            run.TransferEquipment(source.InstanceId, ItemKind.Weapon, target.InstanceId);
+            run.TransferEquipment(source.InstanceId, ItemKind.Trinket, target.InstanceId);
+
+            Assert.Null(source.WeaponId);
+            Assert.Empty(source.TrinketIds);
+            Assert.Equal("blade", target.WeaponId);
+            Assert.Equal("charm", target.TrinketIds.Single());
+
+            run.State.PendingSpec = new PendingSpec();
+            Assert.Throws<InvalidOperationException>(
+                () => run.TransferEquipment(target.InstanceId, ItemKind.Weapon, source.InstanceId));
+            Assert.Null(source.WeaponId);
+            Assert.Equal("blade", target.WeaponId);
+        }
+
+        [Fact]
         public void InscriptionBuysApplyToBattle()
         {
             var cfg = new RunConfig { BannerChancePct = 100 };

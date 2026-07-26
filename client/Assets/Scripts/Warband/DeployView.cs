@@ -121,7 +121,9 @@ internal sealed class DeployView : IRunScreenView
         SetDisplayed(_feedback, !string.IsNullOrWhiteSpace(d.Feedback));
         _feedback.EnableInClassList("feedback-label--error", d.FeedbackIsError);
 
-        RebuildRail(d.Roster);
+        // The shell-owned Warband Bar is the friendly roster in Deployment. Keeping the old
+        // rail populated would duplicate controls and rebuild a second hero tree on every click.
+        SetDisplayed(_rail, false);
 
         SetDisplayed(_enemyPanel, d.EnemyPreview.Count > 0);
         _enemyList.Clear();

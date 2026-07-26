@@ -539,6 +539,81 @@ internal sealed class PartyShelfModel
     public List<CardModel> LoadoutInventory = new List<CardModel>();
 }
 
+internal enum WarbandBarMode
+{
+    Hidden,
+    HallEditable,
+    WagerReadOnly,
+    DeploymentSelect,
+    ResultReadOnly,
+}
+
+internal sealed class WarbandEquipmentModel
+{
+    public int Kind;                         // Warband.Run.ItemKind, kept out of the view contract
+    public long ItemInstanceId;
+    public string Icon = "";
+    public string Name = "";
+    public string Tier = "";
+    public string Rule = "";
+    public bool Empty;
+    public bool Starter;
+    public bool Transferable;
+    public bool Selected;
+    public bool ValidTarget;
+}
+
+internal sealed class WarbandSpecBadgeModel
+{
+    public string Rank = "";
+    public string Icon = "";
+    public string Name = "";
+    public string Rule = "";
+    public string Accent = "";
+}
+
+internal sealed class WarbandHeroModel
+{
+    public long HeroInstanceId;
+    public int FieldIndex = -1;
+    public bool Reserve;
+    public bool Empty;
+    public bool Locked;
+    public bool Selected;
+    public bool Placed;
+    public string ClassName = "";
+    public string Role = "";
+    public string Rank = "";
+    public string PortraitResource = "";
+    public string PortraitFallback = "";
+    public string Accent = "";
+    public WarbandEquipmentModel Weapon = new WarbandEquipmentModel();
+    public WarbandEquipmentModel Trinket = new WarbandEquipmentModel();
+    public List<WarbandSpecBadgeModel> Specs = new List<WarbandSpecBadgeModel>();
+}
+
+/// <summary>
+/// One shell-owned projection shared by Hall, Wager, Deployment, and the frozen result gate.
+/// Screen views never clone it, so portrait and layout trees survive navigation.
+/// </summary>
+internal sealed class WarbandBarModel
+{
+    public WarbandBarMode Mode;
+    public int FieldCount;
+    public int FieldCapacity;
+    public int MaxFieldCapacity;
+    public int ReserveCount;
+    public int ReserveCapacity;
+    public int StoredItems;
+    public bool CanManage;
+    public bool CanEdit;
+    public long FocusedHeroInstanceId;
+    public long ArmedInventoryItemInstanceId;
+    public int ArmedInventoryKind = -1;
+    public List<WarbandHeroModel> Field = new List<WarbandHeroModel>();
+    public List<WarbandHeroModel> Reserve = new List<WarbandHeroModel>();
+}
+
 internal sealed class PlanningTrackNodeModel
 {
     public string Label = "";
@@ -785,4 +860,5 @@ internal sealed class RunShellModel
     public DeployModel Deploy = new DeployModel();
     public RunOverModel RunOver = new RunOverModel();
     public ResultGateModel Result = new ResultGateModel();
+    public WarbandBarModel WarbandBar = new WarbandBarModel();
 }

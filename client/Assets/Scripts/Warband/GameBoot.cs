@@ -59,7 +59,9 @@ public static class GameBoot
         // Dev cockpit and hover card come last: both read state the others own, and neither
         // should ever be the reason a frame of gameplay behaves differently.
         if (player != null) Spawn<Tooltip>("~Tooltip");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         Spawn<DebugMenu>("~DebugMenu");
+#endif
     }
 
     private static T Spawn<T>(string name) where T : MonoBehaviour

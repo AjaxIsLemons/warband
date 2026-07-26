@@ -90,7 +90,7 @@ internal sealed class HallEnvironmentTuning
 [Serializable]
 internal sealed class UiAudioTuning
 {
-    public bool enabled = true;
+    public bool enabled = false;
     [Range(0f, 1f)] public float volume = 0.72f;
     [Range(0f, 0.2f)] public float pitchVariance = 0.025f;
     [Min(0)] public int hoverCooldownMs = 45;

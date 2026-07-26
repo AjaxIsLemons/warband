@@ -19,121 +19,177 @@ using Warband.Sim;
 ///
 /// A "good" encounter here is NOT one the player always wins. It is one where the spread is wide —
 /// where where-you-stand changed the answer.
+///
+/// **Four answer axes since 2026-07-26.** This probe used to run one hard-coded party, which made
+/// every "poses nothing" verdict conditional on a warband the author never chose: an encounter flat
+/// for bulwark/pyro/sharpshot and sharp for a control party read as flat, with nothing in the report
+/// to hint otherwise. It now uses the same four axes and formations as `--boss` (see
+/// <see cref="ProbeParties"/>), so a flat verdict means flat for every kind of strength — and the
+/// two instruments can no longer describe two different games.
 /// </summary>
 public static class EncounterProbe
 {
     private const int SeedsPerArrangement = 24;
 
-    /// <summary>Blue rows are 0-3. Named shapes, because a player thinks in shapes.</summary>
-    private static readonly (string Name, Hex[] Slots)[] Formations =
+    /// <summary>Everything measured for one encounter, once. Rendering — the markdown report and
+    /// the committed baseline — reads this rather than re-running the fights.</summary>
+    public sealed class Row
     {
-        ("default",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(1, 1), Hex.FromRowCol(1, 4) }),
-        ("forward",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(3, 1), Hex.FromRowCol(3, 4) }),
-        ("turtle",     new[] { Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 1), Hex.FromRowCol(0, 3) }),
-        ("wall-first", new[] { Hex.FromRowCol(3, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 3) }),
-        ("split",      new[] { Hex.FromRowCol(3, 0), Hex.FromRowCol(1, 2), Hex.FromRowCol(3, 5) }),
-        ("back-line",  new[] { Hex.FromRowCol(2, 2), Hex.FromRowCol(0, 0), Hex.FromRowCol(0, 5) }),
-    };
+        public string Id = "", Name = "", RuleName = "", Pressure = "", Bodies = "";
+        public int DebutAct;
+        /// <summary>act (1-based index 0..2) → one result per answer axis.</summary>
+        public List<ProbeParties.AxisResult>[] ByAct = new List<ProbeParties.AxisResult>[3];
+    }
+
+    public sealed class NaiveLine
+    {
+        public int Completed, Total;
+        public List<(string Where, int Count)> Deaths = new List<(string, int)>();
+    }
+
+    public static List<Row> Collect()
+    {
+        var rows = new List<Row>();
+        foreach (var factory in Encounters.NodePool)
+        {
+            var def = factory(1);
+            var row = new Row
+            {
+                Id = def.Id, Name = def.Name, RuleName = def.RuleName, Pressure = def.Pressure,
+                // Judge an encounter at the FIRST act it can actually appear in — an act-2
+                // encounter measured against a rank-C opening warband is a fact about the pool,
+                // not a flaw.
+                DebutAct = Enumerable.Range(1, 3)
+                    .First(a => Encounters.PoolFor(a).Any(f => f(a).Id == def.Id)),
+            };
+            for (int act = 1; act <= 3; act++)
+            {
+                var atAct = factory(act);
+                if (act == row.DebutAct)
+                    row.Bodies = string.Join(", ", atAct.Enemies
+                        .GroupBy(e => e.Def.Name)
+                        .Select(g => g.Count() > 1 ? $"{g.Count()}× {g.Key}" : g.Key));
+                row.ByAct[act - 1] = ProbeParties.Axes
+                    .Select(a => ProbeParties.Across(a.Axis,
+                        slots => Measure(factory, act, a.Party, slots)))
+                    .ToList();
+            }
+            rows.Add(row);
+        }
+        return rows;
+    }
 
     /// <summary>
-    /// A wall, a caster, a shooter — and it GROWS with the act, because that is the only honest
-    /// comparison. Measuring a rank-B forked party against act-1 enemies says nothing about act 1:
-    /// the player meets act 1 with three rank-C recruits and no fork at all.
+    /// The naive line: can the bot's fixed comp survive the pool at all? The integration smoke test
+    /// plays Cleric/Bulwark/Shade with front/back placement and no draft choice. It is the WEAKEST
+    /// legal answer, so it is the floor check: an act-1 pool a legal comp cannot clear is
+    /// prescribing a build, which the encounter law forbids.
     /// </summary>
-    private static readonly (string Chassis, string Node)[] Party =
+    public static NaiveLine CollectNaiveLine()
     {
-        ("bulwark", "bulwark.juggernaut"),
-        ("pyromancer", "pyromancer.inferno"),
-        ("sharpshot", "sharpshot.volleyer"),
-    };
+        var reports = RunHarness.PlayMany(12, seedBase: 4000, new Catalog());
+        var line = new NaiveLine
+        {
+            Total = 12,
+            Completed = reports.Count(r => r.Final.Phase == RunPhase.Complete),
+        };
+        line.Deaths = reports.Where(r => r.Final.Phase != RunPhase.Complete)
+            .Select(r => r.Fights.LastOrDefault())
+            .Where(f => f != null)
+            .GroupBy(f => $"act {f!.Act} node {f.Node}{(f.IsBoss ? " (boss)" : "")}")
+            .Select(g => (Where: g.Key, Count: g.Count()))
+            .OrderByDescending(g => g.Count).ThenBy(g => g.Where, StringComparer.Ordinal)
+            .ToList();
+        return line;
+    }
 
     public static void Run()
     {
         var report = new StringBuilder();
         report.AppendLine("# Encounter probe — authored PvE node pool");
         report.AppendLine();
-        report.AppendLine($"{Formations.Length} formations × {SeedsPerArrangement} seeds per act, " +
-                          "vs an act-appropriate Bulwark/Pyromancer/Sharpshot party " +
-                          "(rank C→A as the act climbs). Crit is the sim's only RNG, so seeds are the " +
-                          "whole distribution.");
+        report.AppendLine($"{ProbeParties.Formations.Length} formations × {ProbeParties.Axes.Length} " +
+                          $"answer axes × {SeedsPerArrangement} seeds per act, each party sized and " +
+                          "ranked to its act (3 heroes rank C at act 1; forked from act 2). Crit is " +
+                          "the sim's only RNG, so seeds are the whole distribution.");
         report.AppendLine();
         report.AppendLine("**The bar is not win%.** It is the SPREAD: if every formation scores the " +
-                          "same, the encounter poses no placement problem no matter what its rule says.");
+                          "same, the encounter poses no placement problem no matter what its rule says. " +
+                          "Cells are `best win% (spread across formations)`.");
         report.AppendLine();
 
-        foreach (var factory in Encounters.NodePool)
+        foreach (var row in Collect())
         {
-            var def = factory(1);
-            report.AppendLine($"## {def.Name} — `{def.RuleName}`");
+            report.AppendLine($"## {row.Name} — `{row.RuleName}`");
             report.AppendLine();
-            report.AppendLine($"> {def.Pressure}");
+            report.AppendLine($"> {row.Pressure}");
             report.AppendLine();
-            report.AppendLine("| act | best formation | worst formation | spread | avg ticks | rule fired |");
-            report.AppendLine("|---|---|---|---|---|---|");
-
+            report.AppendLine($"Debuts in act {row.DebutAct} — {row.Bodies}.");
+            report.AppendLine();
+            report.AppendLine("| act | " + string.Join(" | ", ProbeParties.Axes.Select(a => a.Axis)) +
+                              " | axes | rule |");
+            report.AppendLine("|---|" + string.Concat(ProbeParties.Axes.Select(_ => "---|")) + "---|---|");
             for (int act = 1; act <= 3; act++)
             {
-                var rows = Formations
-                    .Select(f => (f.Name, Result: Measure(factory, act, f.Slots)))
-                    .OrderByDescending(r => r.Result.WinPct)
-                    .ToList();
-                var best = rows.First();
-                var worst = rows.Last();
-                double spread = best.Result.WinPct - worst.Result.WinPct;
-                double firedPct = rows.Average(r => r.Result.RuleFiredPct);
-                report.AppendLine($"| {act} | {best.Name} {best.Result.WinPct:F0}% | " +
-                                  $"{worst.Name} {worst.Result.WinPct:F0}% | **{spread:F0}** | " +
-                                  $"{rows.Average(r => r.Result.AvgTicks):F0} | {firedPct:F0}% |");
+                var axes = row.ByAct[act - 1];
+                var (passing, _, _, _) = ProbeParties.Summarise(axes);
+                report.AppendLine($"| {act} | " +
+                    string.Join(" | ", axes.Select(a => $"{a.BestWin:F0} ({a.Spread:F0})")) +
+                    $" | {passing.Count}/{axes.Count} | {axes.Average(a => a.RuleFiredPct):F0}% |");
             }
-
             report.AppendLine();
-            // Judge an encounter at the FIRST act it can actually appear in — an act-2 encounter
-            // measured against a rank-C opening warband is a fact about the pool, not a flaw.
-            int debutAct = Enumerable.Range(1, 3)
-                .First(a => Encounters.PoolFor(a).Any(f => f(a).Id == def.Id));
-            var debut = Formations.Select(f => Measure(factory, debutAct, f.Slots).WinPct).ToList();
-            report.AppendLine($"> Debuts in act {debutAct}. " +
-                              Verdict(def, debut.Max(), debut.Max() - debut.Min()).Substring(2));
+            foreach (var line in Verdict(row))
+                report.AppendLine("> " + line);
             report.AppendLine();
         }
 
-        // ---- the naive line: can the bot's fixed comp survive the pool at all? ----------
-        // The integration smoke test plays Cleric/Bulwark/Shade with front/back placement and no
-        // draft choice. It is the WEAKEST legal answer, so it is the floor check: an act-1 pool a
-        // legal comp cannot clear is prescribing a build, which the encounter law forbids.
+        var naive = CollectNaiveLine();
         report.AppendLine("## The naive line (bot: fixed comp, default placement)");
         report.AppendLine();
-        var reports = RunHarness.PlayMany(12, seedBase: 4000, new Catalog());
-        int victories = reports.Count(r => r.Final.Phase == RunPhase.Complete);
-        report.AppendLine($"- Runs completed: **{victories}/12**");
-        var deaths = reports.Where(r => r.Final.Phase != RunPhase.Complete)
-            .Select(r => r.Fights.LastOrDefault())
-            .Where(f => f != null)
-            .GroupBy(f => $"act {f!.Act} node {f.Node}{(f.IsBoss ? " (boss)" : "")}")
-            .OrderByDescending(g => g.Count());
-        foreach (var g in deaths)
-            report.AppendLine($"- died at {g.Key}: {g.Count()}×");
+        report.AppendLine($"- Runs completed: **{naive.Completed}/{naive.Total}**");
+        foreach (var (where, count) in naive.Deaths)
+            report.AppendLine($"- died at {where}: {count}×");
         report.AppendLine();
 
         Console.WriteLine(report.ToString());
     }
 
-    private static string Verdict(EncounterDef def, double bestWin, double spread)
+    /// <summary>The findings, at the encounter's debut act. Stated as observations for an author
+    /// to read, not as a pass/fail gate for a build system.</summary>
+    public static IEnumerable<string> Verdict(Row row)
     {
-        if (bestWin < 20) return "> **UNSURVIVABLE at act 1** — no formation clears it. Stats, not design.";
-        if (bestWin > 95 && spread < 10) return "> **FREE** — every formation wins. It poses nothing yet.";
-        if (spread < 15) return "> **FLAT** — winnable, but placement barely moves the result.";
-        return $"> **POSES A PROBLEM** — placement swings the result by {spread:F0} points.";
+        var axes = row.ByAct[row.DebutAct - 1];
+        var (passing, marginal, bestSpread, bestWin) = ProbeParties.Summarise(axes);
+
+        if (bestWin < 20)
+            yield return $"**UNSURVIVABLE at act {row.DebutAct}** — no axis clears it from any " +
+                         "formation. That is numbers, not design.";
+        else if (passing.Count == 0)
+            yield return $"**PUNISHING** — nothing passes cleanly; best axis peaks at {bestWin:F0}%." +
+                         (marginal.Count > 0 ? $" Marginal: {string.Join(", ", marginal)}." : "");
+        else if (passing.Count == ProbeParties.Axes.Length && bestWin > 95 && bestSpread < 10)
+            yield return "**FREE** — every axis wins from every formation. It poses nothing yet.";
+        else if (passing.Count == 1)
+            yield return $"**PRESCRIBES A BUILD** — only `{passing[0]}` clears it. " +
+                         "pve-encounters.md: an encounter must admit several kinds of answer.";
+        else
+            yield return $"**ADMITS {passing.Count} ANSWERS** — {string.Join(", ", passing)} clear it" +
+                         (marginal.Count > 0 ? $"; {string.Join(", ", marginal)} marginal." : ".");
+
+        if (bestSpread < 15)
+            yield return $"**FLAT** — placement moves the result by at most {bestSpread:F0} points. " +
+                         "Placement is the only order the player gives; this encounter ignores it.";
+        else
+        {
+            var sharpest = axes.OrderByDescending(a => a.Spread).First();
+            yield return $"Placement swings the result by up to {bestSpread:F0} points " +
+                         $"(`{sharpest.Axis}`: {sharpest.BestFormation} {sharpest.BestWin:F0}% vs " +
+                         $"{sharpest.WorstFormation} {sharpest.WorstWin:F0}%).";
+        }
     }
 
-    private readonly struct Outcome
-    {
-        public readonly double WinPct, AvgTicks, RuleFiredPct;
-        public Outcome(double win, double ticks, double fired)
-        { WinPct = win; AvgTicks = ticks; RuleFiredPct = fired; }
-    }
-
-    private static Outcome Measure(Func<int, EncounterDef> factory, int act, Hex[] slots)
+    private static ProbeParties.Outcome Measure(Func<int, EncounterDef> factory, int act,
+                                                (string Chassis, string Node)[] party, Hex[] slots)
     {
         int wins = 0, fired = 0;
         long ticks = 0;
@@ -141,19 +197,7 @@ public static class EncounterProbe
         for (int seed = 0; seed < SeedsPerArrangement; seed++)
         {
             var units = new List<UnitState>();
-            int id = 0;
-            for (int i = 0; i < Party.Length; i++)
-            {
-                var (chassis, node) = Party[i];
-                // Act 1 = rank C, unforked. Act 2 = rank B with its fork. Act 3 = rank A.
-                var nodes = act >= 2 ? new[] { Kits.Nodes[node] } : System.Array.Empty<SpecNode>();
-                var composed = Loadout.Compose(
-                    Kits.Chassis[chassis],
-                    nodes: nodes,
-                    mastered: true,
-                    rankSteps: act - 1);
-                units.Add(Loadout.Spawn(id++, 0, composed, slots[i]));
-            }
+            int id = ProbeParties.Field(units, act, party, slots);
 
             // The catalog's own scaling function — shared, so the probe can never measure a
             // different game than the one that ships.
@@ -171,7 +215,7 @@ public static class EncounterProbe
             if (RuleFired(factory(act).Id, result, enemyIds)) fired++;
         }
 
-        return new Outcome(
+        return new ProbeParties.Outcome(
             100.0 * wins / SeedsPerArrangement,
             (double)ticks / SeedsPerArrangement,
             100.0 * fired / SeedsPerArrangement);

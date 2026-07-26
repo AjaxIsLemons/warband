@@ -400,6 +400,33 @@ MonoBehaviour:
       tileScale: 0.9
     playback:
       ticksPerSecond: 2
+    audio:
+      enabled: 0
+    fx:
+      deathLingerSeconds: 1.6
+      dissolveSeconds: 0.8
+      ashMarkAlpha: 0.5
+      graveTilt: 82
+      fieldSpawnSeconds: 0.35
+      fieldExpireSeconds: 0.45
+      fieldPulseBoost: 1.5
+      fieldIdleAlpha: 0.3
+      fieldEdgeAlpha: 0.55
+      statusIconSize: 0.22
+      statusIconGap: 0.06
+      statusIconCap: 5
+      announceCooldownSeconds: 6
+      deathlessHoldSeconds: 0.4
+      deathlessDimAmount: 0.4
+      deathlessDimSeconds: 0.9
+      enderSlowScale: 0.2
+      enderSlowSeconds: 0.6
+      enderVignetteBoost: 0.28
+      cameraPunchAmount: 0.45
+      cameraPunchSeconds: 0.12
+      cameraShakeAmount: 0.14
+      cameraShakeSeconds: 0.35
+      shakeRationSeconds: 3
     tells:
     - eventKind: 3
       side: 1
@@ -411,6 +438,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -429,6 +460,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: crit
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -436,6 +468,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 3
       side: 1
       byCause: 1
@@ -446,6 +487,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -464,6 +509,7 @@ MonoBehaviour:
       numberLife: 0.7
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -471,6 +517,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -481,6 +536,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -499,6 +558,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -506,6 +566,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0.12
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -516,6 +585,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: pyromancer
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -534,6 +607,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_fire
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.34
       motionColor: {r: 1, g: 0.41568628, b: 0.18039216, a: 1}
@@ -541,6 +615,15 @@ MonoBehaviour:
       motionScale: 1.6
       windupSeconds: 0.3
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -551,6 +634,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: cleric
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -569,6 +656,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.3
       motionColor: {r: 0.54901963, g: 0.9019608, b: 0.6392157, a: 1}
@@ -576,6 +664,15 @@ MonoBehaviour:
       motionScale: 1.1
       windupSeconds: 0.22
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -586,6 +683,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: bulwark
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -604,6 +705,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -611,6 +713,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0.2
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -621,6 +732,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: shade
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -639,6 +754,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.24
       motionColor: {r: 0.43137255, g: 0.30980393, b: 0.8156863, a: 1}
@@ -646,6 +762,15 @@ MonoBehaviour:
       motionScale: 1.2
       windupSeconds: 0.18
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -656,6 +781,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: sharpshot
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -674,6 +803,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -681,6 +811,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0.24
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -691,6 +830,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: berserker
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -709,6 +852,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.3
       motionColor: {r: 0.84705883, g: 0.2509804, b: 0.18039216, a: 1}
@@ -716,6 +860,15 @@ MonoBehaviour:
       motionScale: 1.4
       windupSeconds: 0.28
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -726,6 +879,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: phalanx
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -744,6 +901,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -751,6 +909,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0.22
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 5
       side: 0
       byCause: 0
@@ -761,6 +928,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 1
       chassis: banneret
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -779,6 +950,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cast_generic
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.42
       motionColor: {r: 0.72156864, g: 0.8, b: 1, a: 1}
@@ -786,6 +958,15 @@ MonoBehaviour:
       motionScale: 1.8
       windupSeconds: 0.26
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 4
       side: 1
       byCause: 0
@@ -796,6 +977,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -814,6 +999,7 @@ MonoBehaviour:
       numberLife: 1
       sound: heal
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -821,6 +1007,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 6
       side: 1
       byCause: 0
@@ -831,6 +1026,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -849,6 +1048,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.42
       motionColor: {r: 1, g: 0.6156863, b: 0.18039216, a: 1}
@@ -856,6 +1056,15 @@ MonoBehaviour:
       motionScale: 2.2
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 6
       side: 1
       byCause: 0
@@ -866,6 +1075,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -884,6 +1097,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -891,6 +1105,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 6
       side: 1
       byCause: 0
@@ -901,6 +1124,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -919,6 +1146,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -926,6 +1154,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 6
       side: 1
       byCause: 0
@@ -936,6 +1173,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -954,6 +1195,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -961,6 +1203,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 2
       side: 0
       byCause: 0
@@ -971,6 +1222,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 0
@@ -989,6 +1244,7 @@ MonoBehaviour:
       numberLife: 1
       sound: hit_melee
       critSound: 
+      castSound: 
       motion: 1
       motionSeconds: 0.14
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -996,6 +1252,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 2
       side: 0
       byCause: 0
@@ -1006,6 +1271,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 0
@@ -1024,6 +1293,7 @@ MonoBehaviour:
       numberLife: 1
       sound: hit_arrow
       critSound: 
+      castSound: 
       motion: 2
       motionSeconds: 0.16
       motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
@@ -1031,6 +1301,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 1
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 3
       side: 1
       byCause: 1
@@ -1041,6 +1320,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -1059,6 +1342,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 2
       motionSeconds: 0.15
       motionColor: {r: 0.54901963, g: 0.84705883, b: 1, a: 1}
@@ -1066,6 +1350,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 16
       side: 0
       byCause: 0
@@ -1076,6 +1369,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 0
@@ -1094,6 +1391,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 2
       motionSeconds: 0.12
       motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
@@ -1101,6 +1399,15 @@ MonoBehaviour:
       motionScale: 0.8
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 10
       side: 1
       byCause: 0
@@ -1111,6 +1418,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 0
@@ -1129,6 +1440,7 @@ MonoBehaviour:
       numberLife: 1
       sound: death
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.35
       motionColor: {r: 1, g: 0.3529412, b: 0.2901961, a: 1}
@@ -1136,6 +1448,15 @@ MonoBehaviour:
       motionScale: 1.6
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 17
       side: 0
       byCause: 0
@@ -1146,6 +1467,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 0
@@ -1164,6 +1489,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 4
       motionSeconds: 0.34
       motionColor: {r: 0.61960787, g: 0.54901963, b: 0.84705883, a: 1}
@@ -1171,6 +1497,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0.1
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 6
       side: 1
       byCause: 0
@@ -1181,6 +1516,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -1199,6 +1538,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1206,6 +1546,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 7
       side: 1
       byCause: 0
@@ -1216,6 +1565,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -1234,6 +1587,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1241,6 +1595,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 8
       side: 1
       byCause: 0
@@ -1251,6 +1614,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -1269,6 +1636,7 @@ MonoBehaviour:
       numberLife: 1
       sound: shield
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1276,6 +1644,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 18
       side: 1
       byCause: 0
@@ -1286,6 +1663,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 0
       flavor: 1
       flash: 1
@@ -1304,6 +1685,7 @@ MonoBehaviour:
       numberLife: 1
       sound: cheatdeath
       critSound: 
+      castSound: 
       motion: 3
       motionSeconds: 0.5
       motionColor: {r: 1, g: 0.9490196, b: 0.85882354, a: 1}
@@ -1311,6 +1693,15 @@ MonoBehaviour:
       motionScale: 2
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 13
       side: 0
       byCause: 0
@@ -1321,6 +1712,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 1
       flavor: 1
       flash: 1
@@ -1339,6 +1734,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1346,6 +1742,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 13
       side: 0
       byCause: 0
@@ -1356,6 +1761,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 1
       flavor: 2
       flash: 1
@@ -1374,6 +1783,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1381,6 +1791,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 13
       side: 0
       byCause: 0
@@ -1391,6 +1810,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 1
       flavor: 3
       flash: 1
@@ -1409,6 +1832,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1416,6 +1840,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
     - eventKind: 13
       side: 0
       byCause: 0
@@ -1426,6 +1859,10 @@ MonoBehaviour:
       ranged: 1
       byChassis: 0
       chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
       byFlavor: 1
       flavor: 4
       flash: 1
@@ -1444,6 +1881,7 @@ MonoBehaviour:
       numberLife: 1
       sound: 
       critSound: 
+      castSound: 
       motion: 0
       motionSeconds: 0.15
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
@@ -1451,6 +1889,15 @@ MonoBehaviour:
       motionScale: 1
       windupSeconds: 0
       defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

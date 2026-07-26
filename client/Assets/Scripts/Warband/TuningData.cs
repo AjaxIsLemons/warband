@@ -35,6 +35,7 @@ public class TuningData
     public ModelsTune models = new ModelsTune();
     public BoardTune board = new BoardTune();
     public PlaybackTune playback = new PlaybackTune();
+    public AudioTune audio = new AudioTune();
     public FxTune fx = new FxTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
@@ -122,6 +123,20 @@ public class CameraTune
 public class PlaybackTune
 {
     [Range(1f, 40f)] public float ticksPerSecond = 10f;
+    /// <summary>The opening beat: seconds the deployed board is held STILL before the playhead
+    /// starts. Tick 0 is the busiest tick of a fight — both lines step off and every AtStart trigger
+    /// fires at once — so without a moment of stillness first, the player has nothing to read the
+    /// opening against. 0 = start instantly (the old behavior).</summary>
+    [Range(0f, 3f)] public float openingHoldSeconds = 0.7f;
+}
+
+/// <summary>Combat audio master. Disabled after the first standalone-build play pass: the generated
+/// stings were too long and noisy to support legibility. Keep the seam so the future options screen
+/// can expose it and a replacement sound pass can be auditioned without rewiring every tell.</summary>
+[Serializable]
+public class AudioTune
+{
+    public bool enabled = false;
 }
 
 /// <summary>Board geometry (Jake 2026-07-25: "space the hexes out — things feel cluttered").
@@ -347,6 +362,13 @@ public class TellDef
 
     public MotionKind motion = MotionKind.None;
     [Range(0.02f, 1f)] public float motionSeconds = 0.15f;   // travel / lunge out-and-back duration
+    // Arc AIR-TIME scales with the jump, the way arc HEIGHT already does (see DriveArc):
+    // motionSeconds buys the first hex and every hex beyond it adds motionPerHexSeconds, capped by
+    // motionMaxSeconds (0 = uncapped). Held flat, a 5-hex Ambush dive crosses the board in a single
+    // hop's duration and reads as a teleport instead of a leap (Jake, 2026-07-26: "every unit
+    // teleports somewhere"). 0 = the old flat duration; every other MotionKind ignores both.
+    [Range(0f, 0.4f)] public float motionPerHexSeconds = 0f;
+    [Range(0f, 3f)] public float motionMaxSeconds = 0f;
     public Color motionColor = new Color(1f, 0.95f, 0.82f);
     [Range(0f, 8f)] public float motionGlow = 3f;            // HDR multiplier so Bloom bites (threshold 0.9)
     [Range(0.2f, 4f)] public float motionScale = 1f;         // tracer thickness / burst size / ARC HEIGHT

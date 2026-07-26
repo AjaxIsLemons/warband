@@ -144,6 +144,11 @@ namespace Warband.Run
     /// </summary>
     public sealed class HeroInstance
     {
+        /// <summary>
+        /// Stable within one run. Roster addresses may change as heroes move between field and
+        /// bench; UI commands must use this identity instead of a transient list index.
+        /// </summary>
+        public long InstanceId;
         public string ChassisId = "";
         public Rank Rank = Rank.C;
         public string? PathId;                   // set by the B fork (ADR 0009)
@@ -165,6 +170,7 @@ namespace Warband.Run
         {
             var c = new HeroInstance
             {
+                InstanceId = InstanceId,
                 ChassisId = ChassisId, Rank = Rank, WeaponId = WeaponId,
                 WeaponTier = WeaponTier, WeaponInstanceId = WeaponInstanceId,
                 WeaponSandInvested = WeaponSandInvested,
@@ -232,6 +238,7 @@ namespace Warband.Run
         public List<HeroInstance> Bench = new List<HeroInstance>();
         public List<ShopOffer?> ShopOffers = new List<ShopOffer?>();  // null = bought/empty slot
         public int ShopRolls;                    // generation counter — stateless shop rng (ADR 0008)
+        public long NextHeroInstanceId = 1;
         public long NextItemInstanceId = 1;
         public List<ItemRef> Inventory = new List<ItemRef>();
         public List<string> Banners = new List<string>();
