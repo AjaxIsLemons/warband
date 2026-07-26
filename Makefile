@@ -2,7 +2,8 @@
 # The sim is authored + tested here; the Unity client is driven over the remote-dev
 # pipeline (Syncthing + official Unity MCP relay over SSH). See CLAUDE.md + docs/vault/.
 
-.PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage
+.PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage \
+        content-version ship ship-preflight release-status launcher-release
 
 WIN_SSH       ?= jwjwi@192.168.1.102
 WIN_KEY       ?= $(HOME)/.ssh/homeserv_to_windows
@@ -11,6 +12,13 @@ ST_FOLDER     ?= warband
 UNITY_PLUGINS ?= client/Assets/Plugins/Warband
 REPLAY_OUT    ?= client/Assets/StreamingAssets/replay.bytes
 SCENARIO_OUT  ?= client/Assets/StreamingAssets/replays
+
+# Release/delivery (item 8). Modelled on Shoota's pipeline; see deploy/README.md.
+# Builds land OUTSIDE the Syncthing tree on the Windows box so they never sync back.
+WIN_BUILDS    ?= C:/Users/jwjwi/warband-builds
+RELEASES_DIR  ?= /srv/warband-releases
+SHIP_SCRIPT   ?= deploy/ship-release.sh
+LAUNCHER_MANIFEST_URL ?= https://warband.inhouseboyz.com/releases/warband-latest-win64.json
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-14s %s\n", $$1, $$2}'
@@ -29,6 +37,28 @@ coverage: ## Event-signature coverage of one replay: make coverage F=client/Asse
 
 oath: ## The Last Oath what-if probe: does the Bond pose a decision? (markdown on stdout)
 	@dotnet run --project sim/Warband.Sweep -c Release -- --oath
+
+content-version: ## Print the content fingerprint (ADR 0008) — compare against a build's manifest
+	@dotnet run --project sim/Warband.Sweep -c Release -- --version
+
+ship: ## Publish the Windows client from the Windows box (run Unity 'Warband/Build Windows Client' first)
+	@WIN_SSH="$(WIN_SSH)" WIN_KEY="$(WIN_KEY)" WIN_BUILDS="$(WIN_BUILDS)" \
+		RELEASES_DIR="$(RELEASES_DIR)" $(SHIP_SCRIPT) ship
+
+ship-preflight: ## Stage + verify the Windows build without publishing anything
+	@WIN_SSH="$(WIN_SSH)" WIN_KEY="$(WIN_KEY)" WIN_BUILDS="$(WIN_BUILDS)" \
+		RELEASES_DIR="$(RELEASES_DIR)" $(SHIP_SCRIPT) preflight
+
+release-status: ## What is currently published (version, content fingerprint, size, hash)
+	@RELEASES_DIR="$(RELEASES_DIR)" $(SHIP_SCRIPT) status
+
+launcher-release: ## Build WarbandLauncher.exe into $(RELEASES_DIR) (token optional: WARBAND_LAUNCHER_TOKEN)
+	@mkdir -p $(RELEASES_DIR)
+	@echo ">> building WarbandLauncher.exe (manifest: $(LAUNCHER_MANIFEST_URL))..."
+	@GOOS=windows GOARCH=amd64 go -C launcher build -trimpath \
+		-ldflags="-s -w -X main.manifestURL=$(LAUNCHER_MANIFEST_URL) -X main.launcherToken=$$WARBAND_LAUNCHER_TOKEN" \
+		-o "$(abspath $(RELEASES_DIR))/WarbandLauncher.exe" .
+	@ls -lh "$(RELEASES_DIR)/WarbandLauncher.exe"
 
 unity-sim: ## Build the netstandard2.1 sim/run/content runtime into Unity Plugins/ (Syncthing carries it to Windows)
 	@dotnet build sim/Warband.Content/Warband.Content.csproj -c Release -v quiet --nologo

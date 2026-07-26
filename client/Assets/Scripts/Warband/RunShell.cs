@@ -2720,17 +2720,41 @@ public sealed class RunShell : MonoBehaviour
 
     private void EnsurePlanningSelection(PlanningModel p)
     {
+        var local = ActivePlanningCards(p);
         var all = AllPlanningCards(p);
-        CardModel selected = all.FirstOrDefault(c => c.Key == _selectedCardKey);
+        CardModel selected = local.FirstOrDefault(c => c.Key == _selectedCardKey);
         if (selected == null)
         {
-            selected = p.Field.FirstOrDefault() ?? p.Market.FirstOrDefault() ??
-                       p.Armory.FirstOrDefault() ?? p.Inscriptions.FirstOrDefault();
+            selected = local.FirstOrDefault();
             _selectedCardKey = selected?.Key ?? "";
         }
         foreach (var card in all) card.Selected = card.Key == _selectedCardKey;
         foreach (var offer in p.MarketOffers)
             offer.Selected = offer.Key == _selectedCardKey;
+    }
+
+    private List<CardModel> ActivePlanningCards(PlanningModel p)
+    {
+        var cards = new List<CardModel>();
+        switch (_planningTab)
+        {
+            case PlanningTab.Market:
+                cards.AddRange(p.Market);
+                break;
+            case PlanningTab.Armory:
+                cards.AddRange(p.Armory);
+                cards.AddRange(p.Field);
+                cards.AddRange(p.Bench);
+                break;
+            case PlanningTab.Hourstone:
+                cards.AddRange(p.Inscriptions);
+                break;
+            default:
+                cards.AddRange(p.Field);
+                cards.AddRange(p.Bench);
+                break;
+        }
+        return cards;
     }
 
     private static List<CardModel> AllPlanningCards(PlanningModel p)

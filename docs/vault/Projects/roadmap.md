@@ -25,10 +25,10 @@ endless pressure can push it.**
 **0. JAKE'S VERIFY PASS on item 1** — watch a fight. Three days of combat work is unwatched and
 nothing else in item 1 can be judged without it. This is the top of the board and it is not
 something a session can do.
-**1. Items ~~7~~ → 8 → 9** (~~save/resume~~ **BUILT 2026-07-26, client half needs a click-through** ·
-a standalone build · an options screen) — the invisible blockers on item 6. **Item 8 is next**, and
-it is also the natural verifier for item 7: a real build is where `Application.persistentDataPath`
-stops being a theory.
+**1. Items ~~7~~ → ~~8~~ → 9** (~~save/resume~~ · ~~standalone build + launcher~~ both **BUILT
+2026-07-26** · an options screen) — the invisible blockers on item 6. **Item 9 is next.** Item 8 did
+confirm item 7 on the real platform: `persistentDataPath` resolves, the save round-trips through
+Windows text IO, and the content fingerprint is identical on both machines.
 **2. Then re-decide** from the verify pass. Standing candidates, in Jake's stated preference order
 if nothing changes: cheap feel wins (10, 11) · Inscription engine (5a) · act identity (14).
 Items 4, 12, 13, 15 are live but unranked. Item 16 is settled — see it. Item 5 is a laws page.
@@ -49,8 +49,18 @@ biggest blocker on the board (see item 1).
 **Opening Muster readability pass built 2026-07-26:** its universal cards were replaced by a
 dedicated three-fact / two-rule scan grammar with code-native semantic glyphs, in-portrait exact
 mechanics, ordered party sockets, semantic select/deselect feedback, cancellable reveal/lens
-timers, F1 tuning, and F2 previews. Desktop verification is the remaining gate; mobile is
+timers, F1 tuning, and F2 previews. Desktop resolved-layout verification now passes; mobile is
 deliberately deferred.
+**Unified decision-card pass built + Unity-verified 2026-07-26:** Feature / Stock / Detail /
+Target profiles now share one typed fact registry, code-native glyph and semantic-colour language,
+plain-language tooltips, and tunable selection/detail-swap motion. Muster shows flat Signature Mana
+cost while attacks-to-ready lives in advanced help. The Hall is a 38/62 browse-and-decide stage:
+compact stock/targets show identity and price only, while one persistent selected-card dossier owns
+exact stats, rules, comparisons, and actions. Market, Warband, Armory, and Hourstone selection is
+station-scoped; empty stations expand instead of inheriting a stale hero dossier. Live gates passed
+Muster containment, Market footer/title/split bounds, repeated station rebinds, compact target
+containment, empty Hourstone, and return-to-Market flow. Mobile-specific composition remains
+deferred.
 
 1. **FEEL & READABILITY — the fight does not read** — **VERIFY (was DESIGN → BUILD). THE TOP ITEM,
    AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**
@@ -242,7 +252,12 @@ cannot happen without them, and each is the kind of work that is discovered too 
    compile-checked but not yet clicked through.** See the Done entry for what landed and what is
    still unverified. Jake also settled item 16 on the back of this: terminal loss stays, and
    save/resume is the whole mitigation.
-8. **No standalone build has ever been produced.** — **SPEC'D (small, do it EARLY).** Every
+8. **Standalone build + launcher/delivery** — **BUILT 2026-07-26. The first warband build exists,
+   and the shader landmine was REAL.** See the Done entry. Remaining: two sudo steps and one
+   decision, all Jake's (`deploy/README.md` §"STILL NEEDS JAKE"), plus double-clicking the exe —
+   the built player's runtime behavior is the one thing a session cannot check.
+   *(Original entry, kept because its reasoning is what made this worth doing early:)*
+   **SPEC'D (small, do it EARLY).** Every
    verification to date is in-Editor. One landmine is already known and written down in the FX
    ledger: the six hand-HLSL shaders are found by `Shader.Find`, which **silently falls back to a
    URP/Unlit stand-in in a player build unless they are in Always Included Shaders** — i.e. the
@@ -479,6 +494,48 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — FIRST STANDALONE BUILD + LAUNCHER/DELIVERY (item 8).** Jake: *"look at what we did
+  for shoota too… we can piggy back off that infra."* Done exactly that — the pipeline is Shoota's
+  shape (`deploy/ship-release.sh`, `launcher/main.go`) cut down, because warband has no server.
+  **THE LANDMINE WAS REAL, and the preflight caught it before a build was spent on it.** New
+  `Warband/Build Preflight` reported all six hand-HLSL shaders as *"would be STRIPPED from a player
+  build"* — `GraphicsSettings.asset` held seven always-included shaders and every one was a Unity
+  built-in. Since all six are reached only by `Shader.Find` and referenced by no material asset, the
+  first friend build would have silently lost the ENTIRE combat-spectacle arc and looked like broken
+  FX code. `WarbandBuild` now registers them itself every build and logs what it added; all six are
+  in `GraphicsSettings.asset` by guid (verified by mapping guid → `.meta`).
+  **Built:** v0.1.260726.1352, 162 MB, **0 errors**, content `f1f4a7e9b5cd527b`. Artifacts land in
+  `~/warband-builds/` on Windows — OUTSIDE the Syncthing tree, or a 162 MB build syncs back into
+  `git status`. `release.json` is written LAST and only on success, so a failed build cannot be
+  shipped: there is no manifest to ship.
+  **Delivery:** `make ship-preflight` / `ship` / `release-status` / `launcher-release` /
+  `content-version`. Publishing is same-filesystem renames throughout, so a launcher polling
+  mid-publish never sees a half-copied zip. **`ship` refuses a content-fingerprint mismatch** against
+  homeserv's own — that almost always means stale Windows DLLs, and shipping it would make saves
+  refuse to load with corruption-looking symptoms.
+  **Launcher:** Shoota's, retargeted, with two real changes — the token is **optional** (Shoota's Go
+  site checks it; warband serves a static manifest, and the gate can be added later WITHOUT
+  reissuing launchers) and the zip URL is **resolved relative to the manifest URL**, so a plain
+  static Caddy directory is enough and no application server is needed at all.
+  **Verified:** publish pipeline end to end (58 MB zip + manifest, status readback) · launcher end to
+  end against a local HTTP server — cold install, SHA-256 verify, atomic install with rollback,
+  version marker, and the stand-in exe genuinely ran; second run short-circuits to "Up to date" with
+  no download · cross-compiles to a 6.1 MB Windows PE32+ binary · **content fingerprint identical on
+  homeserv and Windows** (closes the question left open by the version-stamp work) · a cold player
+  correctly writes NO save.
+  **NOT verified — needs Jake to double-click the exe:** whether the built player boots to the menu
+  and whether the shaders render. Batchmode launches over SSH produced no player log and no visible
+  process, and a session cannot screenshot a player window. Everything around it is checked; the
+  runtime itself is one double-click.
+  **Gotcha found, worth knowing:** the **Editor and the built player share
+  `Application.persistentDataPath`** (`AppData/LocalLow/InhouseBoyz/Warband` holds both `run.save`
+  and the Editor's own `Unity/…/Editor/Analytics`). So a dev Play Mode session and a friend build
+  read and write the SAME save file. Benign today, but it is exactly why a fresh build can appear to
+  "already have a run" — that is what happened here, and it cost a detour to rule out as a bug.
+  **Still Jake's** (`deploy/README.md`): `sudo install -d -o jake -g jake /srv/warband-releases` · a
+  Caddy block for `warband.inhouseboyz.com/releases/*` · and **deciding the gate** — until the header
+  check is enabled the manifest and zip are unlisted-but-public, which for friend scale may be fine
+  (Shoota's own README calls its token "friction control, not strong DRM") but should be a choice.
 - **2026-07-26 — CONTENT VERSION STAMP (433 tests). The prerequisite for a server, not the server.**
   Jake asked whether we have a server and whether we'd want cloud storage for PvP; the answer is no
   server exists (**zero networking anywhere in the codebase** — the one grep hit was a cylinder named

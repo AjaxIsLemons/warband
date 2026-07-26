@@ -157,16 +157,11 @@ internal sealed class WarbandCard
     /// </summary>
     public void SetHallVariant(string variant)
     {
-        bool ruleCard = variant == "market" ||
-                        variant == "warband" ||
-                        variant == "hourstone";
-        // Market equipment is an object first: its exact rule belongs in the pinned tray.
-        // Recruits retain one signature name so the five-up rail still communicates play style.
-        bool marketEquipment = variant == "market" &&
-                               !string.Equals(_model.Eyebrow, "RECRUIT",
-                                   StringComparison.OrdinalIgnoreCase);
-        SetDisplayed(_ability,
-            ruleCard && !marketEquipment && !string.IsNullOrEmpty(_model.AbilityName));
+        // Every Hall object is a compact Stock or Target selector now. Inline ability text is
+        // intentionally owned by the selected Detail stage; forcing it visible here overrides
+        // the profile stylesheet and can push copy into the protected footer.
+        SetDisplayed(_subtitle, false);
+        SetDisplayed(_ability, false);
         SetDisplayed(_passive, false);
         SetDisplayed(_tags, false);
         DecisionCardPresentation.ApplyProfile(Root,
@@ -211,7 +206,8 @@ internal sealed class WarbandCard
             var chip = _stats.ElementAt(i);
             StatChipModel model = models[i];
             DecisionFactDefinition definition = DecisionCardPresentation.Fact(model);
-            WarbandGlyph icon = chip.Q<WarbandGlyph>("icon");
+            WarbandGlyph icon =
+                chip.Q<WarbandGlyph>(className: "wb-mini-stat__icon");
             icon.Set(definition.Glyph);
             icon.SetColor(definition.Color);
             chip.Q<Label>("label").text = DecisionCardPresentation.DisplayLabel(model);
