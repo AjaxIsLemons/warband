@@ -21,6 +21,17 @@ want the blow-by-blow of how something was built, read the daily note for that d
 breaking the game with a compounding warband, then seeing how far asymmetrical PvE and
 endless pressure can push it.**
 
+### ⇒ AGREED ORDER (Jake, 2026-07-26). Item numbers never change; this line does.
+**0. JAKE'S VERIFY PASS on item 1** — watch a fight. Three days of combat work is unwatched and
+nothing else in item 1 can be judged without it. This is the top of the board and it is not
+something a session can do.
+**1. Items 7 → 8 → 9** (save/resume · a standalone build · an options screen) — the invisible
+blockers on item 6. Build these next; item 8 especially, because a first standalone build always
+finds ten things and it should find them on a Tuesday.
+**2. Then re-decide** from the verify pass. Standing candidates, in Jake's stated preference order
+if nothing changes: cheap feel wins (10, 11) · Inscription engine (5a) · act identity (14).
+Items 4, 12, 13, 15 are live but unranked. Item 16 is settled — see it. Item 5 is a laws page.
+
 **STATE, 2026-07-26 (honest):** the first-playable run shape and between-fight UX are
 walkable end to end: Menu → five-card Draft → full-screen Management Hall → stakes-first Wager
 → formation-reveal Deployment → Fight/replay → blocking result report → spatial Hourstone Table
@@ -284,24 +295,27 @@ cannot happen without them, and each is the kind of work that is discovered too 
     CONTINUE, which re-enters act 3's pool at escalating scale until a loss.
 
 **P4 — content identity.**
-14. **Act identity is thin; acts 2 and 3 are the same game at bigger numbers.** — **DESIGN.**
+14. **Act identity is thin; acts 2 and 3 are the same game at bigger numbers.** — **SPEC'D
+    (was DESIGN; unblocked by Jake's 2026-07-26 three-act budget decision).**
     `Encounters.PoolFor` differs between act 1 and act 2+ by exactly one encounter, and acts 2 and
     3 draw an **identical** pool. theme.md says acts are eras and pve-encounters says *"an act's
-    pool is its identity"*; neither is true yet. Tonight's per-act bosses are the first real
-    differentiation. Cheapest next step is act-scoped pools, not new roles.
+    pool is its identity"*; neither is true yet. The per-act bosses are the first real
+    differentiation. Cheapest next step is act-scoped pools, **not** new roles.
+    **Build law for this item:** propose the act→pool assignment and **measure it with `--enc`
+    before committing** — the probe already caught three of four encounters posing nothing, so an
+    assignment that reads well in prose can still be flat. Do not add a sixth role to solve this.
 15. **The Interlude is a non-choice.** — **DESIGN (tiny).** ADR 0019 gives each act one Interlude
     beat; it currently reads *"A QUIET STRETCH — No one contests the road. Take the coin and move
     on"* with one button. The content budget explicitly funds **one event**, and it has not been
     spent. A single two-or-three-way risk/reward choice would make the beat exist.
-16. **There is no defeat/retry rule — one loss ends everything.** — **DESIGN.** Extracted from
-    item 5's remaining-scope list during the 07-26 grooming, because it is a real open decision that
-    was buried in a laws page. `RunPhase.Defeated` is terminal by Jake's explicit PoC rule (ADR
-    0019), and that was the right call for measuring the machine. But it now compounds with two
-    things that arrived later: authored encounters dropped bot completion to **3/12**, and there is
-    still **no save** (item 7). A friend's first run therefore ends, permanently, in act 2, roughly
-    fifteen minutes in, with no way to resume and nothing learned. Either terminal loss stays and
-    the run gets shorter/more forgiving, or a retry currency exists. **This is a playtest-shaping
-    decision, not a tuning value.**
+16. **Defeat/retry rule — SETTLED 2026-07-26, no work item.** Raised during the grooming because
+    terminal loss (ADR 0019) compounds badly with authored encounters dropping bot completion to
+    **3/12** and there being no save: a friend's first run ends permanently in act 2, ~15 minutes
+    in. **Jake's call: terminal loss STAYS — the mitigation is save/resume (item 7), not a retry
+    currency and not softening the encounters.** So a loss keeps meaning something and the run
+    merely survives across sittings. Recorded here rather than deleted so the next session does not
+    re-open it. Do **not** tune act 2's node pool down to address run length; if the cliff turns out
+    to hurt, it will hurt real playtesters first (ADR 0001: playtests decide).
 
 **Deliberately NOT proposed** (so the next session does not re-derive them): more heroes, more
 weapons, a second trinket family, multi-act expansion, difficulty ladders, PvP-adjacent anything,
@@ -413,23 +427,20 @@ actually needs from them:
    vertical slice. Distribution/launcher work is allowed only as needed to put that slice
    in friends' hands. No date until Jake calls it.
 
-## First-playable content budget (hard cap — ADR 0001 + ADR 0016)
+## First-playable content budget (hard cap — ADR 0001 + ADR 0016, scope settled 2026-07-26)
 Current 8 heroes × 2 paths · 11 weapons + 1 trinket · **24 Inscriptions, delivered through
-the ADR 0017 proof waves** · **one complete authored PvE act/vertical slice** (a tiny
-reusable enemy-role grammar, several encounters, one boss, one event) · shops + placement ·
+the ADR 0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role
+grammar, several encounters, three act bosses, one event) · shops + placement ·
 crude post-win endless seam that may reuse and scale the slice · programmer art, no sound.
 Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE content. Do not
-expand to multiple acts, a full endless mode, or a catalog beyond the 24-effect proof before
+expand beyond three acts, to a full endless mode, or to a catalog beyond the 24-effect proof before
 playtest #1.
 
-⚠ **THIS CAP IS NOW SELF-CONTRADICTORY — needs Jake's call (flagged 2026-07-26).** It says "one
-complete authored PvE act", "one boss", and "do not expand to multiple acts". But ADR 0019 shipped
-**three acts × five beats** as the first-playable run shape, and ADR 0024 shipped **three bosses**,
-one per act. Either the budget line predates ADR 0019 and should read "one three-act run with one
-boss per act", or the run structure is over budget and should collapse to one act. **This is not a
-technicality:** it decides whether the next content work is "make acts 2 and 3 distinct" (item 14)
-or "cut to one act and go to playtest". Nothing else on the board can be prioritised honestly
-until it is answered.
+**Scope decision, Jake 2026-07-26.** This cap previously read "one complete authored PvE act / one
+boss / do not expand to multiple acts", which contradicted ADR 0019's shipped three-act run shape
+and ADR 0024's three bosses. Jake settled it: **three acts is the cap.** Consequence — item 14
+(acts 2 and 3 draw an identical pool) is real work, not something to delete, because a three-act
+budget only buys anything if the three acts differ.
 
 ## Deferred (explicitly NOT now — don't resurrect without Jake)
 **All PvP:** ghost server · matchmaking · ratings/leaderboards · PvP rewards · no-stakes
