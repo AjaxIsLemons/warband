@@ -397,11 +397,50 @@ internal sealed class InspectorActionModel
     public string DisabledReason = "";
 }
 
+internal enum DecisionDetailKind
+{
+    Champion,
+    Recruit,
+    RankUp,
+    Weapon,
+    Trinket,
+    Inscription,
+    Capacity,
+    Combatant,
+}
+
+internal enum InspectorSectionKind
+{
+    Rule,
+    Comparison,
+    Choices,
+    Capacity,
+}
+
+/// <summary>
+/// One semantically named block in a decision detail. Item and run-law details deliberately use
+/// this instead of being squeezed into the champion-only Basic / Signature / Passive skeleton.
+/// </summary>
+internal sealed class InspectorSectionModel
+{
+    public InspectorSectionKind Kind = InspectorSectionKind.Rule;
+    public string Label = "";
+    public string Icon = "";
+    public string Name = "";
+    public string Summary = "";
+    public int CapacityBefore;
+    public int CapacityAfter;
+    public int CapacityMax;
+    public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
+    public List<ChoicePreviewModel> Choices = new List<ChoicePreviewModel>();
+}
+
 /// <summary>Progressive disclosure for the selected card. Cards compare; this panel explains.</summary>
 internal sealed class InspectorModel
 {
     public bool Empty;
     public string Key = "";
+    public DecisionDetailKind Kind = DecisionDetailKind.Champion;
     public string Eyebrow = "";
     public string Title = "";
     public string Subtitle = "";
@@ -427,6 +466,7 @@ internal sealed class InspectorModel
     public string ComparisonTitle = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
     public List<ChoicePreviewModel> ChoicePreviews = new List<ChoicePreviewModel>();
+    public List<InspectorSectionModel> Sections = new List<InspectorSectionModel>();
 }
 
 internal sealed class StatComparisonModel
@@ -443,6 +483,60 @@ internal sealed class ChoicePreviewModel
     public string Name = "";
     public string Rule = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
+}
+
+internal enum PartySlotState
+{
+    Occupied,
+    Empty,
+    Locked,
+}
+
+internal sealed class PartySlotModel
+{
+    public string Key = "";
+    public int Index;
+    public bool Reserve;
+    public PartySlotState State;
+    public string Name = "";
+    public string Rank = "";
+    public string Role = "";
+    public string PortraitResource = "";
+    public string PortraitFallback = "";
+    public string Accent = "";
+    public string Weapon = "";
+    public string Trinket = "";
+    public bool Focused;
+}
+
+internal sealed class StoredItemSummaryModel
+{
+    public string Key = "";
+    public string Name = "";
+    public string Kind = "";
+    public string Icon = "";
+    public string Accent = "";
+    public bool Selected;
+}
+
+/// <summary>
+/// The Hall's persistent, presentation-only roster projection. Six potential field addresses
+/// remain visible even when some are locked, so capacity is spatial rather than just a counter.
+/// </summary>
+internal sealed class PartyShelfModel
+{
+    public int FieldCapacity;
+    public int FieldCount;
+    public int MaxFieldCapacity;
+    public int ReserveCount;
+    public int ReserveCapacity;
+    public bool Expanded;
+    public string FocusedHeroKey = "";
+    public List<PartySlotModel> Field = new List<PartySlotModel>();
+    public List<PartySlotModel> Reserve = new List<PartySlotModel>();
+    public List<StoredItemSummaryModel> StoredItems = new List<StoredItemSummaryModel>();
+    public InspectorModel LoadoutInspector = new InspectorModel { Empty = true };
+    public List<CardModel> LoadoutInventory = new List<CardModel>();
 }
 
 internal sealed class PlanningTrackNodeModel
@@ -499,6 +593,7 @@ internal sealed class PlanningModel
     public bool ReducedMotion;
     public bool ForcePhoneLayout;
     public List<HallStationModel> Stations = new List<HallStationModel>();
+    public PartyShelfModel PartyShelf = new PartyShelfModel();
 }
 
 internal sealed class HallStationModel

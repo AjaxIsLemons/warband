@@ -58,39 +58,42 @@ stale — check `make sync-status`, re-run `make unity-sim`, rebuild. Shipping a
 save made on one machine refuses to load on the other, and the symptom looks like save corruption
 (ADR 0008).
 
-## STILL NEEDS JAKE — the public side
+## Access: Discord sign-in gates the LAUNCHER, nothing else
 
-Everything above works locally. Serving it to friends is outward-facing, needs sudo, and is
-deliberately left for Jake to apply.
+**Jake's call, 2026-07-26:** *"no gate needed since this doesn't really need a server. I think if
+someone signs in with discord, they can dl the launcher."*
 
-**1. Release directory** (root-owned parent, so this is a sudo step):
+| Path | Gate | Why |
+|---|---|---|
+| `/` | open | landing page |
+| `/launcher` | **Discord session** | a human, in a browser, once |
+| `/releases/*` | **open** | the launcher is not a browser and carries no session |
+
+The layering is the whole point. Gating `/releases` would mean embedding a secret in every launcher
+binary to un-gate it — which anyone can read straight back out of the exe. Shoota reached the same
+conclusion the hard way; its launcher README notes the update zip is deliberately *no longer* tied
+to a browser Discord session. Gating the exe download is honest about what it buys: friend-scale
+friction, not DRM. Any signed-in Discord account works; there is no allowlist by design.
+
+`site/main.go` is one file, no database, no accounts, no telemetry, no admin — Shoota's session and
+OAuth scheme (HMAC-signed cookie, state-cookie CSRF, `identify` scope only) with everything else cut.
+
+## Setting the site up
+
 ```sh
-sudo install -d -o jake -g jake /srv/warband-releases
+sudo bash deploy/setup-warband-site.sh     # /srv/warband-releases + the Caddy vhost
+bash deploy/install-warband-site.sh        # env skeleton, systemd --user unit, build, start
+# fill the two Discord values it prints the path to, then:
+bash deploy/install-warband-site.sh        # idempotent; re-run to pick them up
+make launcher-release                      # publish WarbandLauncher.exe
 ```
 
-**2. Caddy route.** No application server is needed — the launcher resolves the zip URL relative to
-its manifest URL, so a plain static directory is enough. Add alongside the existing site blocks:
-```caddy
-warband.inhouseboyz.com {
-    handle /releases/* {
-        root * /srv
-        file_server browse
-    }
-    # Optional friend-scale gate. The launcher already sends the header when built with a token,
-    # so this can be added later WITHOUT reissuing launchers:
-    # @nogate not header X-Warband-Launcher-Token "<token>"
-    # respond @nogate 403
-}
-```
-Then `sudo systemctl reload caddy`. DNS: dnsmasq already answers `*.inhouseboyz.com` →
-`100.109.185.119` over Tailscale, so a new subdomain needs no DNS work for devices on the tailnet;
-public access follows whatever the other subdomains do.
-
-**3. Decide the gate.** Until the header check above is enabled, the manifest and zip are
-**unlisted but public**. For friend-scale that may be fine — Shoota's own README calls its token
-"friction control, not strong DRM" — but it should be a conscious choice, not a default.
-
-**4. Then:** `WARBAND_LAUNCHER_TOKEN=... make launcher-release` and hand friends the exe.
+**Jake still owns two things:**
+1. Running those two scripts (one needs sudo).
+2. Creating the Discord OAuth app at <https://discord.com/developers/applications> — application
+   "warband" → OAuth2 → **Redirect URI must be exactly**
+   `https://warband.inhouseboyz.com/auth/discord/callback` — and pasting the client id/secret into
+   `~/.config/warband-site/env` (chmod 600, never committed or synced).
 
 ## Verified so far
 
@@ -99,5 +102,16 @@ public access follows whatever the other subdomains do.
   correctly short-circuits to "Up to date" with no download. Cross-compiles to a 6.1 MB Windows
   PE32+ binary.
 - `ship-release.sh` `status` mode against a staged manifest; syntax clean.
-- **Not yet run:** the Unity build itself, and therefore nothing has been published. The build
-  script and preflight are committed and waiting on the editor.
+- **The first build, for real:** preflight caught all six shaders as strippable → the build
+  registered them → **all six are physically present in the shipped `Warband_Data`**, along with
+  StreamingAssets (`tuning.json`, `tuning.ranges.json`, 10 replay fixtures). v0.1.260726.1352,
+  162 MB, 0 errors, published as a 58 MB zip.
+- **The launcher against the REAL published build, through the real site:** downloaded 58 MB,
+  verified SHA-256, installed 157 MB to the client dir, and failed only at `exec` — a Windows PE on
+  Linux, which is the correct failure and proves every step before it.
+- **The gate:** signed out, `/` offers sign-in and `/launcher` 302s to Discord; `/releases/*` serves
+  200. Signed in, `/` offers the download and `/launcher` returns the exe byte-identical to the
+  published one. Tampered and expired session cookies are both rejected.
+- **Not verified:** the Discord round-trip itself (needs the OAuth app + credentials), and whether
+  the built player boots to the menu — batchmode launches over SSH produce no log and a session
+  cannot screenshot a player window. One double-click settles the latter.

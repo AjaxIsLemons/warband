@@ -198,6 +198,21 @@ internal sealed class HubPresentationConfig
         durationMs = 165, settleMs = 70, distancePx = 12f, scale = 0.992f,
         startOpacity = 0.18f, particles = 0, staggerMs = 0, staggerCapMs = 0,
     };
+    public UiMotionRecipe shelfExpand = new UiMotionRecipe
+    {
+        durationMs = 180, settleMs = 70, distancePx = 28f, scale = 0.99f,
+        startOpacity = 0.08f, particles = 3, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe shelfCollapse = new UiMotionRecipe
+    {
+        durationMs = 150, settleMs = 50, distancePx = 22f, scale = 0.99f,
+        startOpacity = 1f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe shelfFocus = new UiMotionRecipe
+    {
+        durationMs = 120, settleMs = 80, distancePx = 3f, scale = 1.035f,
+        startOpacity = 1f, particles = 2, staggerMs = 0, staggerCapMs = 0,
+    };
     public UiMotionRecipe route = new UiMotionRecipe
     {
         durationMs = 260, settleMs = 90, distancePx = 30f, scale = 0.99f,
@@ -309,6 +324,9 @@ internal sealed class HubPresentationConfig
         Sanitize(Shared.select);
         Sanitize(Shared.reveal);
         Sanitize(Shared.detailSwap);
+        Sanitize(Shared.shelfExpand);
+        Sanitize(Shared.shelfCollapse);
+        Sanitize(Shared.shelfFocus);
         Sanitize(Shared.route);
         Sanitize(Shared.attention);
         Sanitize(Shared.commit);
@@ -1726,6 +1744,12 @@ internal static class UiPresentationContract
         Require(config.reveal.durationMs >= 0, "reveal duration cannot be negative");
         Require(config.detailSwap.durationMs >= 0,
             "selected-card detail swap duration cannot be negative");
+        Require(config.shelfExpand.durationMs > 0,
+            "Warband Shelf expansion must remain perceptible");
+        Require(config.shelfCollapse.durationMs > 0,
+            "Warband Shelf collapse must remain perceptible");
+        Require(config.shelfFocus.durationMs > 0,
+            "Warband Shelf focus must remain perceptible");
         Require(config.reveal.staggerCapMs >= config.reveal.staggerMs,
             "reveal stagger cap must allow at least one stagger");
         Require(config.commit.particles <= config.fx.maxEffects,

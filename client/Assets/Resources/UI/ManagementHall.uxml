@@ -12,10 +12,6 @@
                         <ui:Label text="SAND" class="management-resource__label" />
                         <ui:Label name="sand" class="management-resource__value management-resource__value--sand" />
                     </ui:VisualElement>
-                    <ui:VisualElement class="management-resource">
-                        <ui:Label text="FIELD" class="management-resource__label" />
-                        <ui:Label name="capacity" class="management-resource__value" />
-                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
 
@@ -98,18 +94,12 @@
                         <ui:Label name="heading" class="hub-workspace__title" />
                         <ui:Label name="brief" class="hub-workspace__brief" />
                     </ui:VisualElement>
-                    <ui:VisualElement class="hub-ledger">
-                        <ui:Label text="AVAILABLE" class="hub-ledger__label" />
-                        <ui:Label name="ledger-value" class="hub-ledger__value" />
-                        <ui:Label name="ledger-detail" class="hub-ledger__detail" />
+                    <ui:VisualElement class="hub-anchor-rail">
+                        <ui:Button name="anchor-market" text="MARKET" class="hub-anchor" />
+                        <ui:Button name="anchor-warband" text="WARBAND" class="hub-anchor" />
+                        <ui:Button name="anchor-armory" text="ARMORY" class="hub-anchor" />
+                        <ui:Button name="anchor-hourstone" text="HOURSTONE" class="hub-anchor" />
                     </ui:VisualElement>
-                </ui:VisualElement>
-
-                <ui:VisualElement class="hub-anchor-rail">
-                    <ui:Button name="anchor-market" text="MARKET" class="hub-anchor" />
-                    <ui:Button name="anchor-warband" text="WARBAND" class="hub-anchor" />
-                    <ui:Button name="anchor-armory" text="ARMORY" class="hub-anchor" />
-                    <ui:Button name="anchor-hourstone" text="HOURSTONE" class="hub-anchor" />
                 </ui:VisualElement>
 
                 <ui:VisualElement class="hub-workspace__body">
@@ -171,6 +161,69 @@
                                 class="hub-inspector-action-dock" />
                         </ui:VisualElement>
                     </ui:VisualElement>
+
+                    <ui:VisualElement name="loadout-scrim" class="loadout-scrim">
+                        <ui:VisualElement name="loadout-table" class="loadout-table">
+                            <ui:VisualElement class="loadout-table__header">
+                                <ui:VisualElement>
+                                    <ui:Label text="THE LOADOUT TABLE" class="loadout-table__title" />
+                                    <ui:Label text="Formation, equipment, and exact consequences in one instrument." class="loadout-table__copy" />
+                                </ui:VisualElement>
+                                <ui:Button name="loadout-close" text="CLOSE  ×" class="btn btn--ghost loadout-table__close" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="loadout-table__body">
+                                <ui:VisualElement class="loadout-column loadout-column--formation">
+                                    <ui:Label text="FIELD" class="loadout-column__label" />
+                                    <ui:VisualElement name="loadout-field" class="loadout-slot-list" />
+                                    <ui:Label text="RESERVES" class="loadout-column__label loadout-column__label--reserve" />
+                                    <ui:VisualElement name="loadout-reserve" class="loadout-slot-list" />
+                                </ui:VisualElement>
+                                <ui:VisualElement class="loadout-column loadout-column--champion">
+                                    <ui:Label text="SELECTED CHAMPION" class="loadout-column__label" />
+                                    <ui:ScrollView
+                                        mode="Vertical"
+                                        horizontal-scroller-visibility="Hidden"
+                                        vertical-scroller-visibility="Hidden"
+                                        class="loadout-champion-scroll">
+                                        <ui:VisualElement name="loadout-inspector-slot" class="loadout-inspector-slot" />
+                                    </ui:ScrollView>
+                                    <ui:VisualElement name="loadout-action-dock" class="loadout-action-dock" />
+                                </ui:VisualElement>
+                                <ui:VisualElement class="loadout-column loadout-column--armory">
+                                    <ui:VisualElement class="loadout-armory-heading">
+                                        <ui:Label text="STORED EQUIPMENT" class="loadout-column__label" />
+                                        <ui:Label name="loadout-stored-count" class="loadout-armory-count" />
+                                    </ui:VisualElement>
+                                    <ui:ScrollView
+                                        mode="Vertical"
+                                        horizontal-scroller-visibility="Hidden"
+                                        vertical-scroller-visibility="Hidden"
+                                        class="loadout-inventory-scroll">
+                                        <ui:VisualElement name="loadout-inventory" class="loadout-inventory" />
+                                    </ui:ScrollView>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement name="warband-shelf" class="warband-shelf">
+                    <ui:Button name="shelf-expand" class="warband-shelf__identity">
+                        <ui:Label text="WARBAND" class="warband-shelf__eyebrow" />
+                        <ui:Label name="shelf-capacity" class="warband-shelf__capacity" />
+                        <ui:Label text="MANAGE  ⌃" class="warband-shelf__manage" />
+                    </ui:Button>
+                    <ui:VisualElement name="shelf-field" class="warband-shelf__slots warband-shelf__slots--field" />
+                    <ui:VisualElement class="warband-shelf__divider" />
+                    <ui:VisualElement class="warband-shelf__reserve">
+                        <ui:Label name="shelf-reserve-label" class="warband-shelf__section-label" />
+                        <ui:VisualElement name="shelf-reserve" class="warband-shelf__slots" />
+                    </ui:VisualElement>
+                    <ui:Button name="shelf-armory" class="warband-shelf__armory">
+                        <ui:Label text="ARMORY" class="warband-shelf__section-label" />
+                        <ui:Label name="shelf-stored-count" class="warband-shelf__stored-count" />
+                        <ui:VisualElement name="shelf-stored-icons" class="warband-shelf__stored-icons" />
+                    </ui:Button>
                 </ui:VisualElement>
 
                 <ui:VisualElement class="hub-workspace__footer">

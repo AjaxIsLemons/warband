@@ -3,7 +3,7 @@
 # pipeline (Syncthing + official Unity MCP relay over SSH). See CLAUDE.md + docs/vault/.
 
 .PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage \
-        content-version ship ship-preflight release-status launcher-release
+        content-version ship ship-preflight release-status launcher-release site-deploy
 
 WIN_SSH       ?= jwjwi@192.168.1.102
 WIN_KEY       ?= $(HOME)/.ssh/homeserv_to_windows
@@ -59,6 +59,12 @@ launcher-release: ## Build WarbandLauncher.exe into $(RELEASES_DIR) (token optio
 		-ldflags="-s -w -X main.manifestURL=$(LAUNCHER_MANIFEST_URL) -X main.launcherToken=$$WARBAND_LAUNCHER_TOKEN" \
 		-o "$(abspath $(RELEASES_DIR))/WarbandLauncher.exe" .
 	@ls -lh "$(RELEASES_DIR)/WarbandLauncher.exe"
+
+site-deploy: ## Build + restart the Discord-gated launcher download site (warband.inhouseboyz.com)
+	@go -C site build -trimpath -o "$(HOME)/.local/bin/warband-site" .
+	@systemctl --user restart warband-site
+	@sleep 1
+	@systemctl --user --no-pager --lines=0 status warband-site | head -3
 
 unity-sim: ## Build the netstandard2.1 sim/run/content runtime into Unity Plugins/ (Syncthing carries it to Windows)
 	@dotnet build sim/Warband.Content/Warband.Content.csproj -c Release -v quiet --nologo

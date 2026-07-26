@@ -75,6 +75,9 @@ public sealed class RunShell : MonoBehaviour
     private PlanningTab _planningTab = PlanningTab.Muster;
     private string _selectedCardKey = "";
     private bool _inspectorOpen;
+    private bool _loadoutOpen;
+    private string _loadoutReturnCardKey = "";
+    private int _loadoutReturnMarketOffer = -1;
     private int _selectedMarketOffer = -1;
     private long _equipNowItemInstanceId;
     private int _equipNowOfferIndex = -1;
@@ -231,6 +234,8 @@ public sealed class RunShell : MonoBehaviour
             _planningTab = PlanningTab.Muster;
             _selectedCardKey = "hero:field:0";
             _inspectorOpen = false;
+            _loadoutOpen = false;
+            _loadoutReturnCardKey = "";
             _tierChosen = false;
             _hallOverview = true;
             _recommendedStation = HallStation.Breach;
@@ -271,6 +276,10 @@ public sealed class RunShell : MonoBehaviour
         };
         _actions.OpenHallOverview = OpenHallOverview;
         _actions.OpenHallStation = i => OpenHallStation((HallStation)i);
+        _actions.OpenLoadout = OpenLoadout;
+        _actions.CloseLoadout = CloseLoadout;
+        _actions.SelectLoadoutHero = SelectLoadoutHero;
+        _actions.SelectLoadoutItem = SelectLoadoutItem;
         _actions.SelectPlanningCard = SelectPlanningCard;
         _actions.OpenInspector = () =>
         {
@@ -411,6 +420,7 @@ public sealed class RunShell : MonoBehaviour
             tone: UiFeedbackTone.Sand, receipt: "Returned to the Hourstone Table.");
         _hallOverview = true;
         _inspectorOpen = false;
+        _loadoutOpen = false;
         Go(RunScreen.Management);
     }
 
@@ -435,12 +445,71 @@ public sealed class RunShell : MonoBehaviour
         if (station != HallStation.Armory) _selectedItem = -1;
         _hallOverview = false;
         _inspectorOpen = false;
+        _loadoutOpen = false;
         _hubAttention.Clear(station);
         if (_recommendedStation == station && _run.State.PendingSpec == null &&
             _run.State.Phase != RunPhase.Reward)
             _recommendedStation = HallStation.Breach;
         SelectDefaultForTab();
         Go(RunScreen.Management);
+    }
+
+    private void OpenLoadout(string heroKey)
+    {
+        if (_run == null || _hallOverview) return;
+        if (!_loadoutOpen)
+        {
+            _loadoutReturnCardKey = _selectedCardKey;
+            _loadoutReturnMarketOffer = _selectedMarketOffer;
+        }
+        _loadoutOpen = true;
+        if (!string.IsNullOrEmpty(heroKey) &&
+            TryHeroAddress(heroKey, out _, out _))
+            _selectedCardKey = heroKey;
+        else if (!TryHeroAddress(_selectedCardKey, out _, out _))
+            _selectedCardKey = _run.State.Field.Count > 0
+                ? "hero:field:0"
+                : _run.State.Bench.Count > 0 ? "hero:bench:0" : "";
+        _inspectorOpen = false;
+        UiPolishSignals.Emit(UiPolishSignals.Cue.Select,
+            targetId: "warband-shelf", tone: UiFeedbackTone.Preview,
+            receipt: "Loadout Table opened.");
+        Rebuild();
+    }
+
+    private void CloseLoadout()
+    {
+        if (!_loadoutOpen) return;
+        _loadoutOpen = false;
+        _selectedCardKey = _loadoutReturnCardKey;
+        _selectedMarketOffer = _loadoutReturnMarketOffer;
+        _loadoutReturnCardKey = "";
+        _loadoutReturnMarketOffer = -1;
+        _selectedItem = _planningTab == PlanningTab.Armory &&
+                        TrySimpleIndex(_selectedCardKey, "item", out var item)
+            ? item
+            : -1;
+        Rebuild();
+    }
+
+    private void SelectLoadoutHero(string key)
+    {
+        if (!_loadoutOpen || !TryHeroAddress(key, out _, out _)) return;
+        _selectedCardKey = key;
+        UiPolishSignals.Emit(UiPolishSignals.Cue.Select,
+            targetId: key, tone: UiFeedbackTone.Preview);
+        Rebuild();
+    }
+
+    private void SelectLoadoutItem(string key)
+    {
+        if (!_loadoutOpen || !TrySimpleIndex(key, "item", out var index) ||
+            index < 0 || index >= _run.State.Inventory.Count)
+            return;
+        _selectedItem = index;
+        UiPolishSignals.Emit(UiPolishSignals.Cue.Select,
+            targetId: "loadout-" + key, tone: UiFeedbackTone.Preview);
+        Rebuild();
     }
 
     private static PlanningTab StationTab(HallStation station) =>
@@ -1856,6 +1925,117 @@ public sealed class RunShell : MonoBehaviour
         p.Stations = BuildHallStations(p);
         EnsurePlanningSelection(p);
         p.Inspector = BuildInspector(p);
+        p.PartyShelf = BuildPartyShelf(p);
+    }
+
+    private PartyShelfModel BuildPartyShelf(PlanningModel planning)
+    {
+        var state = _run.State;
+        var shelf = new PartyShelfModel
+        {
+            FieldCapacity = state.FieldSlots,
+            FieldCount = state.Field.Count,
+            MaxFieldCapacity = _cfg.MaxFieldSlots,
+            ReserveCount = state.Bench.Count,
+            ReserveCapacity = _cfg.BenchSlots,
+            Expanded = _loadoutOpen,
+            FocusedHeroKey = TryHeroAddress(_selectedCardKey, out _, out _)
+                ? _selectedCardKey
+                : "",
+        };
+
+        for (int i = 0; i < _cfg.MaxFieldSlots; i++)
+        {
+            if (i < state.Field.Count)
+                shelf.Field.Add(PartySlot(state.Field[i], i, reserve: false));
+            else
+                shelf.Field.Add(new PartySlotModel
+                {
+                    Key = $"shelf:field:{i}",
+                    Index = i,
+                    State = i < state.FieldSlots ? PartySlotState.Empty : PartySlotState.Locked,
+                    Focused = false,
+                });
+        }
+
+        for (int i = 0; i < _cfg.BenchSlots; i++)
+        {
+            if (i < state.Bench.Count)
+                shelf.Reserve.Add(PartySlot(state.Bench[i], i, reserve: true));
+            else
+                shelf.Reserve.Add(new PartySlotModel
+                {
+                    Key = $"shelf:reserve:{i}",
+                    Index = i,
+                    Reserve = true,
+                    State = PartySlotState.Empty,
+                });
+        }
+
+        for (int i = 0; i < state.Inventory.Count; i++)
+        {
+            ItemRef item = state.Inventory[i];
+            bool weapon = item.Kind == ItemKind.Weapon;
+            shelf.StoredItems.Add(new StoredItemSummaryModel
+            {
+                Key = $"item:{i}",
+                Name = weapon ? _content.Weapon(item.Id).Name : _content.Trinket(item.Id).Name,
+                Kind = weapon ? item.Tier + " WEAPON" : "TRINKET",
+                Icon = weapon ? "⚔" : "◇",
+                Accent = weapon ? "power" : "utility",
+                Selected = i == _selectedItem,
+            });
+        }
+
+        shelf.LoadoutInventory = planning.Armory.Select(card =>
+        {
+            card.Selected = TrySimpleIndex(card.Key, "item", out var index) &&
+                            index == _selectedItem;
+            return card;
+        }).ToList();
+        if (_loadoutOpen)
+        {
+            EnsureLoadoutHeroSelection();
+            shelf.FocusedHeroKey = _selectedCardKey;
+            shelf.LoadoutInspector = BuildInspector(planning);
+        }
+        return shelf;
+    }
+
+    private PartySlotModel PartySlot(HeroInstance hero, int index, bool reserve)
+    {
+        CardModel card = HeroPlanningCard(hero, index, reserve);
+        string trinket = hero.TrinketIds.Count > 0
+            ? _content.Trinket(hero.TrinketIds[0]).Name
+            : "";
+        return new PartySlotModel
+        {
+            Key = card.Key,
+            Index = index,
+            Reserve = reserve,
+            State = PartySlotState.Occupied,
+            Name = card.Title,
+            Rank = hero.Rank.ToString(),
+            Role = _presentation.Unit(hero.ChassisId).role,
+            PortraitResource = card.PortraitResource,
+            PortraitFallback = card.PortraitFallback,
+            Accent = card.Accent,
+            Weapon = card.Weapon,
+            Trinket = trinket,
+            Focused = card.Key == _selectedCardKey,
+        };
+    }
+
+    private void EnsureLoadoutHeroSelection()
+    {
+        if (TryHeroAddress(_selectedCardKey, out var bench, out var index))
+        {
+            int count = bench ? _run.State.Bench.Count : _run.State.Field.Count;
+            if (index >= 0 && index < count) return;
+        }
+        _selectedCardKey = _run.State.Field.Count > 0
+            ? "hero:field:0"
+            : _run.State.Bench.Count > 0 ? "hero:bench:0" : "";
     }
 
     private List<HallStationModel> BuildHallStations(PlanningModel model)
@@ -2777,6 +2957,7 @@ public sealed class RunShell : MonoBehaviour
         var inspector = new InspectorModel
         {
             Key = card.Key,
+            Kind = DetailKindFor(p, card),
             Eyebrow = card.Eyebrow,
             Title = card.Title,
             Subtitle = InspectorSubtitle(card),
@@ -2935,7 +3116,112 @@ public sealed class RunShell : MonoBehaviour
                 Label = $"SELL · {item.SandInvested * _cfg.SellPct / 100} SAND",
             });
         }
+        BuildInspectorSections(inspector);
         return inspector;
+    }
+
+    private DecisionDetailKind DetailKindFor(PlanningModel planning, CardModel card)
+    {
+        if (card.Key == "slot") return DecisionDetailKind.Capacity;
+        if (TryHeroAddress(card.Key, out _, out _)) return DecisionDetailKind.Champion;
+        if (card.Key.StartsWith("inscription:", StringComparison.Ordinal) ||
+            card.Key.StartsWith("reward:", StringComparison.Ordinal))
+            return DecisionDetailKind.Inscription;
+        if (TrySimpleIndex(card.Key, "item", out var itemIndex) &&
+            itemIndex >= 0 && itemIndex < _run.State.Inventory.Count)
+            return _run.State.Inventory[itemIndex].Kind == ItemKind.Weapon
+                ? DecisionDetailKind.Weapon
+                : DecisionDetailKind.Trinket;
+        MarketOfferCardModel market = planning.MarketOffers.FirstOrDefault(
+            offer => offer.Key == card.Key);
+        return market?.Kind switch
+        {
+            MarketOfferKind.RankUp => DecisionDetailKind.RankUp,
+            MarketOfferKind.Weapon => DecisionDetailKind.Weapon,
+            MarketOfferKind.Trinket => DecisionDetailKind.Trinket,
+            MarketOfferKind.Inscription => DecisionDetailKind.Inscription,
+            MarketOfferKind.Capacity => DecisionDetailKind.Capacity,
+            _ => DecisionDetailKind.Recruit,
+        };
+    }
+
+    private void BuildInspectorSections(InspectorModel inspector)
+    {
+        inspector.Sections.Clear();
+
+        void Rule(string label, string icon, string name, string summary)
+        {
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(summary)) return;
+            inspector.Sections.Add(new InspectorSectionModel
+            {
+                Kind = InspectorSectionKind.Rule,
+                Label = label,
+                Icon = icon,
+                Name = name,
+                Summary = summary,
+            });
+        }
+
+        switch (inspector.Kind)
+        {
+            case DecisionDetailKind.Champion:
+            case DecisionDetailKind.Recruit:
+            case DecisionDetailKind.Combatant:
+                Rule("BASIC ATTACK", inspector.WeaponIcon, inspector.WeaponName,
+                    inspector.WeaponSummary);
+                Rule(inspector.AbilityTrigger, inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary);
+                Rule(inspector.PassiveTrigger, inspector.PassiveIcon, inspector.PassiveName,
+                    inspector.PassiveSummary);
+                break;
+            case DecisionDetailKind.Weapon:
+                Rule("WEAPON PROFILE", inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary);
+                Rule(inspector.PassiveTrigger, inspector.PassiveIcon, inspector.PassiveName,
+                    inspector.PassiveSummary);
+                break;
+            case DecisionDetailKind.Trinket:
+                Rule("EQUIPPED RULE", inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary);
+                break;
+            case DecisionDetailKind.Inscription:
+                Rule("RUN-WIDE LAW", inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary);
+                break;
+            case DecisionDetailKind.RankUp:
+                Rule("GUARANTEED RANK GAIN", inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary);
+                break;
+            case DecisionDetailKind.Capacity:
+                inspector.Sections.Add(new InspectorSectionModel
+                {
+                    Kind = InspectorSectionKind.Capacity,
+                    Label = "FIELD CAPACITY · PERMANENT",
+                    Name = inspector.AbilityName,
+                    Summary = inspector.AbilitySummary,
+                    CapacityBefore = _run.State.FieldSlots,
+                    CapacityAfter = Mathf.Min(_cfg.MaxFieldSlots, _run.State.FieldSlots + 1),
+                    CapacityMax = _cfg.MaxFieldSlots,
+                });
+                break;
+        }
+
+        if (inspector.Comparisons.Count > 0)
+            inspector.Sections.Add(new InspectorSectionModel
+            {
+                Kind = InspectorSectionKind.Comparison,
+                Label = string.IsNullOrEmpty(inspector.ComparisonTitle)
+                    ? "EXACT CHANGE"
+                    : inspector.ComparisonTitle,
+                Comparisons = new List<StatComparisonModel>(inspector.Comparisons),
+            });
+        if (inspector.ChoicePreviews.Count > 0)
+            inspector.Sections.Add(new InspectorSectionModel
+            {
+                Kind = InspectorSectionKind.Choices,
+                Label = "SPECIALIZATION PREVIEW · CHOOSE 1 OF 2 AFTER RANK-UP",
+                Choices = new List<ChoicePreviewModel>(inspector.ChoicePreviews),
+            });
     }
 
     private void BuildEquipmentComparison(InspectorModel inspector, HeroInstance hero, ItemRef item)

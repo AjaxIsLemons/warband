@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -17,22 +18,7 @@ internal sealed class InspectorPanel
     private readonly Label _subtitle;
     private readonly Label _price;
     private readonly VisualElement _stats;
-    private readonly VisualElement _comparison;
-    private readonly Label _comparisonTitle;
-    private readonly VisualElement _comparisonRows;
-    private readonly VisualElement _choicePreview;
-    private readonly VisualElement _choicePreviewOptions;
-    private readonly Label _weaponIcon;
-    private readonly Label _weaponName;
-    private readonly Label _weaponSummary;
-    private readonly Label _abilityIcon;
-    private readonly Label _abilityTrigger;
-    private readonly Label _abilityName;
-    private readonly Label _abilitySummary;
-    private readonly Label _passiveIcon;
-    private readonly Label _passiveTrigger;
-    private readonly Label _passiveName;
-    private readonly Label _passiveSummary;
+    private readonly VisualElement _sections;
     private readonly VisualElement _tags;
     private readonly VisualElement _actions;
 
@@ -62,22 +48,7 @@ internal sealed class InspectorPanel
         _subtitle = Required<Label>(Root, "subtitle");
         _price = Required<Label>(Root, "price");
         _stats = Required<VisualElement>(Root, "stats");
-        _comparison = Required<VisualElement>(Root, "comparison");
-        _comparisonTitle = Required<Label>(Root, "comparison-title");
-        _comparisonRows = Required<VisualElement>(Root, "comparison-rows");
-        _choicePreview = Required<VisualElement>(Root, "choice-preview");
-        _choicePreviewOptions = Required<VisualElement>(Root, "choice-preview-options");
-        _weaponIcon = Required<Label>(Root, "weapon-icon");
-        _weaponName = Required<Label>(Root, "weapon-name");
-        _weaponSummary = Required<Label>(Root, "weapon-summary");
-        _abilityIcon = Required<Label>(Root, "ability-icon");
-        _abilityTrigger = Required<Label>(Root, "ability-trigger");
-        _abilityName = Required<Label>(Root, "ability-name");
-        _abilitySummary = Required<Label>(Root, "ability-summary");
-        _passiveIcon = Required<Label>(Root, "passive-icon");
-        _passiveTrigger = Required<Label>(Root, "passive-trigger");
-        _passiveName = Required<Label>(Root, "passive-name");
-        _passiveSummary = Required<Label>(Root, "passive-summary");
+        _sections = Required<VisualElement>(Root, "sections");
         _tags = Required<VisualElement>(Root, "tags");
         _actions = Required<VisualElement>(Root, "actions");
     }
@@ -100,17 +71,6 @@ internal sealed class InspectorPanel
         _subtitle.text = model.Subtitle;
         _price.text = model.Price;
         _portraitFallback.text = model.PortraitFallback;
-        _weaponIcon.text = model.WeaponIcon;
-        _weaponName.text = model.WeaponName;
-        _weaponSummary.text = model.WeaponSummary;
-        _abilityIcon.text = model.AbilityIcon;
-        _abilityTrigger.text = model.AbilityTrigger;
-        _abilityName.text = model.AbilityName;
-        _abilitySummary.text = model.AbilitySummary;
-        _passiveIcon.text = model.PassiveIcon;
-        _passiveTrigger.text = model.PassiveTrigger;
-        _passiveName.text = model.PassiveName;
-        _passiveSummary.text = model.PassiveSummary;
         WarbandCard.SetAccent(Root, model.Accent);
 
         var texture = string.IsNullOrEmpty(model.PortraitResource)
@@ -121,31 +81,7 @@ internal sealed class InspectorPanel
             : new StyleBackground(Background.FromTexture2D(texture));
         SetDisplayed(_portraitFallback, texture == null);
         SetDisplayed(_price, !string.IsNullOrEmpty(model.Price));
-        _comparisonTitle.text = model.ComparisonTitle;
-        _comparisonRows.Clear();
-        foreach (var comparison in model.Comparisons)
-            _comparisonRows.Add(ComparisonRow(comparison));
-        SetDisplayed(_comparison, model.Comparisons.Count > 0);
-
-        _choicePreviewOptions.Clear();
-        foreach (var choice in model.ChoicePreviews)
-        {
-            var option = new VisualElement();
-            option.AddToClassList("wb-choice-preview");
-            var change = new Label(choice.Change);
-            change.AddToClassList("wb-choice-preview__change");
-            var name = new Label(choice.Name);
-            name.AddToClassList("wb-choice-preview__name");
-            var rule = new Label(choice.Rule);
-            rule.AddToClassList("wb-choice-preview__rule");
-            option.Add(change);
-            option.Add(name);
-            option.Add(rule);
-            foreach (var comparison in choice.Comparisons)
-                option.Add(ComparisonRow(comparison));
-            _choicePreviewOptions.Add(option);
-        }
-        SetDisplayed(_choicePreview, model.ChoicePreviews.Count > 0);
+        BindSections(model);
 
         _stats.Clear();
         foreach (var stat in model.Stats)
@@ -197,6 +133,144 @@ internal sealed class InspectorPanel
             button.tooltip = action.Enabled ? "" : action.DisabledReason;
             _actions.Add(button);
         }
+    }
+
+    private void BindSections(InspectorModel model)
+    {
+        _sections.Clear();
+        var sections = model.Sections.Count > 0
+            ? model.Sections
+            : LegacySections(model);
+        foreach (var section in sections)
+        {
+            var root = new VisualElement();
+            root.AddToClassList("wb-inspector__section");
+            root.AddToClassList("wb-inspector__section--" +
+                                section.Kind.ToString().ToLowerInvariant());
+            var label = new Label(section.Label);
+            label.AddToClassList("wb-inspector__section-label");
+            root.Add(label);
+
+            if (section.Kind == InspectorSectionKind.Rule)
+                root.Add(RuleLine(section));
+            else if (section.Kind == InspectorSectionKind.Comparison)
+            {
+                foreach (var comparison in section.Comparisons)
+                    root.Add(ComparisonRow(comparison));
+            }
+            else if (section.Kind == InspectorSectionKind.Choices)
+            {
+                var choices = new VisualElement();
+                choices.AddToClassList("wb-inspector__choice-preview-options");
+                foreach (var choice in section.Choices)
+                    choices.Add(ChoicePreview(choice));
+                root.Add(choices);
+            }
+            else if (section.Kind == InspectorSectionKind.Capacity)
+                root.Add(CapacityDiagram(section));
+            _sections.Add(root);
+        }
+    }
+
+    private static VisualElement RuleLine(InspectorSectionModel section)
+    {
+        var line = new VisualElement();
+        line.AddToClassList("wb-inspector__line");
+        var icon = new Label(section.Icon);
+        icon.AddToClassList("wb-inspector__line-icon");
+        var copy = new VisualElement();
+        copy.AddToClassList("wb-inspector__line-body");
+        var title = new Label(section.Name);
+        title.AddToClassList("wb-inspector__line-title");
+        var summary = new Label(section.Summary);
+        summary.AddToClassList("wb-inspector__line-copy");
+        copy.Add(title);
+        copy.Add(summary);
+        line.Add(icon);
+        line.Add(copy);
+        return line;
+    }
+
+    private static VisualElement ChoicePreview(ChoicePreviewModel choice)
+    {
+        var option = new VisualElement();
+        option.AddToClassList("wb-choice-preview");
+        var change = new Label(choice.Change);
+        change.AddToClassList("wb-choice-preview__change");
+        var name = new Label(choice.Name);
+        name.AddToClassList("wb-choice-preview__name");
+        var rule = new Label(choice.Rule);
+        rule.AddToClassList("wb-choice-preview__rule");
+        option.Add(change);
+        option.Add(name);
+        option.Add(rule);
+        foreach (var comparison in choice.Comparisons)
+            option.Add(ComparisonRow(comparison));
+        return option;
+    }
+
+    private static VisualElement CapacityDiagram(InspectorSectionModel section)
+    {
+        var root = new VisualElement();
+        root.AddToClassList("wb-capacity-detail");
+        var sockets = new VisualElement();
+        sockets.AddToClassList("wb-capacity-detail__sockets");
+        for (int i = 0; i < section.CapacityMax; i++)
+        {
+            var socket = new VisualElement();
+            socket.AddToClassList("wb-capacity-detail__socket");
+            socket.EnableInClassList("wb-capacity-detail__socket--active",
+                i < section.CapacityBefore);
+            socket.EnableInClassList("wb-capacity-detail__socket--new",
+                i >= section.CapacityBefore && i < section.CapacityAfter);
+            var number = new Label((i + 1).ToString());
+            socket.Add(number);
+            sockets.Add(socket);
+        }
+        var copy = new VisualElement();
+        var title = new Label(section.Name);
+        title.AddToClassList("wb-inspector__line-title");
+        var summary = new Label(section.Summary);
+        summary.AddToClassList("wb-inspector__line-copy");
+        copy.Add(title);
+        copy.Add(summary);
+        root.Add(sockets);
+        root.Add(copy);
+        return root;
+    }
+
+    private static List<InspectorSectionModel> LegacySections(InspectorModel model)
+    {
+        var result = new List<InspectorSectionModel>();
+        void Add(string label, string icon, string name, string summary)
+        {
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(summary)) return;
+            result.Add(new InspectorSectionModel
+            {
+                Label = label,
+                Icon = icon,
+                Name = name,
+                Summary = summary,
+            });
+        }
+        Add("BASIC ATTACK", model.WeaponIcon, model.WeaponName, model.WeaponSummary);
+        Add(model.AbilityTrigger, model.AbilityIcon, model.AbilityName, model.AbilitySummary);
+        Add(model.PassiveTrigger, model.PassiveIcon, model.PassiveName, model.PassiveSummary);
+        if (model.Comparisons.Count > 0)
+            result.Add(new InspectorSectionModel
+            {
+                Kind = InspectorSectionKind.Comparison,
+                Label = model.ComparisonTitle,
+                Comparisons = new List<StatComparisonModel>(model.Comparisons),
+            });
+        if (model.ChoicePreviews.Count > 0)
+            result.Add(new InspectorSectionModel
+            {
+                Kind = InspectorSectionKind.Choices,
+                Label = "SPECIALIZATION PREVIEW",
+                Choices = new List<ChoicePreviewModel>(model.ChoicePreviews),
+            });
+        return result;
     }
 
     private static T Required<T>(VisualElement root, string name) where T : VisualElement

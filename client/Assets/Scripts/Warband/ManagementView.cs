@@ -177,7 +177,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly Label _act;
     private readonly Label _beat;
     private readonly Label _sand;
-    private readonly Label _capacity;
     private readonly Label _heading;
     private readonly Label _brief;
     private readonly Label _stationEyebrow;
@@ -188,8 +187,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly Label _empty;
     private readonly Label _primaryLabel;
     private readonly Label _secondaryLabel;
-    private readonly Label _ledgerValue;
-    private readonly Label _ledgerDetail;
     private readonly Label _workspaceHint;
     private readonly Label _marketPage;
     private readonly VisualElement _track;
@@ -208,10 +205,30 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly Button _inspectorExpand;
     private readonly Button _secondary;
     private readonly Button _continue;
+    private readonly VisualElement _shelf;
+    private readonly Label _shelfCapacity;
+    private readonly Label _shelfReserveLabel;
+    private readonly Label _shelfStoredCount;
+    private readonly VisualElement _shelfField;
+    private readonly VisualElement _shelfReserve;
+    private readonly VisualElement _shelfStoredIcons;
+    private readonly Button _shelfExpand;
+    private readonly Button _shelfArmory;
+    private readonly VisualElement _loadoutScrim;
+    private readonly VisualElement _loadoutTable;
+    private readonly VisualElement _loadoutField;
+    private readonly VisualElement _loadoutReserve;
+    private readonly VisualElement _loadoutInspectorSlot;
+    private readonly VisualElement _loadoutActionDock;
+    private readonly VisualElement _loadoutInventory;
+    private readonly Label _loadoutStoredCount;
+    private readonly Button _loadoutClose;
     private readonly CardPool _primaryCards;
     private readonly CardPool _secondaryCards;
+    private readonly CardPool _loadoutCards;
     private readonly MarketOfferPool _marketCards;
     private readonly InspectorPanel _inspector;
+    private readonly InspectorPanel _loadoutInspector;
     private readonly CardRulesPopover _rules;
     private readonly VisualElement _choiceScrim;
     private readonly Label _choiceEyebrow;
@@ -247,6 +264,9 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private bool _reducedMotion;
     private string _lastMarketSelectionKey = "";
     private string _lastDetailKey = "";
+    private bool _lastLoadoutOpen;
+    private readonly Dictionary<string, VisualElement> _shelfTargets =
+        new Dictionary<string, VisualElement>();
 
     public RunScreen Screen => RunScreen.Management;
     public VisualElement Root => _root;
@@ -270,7 +290,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _act = Required<Label>(_root, "act");
         _beat = Required<Label>(_root, "station-eyebrow");
         _sand = Required<Label>(_root, "sand");
-        _capacity = Required<Label>(_root, "capacity");
         _heading = Required<Label>(_root, "heading");
         _brief = Required<Label>(_root, "brief");
         _stationEyebrow = Required<Label>(_root, "station-eyebrow");
@@ -281,8 +300,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _empty = Required<Label>(_root, "empty");
         _primaryLabel = Required<Label>(_root, "primary-label");
         _secondaryLabel = Required<Label>(_root, "secondary-label");
-        _ledgerValue = Required<Label>(_root, "ledger-value");
-        _ledgerDetail = Required<Label>(_root, "ledger-detail");
         _workspaceHint = Required<Label>(_root, "workspace-hint");
         _marketPage = Required<Label>(_root, "market-page");
         _track = Required<VisualElement>(_root, "track");
@@ -302,6 +319,24 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _inspectorExpand = Required<Button>(_root, "inspector-close");
         _secondary = Required<Button>(_root, "secondary");
         _continue = Required<Button>(_root, "continue");
+        _shelf = Required<VisualElement>(_root, "warband-shelf");
+        _shelfCapacity = Required<Label>(_root, "shelf-capacity");
+        _shelfReserveLabel = Required<Label>(_root, "shelf-reserve-label");
+        _shelfStoredCount = Required<Label>(_root, "shelf-stored-count");
+        _shelfField = Required<VisualElement>(_root, "shelf-field");
+        _shelfReserve = Required<VisualElement>(_root, "shelf-reserve");
+        _shelfStoredIcons = Required<VisualElement>(_root, "shelf-stored-icons");
+        _shelfExpand = Required<Button>(_root, "shelf-expand");
+        _shelfArmory = Required<Button>(_root, "shelf-armory");
+        _loadoutScrim = Required<VisualElement>(_root, "loadout-scrim");
+        _loadoutTable = Required<VisualElement>(_root, "loadout-table");
+        _loadoutField = Required<VisualElement>(_root, "loadout-field");
+        _loadoutReserve = Required<VisualElement>(_root, "loadout-reserve");
+        _loadoutInspectorSlot = Required<VisualElement>(_root, "loadout-inspector-slot");
+        _loadoutActionDock = Required<VisualElement>(_root, "loadout-action-dock");
+        _loadoutInventory = Required<VisualElement>(_root, "loadout-inventory");
+        _loadoutStoredCount = Required<Label>(_root, "loadout-stored-count");
+        _loadoutClose = Required<Button>(_root, "loadout-close");
 
         _inspector = new InspectorPanel(id => _actions.InspectorAction?.Invoke(id));
         _inspector.Root.AddToClassList("wb-inspector--hub");
@@ -322,6 +357,18 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
                 _actions.CloseInspector?.Invoke();
         });
 
+        _loadoutInspector = new InspectorPanel(id => _actions.InspectorAction?.Invoke(id));
+        _loadoutInspector.Root.AddToClassList("wb-inspector--loadout");
+        _loadoutInspectorSlot.Add(_loadoutInspector.Root);
+        _loadoutActionDock.Add(_loadoutInspector.ActionsRoot);
+        _shelfExpand.clicked += () => _actions.OpenLoadout?.Invoke("");
+        _shelfArmory.clicked += () => _actions.OpenLoadout?.Invoke("");
+        _loadoutClose.clicked += () => _actions.CloseLoadout?.Invoke();
+        _loadoutScrim.RegisterCallback<ClickEvent>(evt =>
+        {
+            if (evt.target == _loadoutScrim) _actions.CloseLoadout?.Invoke();
+        });
+
         _choiceScrim = Required<VisualElement>(_root, "choice-scrim");
         _choiceEyebrow = Required<Label>(_root, "choice-eyebrow");
         _choiceTitle = Required<Label>(_root, "choice-title");
@@ -338,7 +385,9 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             services?.Haptics, services?.Audio);
         RegisterPolishTarget("hub-workspace", _workspace);
         RegisterPolishTarget("hub-overview", _overview);
-        RegisterPolishTarget("ledger-sand", _ledgerValue);
+        RegisterPolishTarget("ledger-sand", _sand);
+        RegisterPolishTarget("warband-shelf", _shelf);
+        RegisterPolishTarget("shelf-armory", _shelfArmory);
         RegisterPolishTarget("feedback", _feedback);
         RegisterPolishTarget("action-secondary", _secondary, true);
         RegisterPolishTarget("action-continue", _continue, true);
@@ -350,6 +399,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             key => _actions.SelectPlanningCard?.Invoke(key), _polish);
         _secondaryCards = new CardPool(Required<VisualElement>(_root, "secondary-grid"),
             key => _actions.SelectPlanningCard?.Invoke(key), _polish);
+        _loadoutCards = new CardPool(_loadoutInventory,
+            key => _actions.SelectLoadoutItem?.Invoke(key), _polish);
         _marketCards = new MarketOfferPool(primaryGrid,
             key => _actions.SelectPlanningCard?.Invoke(key), _polish,
             null, null);
@@ -386,7 +437,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
         _act.text = model.Act;
         _sand.text = model.Sand;
-        _capacity.text = model.Capacity;
         _overviewCopy.text = $"{model.Beat}. The Table keeps every service in one remembered place.";
         _recommendation.text = StationName(model.RecommendedStation) + "  ›";
         _root.EnableInClassList("motion--reduced", model.ReducedMotion);
@@ -414,6 +464,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         BindTrack(model.Track);
         BindStations(model.Stations, model.RecommendedStation);
         BindWorkspace(model);
+        BindPartyShelf(model.PartyShelf);
         BindBlockingChoice(model);
         ApplyResponsiveLayout();
         FollowMarketSelection(model, routeChanged);
@@ -508,8 +559,6 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _feedback.text = model.Feedback;
         _feedback.EnableInClassList("feedback-label--error", model.FeedbackIsError);
         SetDisplayed(_feedback, !string.IsNullOrEmpty(model.Feedback));
-        _ledgerValue.text = model.Sand + " SAND";
-        _ledgerDetail.text = LedgerDetail(model);
 
         IReadOnlyList<CardModel> primary;
         IReadOnlyList<CardModel> secondary;
@@ -585,8 +634,10 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         SetDisplayed(_secondary, model.ActiveStation == HallStation.Market);
         _continue.text = model.CommitLabel;
         _continue.SetEnabled(model.CanCommit);
-        SetDisplayed(_continue, model.BeatKind == PlanningBeat.Fight ||
-                               model.BeatKind == PlanningBeat.Boss);
+        bool showContinue = model.BeatKind == PlanningBeat.Fight ||
+                            model.BeatKind == PlanningBeat.Boss;
+        SetDisplayed(_continue, showContinue);
+        SetDisplayed(_continue.parent, showContinue);
 
         _inspector.Bind(model.Inspector);
         BindSelectionTray(model);
@@ -619,6 +670,156 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         SetDisplayed(_selectionTray, false);
         _selectionTrayActions.Clear();
         _trayTargetIds.Clear();
+    }
+
+    private void BindPartyShelf(PartyShelfModel model)
+    {
+        foreach (var target in _shelfTargets)
+            _polish.UnregisterTarget(target.Key, target.Value);
+        _shelfTargets.Clear();
+        _shelfField.Clear();
+        _shelfReserve.Clear();
+        _shelfStoredIcons.Clear();
+        _loadoutField.Clear();
+        _loadoutReserve.Clear();
+
+        _shelfCapacity.text = $"FIELD  {model.FieldCount} / {model.FieldCapacity}";
+        _shelfReserveLabel.text = $"RESERVE  {model.ReserveCount} / {model.ReserveCapacity}";
+        _shelfStoredCount.text = model.StoredItems.Count == 1
+            ? "1 STORED"
+            : $"{model.StoredItems.Count} STORED";
+        _loadoutStoredCount.text = _shelfStoredCount.text;
+
+        foreach (PartySlotModel slot in model.Field)
+        {
+            _shelfField.Add(PartySlot(slot, expanded: false));
+            _loadoutField.Add(PartySlot(slot, expanded: true));
+        }
+        foreach (PartySlotModel slot in model.Reserve)
+        {
+            _shelfReserve.Add(PartySlot(slot, expanded: false));
+            _loadoutReserve.Add(PartySlot(slot, expanded: true));
+        }
+
+        int shown = Mathf.Min(3, model.StoredItems.Count);
+        for (int i = 0; i < shown; i++)
+        {
+            StoredItemSummaryModel item = model.StoredItems[i];
+            var icon = new Label(item.Icon);
+            icon.AddToClassList("warband-shelf__stored-icon");
+            icon.AddToClassList("accent--" + item.Accent);
+            icon.tooltip = $"{item.Name} · {item.Kind}";
+            _shelfStoredIcons.Add(icon);
+        }
+        if (model.StoredItems.Count > shown)
+        {
+            var overflow = new Label("+" + (model.StoredItems.Count - shown));
+            overflow.AddToClassList("warband-shelf__stored-overflow");
+            _shelfStoredIcons.Add(overflow);
+        }
+
+        _root.EnableInClassList("loadout--open", model.Expanded);
+        SetDisplayed(_loadoutScrim, model.Expanded);
+        if (model.Expanded)
+        {
+            _loadoutInspector.Bind(model.LoadoutInspector);
+            _loadoutCards.Bind(model.LoadoutInventory, "armory");
+            if (!_lastLoadoutOpen)
+                _polish.Reveal(_loadoutTable, _presentation.shelfExpand);
+        }
+        else
+        {
+            _loadoutCards.Bind(EmptyCards, "armory");
+        }
+        _lastLoadoutOpen = model.Expanded;
+    }
+
+    private Button PartySlot(PartySlotModel model, bool expanded)
+    {
+        var button = new Button();
+        button.AddToClassList("party-slot");
+        button.EnableInClassList("party-slot--loadout", expanded);
+        button.EnableInClassList("party-slot--reserve", model.Reserve);
+        button.EnableInClassList("party-slot--occupied",
+            model.State == PartySlotState.Occupied);
+        button.EnableInClassList("party-slot--empty",
+            model.State == PartySlotState.Empty);
+        button.EnableInClassList("party-slot--locked",
+            model.State == PartySlotState.Locked);
+        button.EnableInClassList("party-slot--focused", model.Focused);
+        button.userData = model.Key;
+
+        string baseTargetId = model.State == PartySlotState.Occupied
+            ? model.Key
+            : model.Reserve ? $"shelf-reserve:{model.Index}" : $"shelf-field:{model.Index}";
+        string targetId = expanded ? "loadout-" + baseTargetId : baseTargetId;
+        if (model.State == PartySlotState.Occupied)
+        {
+            var portrait = new VisualElement();
+            portrait.AddToClassList("party-slot__portrait");
+            var texture = string.IsNullOrEmpty(model.PortraitResource)
+                ? null
+                : Resources.Load<Texture2D>(model.PortraitResource);
+            portrait.style.backgroundImage = texture == null
+                ? new StyleBackground(StyleKeyword.None)
+                : new StyleBackground(Background.FromTexture2D(texture));
+            var fallback = new Label(model.PortraitFallback);
+            fallback.AddToClassList("party-slot__fallback");
+            SetDisplayed(fallback, texture == null);
+            portrait.Add(fallback);
+            button.Add(portrait);
+
+            var rank = new Label(model.Rank);
+            rank.AddToClassList("party-slot__rank");
+            button.Add(rank);
+
+            var loadout = new VisualElement();
+            loadout.AddToClassList("party-slot__loadout");
+            var weapon = new Label("⚔");
+            weapon.AddToClassList("party-slot__equipment");
+            weapon.EnableInClassList("party-slot__equipment--empty",
+                string.IsNullOrEmpty(model.Weapon));
+            weapon.tooltip = string.IsNullOrEmpty(model.Weapon)
+                ? "Starter weapon"
+                : model.Weapon;
+            var trinket = new Label("◇");
+            trinket.AddToClassList("party-slot__equipment");
+            trinket.EnableInClassList("party-slot__equipment--empty",
+                string.IsNullOrEmpty(model.Trinket));
+            trinket.tooltip = string.IsNullOrEmpty(model.Trinket)
+                ? "Empty trinket socket"
+                : model.Trinket;
+            loadout.Add(weapon);
+            loadout.Add(trinket);
+            button.Add(loadout);
+            button.tooltip =
+                $"{model.Name} · Rank {model.Rank}\n{model.Role}\n" +
+                $"Weapon: {(string.IsNullOrEmpty(model.Weapon) ? "Starter" : model.Weapon)}\n" +
+                $"Trinket: {(string.IsNullOrEmpty(model.Trinket) ? "Empty" : model.Trinket)}";
+            button.clicked += () =>
+            {
+                if (expanded) _actions.SelectLoadoutHero?.Invoke(model.Key);
+                else _actions.OpenLoadout?.Invoke(model.Key);
+            };
+        }
+        else
+        {
+            var mark = new Label(model.State == PartySlotState.Locked ? "◇" : "+");
+            mark.AddToClassList("party-slot__empty-mark");
+            button.Add(mark);
+            var number = new Label((model.Index + 1).ToString());
+            number.AddToClassList("party-slot__number");
+            button.Add(number);
+            button.tooltip = model.State == PartySlotState.Locked
+                ? $"Field place {model.Index + 1} is locked. Capacity upgrades open it."
+                : model.Reserve ? "Empty reserve place." : "Open field place.";
+            button.clicked += () => _actions.OpenLoadout?.Invoke("");
+        }
+
+        _polish.AttachInteractable(button, () => targetId);
+        _polish.RegisterTarget(targetId, button);
+        _shelfTargets[targetId] = button;
+        return button;
     }
 
     private static readonly IReadOnlyList<CardModel> EmptyCards = new List<CardModel>();

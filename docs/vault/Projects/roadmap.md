@@ -532,10 +532,24 @@ revisit) · per-rank stat scaling.
   and the Editor's own `Unity/…/Editor/Analytics`). So a dev Play Mode session and a friend build
   read and write the SAME save file. Benign today, but it is exactly why a fresh build can appear to
   "already have a run" — that is what happened here, and it cost a detour to rule out as a bug.
-  **Still Jake's** (`deploy/README.md`): `sudo install -d -o jake -g jake /srv/warband-releases` · a
-  Caddy block for `warband.inhouseboyz.com/releases/*` · and **deciding the gate** — until the header
-  check is enabled the manifest and zip are unlisted-but-public, which for friend scale may be fine
-  (Shoota's own README calls its token "friction control, not strong DRM") but should be a choice.
+  **ACCESS DECIDED (Jake): Discord sign-in gates the LAUNCHER, nothing else.** *"no gate needed since
+  this doesn't really need a server. I think if someone signs in with discord, they can dl the
+  launcher."* Built as `site/` — one Go file, Shoota's session/OAuth scheme (HMAC cookie, state-cookie
+  CSRF, `identify` scope only) with the database, accounts, telemetry and admin all cut. `/launcher`
+  needs a session; **`/releases/*` is open on purpose**, because the launcher is not a browser and
+  carries no session — gating it would mean embedding a secret in every exe that anyone can read back
+  out. Shoota reached the same conclusion the hard way. No allowlist: any signed-in Discord account.
+  **Verified:** signed out, `/launcher` 302s to Discord while `/releases/*` serves 200; signed in, the
+  exe comes back byte-identical to the published one; tampered and expired cookies both rejected. Then
+  the real end-to-end — **the actual launcher pulled the actual 58 MB published build through the
+  actual site**, verified its hash, installed 157 MB, and failed only at `exec` (a Windows PE on
+  Linux: the correct failure, and it proves every step before it). And the shaders are not merely
+  registered — **all six are physically present in the shipped `Warband_Data`**, with StreamingAssets
+  (tuning.json, tuning.ranges.json, 10 fixtures) alongside them.
+  **Still Jake's:** `sudo bash deploy/setup-warband-site.sh` (releases dir + Caddy vhost) ·
+  `bash deploy/install-warband-site.sh` · and creating the Discord OAuth app, whose **redirect URI
+  must be exactly** `https://warband.inhouseboyz.com/auth/discord/callback`. The Discord round-trip is
+  the one path that cannot be tested without those credentials.
 - **2026-07-26 — CONTENT VERSION STAMP (433 tests). The prerequisite for a server, not the server.**
   Jake asked whether we have a server and whether we'd want cloud storage for PvP; the answer is no
   server exists (**zero networking anywhere in the codebase** — the one grep hit was a cylinder named

@@ -1,0 +1,16 @@
+# warband download site — tracked, secret-free copy.
+# Live unit: ~/.config/systemd/user/warband-site.service
+# Secrets:   ~/.config/warband-site/env (chmod 600, never synced/committed)
+# Deploy:    make site-deploy  (builds ~/.local/bin/warband-site + restarts this unit)
+[Unit]
+Description=warband download site (Discord sign-in gates the launcher)
+After=network-online.target
+
+[Service]
+EnvironmentFile=%h/.config/warband-site/env
+ExecStart=%h/.local/bin/warband-site
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

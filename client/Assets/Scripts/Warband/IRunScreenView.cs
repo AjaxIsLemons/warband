@@ -62,6 +62,10 @@ internal sealed class RunShellActions
     public Action<int> ChooseBossReward = _ => { };
     public Action OpenHallOverview = () => { };
     public Action<int> OpenHallStation = _ => { };
+    public Action<string> OpenLoadout = _ => { };
+    public Action CloseLoadout = () => { };
+    public Action<string> SelectLoadoutHero = _ => { };
+    public Action<string> SelectLoadoutItem = _ => { };
 
     // Map / node
     public Action<int> ChooseTier = _ => { };
