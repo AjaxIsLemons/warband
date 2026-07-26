@@ -4215,6 +4215,10 @@ public sealed class RunShell : MonoBehaviour
 
     public void EditorOpenHallStation(int station) => OpenHallStation((HallStation)station);
 
+    public void EditorOpenLoadout(string heroKey = "") => OpenLoadout(heroKey);
+
+    public void EditorCloseLoadout() => CloseLoadout();
+
     public int EditorHallActiveEffectCount()
     {
         foreach (var view in _views)

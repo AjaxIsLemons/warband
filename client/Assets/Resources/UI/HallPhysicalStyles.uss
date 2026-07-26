@@ -1792,6 +1792,50 @@
     flex-wrap: wrap;
 }
 
+.loadout-inventory-empty {
+    min-height: 290px;
+    margin-top: 22px;
+    padding-left: 34px;
+    padding-right: 34px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(8, 14, 22, 0.74);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(61, 84, 112, 0.68);
+    border-right-color: rgba(61, 84, 112, 0.68);
+    border-top-color: rgba(61, 84, 112, 0.68);
+    border-bottom-color: rgba(61, 84, 112, 0.68);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.loadout-inventory-empty__mark {
+    color: rgb(104, 165, 231);
+    font-size: 48px;
+}
+
+.loadout-inventory-empty__title {
+    margin-top: 8px;
+    color: rgb(224, 229, 236);
+    font-size: 18px;
+    -unity-font-style: bold;
+    letter-spacing: 1.8px;
+}
+
+.loadout-inventory-empty__copy {
+    max-width: 340px;
+    margin-top: 9px;
+    color: rgb(139, 154, 176);
+    font-size: 14px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
 .loadout-inventory .wb-card--hub.decision-card--stock {
     width: 154px;
     min-width: 154px;

@@ -221,6 +221,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly VisualElement _loadoutInspectorSlot;
     private readonly VisualElement _loadoutActionDock;
     private readonly VisualElement _loadoutInventory;
+    private readonly VisualElement _loadoutInventoryEmpty;
     private readonly Label _loadoutStoredCount;
     private readonly Button _loadoutClose;
     private readonly CardPool _primaryCards;
@@ -336,6 +337,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _loadoutInspectorSlot = Required<VisualElement>(_root, "loadout-inspector-slot");
         _loadoutActionDock = Required<VisualElement>(_root, "loadout-action-dock");
         _loadoutInventory = Required<VisualElement>(_root, "loadout-inventory");
+        _loadoutInventoryEmpty =
+            Required<VisualElement>(_root, "loadout-inventory-empty");
         _loadoutStoredCount = Required<Label>(_root, "loadout-stored-count");
         _loadoutClose = Required<Button>(_root, "loadout-close");
 
@@ -690,6 +693,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             ? "1 STORED"
             : $"{model.StoredItems.Count} STORED";
         _loadoutStoredCount.text = _shelfStoredCount.text;
+        SetDisplayed(_loadoutInventoryEmpty, model.StoredItems.Count == 0);
 
         foreach (PartySlotModel slot in model.Field)
         {

@@ -61,6 +61,18 @@ station-scoped; empty stations expand instead of inheriting a stale hero dossier
 Muster containment, Market footer/title/split bounds, repeated station rebinds, compact target
 containment, empty Hourstone, and return-to-Market flow. Mobile-specific composition remains
 deferred.
+**Persistent Warband Shelf + Loadout Table built and Unity-verified 2026-07-26:** every Hall
+station now keeps the six-address field cap, two reserves, ranks, portraits, and equipment sockets
+visible in one bottom rail. Sand appears once in the run ribbon; duplicate FIELD/ledger readouts are
+gone. Expanding the Shelf replaces the station body with one 30/36/34 formation/champion/Armory
+instrument while preserving Market selection and scroll state. Selected detail is typed by decision
+kind: champions get Basic/Signature/Passive, weapons get Weapon Profile/Mastery, trinkets get their
+equipped rule, Inscriptions get a Run-Wide Law, and capacity gets six explicit sockets. Recruit/rank,
+gear, and capacity receipts now land on the affected Shelf target. Expand/collapse/focus recipes are
+live-tunable in F1. Live checks passed 40/60 Market containment, all 6+2 Shelf addresses, exact
+30/36/34 Loadout bounds, Market selection restoration, weapon/Inscription no-Basic-Attack grammar,
+and the zero-inventory Armory empty state at 2542×1304. Dedicated mobile composition remains
+deferred by Jake.
 
 1. **FEEL & READABILITY — the fight does not read** — **VERIFY (was DESIGN → BUILD). THE TOP ITEM,
    AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**

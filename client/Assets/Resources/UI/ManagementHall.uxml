@@ -200,6 +200,15 @@
                                         vertical-scroller-visibility="Hidden"
                                         class="loadout-inventory-scroll">
                                         <ui:VisualElement name="loadout-inventory" class="loadout-inventory" />
+                                        <ui:VisualElement
+                                            name="loadout-inventory-empty"
+                                            class="loadout-inventory-empty">
+                                            <ui:Label text="◇" class="loadout-inventory-empty__mark" />
+                                            <ui:Label text="ARMORY CLEAR" class="loadout-inventory-empty__title" />
+                                            <ui:Label
+                                                text="Weapons and trinkets bought at the Market arrive here ready to compare and equip."
+                                                class="loadout-inventory-empty__copy" />
+                                        </ui:VisualElement>
                                     </ui:ScrollView>
                                 </ui:VisualElement>
                             </ui:VisualElement>
