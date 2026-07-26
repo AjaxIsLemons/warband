@@ -106,9 +106,15 @@ make launcher-release                      # publish WarbandLauncher.exe
   registered them → **all six are physically present in the shipped `Warband_Data`**, along with
   StreamingAssets (`tuning.json`, `tuning.ranges.json`, 10 replay fixtures). v0.1.260726.1352,
   162 MB, 0 errors, published as a 58 MB zip.
-- **The launcher against the REAL published build, through the real site:** downloaded 58 MB,
-  verified SHA-256, installed 157 MB to the client dir, and failed only at `exec` — a Windows PE on
-  Linux, which is the correct failure and proves every step before it.
+- **The launcher against the REAL published build, through the live site at
+  `https://warband.inhouseboyz.com`:** downloaded 58 MB, verified SHA-256, installed 157 MB to the
+  client dir, and failed only at `exec` — a Windows PE on Linux, which is the correct failure and
+  proves every step before it. Second run short-circuits to "Up to date" with no download.
+
+  The first pass at this ran against a **staging** releases dir (`/srv/warband-releases` did not exist
+  yet), so the pipeline was proven while nothing was actually downloadable and the launcher died with
+  `manifest returned HTTP 404`. `make ship` now verifies the **public** manifest URL after publishing
+  and fails if the site does not serve the version just shipped.
 - **The gate:** signed out, `/` offers sign-in and `/launcher` 302s to Discord; `/releases/*` serves
   200. Signed in, `/` offers the download and `/launcher` returns the exe byte-identical to the
   published one. Tampered and expired session cookies are both rejected.

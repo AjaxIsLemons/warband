@@ -136,3 +136,25 @@ mv -f "$RELEASES_DIR/warband-$version-build.json.tmp" "$RELEASES_DIR/warband-$ve
 printf '\nSHIPPED v%s (content %s, %sMB)\n' "$version" "$content_version" "$(( size / 1024 / 1024 ))"
 echo "  $latest"
 echo "  $launcher_manifest"
+
+# "SHIPPED" must mean the LAUNCHER can see it, not merely that files landed in a directory. On
+# 2026-07-26 a release was published into a staging dir while RELEASES_DIR on the site pointed
+# elsewhere; every local check passed and the launcher still died with "manifest returned HTTP 404".
+# A file on disk that the site does not serve is not a release.
+manifest_url=${MANIFEST_URL:-https://warband.inhouseboyz.com/releases/warband-latest-win64.json}
+served=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$manifest_url" 2>/dev/null || echo 000)
+if [[ "$served" == 200 ]]; then
+	served_version=$(curl -sS --max-time 10 "$manifest_url" 2>/dev/null \
+		| python3 -c 'import json,sys; print(json.load(sys.stdin).get("version",""))' 2>/dev/null || true)
+	if [[ "$served_version" == "$version" ]]; then
+		echo "  site serves v$served_version — the launcher will see this release."
+	else
+		echo "!! the site serves v$served_version, not the v$version just published." >&2
+		echo "   WARBAND_RELEASES_DIR in ~/.config/warband-site/env probably != $RELEASES_DIR." >&2
+		exit 1
+	fi
+else
+	echo "!! published, but $manifest_url returns HTTP $served — the launcher cannot see it." >&2
+	echo "   Check: systemctl --user status warband-site, and WARBAND_RELEASES_DIR vs $RELEASES_DIR." >&2
+	exit 1
+fi

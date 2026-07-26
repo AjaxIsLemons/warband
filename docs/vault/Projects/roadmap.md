@@ -506,6 +506,38 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — THE SITE IS LIVE AND THE LAUNCHER PULLS FROM IT (closes item 8).** Two failures, both
+  mine, both now guarded in scripts rather than in notes.
+  **(1) SSL protocol error.** Jake ran `setup-warband-site.sh` before the DNS record existed publicly.
+  Caddy loaded the vhost, asked Let's Encrypt immediately, and got `DNS problem: NXDOMAIN looking up A
+  for warband.inhouseboyz.com` on both http-01 and tls-alpn-01, then the same from ZeroSSL. That is a
+  HARD failure, so Caddy backed off and never retried — the site answered `tlsv1 alert internal error`
+  for hours. **The trap: local resolution is not evidence.** dnsmasq answers `*.inhouseboyz.com` from
+  split-DNS, so the name resolved on this box while being NXDOMAIN to the world; I also mis-diagnosed
+  it once as "Caddy never loaded the config," which the journal disproved. The vhost also pointed at
+  **8090 (arena's port)** because it was generated before warband moved to 8092.
+  → `setup-warband-site.sh` now **refuses to add a vhost without a public A record**, checked against
+  1.1.1.1 over DoH and deliberately not the local resolver, and after reloading it **waits for a real
+  TLS handshake**, printing the verbatim ACME error on timeout. "Reloaded" without a cert was the
+  silent failure.
+  **(2) `manifest returned HTTP 404` from the launcher.** The build had only ever been published into a
+  **scratchpad staging dir**, because `/srv/warband-releases` did not exist during verification. Every
+  local check passed and nothing was actually downloadable. `make release-status` said so plainly —
+  nobody asked it.
+  → `ship-release.sh` now **curls the public manifest URL after publishing and fails if the site does
+  not serve the version just shipped**, naming `WARBAND_RELEASES_DIR` as the likely cause. A file on
+  disk that the site does not serve is not a release. Negative-controlled against a 404 path.
+  **Verified live, over the public HTTPS host:** `make ship` published v0.1.260726.1352 (content
+  `f1f4a7e9b5cd527b`, 58 MB, sha matches on-disk) · the manifest and zip serve 200 through Caddy with
+  the full 61,337,121-byte length · **the real launcher ran against the real site**: downloaded,
+  verified the hash, installed 157 MB, and failed only at `exec` (Windows PE on Linux) · second run
+  short-circuits to "Up to date" with no download · all six `Warband/*` shaders and StreamingAssets
+  present in the installed payload · unauthenticated `/` 200 and `/launcher` 302 → Discord.
+  **Method note:** my first shader check on the installed build reported all six MISSING. It was the
+  *check* that was wrong — I grepped invented names (`UnitBody`, `HexTile`, …) instead of the real
+  `Ring`/`GroundFill`/`Sigil`/`Glow`/`Particle`/`Dissolve`. A control grep for a known Unity built-in
+  string is what exposed it. Same class of error as the `dig`-not-installed miss earlier: **a check
+  that can silently return "nothing found" needs a positive control.**
 - **2026-07-26 — FIRST STANDALONE BUILD + LAUNCHER/DELIVERY (item 8).** Jake: *"look at what we did
   for shoota too… we can piggy back off that infra."* Done exactly that — the pipeline is Shoota's
   shape (`deploy/ship-release.sh`, `launcher/main.go`) cut down, because warband has no server.
@@ -553,15 +585,16 @@ revisit) · per-rank stat scaling.
   out. Shoota reached the same conclusion the hard way. No allowlist: any signed-in Discord account.
   **Verified:** signed out, `/launcher` 302s to Discord while `/releases/*` serves 200; signed in, the
   exe comes back byte-identical to the published one; tampered and expired cookies both rejected. Then
-  the real end-to-end — **the actual launcher pulled the actual 58 MB published build through the
-  actual site**, verified its hash, installed 157 MB, and failed only at `exec` (a Windows PE on
-  Linux: the correct failure, and it proves every step before it). And the shaders are not merely
-  registered — **all six are physically present in the shipped `Warband_Data`**, with StreamingAssets
-  (tuning.json, tuning.ranges.json, 10 fixtures) alongside them.
-  **Still Jake's:** `sudo bash deploy/setup-warband-site.sh` (releases dir + Caddy vhost) ·
-  `bash deploy/install-warband-site.sh` · and creating the Discord OAuth app, whose **redirect URI
-  must be exactly** `https://warband.inhouseboyz.com/auth/discord/callback`. The Discord round-trip is
-  the one path that cannot be tested without those credentials.
+  end-to-end — **the launcher pulled the real 58 MB build through the real site code**, verified its
+  hash, installed 157 MB, and failed only at `exec` (a Windows PE on Linux: the correct failure, and it
+  proves every step before it). And the shaders are not merely registered — **all six are physically
+  present in the shipped `Warband_Data`** (`Ring`, `GroundFill`, `Sigil`, `Glow`, `Particle`,
+  `Dissolve`), with StreamingAssets (tuning.json, tuning.ranges.json, 10 fixtures) alongside them.
+  **That verification ran against a STAGING dir, not the deployed one** — `/srv/warband-releases` did
+  not exist yet — so it proved the pipeline but published nothing a friend could reach. Closed below.
+  **Still Jake's:** creating the Discord OAuth app, whose **redirect URI must be exactly**
+  `https://warband.inhouseboyz.com/auth/discord/callback`. The Discord round-trip is the one path that
+  cannot be tested without those credentials.
 - **2026-07-26 — CONTENT VERSION STAMP (433 tests). The prerequisite for a server, not the server.**
   Jake asked whether we have a server and whether we'd want cloud storage for PvP; the answer is no
   server exists (**zero networking anywhere in the codebase** — the one grep hit was a cylinder named
