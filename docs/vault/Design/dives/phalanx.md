@@ -70,12 +70,12 @@ shield: the breaching ram · unmastered spice: Phalanx × musket — **the count
 r4 reach means his directional riposte answers even the archers in kind (all answer,
 no wall bulk).
 
-## Banner hooks
-- Formation banners (*"allies PLACED adjacent to an ally gain X"* — muster-snapshot per
+## Inscription hooks
+- Formation Inscriptions (*"allies PLACED adjacent to an ally gain X"* — muster-snapshot per
   ADR 0014) — his lifestyle; the placement-legible phalanx comp.
-- Anti-dive family (*"when an enemy Leaps: X"* — heroes.md's banner space) — Pikewall
-  is the payoff piece; pairs with the Leap-stun banner texture from Shade's dive.
-- Taunt banners (with Bulwark — the two Taunt owners make a lockdown comp).
+- Anti-dive family (*"when an enemy Leaps: X"*) — Pikewall is the payoff piece; pairs with
+  the Leap-stun Inscription texture from Shade's dive.
+- Taunt Inscriptions (with Bulwark — the two Taunt owners make a lockdown comp).
 
 ## Sim gaps this dive adds
 **Counter effect** (v1 vocabulary since day 1, first kit that needs it: instant free

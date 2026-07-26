@@ -1,0 +1,15 @@
+{
+    "asset": "7e5588e01138d8f4d812c22b4caf975a",
+    "fileName": "019f9b08-4566-7083-b969-8d329ac1f79f.wav",
+    "prompt": "military snare drum roll building with cloth banner flutter, rallying charge windup, short",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

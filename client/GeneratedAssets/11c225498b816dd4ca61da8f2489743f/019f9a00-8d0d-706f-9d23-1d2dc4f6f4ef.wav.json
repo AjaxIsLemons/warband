@@ -1,0 +1,15 @@
+{
+    "asset": "11c225498b816dd4ca61da8f2489743f",
+    "fileName": "019f9a00-8d0d-706f-9d23-1d2dc4f6f4ef.wav",
+    "prompt": "short magical spell cast whoosh, arcane shimmer, punchy fantasy game sting, no music",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

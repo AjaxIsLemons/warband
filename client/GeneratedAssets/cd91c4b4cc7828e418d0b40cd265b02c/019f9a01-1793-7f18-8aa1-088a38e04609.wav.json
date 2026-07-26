@@ -1,0 +1,15 @@
+{
+    "asset": "cd91c4b4cc7828e418d0b40cd265b02c",
+    "fileName": "019f9a01-1793-7f18-8aa1-088a38e04609.wav",
+    "prompt": "arrow whoosh flight and sharp thunk impact, short game sound",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 0.800000011920929,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

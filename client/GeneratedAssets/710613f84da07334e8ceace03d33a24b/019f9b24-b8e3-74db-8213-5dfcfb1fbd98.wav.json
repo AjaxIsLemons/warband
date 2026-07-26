@@ -1,0 +1,15 @@
+{
+    "asset": "710613f84da07334e8ceace03d33a24b",
+    "fileName": "019f9b24-b8e3-74db-8213-5dfcfb1fbd98.wav",
+    "prompt": "Seamless ambient loop for a cavernous timeless Tower management hall: extremely low stone room tone, distant controlled air through vertical ribs, sparse fine Sand grains moving inside mineral glass, nearly subliminal iron resonance. Dark, calm, mysterious, non-fatiguing, no voice, no footsteps, no melody, no rhythm, no synth pad, no dramatic swell, no combat sound, no obvious loop seam.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 8.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

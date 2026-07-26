@@ -1,0 +1,15 @@
+{
+    "asset": "c243e14c7b865214da221c77221c2513",
+    "fileName": "019f9b06-bd3d-7fb7-ba75-6de61310d4fb.wav",
+    "prompt": "low bronze war horn swell, rising anticipation, medieval, short windup riser, no melody, dark fantasy",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2999999523162842,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

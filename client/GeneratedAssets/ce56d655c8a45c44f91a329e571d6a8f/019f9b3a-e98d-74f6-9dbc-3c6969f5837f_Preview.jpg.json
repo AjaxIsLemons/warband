@@ -1,0 +1,12 @@
+{
+    "asset": "ce56d655c8a45c44f91a329e571d6a8f",
+    "fileName": "019f9b3a-e98d-74f6-9dbc-3c6969f5837f_Preview.jpg",
+    "prompt": "Seamless tileable blackened forged iron surface for restrained dark-fantasy architecture. Fine hammered grain, faint edge-independent wear flecks, cool graphite color. Uniform continuous field. No plate outline, no rivets, no emblem, no border, no slab, no symbols, no text, no directional lighting. Albedo texture only.",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 96726750,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

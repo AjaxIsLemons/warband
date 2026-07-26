@@ -22,7 +22,10 @@ public static class TuningIO
         Culture = CultureInfo.InvariantCulture,
         Formatting = Formatting.Indented,
         MissingMemberHandling = MissingMemberHandling.Error,        // catch typo'd/stale keys loudly
-        ObjectCreationHandling = ObjectCreationHandling.Replace,    // replace lists on reload, don't append
+        // NOTE: creation handling stays Auto (populate nested objects IN PLACE). A global Replace
+        // hands every group — camera, post, numbers, fields — a brand-new instance on each reload,
+        // which orphans any live reference to them (the DebugMenu's rows wrote into the dead copy)
+        // and breaks the partial-patch semantics documented above. Lists opt into Replace per-field.
         FloatFormatHandling = FloatFormatHandling.DefaultValue,
     };
 

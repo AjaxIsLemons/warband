@@ -111,28 +111,39 @@ The UI should use progressive disclosure:
 Exactly how many numbers appear on the default surface, and whether opening-target overlays
 are useful, are playtest questions. **Mechanical disclosure is not.**
 
-## Preview, prepare, deploy, play
+## Reveal, plan, play
 
-Every PvE fight follows four distinct commitments:
+Every PvE fight follows one planning commitment:
 
-1. **Preview:** inspect the encounter rule, enemy units, and exact enemy formation.
-2. **Prepare:** choose the active lineup from the owned roster and bench; freely re-equip
-   owned weapons and trinkets; use any available shop, forge, or paid respec service.
-3. **Deploy:** the build is locked; arrange the chosen lineup on the player's legal hexes.
-4. **Play:** positions lock and deterministic combat begins.
+1. **Encounter Reveal:** introduce the encounter rule, enemy units, and exact enemy formation.
+   This is information, not a locked screen; dismissing the brief enters the same battlefield
+   workspace.
+2. **Planning:** freely change the active lineup, bench, owned weapons and trinkets, and
+   formation in any order while the enemy remains visible and inspectable. Any available
+   shop, forge, or paid respec service may open contextually without hiding why the player is
+   making the change.
+3. **Play:** `BEGIN FIGHT` validates and locks the complete lineup, loadouts, and positions,
+   then deterministic combat begins.
+4. **Result:** present the outcome and return any permitted retry or continuation to Planning
+   with the last committed draft restored.
 
-Reconfiguration happens before the combat/deployment screen, not inside it. The preview
-therefore must remain accessible during preparation so the player can build against what
-they saw. Deployment is a focused spatial decision rather than an inventory-management
-screen.
+Lineup, loadout, and formation are not separate commitments. They are interdependent answers
+to the same encounter problem: moving a hero may reveal that their weapon is wrong, and a new
+weapon may demand another formation change. Contextual selection and valid-target highlights
+keep those edits readable without a Prepare/Deploy gate.
 
 Positioning, active/bench selection, and re-equipping owned gear cost no currency. Buying,
 selling, forging, and respec use their run-layer services and costs. Rank and specialization
-choices are sticky by default; respec, if offered, belongs to preparation through an explicit
+choices are sticky by default; respec, if offered, belongs to Planning through an explicit
 service rather than being a free deployment action.
 
 The first playable may expose free respec as clearly labeled testing scaffolding. That does
 not change the intended commitment law.
+
+The accepted scalable interaction expression—last-formation persistence, a data-driven
+reserve bench initially tuned to two slots and presented through a collapsible Muster Drawer,
+simultaneous roster/loadout/formation edits, atomic field/bench swaps, click-and-drag parity,
+undo, validation, and implementation seams—lives in `Design/preparation-and-deployment.md`.
 
 ## Bosses obey the shared combat rules
 
@@ -237,9 +248,93 @@ and placement decisions:
 Exact Enrage stats are tuning values. Start with the smallest readable expression—likely
 Haste, with Attack or Mana added only if Haste alone does not create the promised moment.
 
+### Playable proof status — 2026-07-24
+
+The first test expression is live as **The Last Oath**:
+
+- Oathbound Bulwark in front and Oathbound Sharpshot behind; both positions and roles are
+  visible before deployment.
+- Bond grants the survivor permanent **+100% Attack Speed**. This is deliberately strong,
+  simple, and provisional—not a balance commitment.
+- The death and Haste application share a replay tick; a gold/orange burst, body flash, and
+  persistent Haste pip make the survivor's change visible.
+- The proof party is Bulwark, Pyromancer, and Sharpshot. The player may reposition them only
+  within the three blue deployment rows, then locks the lineup for deterministic autobattle.
+- The prototype omits the full Planning workspace because there is not yet any run inventory
+  to reconfigure. The full-run law is Encounter Reveal → Planning → Play → Result.
+
+The immediate playtest question is not “is +100% the right number?” It is whether choosing which
+partner survives creates a legible placement/build problem at all. Tune or deepen Enrage only
+after answering that.
+
 An anchorless linked swarm such as the proposed **Dying Procession** is a possible later
 extrapolation of this bond. It is not committed first-slice content. Earn that scope by
 playing the pair first.
+
+## The shipped role grammar (2026-07-25, ADR 0023)
+
+The "minimum enemy-role grammar" open question below is now answered in code
+(`sim/Warband.Content/Enemies.cs`). Enemies are **authored UnitDefs, not composed hero kits**: a
+monster has no chassis, rank, weapon or spec tree, just a stat block, a role behavior, and at most
+one disclosed rule.
+
+| Role | Unit | Behavior that defines it | Poses |
+|---|---|---|---|
+| Swarm | Hourling | fastest body on the board, no signature | more bodies than you have answers |
+| Anchor | Ashen Colossus | slowest body on the board | a wall you cannot burst |
+| Artillery | Sanddrift Gunner | acquires **farthest**, holds standoff | it shoots past your front line |
+| Ritualist | Hour-Scribe | rooted, never attacks, time-fed mana | a clock that beats you if ignored |
+| Diver | Gloamstalker | opening Leap, acquires **farthest** | it is already in your backline |
+
+Four node encounters compose them: **The Gnawing Hour** (SWARM), **The Long Range** (WARD, act 2+),
+**The Ninth Bell** (RITUAL), **The Drop** (AMBUSH).
+
+**Composition is the act's lever, stats are secondary** (ADR 0016). Factories size themselves by act
+— the Gnawing Hour is 5 bodies at act 1 and 10 at act 3, the Ninth Bell teaches its ritual before
+putting a wall in front of it — and an act's pool is its identity.
+
+### Measure encounters, do not guess them
+
+`make -C . ` → `dotnet run --project sim/Warband.Sweep -- --enc` reports, per encounter per act:
+win% for the best and worst formation, **the spread between them**, whether the authored rule
+actually fired, and how the naive bot line fares across whole runs.
+
+**The bar is the spread, not the win rate.** An encounter every formation wins is free; an
+encounter where where-you-stood changed the answer is doing its job. The probe's first run caught
+three of four encounters posing nothing and the Ninth Bell's ritual never firing at all — its
+countdown was longer than a fight lasts. Author against it.
+
+## The shipped act bosses (2026-07-26, ADR 0024)
+
+The "first-slice boss mechanic" open question below is now answered in code. `Catalog.Boss` no
+longer returns the act-scaled Last Oath for every act; each act closes on its own exam.
+
+| act | boss | pressure | what it examines |
+|---|---|---|---|
+| 1 | **The Last Oath** (`BOND`) | which threat you leave enraged | how you distribute damage |
+| 2 | **The Ashfall Battery** (`BATTERY`) | reach the gun behind the wall | reach, and whether you can afford to stand together |
+| 3 | **The Waning Crown** (`WANING`) | every death in its court rings the bell | whether you can stop clearing and commit |
+
+Act 1 keeps the bonded pair on purpose: it is the only boss whose decision has been measured
+(`Projects/oath-probe-2026-07-25.md`), and the law above says to earn further bonded scope by
+playing the pair first.
+
+Both new bosses are Rooted, never attack, and run a clock the player reads off a mana bar — the
+Hour-Scribe's grammar, examined rather than taught. Both keep the four disclosed answers
+(out-damage · reach · Silence · Stun), and Silence genuinely stops the clock because mana gain is
+gated on it.
+
+### Measure bosses against a harder bar than node encounters
+
+`dotnet run --project sim/Warband.Sweep -- --boss` adds one question `--enc` does not ask: **how
+many kinds of strength can pass this?** It re-runs each boss against four different parties
+(balanced / reach / control / damage). A boss only one axis clears is prescribing a build, which
+this page forbids; a boss none clear is a stat wall. Report:
+`Projects/boss-probe-2026-07-26.md`.
+
+The probe earned its keep immediately: the act-2 boss as first authored posed **nothing** — three of
+four axes cleared it 100% from every formation, because at a 14-second bell the gun fired roughly
+once before the wall fell. The bell and the shell were re-authored against the measurement.
 
 ## Authoring test
 
@@ -258,5 +353,12 @@ Before an encounter earns the label **boss**, its design must answer:
 - Default preview density and whether to show opening-target overlays.
 - Special boss-state interactions not covered above.
 - Bonded-pair composition and minimum readable Enrage.
-- First-slice boss mechanic and minimum enemy-role grammar, after the bond is played.
+- ~~First-slice **boss** mechanic.~~ **ANSWERED 2026-07-26 (ADR 0024)** — three act bosses, see above.
+- ~~**Client disclosure UI.**~~ **BUILT 2026-07-26 (ADR 0024).** Every fight now discloses its name,
+  pressure and rule from `PreviewBrief`, and each previewed body carries its role, its real
+  post-scaling numbers and a behavior sentence covering its targeting rule. Still open: a *deep*
+  enemy inspector (full signature/passive text the way Muster cards do for heroes), and bespoke
+  enemy art — cards currently show initials, because the chassis portrait is a named champion's
+  face and a hero's face on a monster is the same lie the card titles used to tell.
+- Muster Drawer discoverability, initial two-reserve capacity, and combined-Planning clarity.
 - Which encounter forms justify new simulation machinery such as non-wall spawning.

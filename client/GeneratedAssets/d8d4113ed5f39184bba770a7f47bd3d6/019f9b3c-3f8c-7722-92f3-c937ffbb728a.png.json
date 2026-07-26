@@ -1,0 +1,31 @@
+{
+    "asset": "d8d4113ed5f39184bba770a7f47bd3d6",
+    "fileName": "019f9b3c-3f8c-7722-92f3-c937ffbb728a.png",
+    "prompt": "One tiny abstract station-selection notch sprite on transparent background: a simple shallow downward chevron bracket made of two short ivory-gold beveled strokes, geometric and symmetrical, suitable as a 24 pixel UI marker. Not an icon, not a hammer, not a tool, not a weapon, no circle, no text, no glow cloud, no border, crisp alpha, centered with generous transparent padding.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

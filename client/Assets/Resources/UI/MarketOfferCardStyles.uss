@@ -1,0 +1,581 @@
+/* Dedicated Market offer grammar.
+   The commerce dock participates in flex layout and may never be covered by card content. */
+
+.market-offer-card {
+    position: relative;
+    width: 252px;
+    min-width: 252px;
+    height: 528px;
+    min-height: 528px;
+    margin-left: 6px;
+    margin-right: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    overflow: hidden;
+    color: var(--lh-bone);
+    background-color: rgba(12, 19, 29, 0.985);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 4px;
+    border-left-color: rgba(64, 83, 107, 0.92);
+    border-right-color: rgba(64, 83, 107, 0.92);
+    border-top-color: rgba(64, 83, 107, 0.92);
+    border-bottom-color: rgba(64, 83, 107, 0.98);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+    transition-property: background-color, border-color;
+    transition-duration: 0.09s;
+}
+
+.market-offer-card:hover {
+    background-color: rgba(21, 33, 49, 0.995);
+    border-left-color: rgba(104, 165, 231, 0.92);
+    border-right-color: rgba(104, 165, 231, 0.92);
+    border-top-color: rgba(104, 165, 231, 0.92);
+    border-bottom-color: rgba(104, 165, 231, 0.92);
+}
+
+.market-offer-card:focus {
+    background-color: rgba(23, 38, 57, 0.995);
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+}
+
+.market-offer-card__selected-rail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    opacity: 0;
+    background-color: var(--lh-blue);
+}
+
+.market-offer-card__main {
+    min-height: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.market-offer-card__identity {
+    flex-shrink: 0;
+    padding-left: 13px;
+    padding-right: 13px;
+    padding-top: 11px;
+}
+
+.market-offer-card__classification {
+    min-height: 16px;
+    color: rgb(144, 170, 203);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.market-offer-card__title {
+    height: 52px;
+    min-height: 52px;
+    margin-top: 2px;
+    color: rgb(239, 243, 248);
+    font-size: 22px;
+    -unity-font-style: bold;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.market-offer-card__art {
+    position: relative;
+    height: 116px;
+    min-height: 116px;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(6, 10, 16, 0.78);
+    -unity-background-scale-mode: scale-and-crop;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(83, 103, 133, 0.54);
+    border-right-color: rgba(83, 103, 133, 0.54);
+    border-top-color: rgba(83, 103, 133, 0.54);
+    border-bottom-color: rgba(83, 103, 133, 0.54);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.market-offer-card__art-vector,
+.market-offer-artwork {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.market-offer-card__art-fallback {
+    color: rgba(225, 232, 240, 0.92);
+    font-size: 32px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    -unity-text-align: middle-center;
+}
+
+.market-offer-card__qualifier {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    min-height: 26px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 4px;
+    color: rgb(252, 219, 145);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+    background-color: rgba(74, 48, 20, 0.94);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.86);
+    border-right-color: rgba(217, 164, 58, 0.86);
+    border-top-color: rgba(217, 164, 58, 0.86);
+    border-bottom-color: rgba(217, 164, 58, 0.86);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.market-offer-card__read {
+    min-height: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-left: 13px;
+    padding-right: 13px;
+    padding-top: 9px;
+    padding-bottom: 10px;
+}
+
+.market-offer-card__metrics {
+    height: 54px;
+    min-height: 54px;
+    flex-shrink: 0;
+    flex-direction: row;
+}
+
+.market-offer-metric {
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 3px;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(24, 35, 50, 0.96);
+    border-top-width: 2px;
+    border-top-color: rgba(100, 125, 158, 0.68);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.market-offer-metric__label {
+    color: rgb(145, 161, 183);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 0.45px;
+    white-space: nowrap;
+    -unity-text-align: middle-center;
+}
+
+.market-offer-metric__value {
+    margin-top: 2px;
+    color: rgb(236, 241, 247);
+    font-size: 16px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    -unity-text-align: middle-center;
+}
+
+.market-offer-metric--hp { border-top-color: rgb(202, 86, 86); }
+.market-offer-metric--attack { border-top-color: rgb(228, 135, 82); }
+.market-offer-metric--heal,
+.market-offer-metric--good { border-top-color: rgb(101, 201, 154); }
+.market-offer-metric--reach { border-top-color: rgb(104, 165, 231); }
+.market-offer-metric--speed { border-top-color: rgb(156, 126, 218); }
+.market-offer-metric--warn,
+.market-offer-metric--term { border-top-color: rgb(217, 164, 58); }
+.market-offer-metric--bad { border-top-color: rgb(180, 76, 67); }
+.market-offer-metric--good .market-offer-metric__value { color: rgb(129, 221, 177); }
+.market-offer-metric--warn .market-offer-metric__value { color: rgb(248, 211, 139); }
+.market-offer-metric--bad .market-offer-metric__value { color: rgb(224, 119, 108); }
+
+.market-offer-card__rule {
+    min-height: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-top: 8px;
+    padding-left: 11px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    overflow: hidden;
+    background-color: rgba(8, 13, 21, 0.80);
+    border-left-width: 3px;
+    border-left-color: rgba(104, 165, 231, 0.82);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.market-offer-card__rule-label {
+    flex-shrink: 0;
+    color: rgb(136, 180, 231);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 0.9px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.market-offer-card__rule-name {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: rgb(237, 241, 247);
+    font-size: 14px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.market-offer-card__rule-copy {
+    min-height: 0;
+    margin-top: 4px;
+    color: rgb(190, 202, 219);
+    font-size: 16px;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.market-offer-card__commerce {
+    height: 54px;
+    min-height: 54px;
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 13px;
+    padding-right: 13px;
+    background-color: rgba(6, 10, 16, 0.98);
+    border-top-width: 1px;
+    border-top-color: rgba(83, 103, 133, 0.62);
+}
+
+.market-offer-card__commerce-state {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.market-offer-card__held,
+.market-offer-card__economy-state {
+    color: rgb(145, 161, 183);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.market-offer-card__held {
+    color: rgb(248, 211, 139);
+}
+
+.market-offer-card__price {
+    margin-left: 8px;
+    color: var(--lh-sand);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.market-offer-card__selection {
+    position: absolute;
+    right: 9px;
+    top: 9px;
+    min-height: 24px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 4px;
+    opacity: 0;
+    background-color: var(--lh-blue);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.market-offer-card__selection-label {
+    color: rgb(5, 11, 18);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
+.market-offer-card--selected {
+    background-color: rgba(22, 42, 64, 0.995);
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+}
+
+.market-offer-card--rankup {
+    border-top-width: 4px;
+    border-top-color: rgb(217, 164, 58);
+}
+
+.market-offer-card--rankup .market-offer-card__classification,
+.market-offer-card--rankup .market-offer-card__rule-label {
+    color: rgb(248, 211, 139);
+}
+
+.market-offer-card--rankup .market-offer-card__art {
+    border-bottom-color: rgba(217, 164, 58, 0.62);
+}
+
+.market-offer-card--selected .market-offer-card__selected-rail,
+.market-offer-card--selected .market-offer-card__selection {
+    opacity: 1;
+}
+
+.market-offer-card--frozen {
+    border-bottom-color: var(--lh-sand);
+    background-color: rgba(37, 30, 20, 0.99);
+}
+
+.market-offer-card--frozen .market-offer-card__commerce {
+    background-color: rgba(39, 28, 15, 0.99);
+    border-top-color: rgba(217, 164, 58, 0.72);
+}
+
+.market-offer-card--unaffordable {
+    border-bottom-color: rgba(180, 76, 67, 0.88);
+}
+
+.market-offer-card--unaffordable .market-offer-card__economy-state,
+.market-offer-card--unaffordable .market-offer-card__price {
+    color: rgb(224, 119, 108);
+}
+
+.market-offer-card--sold {
+    opacity: 0.56;
+    background-color: rgba(12, 16, 22, 0.96);
+    border-bottom-color: rgba(83, 103, 133, 0.60);
+}
+
+.market-offer-card--sold .market-offer-card__title,
+.market-offer-card--sold .market-offer-card__classification {
+    color: rgb(132, 145, 162);
+}
+
+.market-offer-card--inscription .market-offer-card__rule,
+.market-offer-card--capacity .market-offer-card__rule {
+    border-left-color: var(--lh-sand);
+    background-color: rgba(39, 28, 15, 0.82);
+}
+
+.market-offer-card--inscription .market-offer-card__rule-label,
+.market-offer-card--capacity .market-offer-card__rule-label {
+    color: rgb(248, 211, 139);
+}
+
+.accent--mending.market-offer-card { border-top-color: rgb(78, 194, 135); }
+.accent--ward.market-offer-card { border-top-color: rgb(92, 151, 229); }
+.accent--precision.market-offer-card { border-top-color: rgb(177, 114, 222); }
+.accent--power.market-offer-card { border-top-color: rgb(229, 129, 91); }
+.accent--affliction.market-offer-card { border-top-color: rgb(237, 111, 67); }
+.accent--tempo.market-offer-card { border-top-color: rgb(226, 93, 102); }
+.accent--reaction.market-offer-card { border-top-color: rgb(88, 177, 189); }
+.accent--utility.market-offer-card { border-top-color: rgb(213, 168, 74); }
+
+/* The Market owns one horizontal rail. Other station card geometry is untouched. */
+.hub--market #primary-grid {
+    width: 100%;
+    min-width: 100%;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.hub--market .hub-collection__scroll {
+    min-height: 0;
+}
+
+.market-offer-page {
+    align-self: flex-end;
+    min-height: 20px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    color: rgb(145, 161, 183);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.layout--compact .hub--market #primary-grid {
+    justify-content: flex-start;
+    padding-left: 8px;
+    padding-right: 22px;
+}
+
+.layout--compact .market-offer-card {
+    width: 248px;
+    min-width: 248px;
+}
+
+/* Landscape phone is a horizontal card, not a shrunken desktop card. */
+.layout--phone .hub--market #primary-grid {
+    justify-content: flex-start;
+    padding-left: 8px;
+    padding-right: 72px;
+}
+
+.layout--phone .market-offer-page {
+    align-self: flex-start;
+    margin-left: 12px;
+    margin-bottom: 3px;
+    color: rgb(184, 198, 217);
+    font-size: 12px;
+}
+
+.layout--phone .market-offer-card {
+    width: 520px;
+    min-width: 520px;
+    height: 244px;
+    min-height: 244px;
+    margin-left: 4px;
+    margin-right: 10px;
+    margin-bottom: 4px;
+}
+
+.layout--phone .market-offer-card__main {
+    flex-direction: row;
+}
+
+.layout--phone .market-offer-card__identity {
+    width: 166px;
+    min-width: 166px;
+    padding-left: 10px;
+    padding-right: 8px;
+    padding-top: 8px;
+}
+
+.layout--phone .market-offer-card__classification {
+    min-height: 15px;
+    font-size: 12px;
+    letter-spacing: 0.7px;
+}
+
+.layout--phone .market-offer-card__title {
+    height: 42px;
+    min-height: 42px;
+    font-size: 18px;
+}
+
+.layout--phone .market-offer-card__art {
+    height: 78px;
+    min-height: 78px;
+}
+
+.layout--phone .market-offer-card__art-fallback {
+    font-size: 25px;
+}
+
+.layout--phone .market-offer-card__qualifier {
+    right: 5px;
+    top: 5px;
+    min-height: 22px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 3px;
+    font-size: 10px;
+}
+
+.layout--phone .market-offer-card__read {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+}
+
+.layout--phone .market-offer-card__metrics {
+    height: 42px;
+    min-height: 42px;
+}
+
+.layout--phone .market-offer-metric__label {
+    font-size: 10px;
+}
+
+.layout--phone .market-offer-metric__value {
+    margin-top: 0;
+    font-size: 14px;
+}
+
+.layout--phone .market-offer-card__rule {
+    margin-top: 5px;
+    padding-left: 8px;
+    padding-right: 7px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.layout--phone .market-offer-card__rule-label {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.layout--phone .market-offer-card__rule-name {
+    margin-top: 0;
+    font-size: 13px;
+}
+
+.layout--phone .market-offer-card__rule-copy {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.layout--phone .market-offer-card__commerce {
+    height: 50px;
+    min-height: 50px;
+    padding-left: 11px;
+    padding-right: 11px;
+}
+
+.layout--phone .market-offer-card__held,
+.layout--phone .market-offer-card__economy-state {
+    font-size: 11px;
+}
+
+.layout--phone .market-offer-card__price {
+    font-size: 17px;
+}
+
+.layout--phone .market-offer-card__selection {
+    display: none;
+}
+
+.motion--reduced .market-offer-card {
+    transition-duration: 0.08s;
+}

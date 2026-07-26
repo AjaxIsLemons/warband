@@ -1,0 +1,23 @@
+{
+    "asset": "5b10251f3669b5b4b971adb8e2534871",
+    "fileName": "019f9b33-6852-7fcb-b91a-0a6e81ce1d60.fbx",
+    "prompt": "Turn the transparent concept into a game-ready 3D Hourstone: a single thick hourglass-like amber crystal with restrained blackened-iron upper and lower clamps fused into the silhouette. Watertight unified mesh, broad faceted surfaces, low-to-mid poly, clean mobile-friendly Unity URP prop, readable at UI background distance. No base, floor, text, symbols, detached fragments, or environment.",
+    "negativePrompt": "",
+    "model": "model3d-tripo3-1",
+    "modelName": "Tripo 3.1",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "promptImageReferenceGuid": "d36270152b29d344d8e23dd544a1204f",
+    "modelReferenceGuid": "",
+    "multiviewFrontGuid": "",
+    "multiviewBackGuid": "",
+    "multiviewLeftGuid": "",
+    "multiviewRightGuid": "",
+    "multiviewTopGuid": "",
+    "multiviewBottomGuid": "",
+    "multiviewLeftFrontGuid": "",
+    "multiviewRightFrontGuid": "",
+    "faceLimit": -1
+}

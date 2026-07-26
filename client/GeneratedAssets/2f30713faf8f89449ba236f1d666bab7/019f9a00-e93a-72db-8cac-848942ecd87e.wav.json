@@ -1,0 +1,15 @@
+{
+    "asset": "2f30713faf8f89449ba236f1d666bab7",
+    "fileName": "019f9a00-e93a-72db-8cac-848942ecd87e.wav",
+    "prompt": "sword striking metal armor, short metallic impact thud, game hit sound",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 0.800000011920929,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

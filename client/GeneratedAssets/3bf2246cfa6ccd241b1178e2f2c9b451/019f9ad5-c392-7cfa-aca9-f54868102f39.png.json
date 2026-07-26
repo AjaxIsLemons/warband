@@ -1,0 +1,31 @@
+{
+    "asset": "3bf2246cfa6ccd241b1178e2f2c9b451",
+    "fileName": "019f9ad5-c392-7cfa-aca9-f54868102f39.png",
+    "prompt": "circular arcane sigil, collapsing stellar orbit diagram with spiraling star paths falling into a dense core, engraved woodcut linework, white lines on pure black background, radially symmetric mandala composition, single centered emblem, high contrast, no text, no letters",
+    "negativePrompt": "",
+    "model": "flux-2-dev",
+    "modelName": "Flux 2 (Dev)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 512,
+        "height": 512
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

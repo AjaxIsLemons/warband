@@ -1,0 +1,12 @@
+{
+    "asset": "737dde8c92ccaf145be75c32b2a91dd2",
+    "fileName": "019f9b16-b178-7485-8965-eb6e82bda253_Preview.png",
+    "prompt": "Seamless tileable PBR-emissive material for living temporal Sand trapped inside a mineral Hourstone: dark amber mineral body with dense fine golden grains, subtle internal directional flow, warm controlled emission, high-value highlights but no white clipping, no stars, no flames, no lava cracks, no symbols, no text. Scale-neutral and readable in a dark game hall. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gemini-3.1-flash-texture",
+    "modelName": "Gemini 3.1 Nano Banana 2",
+    "customSeed": 296939773,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

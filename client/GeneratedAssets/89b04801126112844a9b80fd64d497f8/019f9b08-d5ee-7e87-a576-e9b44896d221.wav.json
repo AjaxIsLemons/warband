@@ -1,0 +1,15 @@
+{
+    "asset": "89b04801126112844a9b80fd64d497f8",
+    "fileName": "019f9b08-d5ee-7e87-a576-e9b44896d221.wav",
+    "prompt": "deep imploding hum, air being sucked inward toward a point, gravity collapse windup before an explosion, short",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

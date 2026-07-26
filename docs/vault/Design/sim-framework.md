@@ -2,10 +2,10 @@
 
 Synthesis of: circuit engine teardown (deployed, 58k-fight-proven), SabberStone (HS sim),
 Slay the Spire's action queue, Super Auto Pets ordering rules, Riot determinism series,
-plus warband's own requirements (glyph fields, reaction triggers, banners). ADR 0004.
+plus warband's own requirements (glyph fields, reaction triggers, Inscriptions). ADR 0004.
 
 ## 1. The content atom
-Everything — hero passives, fork riders, banners, item effects, glyph rules, reaction
+Everything — hero passives, fork riders, Inscriptions, item effects, glyph rules, reaction
 tech — compiles to one shape:
 
     Trigger { On: EventKind, When: Cond[], Do: Effect[] }
@@ -49,7 +49,7 @@ allegiance }. Glyphs are static fields; **auras are fields attached to a moving 
 (Banneret = radius-1 field). Unified mechanism:
 - **Per-tick deterministic sweep** (id-ordered): pulse rules (DoT, heal), stat rules
   ("Haste while standing on") feed the read-time stat system, entry/exit emits
-  `FieldEntered`/`FieldLeft` events for triggers.
+`FieldEntered`/`FieldLeft` events for triggers.
 - Polling is CORRECT at our scale (≤12 units, ≤48 hexes/side, ≤ a dozen fields):
   SabberStone abandoned polling because of thousands of tag-checks; we don't have that
   problem, and the sweep is trivially deterministic. Don't build event-driven aura
@@ -79,8 +79,8 @@ verbatim in spirit: **fold the log like a client and compare to sim state every 
 ## 6. Metrics & data (first-class, Jake's requirement)
 The sim emits ONLY the event log; every stat is a fold over it. Attribution honesty is
 a sim responsibility: every damage/heal/status event carries `Source`, `Cause`
-(Attack/Ability/DoT/Field/Storm) and `RootSource` (the trigger chain's origin — so a
-banner that started a cascade gets the credit).
+(Attack/Ability/DoT/Field/Storm) and `RootSource` (the trigger chain's origin — so an
+Inscription that started a cascade gets the credit).
 - **FightStats fold (shared library** — used by tests, harness, later the AAR screen):
   per-unit damage by cause, tanked (hp vs shield), healing, disruption seconds
   (stun/silence/disarm/root uptime), casts + first-cast tick, kills/deaths,

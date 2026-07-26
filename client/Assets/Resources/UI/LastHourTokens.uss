@@ -1,0 +1,331 @@
+/* Last Hour instrument: semantic theme tokens and reusable interaction states.
+   Loaded after screen styles so this file owns the cohesive material language. */
+
+.management-screen,
+.result-gate {
+    --lh-ink: rgb(7, 11, 17);
+    --lh-obsidian: rgb(13, 20, 30);
+    --lh-slate: rgb(22, 33, 49);
+    --lh-iron: rgb(64, 83, 107);
+    --lh-ash: rgb(140, 154, 175);
+    --lh-bone: rgb(236, 232, 223);
+    --lh-sand: rgb(217, 164, 58);
+    --lh-blue: rgb(104, 165, 231);
+    --lh-green: rgb(101, 201, 154);
+    --lh-blood: rgb(180, 76, 67);
+}
+
+.ui-fx-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.hub {
+    background-color: rgba(7, 11, 17, 0);
+    color: var(--lh-bone);
+}
+
+.hub-overview {
+    background-color: rgba(7, 11, 17, 0.10);
+}
+
+.hub-workspace {
+    background-color: rgba(7, 11, 17, 0.92);
+}
+
+.hub-topbar,
+.hub-workspace__header,
+.hub-workspace__footer {
+    background-color: rgba(10, 15, 23, 0.985);
+    border-left-color: rgba(64, 83, 107, 0.72);
+    border-right-color: rgba(64, 83, 107, 0.72);
+    border-top-color: rgba(64, 83, 107, 0.72);
+    border-bottom-color: rgba(64, 83, 107, 0.72);
+}
+
+.hub-table {
+    background-color: rgba(13, 20, 30, 0.07);
+    border-left-color: rgba(64, 83, 107, 0.18);
+    border-right-color: rgba(64, 83, 107, 0.18);
+    border-top-color: rgba(64, 83, 107, 0.18);
+    border-bottom-color: rgba(64, 83, 107, 0.18);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+.hub-table__grain {
+    border-left-color: rgba(217, 164, 58, 0.28);
+    border-right-color: rgba(217, 164, 58, 0.28);
+    border-top-color: rgba(217, 164, 58, 0.28);
+    border-bottom-color: rgba(217, 164, 58, 0.28);
+}
+
+.hub-table__ring {
+    border-left-color: rgba(217, 164, 58, 0.28);
+    border-right-color: rgba(217, 164, 58, 0.28);
+    border-top-color: rgba(217, 164, 58, 0.28);
+    border-bottom-color: rgba(217, 164, 58, 0.28);
+}
+
+.hub-table__axis {
+    background-color: rgba(104, 165, 231, 0.13);
+}
+
+.hub-station {
+    color: var(--lh-bone);
+    background-color: rgba(13, 21, 32, 0.86);
+    border-left-color: rgba(64, 83, 107, 0.94);
+    border-right-color: rgba(64, 83, 107, 0.94);
+    border-top-color: rgba(64, 83, 107, 0.94);
+    border-bottom-color: rgba(64, 83, 107, 0.94);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.hub-station:hover {
+    background-color: rgba(29, 43, 61, 0.94);
+    border-left-color: rgba(104, 165, 231, 0.82);
+    border-right-color: rgba(104, 165, 231, 0.82);
+    border-top-color: rgba(104, 165, 231, 0.82);
+    border-bottom-color: rgba(104, 165, 231, 0.82);
+}
+
+.hub-station:focus {
+    background-color: rgba(29, 43, 61, 0.94);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+}
+
+.hub-station--recommended {
+    background-color: rgba(49, 39, 23, 0.90);
+    border-left-color: var(--lh-sand);
+    border-right-color: var(--lh-sand);
+    border-top-color: var(--lh-sand);
+    border-bottom-color: var(--lh-sand);
+}
+
+.hub-station--recommended .hub-station__attention,
+.hub-station--attention .hub-station__sigil,
+.hub-station--attention .hub-station__sigil-vector {
+    color: var(--lh-sand);
+}
+
+.hub-station__sigil-vector {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
+    margin-right: 14px;
+    color: var(--lh-blue);
+    background-color: rgba(7, 11, 17, 0.76);
+    border-top-left-radius: 100px;
+    border-top-right-radius: 100px;
+    border-bottom-left-radius: 100px;
+    border-bottom-right-radius: 100px;
+}
+
+.hub-station__sigil-vector--hourstone {
+    width: 84px;
+    height: 84px;
+    min-width: 84px;
+    min-height: 84px;
+    margin-right: 0;
+    margin-bottom: 7px;
+    color: var(--lh-sand);
+}
+
+.hub-station--recommended .hub-station__sigil-vector,
+.hub-station__sigil-vector--breach {
+    color: var(--lh-sand);
+}
+
+.hub-anchor:focus,
+.btn:focus,
+.management-choice:focus {
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+    background-color: rgba(29, 43, 61, 0.995);
+}
+
+.hub-anchor {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.hub-anchor .hub-station__sigil-vector {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    margin-right: 8px;
+    margin-bottom: 0;
+    color: var(--lh-ash);
+    background-color: rgba(7, 11, 17, 0.34);
+}
+
+.hub-anchor--active .hub-station__sigil-vector,
+.hub-anchor--attention .hub-station__sigil-vector {
+    color: var(--lh-sand);
+}
+
+.hub-anchor__label {
+    color: var(--lh-ash);
+    font-size: 13px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.hub-anchor--active .hub-anchor__label,
+.hub-anchor--attention .hub-anchor__label {
+    color: var(--lh-sand);
+}
+
+.wb-card {
+    background-color: rgba(18, 28, 42, 0.99);
+    border-left-color: rgba(64, 83, 107, 0.88);
+    border-right-color: rgba(64, 83, 107, 0.88);
+    border-top-color: rgba(64, 83, 107, 0.88);
+    border-bottom-color: rgba(64, 83, 107, 0.88);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.wb-card:hover {
+    background-color: rgba(26, 39, 57, 0.995);
+    border-left-color: rgba(104, 165, 231, 0.9);
+    border-right-color: rgba(104, 165, 231, 0.9);
+    border-top-color: rgba(104, 165, 231, 0.9);
+    border-bottom-color: rgba(104, 165, 231, 0.9);
+}
+
+.wb-card:focus {
+    background-color: rgba(26, 39, 57, 0.995);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+}
+
+.wb-card--selected {
+    background-color: rgba(28, 54, 82, 0.995);
+    border-left-color: var(--lh-blue);
+    border-right-color: var(--lh-blue);
+    border-top-color: var(--lh-blue);
+    border-bottom-color: var(--lh-blue);
+}
+
+.wb-card--selected .wb-card__selection {
+    background-color: var(--lh-blue);
+}
+
+.management-resource__value--sand,
+.hub-ledger__value,
+.hub-recommendation__value {
+    color: var(--lh-sand);
+}
+
+.ui-feedback--sand {
+    background-color: rgba(217, 164, 58, 0.22);
+    border-left-color: var(--lh-sand);
+    border-right-color: var(--lh-sand);
+    border-top-color: var(--lh-sand);
+    border-bottom-color: var(--lh-sand);
+}
+
+.ui-feedback--positive {
+    background-color: rgba(101, 201, 154, 0.18);
+    border-left-color: var(--lh-green);
+    border-right-color: var(--lh-green);
+    border-top-color: var(--lh-green);
+    border-bottom-color: var(--lh-green);
+}
+
+.ui-feedback--negative {
+    background-color: rgba(180, 76, 67, 0.2);
+    border-left-color: var(--lh-blood);
+    border-right-color: var(--lh-blood);
+    border-top-color: var(--lh-blood);
+    border-bottom-color: var(--lh-blood);
+}
+
+.motion--reduced .hub-station,
+.motion--reduced .wb-card,
+.motion--reduced .hub-anchor,
+.motion--reduced .btn,
+.motion--reduced .management-choice {
+    transition-duration: 0.08s;
+    translate: 0 0;
+    scale: 1 1;
+}
+
+/* UI Toolkit's default runtime scrollers are bright desktop chrome. Keep the full affordance,
+   including arrow buttons, but make it part of the cold-iron instrument. */
+.hub .unity-scroller {
+    background-color: rgba(7, 11, 17, 0.96);
+}
+
+.hub .unity-scroll-view__vertical-scroller,
+.hub .unity-scroller--vertical {
+    width: 16px;
+}
+
+.hub .unity-scroll-view__horizontal-scroller,
+.hub .unity-scroller--horizontal {
+    height: 16px;
+}
+
+.hub .unity-scroller__low-button,
+.hub .unity-scroller__high-button {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    background-color: var(--lh-slate);
+    -unity-background-image-tint-color: var(--lh-ash);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.hub .unity-base-slider__tracker {
+    background-color: rgba(64, 83, 107, 0.26);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.hub .unity-base-slider__dragger {
+    background-color: rgba(104, 165, 231, 0.58);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}

@@ -1,0 +1,15 @@
+{
+    "asset": "3a1b8f6dc797ada4786cf7fce4556ac7",
+    "fileName": "019f9a01-4055-7e5e-8d57-c29ebfa387a3.wav",
+    "prompt": "heavy critical strike, deep punchy slam with bright metallic ring accent, dramatic game hit",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

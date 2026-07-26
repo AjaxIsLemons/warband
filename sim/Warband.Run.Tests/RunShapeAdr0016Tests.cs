@@ -30,6 +30,11 @@ namespace Warband.Run.Tests
                 return _inner.Boss(act, rng);
             }
 
+            public EncounterBrief EncounterBrief(int act, int nodeIndex, FightTier tier, Rng rng) =>
+                _inner.EncounterBrief(act, nodeIndex, tier, rng);
+
+            public EncounterBrief BossBrief(int act, Rng rng) => _inner.BossBrief(act, rng);
+
             public ChassisDef Chassis(string id) => _inner.Chassis(id);
             public WeaponDef Weapon(string id) => _inner.Weapon(id);
             public TrinketDef Trinket(string id) => _inner.Trinket(id);
@@ -95,21 +100,39 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
-        public void CatalogBossIsTheAuthoredEncounterScaledByAct()
+        public void CatalogBossIsTheActsOwnAuthoredEncounter()
         {
             var cat = new Catalog();
+
+            // Act 1 is still The Last Oath's bonded pair, by identity — not random kits-as-monsters,
+            // and deliberately unchanged because it is the only boss whose decision has been
+            // measured (oath-probe-2026-07-25).
             var act1 = cat.Boss(1, new Rng(1));
+            var oath = Encounters.BondedPair();
+            Assert.Equal(oath.Enemies.Count, act1.Count);
+            Assert.Equal(oath.Enemies.Select(e => e.Def.Name).OrderBy(x => x),
+                         act1.Select(u => u.Def.Name).OrderBy(x => x));
+            Assert.Equal(oath.Enemies.Select(e => e.Def.MaxHp).OrderBy(x => x),
+                         act1.Select(u => u.Def.MaxHp).OrderBy(x => x));   // authored numbers, unscaled
+
+            // ADR 0024: each act closes on a DIFFERENT exam. Three acts, three distinct comps.
+            var comps = Enumerable.Range(1, 3)
+                .Select(a => string.Join(",", cat.Boss(a, new Rng(1)).Select(u => u.Def.Name).OrderBy(x => x)))
+                .ToList();
+            Assert.Equal(3, comps.Distinct().Count());
+        }
+
+        [Fact]
+        public void ActsBeyondTheAuthoredThreeKeepTheLastBossAndScaleIt()
+        {
+            // The endless horizon (ADR 0016) must not run out of bosses or start re-rolling them.
+            var cat = new Catalog();
             var act3 = cat.Boss(3, new Rng(1));
+            var act5 = cat.Boss(5, new Rng(1));
 
-            // It is The Last Oath's bonded pair, by identity — not random kits-as-monsters.
-            var authored = Encounters.BondedPair();
-            Assert.Equal(authored.Enemies.Count, act1.Count);
-            Assert.Equal(authored.Enemies.Select(e => e.Def.ChassisId).OrderBy(x => x),
-                         act1.Select(u => u.Def.ChassisId).OrderBy(x => x));
-
-            // Later acts scale the same authored comp (scaffolding until real per-act bosses exist).
-            Assert.True(act3[0].Def.MaxHp > act1[0].Def.MaxHp);
-            Assert.Equal(act1[0].Pos, act3[0].Pos);
+            Assert.Equal(act3.Select(u => u.Def.Name), act5.Select(u => u.Def.Name));
+            Assert.Equal(act3.Select(u => u.Pos), act5.Select(u => u.Pos));
+            Assert.True(act5[0].Def.MaxHp > act3[0].Def.MaxHp);
         }
 
         [Fact]

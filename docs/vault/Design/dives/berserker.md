@@ -57,10 +57,10 @@ greataxe: the classic whirlwind · Rampager × daggers: the blender — instant 
 wall to wall · unmastered spice: Berserker × censer — the blood-monk, healing allies
 with every swing while standing at death's door.
 
-## Banner hooks
-- Low-HP threshold banners (*"allies below half HP gain X"*) — his lifestyle; the
+## Inscription hooks
+- Low-HP threshold Inscriptions (*"allies below half HP gain X"*) — his lifestyle; the
   placement-legible version of the berserker comp.
-- On-kill family — Red Harvest turns kill banners into window-chains.
+- On-kill family — Red Harvest turns kill Inscriptions into window-chains.
 - Shield/overheal texture with Crimson Tide (pairs with Bulwark/Herald shield comps).
 
 ## Sim gaps this dive adds

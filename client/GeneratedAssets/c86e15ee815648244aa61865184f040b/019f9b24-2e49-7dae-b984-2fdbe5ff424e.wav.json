@@ -1,0 +1,15 @@
+{
+    "asset": "c86e15ee815648244aa61865184f040b",
+    "fileName": "019f9b24-2e49-7dae-b984-2fdbe5ff424e.wav",
+    "prompt": "A small crystal inscription etched into stone: granular scrape, single warm resonance, clean decay, about 500 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

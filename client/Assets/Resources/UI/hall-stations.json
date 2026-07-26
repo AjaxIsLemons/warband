@@ -1,0 +1,74 @@
+{
+  "stations": [
+    {
+      "id": "Market",
+      "title": "MARKET",
+      "eyebrow": "ECONOMY",
+      "compassSlot": "west",
+      "motionVerb": "deal",
+      "audioFamily": "tile-coin",
+      "cameraX": -3.1,
+      "cameraY": 7.15,
+      "cameraZ": -8.2,
+      "targetX": -2.0,
+      "targetY": 0.25,
+      "targetZ": 0.15
+    },
+    {
+      "id": "Warband",
+      "title": "WARBAND",
+      "eyebrow": "ROSTER",
+      "compassSlot": "south",
+      "motionVerb": "gather",
+      "audioFamily": "cloth-drum",
+      "cameraX": 0.0,
+      "cameraY": 6.7,
+      "cameraZ": -7.3,
+      "targetX": 0.0,
+      "targetY": 0.25,
+      "targetZ": -1.7
+    },
+    {
+      "id": "Armory",
+      "title": "ARMORY",
+      "eyebrow": "LOADOUT",
+      "compassSlot": "east",
+      "motionVerb": "clamp",
+      "audioFamily": "metal-leather",
+      "cameraX": 3.1,
+      "cameraY": 7.15,
+      "cameraZ": -8.2,
+      "targetX": 2.0,
+      "targetY": 0.25,
+      "targetZ": 0.15
+    },
+    {
+      "id": "Hourstone",
+      "title": "HOURSTONE",
+      "eyebrow": "RUN-WIDE LAWS",
+      "compassSlot": "center",
+      "motionVerb": "engrave",
+      "audioFamily": "glass-harmonic",
+      "cameraX": 0.0,
+      "cameraY": 6.35,
+      "cameraZ": -7.2,
+      "targetX": 0.0,
+      "targetY": 0.65,
+      "targetZ": 0.0
+    },
+    {
+      "id": "Breach",
+      "title": "BREACH",
+      "eyebrow": "NEXT BEAT",
+      "compassSlot": "north",
+      "motionVerb": "open",
+      "audioFamily": "stone-air",
+      "cameraX": 0.0,
+      "cameraY": 9.1,
+      "cameraZ": -11.6,
+      "targetX": 0.0,
+      "targetY": 0.2,
+      "targetZ": 0.4
+    }
+  ]
+}

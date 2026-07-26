@@ -1,0 +1,956 @@
+/* Distinct run states: Management Hall, Wager, Deployment, and Combat overlays. */
+
+.management-screen,
+.wager-screen {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    color: rgb(236, 241, 249);
+    background-color: rgb(7, 11, 17);
+}
+
+.management-topbar,
+.wager-topbar {
+    height: 106px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 38px;
+    padding-right: 38px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(83, 103, 133, 0.5);
+    background-color: rgba(11, 16, 24, 0.99);
+}
+
+.management-brand {
+    width: 220px;
+}
+
+.management-brand__name {
+    color: rgb(238, 243, 251);
+    font-size: 25px;
+    -unity-font-style: bold;
+    letter-spacing: 5px;
+}
+
+.management-brand__act,
+.wager-topbar__act {
+    margin-top: 3px;
+    color: rgb(139, 157, 181);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.management-track {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.management-track-node {
+    width: 49px;
+    height: 49px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(132, 149, 173);
+    background-color: rgba(31, 41, 56, 0.98);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(79, 98, 125, 0.72);
+    border-right-color: rgba(79, 98, 125, 0.72);
+    border-top-color: rgba(79, 98, 125, 0.72);
+    border-bottom-color: rgba(79, 98, 125, 0.72);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    font-size: 15px;
+}
+
+.management-track-node__label {
+    margin-top: -2px;
+    font-size: 8px;
+    -unity-font-style: bold;
+}
+
+.management-track-node--past {
+    color: rgb(105, 216, 154);
+    background-color: rgba(26, 76, 54, 0.98);
+    border-left-color: rgb(84, 189, 130);
+    border-right-color: rgb(84, 189, 130);
+    border-top-color: rgb(84, 189, 130);
+    border-bottom-color: rgb(84, 189, 130);
+}
+
+.management-track-node--current {
+    color: rgb(248, 211, 139);
+    background-color: rgba(86, 59, 25, 0.99);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(244, 184, 76);
+    border-right-color: rgb(244, 184, 76);
+    border-top-color: rgb(244, 184, 76);
+    border-bottom-color: rgb(244, 184, 76);
+}
+
+.management-track-link {
+    width: 42px;
+    height: 2px;
+    background-color: rgba(75, 92, 116, 0.75);
+}
+
+.management-track-link--past {
+    background-color: rgba(75, 174, 119, 0.9);
+}
+
+.management-resources {
+    width: 250px;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.management-resource {
+    min-width: 106px;
+    margin-left: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    align-items: center;
+    background-color: rgba(29, 38, 52, 0.98);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.management-resource__label {
+    color: rgb(132, 149, 173);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.management-resource__value {
+    margin-top: 2px;
+    color: rgb(234, 240, 249);
+    font-size: 21px;
+    -unity-font-style: bold;
+}
+
+.management-resource__value--sand {
+    color: rgb(244, 184, 76);
+}
+
+.management-body {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+}
+
+.management-nav {
+    width: 270px;
+    padding-left: 30px;
+    padding-right: 24px;
+    padding-top: 32px;
+    padding-bottom: 28px;
+    border-right-width: 1px;
+    border-right-color: rgba(83, 103, 133, 0.5);
+    background-color: rgba(10, 15, 23, 0.99);
+}
+
+.management-nav__eyebrow {
+    color: rgb(116, 175, 246);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.management-nav__beat {
+    margin-top: 5px;
+    margin-bottom: 25px;
+    color: rgb(238, 243, 251);
+    font-size: 19px;
+    -unity-font-style: bold;
+}
+
+.management-tab {
+    height: 59px;
+    margin-bottom: 8px;
+    padding-left: 18px;
+    -unity-text-align: middle-left;
+    color: rgb(157, 174, 198);
+    background-color: rgba(24, 32, 44, 0.98);
+    border-left-width: 3px;
+    border-left-color: rgba(77, 96, 122, 0.82);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.management-tab:hover {
+    color: rgb(220, 230, 244);
+    background-color: rgba(35, 47, 65, 0.99);
+}
+
+.management-tab--active {
+    color: rgb(241, 246, 253);
+    background-color: rgba(36, 66, 104, 0.99);
+    border-left-color: rgb(116, 175, 246);
+}
+
+.management-nav__spacer {
+    flex-grow: 1;
+}
+
+.management-nav__note {
+    color: rgb(141, 159, 184);
+    font-size: 12px;
+    white-space: normal;
+}
+
+.management-main {
+    flex-grow: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.management-heading {
+    min-height: 130px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 42px;
+    padding-right: 42px;
+    padding-top: 25px;
+    padding-bottom: 22px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(64, 80, 103, 0.45);
+}
+
+.management-heading__copy {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.management-heading__title {
+    color: rgb(240, 245, 252);
+    font-size: 34px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.management-heading__brief {
+    max-width: 900px;
+    margin-top: 6px;
+    color: rgb(166, 183, 207);
+    font-size: 15px;
+    white-space: normal;
+}
+
+.management-secondary {
+    min-height: 48px;
+    margin-left: 25px;
+}
+
+.management-scroll {
+    flex-grow: 1;
+    min-height: 0;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+.management-card-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.management-empty {
+    margin-top: 60px;
+    color: rgb(132, 149, 173);
+    font-size: 18px;
+    -unity-text-align: middle-center;
+}
+
+.management-feedback {
+    left: 32px;
+    right: 32px;
+    bottom: 14px;
+}
+
+.management-footer {
+    height: 96px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 34px;
+    padding-right: 34px;
+    border-top-width: 1px;
+    border-top-color: rgba(83, 103, 133, 0.5);
+    background-color: rgba(11, 16, 24, 0.99);
+}
+
+.management-footer__hint {
+    flex-grow: 1;
+    color: rgb(150, 168, 192);
+    font-size: 14px;
+}
+
+.management-continue {
+    min-width: 300px;
+    min-height: 58px;
+    font-size: 16px;
+}
+
+/* Management cards are readable mini dossiers, not the old compressed dock tiles. */
+.wb-card--management {
+    width: 410px;
+    min-width: 410px;
+    height: 680px;
+    margin-right: 14px;
+    margin-bottom: 14px;
+}
+
+.wb-card--management .wb-card__portrait {
+    width: 100%;
+    height: 185px;
+    justify-content: flex-end;
+}
+
+.wb-card--management .wb-card__body {
+    margin-left: 0;
+    margin-top: 185px;
+    min-height: 453px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 14px;
+}
+
+.wb-card--management .wb-card__eyebrow {
+    font-size: 10px;
+}
+
+.wb-card--management .wb-card__title {
+    font-size: 24px;
+}
+
+.wb-card--management .wb-card__stats {
+    flex-wrap: nowrap;
+    width: 100%;
+    margin-top: 11px;
+}
+
+.wb-card--management .wb-mini-stat {
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    flex-direction: column;
+    align-items: center;
+    min-height: 53px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.wb-card--management .wb-mini-stat__label {
+    font-size: 9px;
+}
+
+.wb-card--management .wb-mini-stat__value {
+    margin-left: 0;
+    font-size: 17px;
+}
+
+.wb-card--management .wb-card__ability,
+.wb-card--management .wb-card__passive {
+    min-height: 104px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    background-color: rgba(12, 18, 27, 0.9);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.wb-card--management .wb-card__rule-trigger {
+    font-size: 10px;
+}
+
+.wb-card--management .wb-card__ability-name,
+.wb-card--management .wb-card__passive-name {
+    font-size: 13px;
+}
+
+.wb-card--management .wb-card__ability-summary,
+.wb-card--management .wb-card__passive-summary {
+    max-height: 54px;
+    color: rgb(188, 202, 221);
+    font-size: 12px;
+}
+
+.wb-card--management .wb-card__footer {
+    height: 42px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.wb-card--management .wb-card__weapon {
+    font-size: 12px;
+}
+
+.management-inspector-scrim {
+    background-color: rgba(2, 5, 9, 0.88);
+}
+
+.management-inspector-modal {
+    position: relative;
+    width: 1080px;
+    height: 850px;
+    background-color: rgb(11, 16, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(116, 175, 246, 0.9);
+    border-right-color: rgba(116, 175, 246, 0.9);
+    border-top-color: rgba(116, 175, 246, 0.9);
+    border-bottom-color: rgba(116, 175, 246, 0.9);
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+    border-bottom-left-radius: 13px;
+    border-bottom-right-radius: 13px;
+    overflow: hidden;
+}
+
+.management-inspector-close {
+    position: absolute;
+    right: 16px;
+    top: 13px;
+    min-width: 120px;
+    min-height: 44px;
+}
+
+.management-inspector-slot {
+    flex-grow: 1;
+}
+
+.wb-inspector--modal {
+    overflow: hidden;
+}
+
+.wb-inspector--modal .wb-inspector__portrait {
+    height: 260px;
+    background-color: rgb(20, 28, 40);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.wb-inspector--modal .wb-inspector__eyebrow {
+    font-size: 12px;
+}
+
+.wb-inspector--modal .wb-inspector__heading {
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 17px;
+    padding-bottom: 13px;
+}
+
+.wb-inspector--modal .wb-inspector__title {
+    font-size: 33px;
+}
+
+.wb-inspector--modal .wb-inspector__subtitle {
+    font-size: 14px;
+}
+
+.wb-inspector--modal .wb-inspector__stats {
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 13px;
+}
+
+.wb-inspector--modal .wb-inspector-stat {
+    min-width: 120px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.wb-inspector--modal .wb-inspector-stat__label {
+    font-size: 9px;
+}
+
+.wb-inspector--modal .wb-inspector-stat__value {
+    font-size: 19px;
+}
+
+.wb-inspector--modal .wb-inspector__section {
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-bottom: 12px;
+    padding-top: 11px;
+}
+
+.wb-inspector--modal .wb-inspector__section-label {
+    color: rgb(155, 175, 203);
+    font-size: 10px;
+}
+
+.wb-inspector--modal .wb-inspector__line-icon {
+    width: 44px;
+    height: 44px;
+    margin-right: 13px;
+    padding-top: 8px;
+    font-size: 19px;
+}
+
+.wb-inspector--modal .wb-inspector__line-title {
+    font-size: 15px;
+}
+
+.wb-inspector--modal .wb-inspector__line-copy {
+    width: 940px;
+    color: rgb(187, 202, 223);
+    font-size: 14px;
+}
+
+.wb-keyword-note {
+    width: 100%;
+    margin-top: 5px;
+    padding-left: 11px;
+    padding-right: 11px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    color: rgb(172, 191, 216);
+    background-color: rgba(35, 48, 66, 0.96);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 12px;
+    white-space: normal;
+}
+
+.management-choice-modal {
+    width: 980px;
+    max-height: 800px;
+}
+
+.management-choice-modal__title {
+    margin-top: 6px;
+    color: rgb(241, 245, 252);
+    font-size: 34px;
+    -unity-font-style: bold;
+}
+
+.management-choice-modal__copy {
+    margin-top: 7px;
+    color: rgb(169, 186, 211);
+    font-size: 15px;
+    white-space: normal;
+}
+
+.management-choice-modal__options {
+    margin-top: 18px;
+}
+
+.management-choice {
+    min-height: 100px;
+    margin-top: 8px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    -unity-text-align: middle-left;
+    background-color: rgba(29, 40, 56, 0.99);
+    border-left-width: 3px;
+    border-left-color: rgb(116, 175, 246);
+}
+
+.management-choice__title {
+    color: rgb(239, 244, 251);
+    font-size: 19px;
+    -unity-font-style: bold;
+}
+
+.management-choice__copy {
+    margin-top: 5px;
+    color: rgb(180, 196, 218);
+    font-size: 14px;
+    white-space: normal;
+}
+
+/* ---- wager --------------------------------------------------------------- */
+
+.wager-topbar {
+    justify-content: space-between;
+}
+
+.wager-topbar__eyebrow {
+    color: rgb(244, 184, 76);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.wager-main {
+    flex-grow: 1;
+    min-height: 0;
+    align-items: center;
+    padding-top: 40px;
+    padding-left: 60px;
+    padding-right: 60px;
+}
+
+.wager-beat {
+    color: rgb(116, 175, 246);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+}
+
+.wager-title {
+    margin-top: 7px;
+    color: rgb(241, 245, 252);
+    font-size: 48px;
+    -unity-font-style: bold;
+    letter-spacing: 4px;
+}
+
+.wager-brief {
+    max-width: 920px;
+    margin-top: 10px;
+    color: rgb(178, 194, 216);
+    font-size: 17px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.wager-risks {
+    width: 100%;
+    max-width: 1380px;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.wager-card {
+    width: 400px;
+    height: 380px;
+    margin-left: 12px;
+    margin-right: 12px;
+    padding-left: 26px;
+    padding-right: 26px;
+    padding-top: 26px;
+    padding-bottom: 26px;
+    align-items: flex-start;
+    -unity-text-align: middle-left;
+    background-color: rgba(19, 27, 39, 0.99);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(83, 103, 133, 0.75);
+    border-right-color: rgba(83, 103, 133, 0.75);
+    border-top-color: rgba(83, 103, 133, 0.75);
+    border-bottom-color: rgba(83, 103, 133, 0.75);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.wager-card:hover {
+    background-color: rgba(29, 40, 58, 0.99);
+    border-left-color: rgba(140, 182, 237, 0.9);
+    border-right-color: rgba(140, 182, 237, 0.9);
+    border-top-color: rgba(140, 182, 237, 0.9);
+    border-bottom-color: rgba(140, 182, 237, 0.9);
+}
+
+.wager-card--selected {
+    background-color: rgba(41, 64, 96, 0.99);
+    border-left-color: rgb(244, 184, 76);
+    border-right-color: rgb(244, 184, 76);
+    border-top-color: rgb(244, 184, 76);
+    border-bottom-color: rgb(244, 184, 76);
+    scale: 1.03 1.03;
+}
+
+.wager-card__ordinal {
+    color: rgb(131, 150, 176);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.wager-card__name {
+    margin-top: 12px;
+    color: rgb(241, 245, 252);
+    font-size: 31px;
+    -unity-font-style: bold;
+}
+
+.wager-card__risk {
+    margin-top: 16px;
+    color: rgb(183, 198, 219);
+    font-size: 17px;
+    white-space: normal;
+}
+
+.wager-card__reward {
+    margin-top: 30px;
+    color: rgb(244, 184, 76);
+    font-size: 25px;
+    -unity-font-style: bold;
+}
+
+.wager-card__action {
+    margin-top: auto;
+    color: rgb(127, 181, 247);
+    font-size: 13px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.wager-card--selected .wager-card__action {
+    color: rgb(248, 211, 139);
+}
+
+.wager-disclosure {
+    width: 100%;
+    max-width: 1250px;
+    margin-bottom: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(28, 37, 51, 0.98);
+    border-left-width: 3px;
+    border-left-color: rgb(116, 175, 246);
+}
+
+.wager-disclosure__label {
+    margin-right: 18px;
+    color: rgb(116, 175, 246);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.wager-disclosure__copy {
+    flex-grow: 1;
+    color: rgb(179, 195, 217);
+    font-size: 14px;
+    white-space: normal;
+}
+
+.wager-footer {
+    height: 98px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 34px;
+    padding-right: 34px;
+    border-top-width: 1px;
+    border-top-color: rgba(83, 103, 133, 0.5);
+    background-color: rgba(11, 16, 24, 0.99);
+}
+
+.wager-footer__hint {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    color: rgb(146, 164, 188);
+    font-size: 13px;
+}
+
+.wager-back {
+    min-width: 210px;
+    min-height: 52px;
+}
+
+.wager-continue {
+    min-width: 300px;
+    min-height: 58px;
+    font-size: 16px;
+}
+
+/* ---- deployment readability --------------------------------------------- */
+
+.deploy-header {
+    left: 28px;
+    top: 24px;
+    width: 570px;
+    padding-left: 22px;
+    padding-right: 22px;
+    padding-top: 17px;
+    padding-bottom: 17px;
+}
+
+.deploy-header .eyebrow {
+    font-size: 15px;
+    letter-spacing: 2px;
+}
+
+.deploy-header .body-copy {
+    margin-top: 5px;
+    color: rgb(203, 214, 230);
+    font-size: 15px;
+}
+
+.deploy-header .card-role {
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.deploy-rail {
+    left: 28px;
+    top: 180px;
+    width: 350px;
+    max-height: 720px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 14px;
+    padding-bottom: 16px;
+}
+
+.deploy-rail .section-heading {
+    margin-top: 0;
+    margin-bottom: 11px;
+    font-size: 13px;
+}
+
+.deploy-chip {
+    min-height: 118px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.deploy-chip .card-title {
+    font-size: 19px;
+}
+
+.deploy-chip .card-role {
+    font-size: 12px;
+}
+
+.deploy-chip .stat-chip__label {
+    font-size: 8px;
+}
+
+.deploy-chip .stat-chip__value {
+    font-size: 14px;
+}
+
+.deploy-enemy {
+    right: 28px;
+    top: 24px;
+    width: 440px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 17px;
+    padding-bottom: 18px;
+}
+
+.deploy-enemy .eyebrow {
+    font-size: 12px;
+}
+
+.deploy-enemy .card-body {
+    margin-top: 8px;
+    color: rgb(209, 219, 233);
+    font-size: 14px;
+}
+
+.deploy-enemy .body-copy {
+    margin-top: 12px;
+    color: rgb(196, 210, 228);
+    font-size: 14px;
+}
+
+.deploy-bar {
+    right: 28px;
+    bottom: 28px;
+}
+
+.deploy-bar .btn {
+    min-width: 150px;
+    min-height: 58px;
+    font-size: 16px;
+}
+
+/* ---- clean combat surface + click-to-inspect ---------------------------- */
+
+.fight-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.fight-hit-surface {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.fight-inspect-hint {
+    position: absolute;
+    left: 24px;
+    top: 22px;
+    padding-left: 13px;
+    padding-right: 13px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    color: rgb(190, 207, 230);
+    background-color: rgba(9, 14, 22, 0.88);
+    border-left-width: 2px;
+    border-left-color: rgb(116, 175, 246);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.fight-skip {
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    min-width: 130px;
+    min-height: 48px;
+}
+
+.fight-inspector-scrim {
+    background-color: rgba(2, 5, 9, 0.78);
+}
+
+.fight-inspector-modal {
+    height: 850px;
+}

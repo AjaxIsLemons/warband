@@ -1,0 +1,12 @@
+{
+    "asset": "4350708314af39d429329c30ea42c423",
+    "fileName": "019f9b14-391e-7c63-b1d4-2d1c13dec9d4_Preview.png",
+    "prompt": "Seamless tileable PBR cold iron material for precise table rims and Tower braces: blue-black forged metal, fine linear machining and tiny hammer texture, worn edges implied only through microvariation, medium-high metallic response, controlled roughness, no rust, no bolts, no engraved symbols, no text. Scale-neutral. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gemini-3.1-flash-texture",
+    "modelName": "Gemini 3.1 Nano Banana 2",
+    "customSeed": 787244911,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -132,6 +132,29 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
+        public void PurchaseReceiptDistinguishesRecruitRankAndStableItems()
+        {
+            var content = new StubContent { Heroes = new List<string> { "hero0" } };
+            var run = ShopRun(content: content);
+
+            PurchaseResult rank = run.BuyOffer(0);
+            Assert.Equal(PurchaseOutcome.RankUp, rank.Outcome);
+            Assert.Equal(Rank.C, rank.PreviousRank);
+            Assert.Equal(Rank.B, rank.NewRank);
+            Assert.False(string.IsNullOrWhiteSpace(rank.PendingOptionA));
+            Assert.False(string.IsNullOrWhiteSpace(rank.PendingOptionB));
+            run.ChooseSpec(0);
+
+            int weaponSlot;
+            while ((weaponSlot = SlotOf(run, OfferKind.Weapon)) < 0) run.Reroll();
+            PurchaseResult weapon = run.BuyOffer(weaponSlot);
+            Assert.Equal(PurchaseOutcome.Weapon, weapon.Outcome);
+            Assert.True(weapon.ItemInstanceId > 0);
+            Assert.Equal(0, run.IndexOfItem(weapon.ItemInstanceId));
+            Assert.Equal(weapon.SandSpent, run.State.Inventory[0].SandInvested);
+        }
+
+        [Fact]
         public void ItemsBuyIntoInventoryAndEquipWithSlotRules()
         {
             var content = new StubContent { Banners = new List<string>() };  // no banner rolls
@@ -179,6 +202,70 @@ namespace Warband.Run.Tests
             run.SellItem(0);
             Assert.Equal(gold + cfg.WeaponPrice * cfg.SellPct / 100, run.State.Gold);
             Assert.Empty(run.State.Inventory);
+        }
+
+        [Fact]
+        public void ForgeReachesRelicInActThreeAndReturnsTypedReceipt()
+        {
+            var run = ShopRun();
+            run.State.Act = 3;
+            run.State.Gold = 100;
+
+            ReforgeResult honed = run.Reforge(RosterZone.Field, 0);
+            ReforgeResult relic = run.Reforge(RosterZone.Field, 0);
+
+            Assert.Equal(WeaponTier.Worn, honed.PreviousTier);
+            Assert.Equal(WeaponTier.Honed, honed.NewTier);
+            Assert.Equal(WeaponTier.Honed, relic.PreviousTier);
+            Assert.Equal(WeaponTier.Relic, relic.NewTier);
+            Assert.True(relic.IsStarter);
+            Assert.Equal(12, relic.TotalWeaponInvestment);
+            Assert.Throws<InvalidOperationException>(
+                () => run.Reforge(RosterZone.Field, 0));
+        }
+
+        [Fact]
+        public void StarterTemperPersistsAcrossWeaponSwaps()
+        {
+            var content = new StubContent { Banners = new List<string>() };
+            var run = ShopRun(content: content);
+            run.State.Act = 2;
+            run.State.Gold = 100;
+            run.Reforge(RosterZone.Field, 0);
+
+            int slot;
+            while ((slot = SlotOf(run, OfferKind.Weapon)) < 0) run.Reroll();
+            run.BuyOffer(slot);
+            run.EquipWeapon(RosterZone.Field, 0, 0);
+            run.UnequipWeapon(RosterZone.Field, 0);
+
+            Assert.Null(run.State.Field[0].WeaponId);
+            Assert.Equal(WeaponTier.Honed, run.State.Field[0].WeaponTier);
+            Assert.Equal(4, run.State.Field[0].WeaponSandInvested);
+        }
+
+        [Fact]
+        public void ReforgedWeaponResaleRefundsPurchaseAndForgeInvestment()
+        {
+            var content = new StubContent { Banners = new List<string>() };
+            var run = ShopRun(content: content);
+            int slot;
+            while ((slot = SlotOf(run, OfferKind.Weapon)) < 0) run.Reroll();
+            run.State.ShopOffers[slot]!.Tier = WeaponTier.Worn;
+            run.State.ShopOffers[slot]!.Price = 4;
+            PurchaseResult bought = run.BuyOffer(slot);
+            int inventoryIndex = run.IndexOfItem(bought.ItemInstanceId);
+            run.EquipWeapon(RosterZone.Field, 0, inventoryIndex);
+            run.State.Act = 2;
+            run.State.Gold = 100;
+            run.Reforge(RosterZone.Field, 0);
+            run.UnequipWeapon(RosterZone.Field, 0);
+
+            int before = run.State.Gold;
+            int returned = run.IndexOfItem(bought.ItemInstanceId);
+            run.SellItem(returned);
+            Assert.Equal(before + (4 + 4) * new RunConfig().SellPct / 100,
+                run.State.Gold);
         }
 
         [Fact]

@@ -27,12 +27,19 @@ scenarios: ## Generate the data-driven scenario replay set (scenarios.json → r
 coverage: ## Event-signature coverage of one replay: make coverage F=client/Assets/StreamingAssets/replays/castfest.bytes
 	@dotnet run --project sim/Warband.Viewer -c Release -- --coverage $(F)
 
-unity-sim: ## Build Warband.Sim as a netstandard2.1 DLL into the Unity client's Plugins/ (Syncthing carries it to Windows)
-	@dotnet build sim/Warband.Sim/Warband.Sim.csproj -c Release -v quiet --nologo
+oath: ## The Last Oath what-if probe: does the Bond pose a decision? (markdown on stdout)
+	@dotnet run --project sim/Warband.Sweep -c Release -- --oath
+
+unity-sim: ## Build the netstandard2.1 sim/run/content runtime into Unity Plugins/ (Syncthing carries it to Windows)
+	@dotnet build sim/Warband.Content/Warband.Content.csproj -c Release -v quiet --nologo
 	@mkdir -p $(UNITY_PLUGINS)
 	@cp sim/Warband.Sim/bin/Release/netstandard2.1/Warband.Sim.dll $(UNITY_PLUGINS)/
 	@cp sim/Warband.Sim/bin/Release/netstandard2.1/Warband.Sim.pdb $(UNITY_PLUGINS)/ 2>/dev/null || true
-	@echo "-> $(UNITY_PLUGINS)/Warband.Sim.dll  ($$(du -h $(UNITY_PLUGINS)/Warband.Sim.dll | cut -f1))"
+	@cp sim/Warband.Run/bin/Release/netstandard2.1/Warband.Run.dll $(UNITY_PLUGINS)/
+	@cp sim/Warband.Run/bin/Release/netstandard2.1/Warband.Run.pdb $(UNITY_PLUGINS)/ 2>/dev/null || true
+	@cp sim/Warband.Content/bin/Release/netstandard2.1/Warband.Content.dll $(UNITY_PLUGINS)/
+	@cp sim/Warband.Content/bin/Release/netstandard2.1/Warband.Content.pdb $(UNITY_PLUGINS)/ 2>/dev/null || true
+	@du -h $(UNITY_PLUGINS)/Warband.Sim.dll $(UNITY_PLUGINS)/Warband.Run.dll $(UNITY_PLUGINS)/Warband.Content.dll
 
 sync-status: ## Is the Windows peer caught up on the warband Syncthing folder?
 	@CFG=$$(ls ~/.local/state/syncthing/config.xml ~/.config/syncthing/config.xml 2>/dev/null | head -1); \

@@ -14,15 +14,16 @@ gameplay.
 - `Design/roster.md` owns each class's PvE contract.
 - `Design/dives/` owns the complete class trees.
 - ADR 0011 owns the spec impact model; ADRs 0005, 0012, and 0015 own loadout and weapons.
+- `Design/inscriptions.md` and ADR 0017 own the Hourstone and persistent team rules.
 - `sim/Warband.Content/` owns the currently runnable content and placeholder values.
-- `Design/pve-encounters.md` owns the Preview → Prepare → Deploy → Play commitment flow.
+- `Design/pve-encounters.md` owns the Encounter Reveal → Planning → Play → Result flow.
 
 ## The anatomy
 
 **Hero = Chassis + Rank/Spec Tree + Weapon + Trinket + Run Bonuses.**
 
-Banners are team rules rather than hero anatomy. Placement is not stored power, but it
-decides which parts of the composed hero can actually express themselves.
+Hourstone Inscriptions are team rules rather than hero anatomy. Placement is not stored
+power, but it decides which parts of the composed hero can actually express themselves.
 
 ### 1. Chassis — the identity
 
@@ -118,21 +119,22 @@ emerges from:
 - weapon physics and mastery;
 - muster placement and live combat geometry;
 - Fields and the Clock;
-- Banners; and
+- persistent Hourstone Inscriptions; and
 - the encounter problem the player is preparing to solve.
 
-Acquired Banners ride into combat as whole-team rules. They are the broadest cross-hero
-engine layer, and Banneret may directly amplify them. Their first-playable count and exact
-catalog live on the roadmap and in `sim/Warband.Content/Catalog.cs`, not here.
+Every acquired Inscription remains active for the run. They are the broadest cross-hero
+engine layer; their ownership, authoring, cascade, content, and presentation laws live in
+[inscriptions.md](inscriptions.md). The current `BannerDef` catalog is transitional legacy
+naming.
 
 The fielded warband grows from a small starting lineup toward a cap, with a small bench
 preserving roster decisions between fights. ADR 0006's current structure is three starting
 field slots, a six-unit cap, and a two-unit bench. ADR 0016 reopened **when** additional
 field slots are offered, so the PvE vertical-slice design owns that schedule.
 
-The same run currency competes across width, duplicate-driven depth, equipment, Banners,
-rerolls, forging, and any respec service. These choices should remain tradeoffs rather than a
-checklist of automatic upgrades.
+The same run currency competes across width, duplicate-driven depth, equipment,
+Inscriptions, rerolls, forging, and any respec service. These choices should remain
+tradeoffs rather than a checklist of automatic upgrades.
 
 ### 6. Between-fight commitment
 
@@ -147,15 +149,30 @@ Every PvE fight follows:
 The preview remains accessible during preparation. The player knows the rules but not the
 winner.
 
-### 7. Movement vocabulary
+### 7. Movement and behavior vocabulary
 
 The current player roster uses:
 
-- **Walk:** deterministic pathing toward the current target.
+- **Walk:** deterministic pathing toward the current target, at a **per-chassis speed** (ADR 0022;
+  Shade 3 ticks/hex → Bulwark 7).
 - **Leap:** reposition adjacent to a selected target and reacquire from there.
 
 Push, Pull, collisions, and other displacement remain deferred. Movement depth should come
 from readable kit rules and placement, not opaque pathfinding or mid-combat commands.
+
+**The behavior layer (ADR 0022).** A chassis — or a spec node — declares two rules beyond its stats:
+
+- **Target preference:** `Nearest` (default) · `Farthest` · `LowestHp` · `HighestHp`. This decides
+  **acquisition only**; ADR 0013's stickiness, Phase and Taunt still own re-acquisition. Shade is
+  the roster's one non-default today (`LowestHp` — the knife picks its moment).
+- **Standoff:** a preferred fighting distance. The unit gives ground when its target closes inside
+  it, never retreats out of its own weapon range, and keeps attacking while it withdraws. Sharpshot
+  (4) and Pyromancer (3) hold distance; Lifebinder gains it from her fork.
+
+Because nodes may set both, **a fork can change what a hero DOES, not only what its signature
+does** — which is what makes "the fork changes the hat" true in the sim rather than only on the
+page. Before this, both Cleric forks walked at the nearest enemy at identical speed, and "Lifebinder
+retreats from the scrum" was advice the unit itself ignored.
 
 ## Composition law
 

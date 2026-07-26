@@ -1,0 +1,15 @@
+{
+    "asset": "db705b4373a589044ae311eaacd62b08",
+    "fileName": "019f9b08-ad08-74ac-82c5-b1e67deddce7.wav",
+    "prompt": "electronic static glitch rising, radio interference sweep, ghostly digital distortion windup, short",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.100000023841858,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

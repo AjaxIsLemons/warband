@@ -1,0 +1,59 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="inspector" class="wb-inspector panel">
+        <ui:Label name="empty" text="Select a card to inspect it." class="wb-inspector__empty" />
+        <ui:VisualElement name="content" class="wb-inspector__content">
+            <ui:VisualElement name="portrait" class="wb-inspector__portrait">
+                <ui:Label name="portrait-fallback" class="wb-inspector__portrait-fallback" />
+                <ui:Label name="eyebrow" class="wb-inspector__eyebrow" />
+            </ui:VisualElement>
+            <ui:VisualElement class="wb-inspector__heading">
+                <ui:VisualElement>
+                    <ui:Label name="title" class="wb-inspector__title" />
+                    <ui:Label name="subtitle" class="wb-inspector__subtitle" />
+                </ui:VisualElement>
+                <ui:Label name="price" class="wb-inspector__price" />
+            </ui:VisualElement>
+            <ui:VisualElement name="stats" class="wb-inspector__stats" />
+            <ui:VisualElement name="comparison" class="wb-inspector__comparison">
+                <ui:Label name="comparison-title" class="wb-inspector__section-label wb-inspector__comparison-title" />
+                <ui:VisualElement name="comparison-rows" class="wb-inspector__comparison-rows" />
+            </ui:VisualElement>
+            <ui:VisualElement name="choice-preview" class="wb-inspector__choice-preview">
+                <ui:Label text="SPECIALIZATION PREVIEW · CHOOSE 1 OF 2 AFTER RANK-UP" class="wb-inspector__section-label" />
+                <ui:VisualElement name="choice-preview-options" class="wb-inspector__choice-preview-options" />
+            </ui:VisualElement>
+            <ui:VisualElement class="wb-inspector__section">
+                <ui:Label text="BASIC ATTACK" class="wb-inspector__section-label" />
+                <ui:VisualElement class="wb-inspector__line">
+                    <ui:Label name="weapon-icon" class="wb-inspector__line-icon" />
+                    <ui:VisualElement>
+                        <ui:Label name="weapon-name" class="wb-inspector__line-title" />
+                        <ui:Label name="weapon-summary" class="wb-inspector__line-copy" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="wb-inspector__section">
+                <ui:Label name="ability-trigger" class="wb-inspector__section-label wb-inspector__section-label--signature" />
+                <ui:VisualElement class="wb-inspector__line">
+                    <ui:Label name="ability-icon" class="wb-inspector__line-icon wb-inspector__line-icon--ability" />
+                    <ui:VisualElement>
+                        <ui:Label name="ability-name" class="wb-inspector__line-title" />
+                        <ui:Label name="ability-summary" class="wb-inspector__line-copy" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="wb-inspector__section">
+                <ui:Label name="passive-trigger" class="wb-inspector__section-label wb-inspector__section-label--passive" />
+                <ui:VisualElement class="wb-inspector__line">
+                    <ui:Label name="passive-icon" class="wb-inspector__line-icon wb-inspector__line-icon--passive" />
+                    <ui:VisualElement>
+                        <ui:Label name="passive-name" class="wb-inspector__line-title" />
+                        <ui:Label name="passive-summary" class="wb-inspector__line-copy" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="tags" class="wb-inspector__tags" />
+            <ui:VisualElement name="actions" class="wb-inspector__actions" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,12 @@
+{
+    "asset": "561ab7c03a8dfc44abfc3f8eb33736fa",
+    "fileName": "019f9b39-d00e-7898-9470-ffd587ac6078_Preview.jpg",
+    "prompt": "Seamless tileable near-black volcanic obsidian stone surface for a restrained dark-fantasy game table. Very fine subtle mineral grain and sparse hairline stress marks only. Even field with no focal feature, no large cracks, no tiles, no blocks, no symbols, no borders, no text, no lighting gradient, no object. Albedo texture only.",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1443179346,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

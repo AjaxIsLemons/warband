@@ -24,10 +24,11 @@ session and asks what's next, the answer comes from the board, never from memory
 4. Never invent roadmap priorities without Jake; the Deferred list is "explicitly not now."
 
 ## ⚠ Content doctrine (amended 2026-07-23 — read before touching content)
-The eight hero kits, weapons, and banners are mechanically authored **first-playable
-candidates**, but their numbers and interactions remain unplayed. Do not conduct a detailed
-balance pass before the interactive playtest; fix only broken machinery, unreadable behavior,
-or crazy outliers that invalidate the test.
+The eight hero kits, weapons, and five legacy Banner triggers are mechanically authored
+**first-playable candidates**, but their numbers and interactions remain unplayed. The
+Banner triggers are now only the seed set for the Hourstone/Inscription layer (ADR 0017).
+Do not conduct a detailed balance pass before the interactive playtest; fix only broken
+machinery, unreadable behavior, or crazy outliers that invalidate the test.
 
 Current PvE enemies and events are **scaffolding**: random player kits with scaled stats are
 not representative content. Real PvE uses small, authored, asymmetrical encounter families
@@ -54,6 +55,22 @@ engine merely because it is powerful; see ADR 0016's balance law.
 - **Server (deferred):** not required for core PvE or friends playtest. Deterministic snapshots
   leave the door open to later Echo exhibitions and leaderboards without shaping today's game.
 - **Distribution:** copy Shoota's launcher for one-click friend installs.
+
+## Sharing Unity with other sessions (Jake runs Claude + Codex in parallel)
+The Unity Editor is a **singleton**: one scene, one play-mode state, one loaded replay, one console
+buffer. Two agents driving it corrupt each other's state and misread each other's errors. Protocol
+and rationale: `~/brain/meta/agent-locks.md`.
+- **Claude sessions are gated automatically** — a `PreToolUse` hook takes a lease on `unity-warband`
+  before any `mcp__unity-mcp__*` call and denies it when another live session holds it. Nothing to
+  remember. **Codex must call `agent-lock` itself** (same CLI, see the brain page).
+- The lock is **per project**, so warband and Shoota never block each other.
+- If you're denied: do NOT spin-retry. Sim/tests/sweep/content/vault work is completely
+  uncontended — go do that, `agent-lock status` before returning, tell Jake if truly blocked.
+- **Clear the Unity console before acting inside a hold.** `GetConsoleLogs` has no session
+  attribution, so otherwise you will read someone else's errors (or your own stale mid-edit
+  compile) and chase a ghost.
+- The lock does **not** protect files. If another session is live, agree on file/subsystem ownership
+  first — `ReplayPlayer.cs` has already been edited by two sessions at once.
 
 ## Vault upkeep
 Light-touch: ADRs for MAJOR decisions only; a daily note when a session meaningfully moves the

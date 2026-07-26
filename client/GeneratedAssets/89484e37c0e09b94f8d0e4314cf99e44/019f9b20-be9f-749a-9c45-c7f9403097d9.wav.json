@@ -1,0 +1,15 @@
+{
+    "asset": "89484e37c0e09b94f8d0e4314cf99e44",
+    "fileName": "019f9b20-be9f-749a-9c45-c7f9403097d9.wav",
+    "prompt": "A tiny dry slate sliver tap with one faint mineral grain, about 80 milliseconds, slightly lower than the other preview. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

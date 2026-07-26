@@ -59,11 +59,12 @@ delivered by wardrobe) · Phantom × daggers: the ghost in the scrum · Phantom 
 the skirmisher who phases out of dives · unmastered spice: Phantom × tower shield —
 the unkillable annoyance.
 
-## Banner hooks
-- *"Your Leaps stun"* (heroes.md's original banner example) — with the B baseline
+## Inscription hooks
+- *"Your Leaps stun"* — with the B baseline
   (Leap-on-kill) Shade turns it into a chain-stun engine; costed per-Leap frequency.
-- On-kill banner family — the assassin fires them most.
-- Crit banners ("allies' crits also X") — Reaper amplifier; frequency note like On-Heal.
+- On-kill Inscription family — the assassin fires them most.
+- Crit Inscriptions ("allies' crits also X") — Reaper amplifier; frequency note like
+  On-Heal.
 
 ## Sim gaps this dive adds
 **Phase status** (untargetable + immune, attacker retargeting, re-entry Leap — the big

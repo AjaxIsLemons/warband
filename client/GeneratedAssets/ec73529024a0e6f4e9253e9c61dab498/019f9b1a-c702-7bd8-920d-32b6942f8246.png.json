@@ -1,0 +1,31 @@
+{
+    "asset": "ec73529024a0e6f4e9253e9c61dab498",
+    "fileName": "019f9b1a-c702-7bd8-920d-32b6942f8246.png",
+    "prompt": "Use case: stylized-concept. Asset type: game UI/VFX sprite. One reusable focus bracket motif: four precise cut-metal corner marks with a tiny divided Sand notch, bone-white and Tower blue, centered and symmetrical, no interior panel. Centered with generous padding on a perfectly flat solid #ff00ff chroma-key background for background removal. The background must be one uniform color with no shadows, gradient, texture, reflection, or floor plane. Crisp antialiased edges. Do not use magenta anywhere in the subject. No cast shadow, text, logo, or watermark. Obsidian Tower instrument style; cold iron, bone, Tower blue, and living Sand only.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 640
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "asset": "822418f9b61f4f943a0eaa0f888f5791",
+    "fileName": "019f9b3a-d30c-7f1e-b624-f7a9406e26e4.png",
+    "prompt": "Single abstract UI transition sprite on transparent background: a thin diagonal sweep made from three restrained ivory-gold tapered streaks and a few tiny sand motes, traveling lower-left to upper-right. Flat graphic vector-like shape, crisp alpha, no magenta, no purple, no rectangle, no card, no text, no border, no glow cloud, centered with generous transparent padding.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

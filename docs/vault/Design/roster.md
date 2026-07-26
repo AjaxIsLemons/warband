@@ -14,6 +14,7 @@ work.
 - `Design/dives/` owns the complete spec-tree intent and named build web.
 - `sim/Warband.Content/Kits.cs` owns the currently runnable expression and placeholder values.
 - `Design/weapons.md` and ADR 0015 own weapon physics and mastery.
+- `Design/inscriptions.md` and ADR 0017 own persistent teamwide engine rules.
 - `Design/pve-encounters.md` owns what enemies may demand and how those demands are disclosed.
 
 Do not duplicate every node or number here. Update this page when a class changes identity,
@@ -185,11 +186,13 @@ after movement begins.
 - **Herald:** steadies the Company through Rally Shields, damage reduction, wounded-ally
   triage, or broader and stronger muster effects.
 - **Warcaller:** fights the Clock in both directions through allied swing windows, enemy
-  Slow, a live disruption aura, global Company reach, or doubling the run banner.
+  Slow, a live disruption aura, global Company reach, or interaction with the expedition's
+  Inscriptions.
 - **PvE contribution:** accelerates casts and attacks across a team, protects clustered
   allies, suppresses nearby enemies, and multiplies an already coherent party engine.
 - **Engine wants:** several allies capable of exploiting Haste or Mana, deliberate muster
-  placement, useful live Rally geometry, and a meaningful banner for Bearer of the Mark.
+  placement, useful live Rally geometry, and frequent Inscription activations if Bearer of
+  the Mark becomes the planned Inscription-fed engine.
 - **Deliberate weakness:** low personal output and poor value when isolated or paired with
   allies that cannot exploit tempo. The class magnifies a plan rather than replacing one.
 - **Watch in play:** solo-oriented harnesses understate support value; evaluate at team level.
@@ -207,7 +210,7 @@ The eight candidates already cover the first-playable PvE answer space:
 - **protected backlines:** Shade, Sniper, Lancer, and long-range wardrobes;
 - **dive defense:** Pikewall, Warden, formation, and support tools;
 - **Clock pressure:** Stun, Taunt/Silence, Slow, Haste, Mana, and attack denial;
-- **Field pressure:** Inferno and Lifebinder, plus authored banners and enemy glyphs.
+- **Field pressure:** Inferno and Lifebinder, plus authored Inscriptions and enemy glyphs.
 
 The roster deliberately lacks universal cleanse/tenacity, enemy-field removal, anti-heal,
 and generic Shield break. PvE encounters must not require a counter the offered roster and
@@ -215,5 +218,5 @@ items cannot provide; see `pve-encounters.md`.
 
 Do not add a ninth hero because a concept sounds appealing. Add one only after an authored
 encounter and playtest prove that an important problem has no satisfying answer in this
-roster. Until then, deepen cross-hero engines through weapons, banners, placement, and enemy
-composition rather than expanding class count.
+roster. Until then, deepen cross-hero engines through weapons, Inscriptions, placement, and
+enemy composition rather than expanding class count.

@@ -1,0 +1,12 @@
+{
+    "asset": "05fda689a36517149b10fbcf1ad1f8b3",
+    "fileName": "019f9b39-fcbd-784a-9360-7983a870c25b_Preview.jpg",
+    "prompt": "Seamless tileable macro surface of dense amber-gold magical sand grains, suitable for an emissive fantasy crystal material. Fine granular field with sparse warm luminous flecks, no container, no crystal object, no PBR map sheet, no labels, no diagram, no text, no border, no symbols, no focal highlight. Uniform albedo texture.",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1853640144,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

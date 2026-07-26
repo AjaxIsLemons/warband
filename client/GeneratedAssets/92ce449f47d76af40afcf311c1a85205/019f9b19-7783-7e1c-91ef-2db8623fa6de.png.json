@@ -1,0 +1,31 @@
+{
+    "asset": "92ce449f47d76af40afcf311c1a85205",
+    "fileName": "019f9b19-7783-7e1c-91ef-2db8623fa6de.png",
+    "prompt": "Use case: stylized-concept. Asset type: game UI/VFX sprite. A tiny station attention marker: warm Sand wedge locked into a cold-iron socket, clear triangular notch silhouette, compact and restrained. Centered with generous padding on a perfectly flat solid #ff00ff chroma-key background for background removal. The background must be one uniform color with no shadows, gradient, texture, reflection, or floor plane. Crisp antialiased edges. Do not use magenta anywhere in the subject. No cast shadow, text, logo, or watermark. Obsidian Tower instrument style; cold iron, bone, Tower blue, and living Sand only.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 640
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

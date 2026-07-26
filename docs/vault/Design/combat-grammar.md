@@ -18,7 +18,8 @@ Because attacks feed mana, Haste accelerates casts and Slow starves them.
   Examples: fire field (DoT while standing/entering) · healing ground · consecrated
   ground (Haste allies on it) · mana font zone · **summoned wall** (the only obstacle
   in the game — always unit-made).
-- Glyphs come from signatures, forks, innates ("leaves a scorched trail"), banners.
+- Glyphs come from signatures, forks, innates ("leaves a scorched trail"), and
+  Inscriptions.
 - By mid-fight the flat board is painted with both builds' zones — territory as a
   fight-time resource, authored by kits, not level design.
 - **Allegiance law (settled 2026-07-23):** harmful hero glyphs affect enemies by default;

@@ -41,7 +41,7 @@ namespace Warband.Run
         public int TrinketChancePct = 35;
         public int InscriptionChancePct = 20;
         public int SellPct = 50;
-        public int[] ReforgeCosts = { 4, 8 };    // retained but not surfaced in the first playable
+        public int[] ReforgeCosts = { 4, 8 };
         public int RewardChoices = 3;
 
         public int FightReward(int act, FightTier tier) => FightRewardsByAct[act - 1][(int)tier];
@@ -69,6 +69,6 @@ namespace Warband.Run
         /// <summary>ADR 0015: the forge follows the front — stock and reforge are both
         /// capped by act (never by record). Placeholder curve.</summary>
         public WeaponTier TierCeiling(int act) =>
-            act <= 1 ? WeaponTier.Worn : act <= 3 ? WeaponTier.Honed : WeaponTier.Relic;
+            act <= 1 ? WeaponTier.Worn : act == 2 ? WeaponTier.Honed : WeaponTier.Relic;
     }
 }

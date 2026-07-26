@@ -1,0 +1,15 @@
+{
+    "asset": "2a6c5711ec952ba429eb5c7be73c602f",
+    "fileName": "019f9a01-f7f7-75bd-b741-723c4e4cf66c.wav",
+    "prompt": "defiant heroic power surge, rising triumphant sting with deep drum hit, refuses to die moment",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.5,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

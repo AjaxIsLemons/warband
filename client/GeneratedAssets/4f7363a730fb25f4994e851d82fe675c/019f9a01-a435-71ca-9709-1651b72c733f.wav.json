@@ -1,0 +1,15 @@
+{
+    "asset": "4f7363a730fb25f4994e851d82fe675c",
+    "fileName": "019f9a01-a435-71ca-9709-1651b72c733f.wav",
+    "prompt": "gentle healing chime, warm bell sparkle, soft magical game sting",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

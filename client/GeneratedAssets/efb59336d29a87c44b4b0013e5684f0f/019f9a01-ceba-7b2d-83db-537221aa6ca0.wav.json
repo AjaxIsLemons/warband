@@ -1,0 +1,15 @@
+{
+    "asset": "efb59336d29a87c44b4b0013e5684f0f",
+    "fileName": "019f9a01-ceba-7b2d-83db-537221aa6ca0.wav",
+    "prompt": "crystalline energy shield activation, short resonant hum, game sound",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

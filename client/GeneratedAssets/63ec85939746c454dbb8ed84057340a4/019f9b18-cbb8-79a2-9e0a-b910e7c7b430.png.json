@@ -1,0 +1,31 @@
+{
+    "asset": "63ec85939746c454dbb8ed84057340a4",
+    "fileName": "019f9b18-cbb8-79a2-9e0a-b910e7c7b430.png",
+    "prompt": "Use case: stylized-concept. Asset type: game environment and UI integration reference. The Market station within the same timeless Tower hall: the western edge of an obsidian war table becomes a precise cold-iron dealing rail with five physical card sockets, divided-coin notches, a Sand ledger channel, and the central Hourstone still visible through the composition. Wide landscape menu viewpoint with clear left stock shelf, right dossier space, and dark calm center behind overlays; no actual interface text. Dry stone, iron, mineral glass, sparse living Sand grains. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

@@ -33,6 +33,18 @@ namespace Warband.Sim
         public int ProjectileBonus;                                       // flat damage added to crossing shots
         public List<EffectDef> ProjectileRiders = new List<EffectDef>(); // applied to the hit target
 
+        /// <summary>Deep copy — see <see cref="EffectDef.Clone"/> for why the composer needs one.</summary>
+        public FieldDef Clone()
+        {
+            var c = (FieldDef)MemberwiseClone();
+            c.Pulse = new List<EffectDef>();
+            foreach (var e in Pulse) c.Pulse.Add(e.Clone());
+            c.Presence = new List<(StatusKind, int)>(Presence);
+            c.ProjectileRiders = new List<EffectDef>();
+            foreach (var e in ProjectileRiders) c.ProjectileRiders.Add(e.Clone());
+            return c;
+        }
+
         /// <summary>Derived, not authored: the renderer's read on this glyph. Pulse is the loud
         /// channel (it acts on occupants every pulse) so it wins; Presence is the quiet one.
         /// <see cref="Affects"/> already states the author's intent — a glyph aimed at Enemies is

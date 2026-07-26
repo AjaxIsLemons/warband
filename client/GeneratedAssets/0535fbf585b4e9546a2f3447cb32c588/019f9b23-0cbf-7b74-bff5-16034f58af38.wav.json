@@ -1,0 +1,15 @@
+{
+    "asset": "0535fbf585b4e9546a2f3447cb32c588",
+    "fileName": "019f9b23-0cbf-7b74-bff5-16034f58af38.wav",
+    "prompt": "A small mineral coin rolling only briefly across obsidian and locking into an iron notch, about 300 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

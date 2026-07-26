@@ -1,0 +1,1510 @@
+{
+  "camera.yaw": {
+    "min": -180.0,
+    "max": 180.0
+  },
+  "camera.pitch": {
+    "min": 5.0,
+    "max": 89.0
+  },
+  "camera.distance": {
+    "min": 0.4,
+    "max": 3.0
+  },
+  "post.bloomIntensity": {
+    "min": 0.0,
+    "max": 3.0
+  },
+  "post.bloomThreshold": {
+    "min": 0.0,
+    "max": 2.0
+  },
+  "post.vignette": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "post.saturation": {
+    "min": -60.0,
+    "max": 60.0
+  },
+  "post.dofStart": {
+    "min": 0.0,
+    "max": 64.0
+  },
+  "post.dofEnd": {
+    "min": 0.0,
+    "max": 176.0
+  },
+  "numbers.characterSize": {
+    "min": 0.01,
+    "max": 0.25
+  },
+  "numbers.fontSize": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "numbers.riseSpeed": {
+    "min": 0.5,
+    "max": 4.0
+  },
+  "numbers.lifeSeconds": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[0].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[0].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[0].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[0].minAmount": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "tells[0].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[1].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[1].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[1].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[1].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[1].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[2].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[2].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[2].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[2].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[2].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[3].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[3].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[3].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[3].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[3].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[4].flashSeconds": {
+    "min": 0.01,
+    "max": 1.28
+  },
+  "tells[4].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[4].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[4].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[4].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[5].flashSeconds": {
+    "min": 0.01,
+    "max": 1.28
+  },
+  "tells[5].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[5].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[5].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[5].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[6].flashSeconds": {
+    "min": 0.01,
+    "max": 1.4
+  },
+  "tells[6].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[6].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[6].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[6].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "impact.bigHit": {
+    "min": 1.0,
+    "max": 160.0
+  },
+  "impact.curve": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "impact.minScale": {
+    "min": 0.1,
+    "max": 3.0
+  },
+  "impact.maxScale": {
+    "min": 0.5,
+    "max": 6.0
+  },
+  "impact.riseBoost": {
+    "min": 0.0,
+    "max": 3.0
+  },
+  "impact.lifeBoost": {
+    "min": 0.0,
+    "max": 3.0
+  },
+  "impact.punchBoost": {
+    "min": 0.0,
+    "max": 3.0
+  },
+  "impact.tintAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[0].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[0].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[0].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[0].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[1].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[1].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[1].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[1].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[2].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[2].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[2].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[2].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[3].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[3].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[3].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[3].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[4].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[4].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[4].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[4].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[5].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[5].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[5].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[5].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[6].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[6].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[6].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[6].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[7].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[7].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[7].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[7].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[7].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[7].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[7].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[7].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[7].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[8].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[8].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[8].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[8].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[8].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[8].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[8].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[8].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[8].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[9].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[9].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[9].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[9].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[9].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[9].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[9].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[9].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[9].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[10].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[10].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[10].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[10].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[10].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[10].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[10].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[10].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[10].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[11].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[11].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[11].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[11].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[11].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[11].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[11].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[11].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[11].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "numbers.columns": {
+    "min": 1.0,
+    "max": 4.0
+  },
+  "numbers.releaseGap": {
+    "min": 0.0,
+    "max": 0.4
+  },
+  "numbers.columnSpread": {
+    "min": 0.0,
+    "max": 1.5
+  },
+  "numbers.columnDrift": {
+    "min": 0.0,
+    "max": 2.0
+  },
+  "numbers.maxHold": {
+    "min": 0.05,
+    "max": 1.0
+  },
+  "numbers.outwardBias": {
+    "min": 0.0,
+    "max": 1.5
+  },
+  "numbers.unitJitter": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "nameplates.characterSize": {
+    "min": 0.02,
+    "max": 0.2
+  },
+  "story.feedLifeSeconds": {
+    "min": 1.0,
+    "max": 10.0
+  },
+  "story.feedSize": {
+    "min": 0.02,
+    "max": 0.2
+  },
+  "story.bannerSize": {
+    "min": 0.04,
+    "max": 0.4
+  },
+  "story.endHoldSeconds": {
+    "min": 0.0,
+    "max": 15.0
+  },
+  "tells[0].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[0].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[1].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[1].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[2].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[2].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[3].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[3].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[4].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[4].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[5].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[5].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[6].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[6].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[7].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[7].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[8].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[8].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[9].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[9].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[10].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[10].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[11].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[11].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[12].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[12].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[12].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[12].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[12].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[12].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[12].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[12].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[12].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[12].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[12].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "motion.bobHeight": {
+    "min": 0.0,
+    "max": 0.3
+  },
+  "motion.bobSteps": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "motion.leanAmount": {
+    "min": 0.0,
+    "max": 0.3
+  },
+  "motion.turnSpeed": {
+    "min": 1.0,
+    "max": 30.0
+  },
+  "motion.snapSpeed": {
+    "min": 1.0,
+    "max": 40.0
+  },
+  "beats.stagger": {
+    "min": 0.0,
+    "max": 0.1
+  },
+  "beats.deathHold": {
+    "min": 0.0,
+    "max": 0.4
+  },
+  "beats.critHold": {
+    "min": 0.0,
+    "max": 0.3
+  },
+  "bars.hpPerSegment": {
+    "min": 0.0,
+    "max": 100.0
+  },
+  "bars.manaReadyPulse": {
+    "min": 0.0,
+    "max": 2.0
+  },
+  "models.scale": {
+    "min": 0.3,
+    "max": 1.5
+  },
+  "models.barLift": {
+    "min": 0.0,
+    "max": 1.2
+  },
+  "tells[13].flashSeconds": {
+    "min": 0.01,
+    "max": 1.28
+  },
+  "tells[13].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[13].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[13].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[13].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[13].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[13].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[13].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[13].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[13].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[13].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[14].flashSeconds": {
+    "min": 0.01,
+    "max": 1.28
+  },
+  "tells[14].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[14].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[14].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[14].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[14].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[14].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[14].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[14].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[14].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[14].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[15].flashSeconds": {
+    "min": 0.01,
+    "max": 1.4
+  },
+  "tells[15].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[15].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[15].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[15].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[15].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[15].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[15].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[15].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[15].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[15].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[16].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[16].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[16].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[16].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[16].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[16].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[16].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[16].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[16].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[16].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[16].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[17].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[17].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[17].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[17].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[17].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[17].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[17].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[17].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[17].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[17].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[17].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[18].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[18].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[18].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[18].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[18].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[18].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[18].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[18].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[18].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[18].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[18].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[19].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[19].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[19].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[19].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[19].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[19].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[19].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[19].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[19].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[19].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[19].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[20].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[20].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[20].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[20].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[20].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[20].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[20].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[20].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[20].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[20].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[20].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[21].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[21].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[21].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[21].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[21].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[21].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[21].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[21].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[21].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[21].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[21].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[22].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[22].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[22].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[22].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[22].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[22].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[22].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[22].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[22].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[22].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[22].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[23].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[23].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[23].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[23].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[23].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[23].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[23].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[23].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[23].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[23].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[23].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[24].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[24].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[24].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[24].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[24].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[24].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[24].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[24].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[24].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[24].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[24].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[25].flashSeconds": {
+    "min": 0.01,
+    "max": 2.0
+  },
+  "tells[25].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[25].punchSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[25].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[25].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[25].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[25].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[25].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[25].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[25].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[25].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[26].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[26].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[26].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[26].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[26].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[26].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[26].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[26].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[26].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[26].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[26].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[27].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[27].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[27].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[27].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[27].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[27].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[27].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[27].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[27].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[27].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[27].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[28].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[28].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[28].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[28].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[28].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[28].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[28].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[28].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[28].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[28].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[28].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[29].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[29].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[29].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[29].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[29].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[29].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[29].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[29].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[29].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[29].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[29].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "board.hexSize": {
+    "min": 0.6,
+    "max": 2.0
+  },
+  "board.tileScale": {
+    "min": 0.5,
+    "max": 1.0
+  }
+}

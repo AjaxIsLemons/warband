@@ -153,12 +153,9 @@ namespace Warband.Run
                     break;
                 case InterludePath.Armory:
                     reward = At(preview.Armory, optionIndex, "Armory reward");
-                    State.Inventory.Add(new ItemRef
-                    {
-                        Kind = reward.Kind == OfferKind.Weapon ? ItemKind.Weapon : ItemKind.Trinket,
-                        Id = reward.Id,
-                        Tier = WeaponTier.Worn,
-                    });
+                    State.Inventory.Add(NewItem(
+                        reward.Kind == OfferKind.Weapon ? ItemKind.Weapon : ItemKind.Trinket,
+                        reward.Id, WeaponTier.Worn, 0));
                     break;
                 case InterludePath.Hourstone:
                     reward = At(preview.Hourstone, optionIndex, "Hourstone reward");
@@ -240,26 +237,67 @@ namespace Warband.Run
                                      RngFor(SaltEncounter, State.Act, State.NodeIndex));
         }
 
+        /// <summary>
+        /// The rule the player is owed before locking deployment (pve-encounters.md: "no surprise
+        /// mechanics after Play"). Derived from the same private salt as <see cref="PreviewEnemies"/>
+        /// for the same reason — a brief describing a different encounter than the one that spawns
+        /// would be worse than no brief at all.
+        /// </summary>
+        public EncounterBrief PreviewBrief(FightTier tier)
+        {
+            Require(State.Phase == RunPhase.Planning, "no encounter to preview outside Planning");
+            Require(CurrentNodeKind != NodeKind.Event, "events field no enemies");
+            return AtBoss
+                ? _content.BossBrief(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct))
+                : _content.EncounterBrief(State.Act, State.NodeIndex, tier,
+                                          RngFor(SaltEncounter, State.Act, State.NodeIndex));
+        }
+
         // ---- Shop phase (ADR 0006 cadence, ADR 0009 stock) --------------------------
 
         /// <summary>Buy the offer at a slot. Hero card of an owned chassis = dupe: rank-up
         /// fires and the 1-of-2 spec choice must be resolved before any other shop action.</summary>
-        public void BuyOffer(int index)
+        public PurchaseResult BuyOffer(int index)
         {
             RequireShopActionable();
             var offer = OfferAt(index);
             Require(State.Gold >= offer.Price, "not enough Sand");
+            var result = new PurchaseResult
+            {
+                OfferIndex = index,
+                OfferKind = offer.Kind,
+                ContentId = offer.Id,
+                SandSpent = offer.Price,
+            };
             switch (offer.Kind)
             {
-                case OfferKind.Hero: BuyHero(offer); break;
+                case OfferKind.Hero:
+                    BuyHero(offer, result);
+                    break;
                 case OfferKind.Weapon:
-                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = offer.Id, Tier = offer.Tier }); break;
+                {
+                    ItemRef item = NewItem(ItemKind.Weapon, offer.Id, offer.Tier, offer.Price);
+                    State.Inventory.Add(item);
+                    result.Outcome = PurchaseOutcome.Weapon;
+                    result.ItemInstanceId = item.InstanceId;
+                    break;
+                }
                 case OfferKind.Trinket:
-                    State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = offer.Id }); break;
-                case OfferKind.Inscription: State.Banners.Add(offer.Id); break;
+                {
+                    ItemRef item = NewItem(ItemKind.Trinket, offer.Id, WeaponTier.Worn, offer.Price);
+                    State.Inventory.Add(item);
+                    result.Outcome = PurchaseOutcome.Trinket;
+                    result.ItemInstanceId = item.InstanceId;
+                    break;
+                }
+                case OfferKind.Inscription:
+                    State.Banners.Add(offer.Id);
+                    result.Outcome = PurchaseOutcome.Inscription;
+                    break;
             }
             State.Gold -= offer.Price;
             State.ShopOffers[index] = null;
+            return result;
         }
 
         public void Reroll()
@@ -298,7 +336,8 @@ namespace Warband.Run
             var hero = list[index];
             UnequipWeapon(zone, index);
             while (hero.TrinketIds.Count > 0) UnequipTrinket(zone, index);
-            State.Gold += hero.GoldSpent * _cfg.SellPct / 100;
+            State.Gold += (hero.GoldSpent + hero.StarterWeaponSandInvested) *
+                          _cfg.SellPct / 100;
             list.RemoveAt(index);
         }
 
@@ -306,7 +345,7 @@ namespace Warband.Run
         {
             RequireShopActionable();
             var item = State.Inventory[invIndex];
-            State.Gold += ItemPrice(item.Kind) * _cfg.SellPct / 100;
+            State.Gold += item.SandInvested * _cfg.SellPct / 100;
             State.Inventory.RemoveAt(invIndex);
         }
 
@@ -318,9 +357,23 @@ namespace Warband.Run
             var hero = Zone(zone)[index];
             State.Inventory.RemoveAt(invIndex);
             if (hero.WeaponId != null)
-                State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId, Tier = hero.WeaponTier });
+                State.Inventory.Add(new ItemRef
+                {
+                    InstanceId = hero.WeaponInstanceId,
+                    Kind = ItemKind.Weapon,
+                    Id = hero.WeaponId,
+                    Tier = hero.WeaponTier,
+                    SandInvested = hero.WeaponSandInvested,
+                });
+            else
+            {
+                hero.StarterWeaponTier = hero.WeaponTier;
+                hero.StarterWeaponSandInvested = hero.WeaponSandInvested;
+            }
             hero.WeaponId = item.Id;
-            hero.WeaponTier = item.Tier;                     // temper travels with the weapon
+            hero.WeaponTier = item.Tier;
+            hero.WeaponInstanceId = item.InstanceId;
+            hero.WeaponSandInvested = item.SandInvested;
         }
 
         public void EquipTrinket(RosterZone zone, int index, int invIndex)
@@ -332,10 +385,18 @@ namespace Warband.Run
             State.Inventory.RemoveAt(invIndex);
             if (hero.TrinketIds.Count > 0)                   // one trinket slot (heroes.md)
             {
-                State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = hero.TrinketIds[0] });
+                State.Inventory.Add(new ItemRef
+                {
+                    InstanceId = hero.TrinketInstanceId,
+                    Kind = ItemKind.Trinket,
+                    Id = hero.TrinketIds[0],
+                    SandInvested = hero.TrinketSandInvested,
+                });
                 hero.TrinketIds.Clear();
             }
             hero.TrinketIds.Add(item.Id);
+            hero.TrinketInstanceId = item.InstanceId;
+            hero.TrinketSandInvested = item.SandInvested;
         }
 
         public void UnequipWeapon(RosterZone zone, int index)
@@ -343,22 +404,50 @@ namespace Warband.Run
             RequireShopActionable();
             var hero = Zone(zone)[index];
             if (hero.WeaponId == null) return;               // starter isn't an item
-            State.Inventory.Add(new ItemRef { Kind = ItemKind.Weapon, Id = hero.WeaponId, Tier = hero.WeaponTier });
+            State.Inventory.Add(new ItemRef
+            {
+                InstanceId = hero.WeaponInstanceId,
+                Kind = ItemKind.Weapon,
+                Id = hero.WeaponId,
+                Tier = hero.WeaponTier,
+                SandInvested = hero.WeaponSandInvested,
+            });
             hero.WeaponId = null;
-            hero.WeaponTier = WeaponTier.Worn;               // the starter comes back untempered (placeholder rule)
+            hero.WeaponTier = hero.StarterWeaponTier;
+            hero.WeaponInstanceId = 0;
+            hero.WeaponSandInvested = hero.StarterWeaponSandInvested;
         }
 
         /// <summary>The Tower's forge (ADR 0015): pay gold, raise the held weapon —
         /// starter included — one temper tier, capped at the act's stock ceiling.</summary>
-        public void Reforge(RosterZone zone, int index)
+        public ReforgeResult Reforge(RosterZone zone, int index)
         {
             RequireShopActionable();
             var hero = Zone(zone)[index];
             Require(hero.WeaponTier < _cfg.TierCeiling(State.Act), "the forge follows the front");
+            WeaponTier previous = hero.WeaponTier;
             int cost = _cfg.ReforgeCosts[(int)hero.WeaponTier];
             Require(State.Gold >= cost, "not enough Sand to reforge");
             State.Gold -= cost;
             hero.WeaponTier = hero.WeaponTier + 1;
+            hero.WeaponSandInvested += cost;
+            if (hero.WeaponId == null)
+            {
+                hero.StarterWeaponTier = hero.WeaponTier;
+                hero.StarterWeaponSandInvested = hero.WeaponSandInvested;
+            }
+            return new ReforgeResult
+            {
+                Zone = zone,
+                HeroIndex = index,
+                WeaponId = hero.WeaponId ?? _content.Chassis(hero.ChassisId).StarterWeapon.Name,
+                ItemInstanceId = hero.WeaponInstanceId,
+                IsStarter = hero.WeaponId == null,
+                PreviousTier = previous,
+                NewTier = hero.WeaponTier,
+                SandSpent = cost,
+                TotalWeaponInvestment = hero.WeaponSandInvested,
+            };
         }
 
         public void UnequipTrinket(RosterZone zone, int index)
@@ -366,8 +455,16 @@ namespace Warband.Run
             RequireShopActionable();
             var hero = Zone(zone)[index];
             if (hero.TrinketIds.Count == 0) return;
-            State.Inventory.Add(new ItemRef { Kind = ItemKind.Trinket, Id = hero.TrinketIds[0] });
+            State.Inventory.Add(new ItemRef
+            {
+                InstanceId = hero.TrinketInstanceId,
+                Kind = ItemKind.Trinket,
+                Id = hero.TrinketIds[0],
+                SandInvested = hero.TrinketSandInvested,
+            });
             hero.TrinketIds.RemoveAt(0);
+            hero.TrinketInstanceId = 0;
+            hero.TrinketSandInvested = 0;
         }
 
         public bool SlotOfferOpen =>
@@ -517,7 +614,7 @@ namespace Warband.Run
             };
         }
 
-        private void BuyHero(ShopOffer offer)
+        private void BuyHero(ShopOffer offer, PurchaseResult result)
         {
             for (int z = 0; z < 2; z++)
             {
@@ -528,13 +625,18 @@ namespace Warband.Run
                     {
                         var hero = list[i];
                         Require(hero.Rank < Rank.S, "chassis already at max rank");
+                        result.Outcome = PurchaseOutcome.RankUp;
+                        result.PreviousRank = hero.Rank;
                         hero.Rank++;
+                        result.NewRank = hero.Rank;
                         hero.GoldSpent += offer.Price;
                         var (a, b) = _content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
                         State.PendingSpec = new PendingSpec
                         {
                             Zone = zone, Index = i, ForRank = hero.Rank, OptionA = a, OptionB = b,
                         };
+                        result.PendingOptionA = a;
+                        result.PendingOptionB = b;
                         return;
                     }
             }
@@ -542,6 +644,8 @@ namespace Warband.Run
             if (State.Field.Count < State.FieldSlots) State.Field.Add(recruit);
             else if (State.Bench.Count < _cfg.BenchSlots) State.Bench.Add(recruit);
             else throw new InvalidOperationException("no room — field and bench are full");
+            result.Outcome = PurchaseOutcome.Recruit;
+            result.NewRank = Rank.C;
         }
 
         private bool OwnedAtMaxRank(string chassisId) =>
@@ -557,8 +661,18 @@ namespace Warband.Run
             return State.ShopOffers[index]!;
         }
 
-        private int ItemPrice(ItemKind kind) =>
-            kind == ItemKind.Weapon ? _cfg.WeaponPrice : _cfg.TrinketPrice;
+        public int IndexOfItem(long instanceId) =>
+            State.Inventory.FindIndex(item => item.InstanceId == instanceId);
+
+        private ItemRef NewItem(ItemKind kind, string id, WeaponTier tier, int sandInvested) =>
+            new ItemRef
+            {
+                InstanceId = State.NextItemInstanceId++,
+                Kind = kind,
+                Id = id,
+                Tier = tier,
+                SandInvested = sandInvested,
+            };
 
         private List<string> PreviewBossRewardIds()
         {

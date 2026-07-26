@@ -1,13 +1,19 @@
 # Deep dive #8 — Banneret (v1.0 SETTLED, 2026-07-23) — THE LAST DIVE
 
 Status: **SETTLED** (Jake's calls: **dread captain over fighting captain** — Warcaller's
-ADD is disruptor, not dps · **Bearer of the Mark APPROVED** — the first cross-layer
-node, precedent deliberately set · **ally-facing cheat-death REJECTED** — The Colors Do
-Not Fall cut; cheat-death stays Berserker-exclusive · freed slots lean TEMPO per Jake:
-more allied haste + a global-haste crown). Champion working name adopted: **Capitana
+ADD is disruptor, not dps · **Bearer of the Mark cross-layer intent APPROVED**, while its
+original blanket multiplier is superseded and reopened by ADR 0017 · **ally-facing
+cheat-death REJECTED** — The Colors Do Not Fall cut; cheat-death stays
+Berserker-exclusive · freed slots lean TEMPO per Jake: more allied haste + a global-haste
+crown). Champion working name adopted: **Capitana
 Vespera, Banner of the Turning Age** (Renaissance). Born from this dive: **ADR 0014**
 (muster for states, live for casts) and **the Company**. Fork law: ✓ — Herald DEEPENs
 support, Warcaller ADDs disruptor. **First consumer of mana-grant.**
+
+**ADR 0017 amendment, 2026-07-24:** run-wide Banners are now unlimited persistent
+**Inscriptions** held by the expedition's Hourstone. Bearer's blanket multiplier is reopened
+because it would scale with the entire collection; the preferred replacement feeds
+Inscription activations into Vespera's own engine.
 
 ## The kit
 
@@ -42,9 +48,9 @@ Fork question: **does the banner steady YOUR line (Herald) or shake THEIRS
   Presence** [AURA, live] — *enemies adjacent to him swing X% slower (enemy-facing
   persistent aura — legal under clause 3: they bring themselves to him)*. The A pair
   IS the fork question in miniature: speed yours vs slow theirs.
-- **Warcaller S:** **Bearer of the Mark** [BANNER] — *your equipped run-banner's
-  effect is doubled while he lives (**APPROVED**: the first cross-layer node — the
-  class named for banners carries the Tower's actual Mark)* | **The Last March**
+- **Warcaller S:** **Bearer of the Mark** [INSCRIPTION, REOPENED] — *preferred direction:
+  whenever an Inscription activates, he gains Mana, at most once per root event; exact
+  output remains to settle* | **The Last March**
   [MUSTER] — *Standard-Bearer reaches every ally: the whole warband is his Company
   (Jake's global-haste crown)*.
 
@@ -68,11 +74,11 @@ censer — the chaplain: Rally plus heal-swings, the full support stack in one b
 ~12-item first-playable cap — fine under placeholder doctrine; the itemization pass
 (next on the board) inherits the squeeze.
 
-## Banner hooks
-He IS the banner texture: cast-cadence banners (Rally cycles fast) · Shield banners
-(Herald output) · formation/muster family (*"allies placed adjacent to an ally gain
-X"* — ADR 0014 texture) · and Bearer of the Mark literally doubles whichever
-run-banner you brought — the class and the item system shake hands, by law now.
+## Inscription hooks
+He keeps the literal banner texture while the system becomes the Hourstone: cast-cadence
+Inscriptions (Rally cycles fast) · Shield Inscriptions (Herald output) ·
+formation/muster family (*"allies placed adjacent to an ally gain X"* — ADR 0014
+texture) · and Bearer of the Mark turns Inscription activity back into his own engine.
 
 ## Sim gaps this dive adds
 **Mana-grant effect** (first consumer — Rally; vocabulary day 1) · **Company muster
@@ -80,12 +86,12 @@ set** (fight-start membership snapshot + member conditions — ADR 0014's machin
 placement passives already built) · muster/cast radius params (Wide Banner) ·
 innate-potency multiplier (Quickening) · global-muster flag (Last March) · granted
 next-N-swings on allies (Drumbeat — 4th vote) · attack-speed-down status (war-shout +
-Dread Presence; 3 votes total w/ Pyro's Choking Smoke) · **run-banner effect
-multiplier (Bearer — APPROVED; ProgressionFold hook, first sim↔run-layer crossing)**.
+Dread Presence; 3 votes total w/ Pyro's Choking Smoke) · **Inscription activation hook**
+(Bearer replacement; exact effect reopened by ADR 0017).
 Cut with Colors: ally-facing cheat-death (rejected — cheat-death stays
 Berserker-exclusive).
 
 ## Open
-None at design level. Magnitudes (haste %, shout duration, radii) placeholder until
-sweep/playtest. Roster's original row-reach Warcaller retired with the fighting
-captain (both superseded by the dread-captain rework).
+Bearer of the Mark's exact Inscription-fed output · all magnitudes (haste %, shout duration,
+radii) placeholder until sweep/playtest. Roster's original row-reach Warcaller retired with
+the fighting captain (both superseded by the dread-captain rework).

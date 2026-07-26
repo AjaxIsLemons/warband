@@ -1,0 +1,15 @@
+{
+    "asset": "35a752f5fbf842141aa719340ac13486",
+    "fileName": "019f9b27-8eba-74d1-a6d3-b1d76ecb2a6f.wav",
+    "prompt": "A restrained major result chord for a dark obsidian Tower instrument: one low stone resonance, a compact mineral-glass harmonic answer, and a warm resolved impact. Dignified, ancient, and brief rather than triumphant. Dry, tactile, close-miked, no voice, no melody, no rhythm, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should finish within 700 milliseconds and decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

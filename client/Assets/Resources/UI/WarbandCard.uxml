@@ -1,0 +1,42 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="card" class="wb-card" focusable="true">
+        <ui:VisualElement name="portrait" class="wb-card__portrait">
+            <ui:Label name="portrait-fallback" class="wb-card__portrait-fallback" />
+            <ui:Label name="role-icon" class="wb-card__role-icon" />
+            <ui:Label name="rank" class="wb-card__rank" />
+        </ui:VisualElement>
+        <ui:VisualElement class="wb-card__body">
+            <ui:Label name="eyebrow" class="wb-card__eyebrow" />
+            <ui:Label name="title" class="wb-card__title" />
+            <ui:Label name="subtitle" class="wb-card__subtitle" />
+            <ui:VisualElement name="stats" class="wb-card__stats" />
+            <ui:VisualElement name="ability" class="wb-card__ability">
+                <ui:Label name="ability-icon" class="wb-card__ability-icon" />
+                <ui:VisualElement class="wb-card__ability-copy">
+                    <ui:Label name="ability-trigger" class="wb-card__rule-trigger wb-card__rule-trigger--signature" />
+                    <ui:Label name="ability-name" class="wb-card__ability-name" />
+                    <ui:Label name="ability-summary" class="wb-card__ability-summary" />
+                </ui:VisualElement>
+                <ui:Label text="ⓘ" class="wb-card__info" />
+            </ui:VisualElement>
+            <ui:VisualElement name="passive" class="wb-card__passive">
+                <ui:Label name="passive-icon" class="wb-card__passive-icon" />
+                <ui:VisualElement class="wb-card__passive-copy">
+                    <ui:Label name="passive-trigger" class="wb-card__rule-trigger wb-card__rule-trigger--passive" />
+                    <ui:Label name="passive-name" class="wb-card__passive-name" />
+                    <ui:Label name="passive-summary" class="wb-card__passive-summary" />
+                </ui:VisualElement>
+                <ui:Label text="ⓘ" class="wb-card__info" />
+            </ui:VisualElement>
+            <ui:VisualElement name="tags" class="wb-card__tags" />
+        </ui:VisualElement>
+        <ui:VisualElement class="wb-card__footer">
+            <ui:Label name="weapon" class="wb-card__weapon" />
+            <ui:Label name="frozen" text="❄ HELD" class="wb-card__frozen" />
+            <ui:Label name="price" class="wb-card__price" />
+        </ui:VisualElement>
+        <ui:VisualElement name="selection" class="wb-card__selection">
+            <ui:Label text="✓" class="wb-card__selection-mark" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

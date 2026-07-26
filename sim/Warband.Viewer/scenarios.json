@@ -557,6 +557,148 @@
           "col": 3
         }
       ]
+    },
+    {
+      "// note": "Act-2 boss (ADR 0024): the gun is Rooted behind two Colossi and shells the FARTHEST unit, leaving burning ground. Watch: crater field, spread vs clump.",
+      "name": "boss-ashfall-battery",
+      "seed": 11,
+      "encounter": "ashfall-battery",
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 1,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 4,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 2,
+          "mastered": false
+        }
+      ]
+    },
+    {
+      "// note": "Act-3 boss (ADR 0024): the Crown's bell advances on time AND on every death in its court. Watch: mana bar jumping on each escort death, then the board-wide ring.",
+      "name": "boss-waning-crown",
+      "seed": 13,
+      "encounter": "waning-crown",
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "phalanx",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 3,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 1,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 4,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 2,
+          "mastered": false
+        }
+      ]
     }
   ]
 }

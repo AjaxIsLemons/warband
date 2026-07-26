@@ -1,6 +1,14 @@
 # ADR 0009 — Shop stock: offers, freeze, rank-up forks, banners in rotation, sell-back
 
-**Date:** 2026-07-22 · **Status:** accepted (research + design session w/ Jake) · **Participants:** Jake + Claude
+**Date:** 2026-07-22 · **Status:** amended by ADRs 0017 and 0019 · **Participants:** Jake + Claude
+
+> **2026-07-24 amendment:** ADR 0017 replaces the public Banner system with unlimited
+> persistent **Inscriptions** held by the expedition's Hourstone. The offer-slot decision
+> remains historical input; exact Inscription acquisition cadence is reopened.
+>
+> **2026-07-24 amendment:** ADR 0019 settles the first-playable implementation: three Recruit
+> cards plus two weighted Workshop cards (45% Weapon / 35% Trinket / 20% Inscription), free
+> Hold, 1-Sand reroll, and explicit select-then-Buy interaction.
 
 ## Context
 ADR 0006 settled the shop's cadence; this settles what it sells. Research inputs: Guildrun

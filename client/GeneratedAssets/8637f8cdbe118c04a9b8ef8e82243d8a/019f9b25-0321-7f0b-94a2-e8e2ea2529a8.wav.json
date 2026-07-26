@@ -1,0 +1,15 @@
+{
+    "asset": "8637f8cdbe118c04a9b8ef8e82243d8a",
+    "fileName": "019f9b25-0321-7f0b-94a2-e8e2ea2529a8.wav",
+    "prompt": "A hollow rejected-action knock inside an empty stone socket, one short low doublet, unmistakable but not alarming, about 220 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

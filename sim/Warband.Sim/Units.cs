@@ -12,7 +12,15 @@ namespace Warband.Sim
         public int AttackInterval;   // base ticks between swings (modulated by Haste/Slow)
         public int Range;            // hexes
         public int MoveInterval;     // ticks per 1-hex step
+        public TargetPref TargetPref;// who this unit acquires (ADR 0013 default = Nearest)
+        public int Standoff;         // >0: preferred fighting distance — gives ground to hold it
         public int ManaMax;          // 0 = no signature
+        public int ManaPerSwing = Battle.ManaPerAttack;  // the weapon's cast-cadence axis
+        /// <summary>Mana earned per hit TAKEN. Authored so a unit can opt out of the
+        /// damage-fed channel: a ritual whose clock is pure trickle is a countdown the player can
+        /// read off the board and answer with time, Silence or Stun — whereas the global rate makes
+        /// any channeller fire the instant it is focused, which inverts the problem it poses.</summary>
+        public int ManaPerHitTaken = Battle.ManaPerHitTaken;
         public int CritChance;       // percent; auto-attacks only — the sim's ONLY rng (ADR 0005)
         public int CritMultFp = 1500;
         public bool HealAutos;       // censer law (ADR 0012): swings heal the lowest-HP ally instead
@@ -98,6 +106,7 @@ namespace Warband.Sim
         public int EffAttackInterval(int ruleSpeedBonus = 0)
         {
             int speed = Battle.FP + Sum(StatusKind.Haste) - Sum(StatusKind.Slow) + ruleSpeedBonus;
+            if (Has(StatusKind.Frenzied)) speed += Battle.FrenzySpeedFp;
             if (speed < Battle.FP / 5) speed = Battle.FP / 5;
             int interval = Def.AttackInterval * Battle.FP / speed;
             return interval < 1 ? 1 : interval;

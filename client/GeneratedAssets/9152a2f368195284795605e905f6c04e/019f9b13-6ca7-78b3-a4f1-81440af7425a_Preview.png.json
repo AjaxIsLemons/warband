@@ -1,0 +1,12 @@
+{
+    "asset": "9152a2f368195284795605e905f6c04e",
+    "fileName": "019f9b13-6ca7-78b3-a4f1-81440af7425a_Preview.png",
+    "prompt": "Seamless tileable PBR material for raised structural slate on a timeless Tower instrument: deep blue-charcoal stone, fine compressed layers, quiet chisel planing, matte with restrained mineral sheen, medium-low contrast, no focal crack, no symbols, no text, no moss. Scale-neutral for a game environment. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gemini-3.1-flash-texture",
+    "modelName": "Gemini 3.1 Nano Banana 2",
+    "customSeed": 820165209,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

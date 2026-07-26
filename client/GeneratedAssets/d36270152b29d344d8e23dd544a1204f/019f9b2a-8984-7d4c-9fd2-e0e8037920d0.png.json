@@ -1,0 +1,31 @@
+{
+    "asset": "d36270152b29d344d8e23dd544a1204f",
+    "fileName": "019f9b2a-8984-7d4c-9fd2-e0e8037920d0.png",
+    "prompt": "Elongated faceted diamond enclosed within thick angular mineral ribs, one compact unified relic with small open negative-space cuts. Use case: stylized-concept. Asset type: 3D model reference image. One centered isolated Hourstone prop on a plain neutral charcoal studio background, full object visible with generous padding, three-quarter front view showing depth and a readable vertical silhouette. Dark obsidian mineral with restrained internal warm amber living Sand. Clean hard-surface facets, low-to-mid-poly game prop design. No pedestal, no environment, no text, no logo, no watermark, no floating detached pieces.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

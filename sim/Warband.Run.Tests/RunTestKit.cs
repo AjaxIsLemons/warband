@@ -89,6 +89,12 @@ namespace Warband.Run.Tests
         /// otherwise a three-body comp. Positions are enemy-half rows, stated directly now that
         /// nothing mirrors an owner-half snapshot in.
         /// </summary>
+        public EncounterBrief EncounterBrief(int act, int nodeIndex, FightTier tier, Rng rng) =>
+            new EncounterBrief { Id = "stub", Name = "Stub Encounter", RuleName = "NONE" };
+
+        public EncounterBrief BossBrief(int act, Rng rng) =>
+            new EncounterBrief { Id = "stub-boss", Name = "Stub Boss", RuleName = "NONE" };
+
         public List<(UnitDef Def, Hex Pos)> Boss(int act, Rng rng)
         {
             var list = new List<(UnitDef, Hex)>();

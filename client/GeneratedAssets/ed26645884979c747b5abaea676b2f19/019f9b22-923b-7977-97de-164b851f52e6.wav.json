@@ -1,0 +1,15 @@
+{
+    "asset": "ed26645884979c747b5abaea676b2f19",
+    "fileName": "019f9b22-923b-7977-97de-164b851f52e6.wav",
+    "prompt": "A compact three-tile dry shuffle across slate, controlled and brisk, about 260 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

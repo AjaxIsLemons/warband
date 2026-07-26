@@ -1,0 +1,23 @@
+{
+    "asset": "8cdf7008cb2ba514a91eadf017999e19",
+    "fileName": "019f9b35-52da-77e1-a713-c4b5ecf2f046.fbx",
+    "prompt": "Create a self-contained 3D Hourstone matching this transparent reference: one vertically elongated faceted living-sand crystal held by a minimal dark forged-metal collar. Watertight, unified, centered, robust silhouette, moderate low-poly faceting, mobile Unity URP production prop. No pedestal, scene, text, runes, chains, or floating secondary parts. Strong front, side, and rear read.",
+    "negativePrompt": "",
+    "model": "model3d-tripo3-1",
+    "modelName": "Tripo 3.1",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "promptImageReferenceGuid": "ea5200d8e5cacbb4e8296c7b946cb268",
+    "modelReferenceGuid": "",
+    "multiviewFrontGuid": "",
+    "multiviewBackGuid": "",
+    "multiviewLeftGuid": "",
+    "multiviewRightGuid": "",
+    "multiviewTopGuid": "",
+    "multiviewBottomGuid": "",
+    "multiviewLeftFrontGuid": "",
+    "multiviewRightFrontGuid": "",
+    "faceLimit": -1
+}

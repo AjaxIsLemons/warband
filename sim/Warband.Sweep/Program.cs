@@ -13,6 +13,8 @@ using Warband.Sim;
 // Emits markdown on stdout; the session pipes it into the vault.
 
 if (args.FirstOrDefault() == "--oath") { OathProbe.Run(); return; }
+if (args.FirstOrDefault() == "--enc") { EncounterProbe.Run(); return; }
+if (args.FirstOrDefault() == "--boss") { BossProbe.Run(); return; }
 
 var cat = new Catalog();
 var report = new StringBuilder();

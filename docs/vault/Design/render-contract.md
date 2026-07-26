@@ -22,11 +22,22 @@ replay viewer + guardrail.
    **v1 decision: projectiles are instant in sim** — drawn as fast tracers inside the
    tick window. Post-v1 lever (flagged, real design space): sim-modeled flight time on
    a movement board = dodge-by-repositioning gameplay, TFT-style impact-time damage.
+   *Movement pulled this lever 2026-07-24 (ADR 0018).* A step is no longer applied the tick
+   it is decided: a unit **departs** (`MoveStart`) and **arrives** `MoveInterval` ticks later
+   (`Move`), standing on its origin the whole way with its destination reserved. Travel time
+   changes when a unit arrives, so it had to become sim truth — the renderer only interpolates
+   across the window the sim declares, and lands exactly on the arrival tick.
+   **A `Move` with no preceding `MoveStart` is a teleport** (Leap): slide vs blink, one rule.
 5. **Causality grouping.** Depth + Root + contiguous drain order = Hearthstone's
    BLOCK nesting: the renderer can sequence "the counter flash follows the hit that
    caused it" without guessing.
-6. **One tell per event kind.** Every EventKind/status gets exactly one canonical
+6. **One tell per event SIGNATURE.** Every distinguishable event gets exactly one canonical
    visual signature (autobattle's readability lesson). No silent mechanics.
+   *Refined 2026-07-24:* the unit is the signature, not the bare kind — a tell declares an
+   EventKind plus optional `Cause` / `StatusKind` / `FieldFlavor`, and the most specific rule
+   wins (filterless = fallback). `DamageDealt` alone was too coarse: a burn tick, a sword hit
+   and a crit must read differently, and a healing glyph must not be colored like a fire one.
+   Matching lives in `Warband.Sim.TellMatch` (tested); tells are authored in `tuning.json`.
 
 ## The load-bearing trick: the fold IS the view-model
 The log-reconstruction fold (`PlaybackState`: events → per-tick unit states) lives in

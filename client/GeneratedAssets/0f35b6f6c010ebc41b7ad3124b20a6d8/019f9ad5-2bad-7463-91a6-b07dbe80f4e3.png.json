@@ -1,0 +1,31 @@
+{
+    "asset": "0f35b6f6c010ebc41b7ad3124b20a6d8",
+    "fileName": "019f9ad5-2bad-7463-91a6-b07dbe80f4e3.png",
+    "prompt": "circular arcane sigil, compass-rose heraldry ring with pennant flag flourishes, engraved woodcut linework, white lines on pure black background, radially symmetric mandala composition, single centered emblem, high contrast, no text, no letters",
+    "negativePrompt": "",
+    "model": "flux-2-dev",
+    "modelName": "Flux 2 (Dev)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 512,
+        "height": 512
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

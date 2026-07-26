@@ -108,10 +108,25 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0021-hourstone-table-and-result-gate.md](Decisions/0021-hourstone-table-and-result-gate.md) —
   spatial Hourstone Table, frozen-battlefield result gate, data-driven station routing,
   bespoke workspaces, and landscape phone/tablet interaction law.
+- [Decisions/0022-unit-behavior-and-item-axes.md](Decisions/0022-unit-behavior-and-item-axes.md) —
+  the per-unit behavior layer (target preference, standoff, per-chassis speed), weapon cast
+  cadence, signature patches vs overrides, the trinket layer, and the Frenzy fix.
+- [Decisions/0024-act-bosses-and-the-disclosure-contract.md](Decisions/0024-act-bosses-and-the-disclosure-contract.md) —
+  three per-act bosses (Last Oath / Ashfall Battery / Waning Crown), bosses authored for their act,
+  brief and spawn built by one method, per-body behavior disclosure, and enemy cards that stop
+  borrowing hero names. New `--boss` probe.
+- [Decisions/0023-authored-enemies-and-encounter-composition.md](Decisions/0023-authored-enemies-and-encounter-composition.md) —
+  enemies are authored not composed, composition is the act's difficulty lever, the two disclosed
+  rules that bend the shared model, and the encounter-brief contract.
 
 ## Projects
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
   open questions, done log. Sessions plan from here (CLAUDE.md Planning SOP).
+- [Projects/boss-probe-2026-07-26.md](Projects/boss-probe-2026-07-26.md) — `--boss` output at ship:
+  each act boss vs four answer-axis parties × six formations. The bar is "how many kinds of strength
+  can pass this", not win%.
+- [Projects/sweep-2026-07-25.md](Projects/sweep-2026-07-25.md) — post-ADR-0022 outlier re-run:
+  per-class deltas, the new Shade flag, and a fresh (non-comparable) tier baseline.
 - [Projects/unity-mcp-playtests.md](Projects/unity-mcp-playtests.md) — stable editor bridge,
   deterministic remote stepping, UI capture, and domain-reload rules for Unity verification.
 - [Projects/planning-system.md](Projects/planning-system.md) — live Planning implementation:

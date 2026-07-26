@@ -145,16 +145,35 @@ namespace Warband.Run.Tests
         public void FullRunsCompleteOnRealContent()
         {
             // The integration smoke: bot policy plays whole runs on the real catalog —
-            // shops, rank-ups (incl. Shade's A-fork), bot ghosts, wagers, the lot.
-            var reports = RunHarness.PlayMany(6, seedBase: 1000, new Catalog());
+            // shops, rank-ups (incl. Shade's A-fork), wagers, the lot.
+            //
+            // This used to assert that EVERY run reached victory, which was a sound invariant while
+            // monsters were random hero kits at 60% stats. Against authored encounters plus ADR
+            // 0016's terminal-loss rule it stopped being one: a greedy bot with a fixed comp, fixed
+            // spec picks and default placement winning every time would mean the PvE content poses
+            // nothing. So the assertion is now that the MACHINE always completes, that the full arc
+            // is reachable, and that it is not free.
+            var reports = RunHarness.PlayMany(12, seedBase: 1000, new Catalog());
+
             Assert.All(reports, r =>
             {
-                Assert.Equal(RunPhase.Complete, r.Final.Phase);
+                Assert.True(r.Final.Phase == RunPhase.Complete || r.Final.Phase == RunPhase.Defeated,
+                    $"run ended in {r.Final.Phase} — the run machine got stuck mid-arc");
                 Assert.NotEmpty(r.Fights);
             });
+
+            int completed = reports.Count(r => r.Final.Phase == RunPhase.Complete);
+            Assert.True(completed > 0, "no seed completed a run — the authored content is unwinnable");
+            Assert.True(completed < reports.Count, "every seed won — the authored content poses nothing");
+
             // Fights actually resolve (no perma-draw stalemates from broken content).
             int decided = reports.SelectMany(r => r.Fights).Count(f => f.EndTick < Battle.OvertimeStartTick);
             Assert.True(decided > 0, "every single fight went to overtime — something is broken");
+
+            // The progression path is exercised too, not just the fight loop: somewhere in these
+            // runs a duplicate was bought and a spec choice resolved.
+            Assert.Contains(reports, r =>
+                r.Final.Field.Concat(r.Final.Bench).Any(h => h.Rank > Rank.C));
         }
     }
 }

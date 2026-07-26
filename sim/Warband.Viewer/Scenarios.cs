@@ -31,6 +31,15 @@ namespace Warband.Viewer
         /// paths). This is the ONLY way to author an IsWall field — no kit creates one — so it exists
         /// for render fixtures like the blocked-shot tell, not as content. Absent → today's behavior.</summary>
         public List<WallSpec>? walls { get; set; }
+        /// <summary>
+        /// Optional authored encounter id (`Encounters.ById`) staged as team 1 — "waning-crown",
+        /// "ashfall-battery", "the-long-range", … Its bodies are added AFTER the listed units, so
+        /// `units` carries the player line and the encounter carries the opposition exactly as the
+        /// run layer would field it. Absent → today's behavior.
+        /// </summary>
+        public string? encounter { get; set; }
+        /// <summary>Act for an act-parameterized node encounter (bosses ignore it). Default 3.</summary>
+        public int? encounterAct { get; set; }
         public List<UnitSpec> units { get; set; } = new List<UnitSpec>();
     }
 
@@ -88,6 +97,15 @@ namespace Warband.Viewer
                 {
                     throw new InvalidDataException($"scenario '{s.name}', unit #{id - 1} ({spec.chassis}): {ex.Message}", ex);
                 }
+            }
+
+            if (!string.IsNullOrEmpty(s.encounter))
+            {
+                var encounter = Encounters.ById(s.encounter!, s.encounterAct ?? 3)
+                    ?? throw new InvalidDataException(
+                        $"scenario '{s.name}': unknown encounter id '{s.encounter}'");
+                foreach (var e in encounter.Enemies)
+                    units.Add(UnitState.Spawn(id++, 1, e.Def, e.Pos));
             }
 
             var teamTriggers = new List<(int Team, Trigger T)>();

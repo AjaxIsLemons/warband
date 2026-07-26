@@ -1,0 +1,15 @@
+{
+    "asset": "3f49908418b1e6c45829037f4c7576c2",
+    "fileName": "019f9b08-86c6-7769-a9a4-8e3b43551ef3.wav",
+    "prompt": "musket hammer cock click then burning powder fuse hiss, tense aiming windup, short, quiet menace",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

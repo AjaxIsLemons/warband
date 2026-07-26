@@ -1,0 +1,15 @@
+{
+    "asset": "9f1d69c01e1283242a59121edc24f7c3",
+    "fileName": "019f9b08-1d85-7b85-bc9a-e79db9312129.wav",
+    "prompt": "cracked cathedral bell swell with faint choir breath, holy dread rising, short windup riser",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2999999523162842,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

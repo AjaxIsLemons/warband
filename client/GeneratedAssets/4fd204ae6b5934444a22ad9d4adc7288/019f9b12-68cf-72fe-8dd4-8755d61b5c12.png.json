@@ -1,0 +1,31 @@
+{
+    "asset": "4fd204ae6b5934444a22ad9d4adc7288",
+    "fileName": "019f9b12-68cf-72fe-8dd4-8755d61b5c12.png",
+    "prompt": "Use case: stylized-concept. Asset type: game environment concept art. A cavernous timeless Tower management hall centered on a massive low oblong obsidian strategy table, concentric time rings cut into the stone, four compact station sockets at west/east/north/south, a living faceted Hourstone floating in an iron cradle at the center, cold vertical Tower ribs fading into darkness. Wide elevated three-quarter camera matching a menu background, restrained negative space for translucent UI cards, immediately readable geometry. Cool blue key light, dim bone reflections, one warm Sand glow. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gpt-image-1-5",
+    "modelName": "GPT Image 1.5",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

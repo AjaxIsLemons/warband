@@ -1,0 +1,15 @@
+{
+    "asset": "e77d0e4fe431b7148adb82a27d0d8a46",
+    "fileName": "019f9b21-9aad-7dd2-b882-9f074dc4df00.wav",
+    "prompt": "A short ancient stone mechanism slide with a faint glass-mineral shimmer at arrival, about 400 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

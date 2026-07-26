@@ -68,11 +68,11 @@ howitzer · Starfall × censer: the zealot who marches at you while the sky fall
 unmastered spice: Pyro × tower shield — the immovable pyre who stands INSIDE her own
 Everburn field.
 
-## Banner hooks
-- Burn banner family (*"allies' attacks apply Burn"* / *"Burning enemies take +X%"*) —
+## Inscription hooks
+- Burn Inscription family (*"allies' attacks apply Burn"* / *"Burning enemies take +X%"*) —
   she's the amplifier AND the enabler; frequency-costed like On-Heal. One-pool law means
-  banner Burn merges into her engine (and White Heat doubles it — deliberately global).
-- Opening-cast banners (*"first ability cast each fight: +X%"*) — big-mana Starfall
+  Inscription Burn merges into her engine (and White Heat doubles it — deliberately global).
+- Opening-cast Inscriptions (*"first ability cast each fight: +X%"*) — big-mana Starfall
   openers.
 - Ground texture: *"allies standing in friendly fields gain X"* — pairs with Inferno
   (and Cleric's Pyre) for placement-legible fire-party comps.

@@ -59,15 +59,16 @@ public class DebugMenu : MonoBehaviour
     private UIDocument _doc;
     private VisualElement _panel;   // the whole window (absolute-positioned)
     private ScrollView _body;       // TUNING tab: reflected control region
+    private ScrollView _uiBody;     // UI FX tab: Hall motion/feedback recipes
     private TextField _search;
     private DropdownField _scenarioDrop;                        // replays/*.bytes picker
     private List<string> _scenarioChoices = new List<string>(); // relative paths, [ / ] cycle them
     private bool _open;
 
-    // Tab strip: TUNING (the reflected cockpit) | EVENTS (the live event viewer).
-    private enum Tab { Tuning, Events }
+    // Tab strip: combat TUNING | menu/UI FX recipes | live replay EVENTS.
+    private enum Tab { Tuning, UiEffects, Events }
     private Tab _tab = Tab.Tuning;
-    private Button _tabTuning, _tabEvents;
+    private Button _tabTuning, _tabUiEffects, _tabEvents;
 
     // EVENTS tab surface + controls.
     private VisualElement _eventsPanel;   // whole tab body (controls row + scroll), display-toggled
@@ -81,8 +82,10 @@ public class DebugMenu : MonoBehaviour
     private readonly List<EventRow> _eventRows = new List<EventRow>();
 
     private TuningConfig _config;
+    private HubPresentationConfig _uiConfig;
     private ReplayPlayer _player;
     private int _builtVersion = -1;   // _config.Version the current rows were generated from
+    private int _builtUiVersion = -1;
 
     // Editable slider ranges, keyed by stable field path ("post.bloomIntensity", "tells[0].flashSeconds").
     private readonly Dictionary<string, (float min, float max)> _ranges = new Dictionary<string, (float, float)>();
@@ -114,6 +117,7 @@ public class DebugMenu : MonoBehaviour
         _doc.sortingOrder = 1000;
 
         _config = FindFirstObjectByType<TuningConfig>();
+        _uiConfig = HubPresentationConfig.Load();
         _player = FindFirstObjectByType<ReplayPlayer>();
         LoadRanges();
         BuildUI();
@@ -139,6 +143,11 @@ public class DebugMenu : MonoBehaviour
         // pre-reload objects (and the tells list would still be the empty default).
         if (_config == null) _config = FindFirstObjectByType<TuningConfig>();
         if (_config != null && _config.Version != _builtVersion) BuildUI();
+        if (HubPresentationConfig.Revision != _builtUiVersion)
+        {
+            _uiConfig = HubPresentationConfig.Load();
+            BuildUI();
+        }
         if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
         PollEvents();
     }
@@ -148,6 +157,7 @@ public class DebugMenu : MonoBehaviour
     {
         if (_player == null) _player = FindFirstObjectByType<ReplayPlayer>();
         if (_player != null) _player.ReapplyTuning();
+        HubPresentationConfig.NotifyChanged();
     }
 
     // ---- top-level UI build --------------------------------------------------
@@ -162,6 +172,7 @@ public class DebugMenu : MonoBehaviour
         _rows = new List<RowRef>();
         _folds = new List<FoldRef>();
         _builtVersion = _config != null ? _config.Version : -1;
+        _builtUiVersion = HubPresentationConfig.Revision;
 
         _panel = new VisualElement();
         _panel.pickingMode = PickingMode.Position;
@@ -187,6 +198,7 @@ public class DebugMenu : MonoBehaviour
         _panel.Add(_body);
 
         BuildBody();
+        BuildUiEffectsBody();
         BuildEventsBody();
         BuildResizeHandle();
 
@@ -209,8 +221,9 @@ public class DebugMenu : MonoBehaviour
         strip.style.borderBottomColor = new Color(1f, 1f, 1f, 0.08f);
 
         _tabTuning = new Button(() => SetTab(Tab.Tuning)) { text = "TUNING" };
+        _tabUiEffects = new Button(() => SetTab(Tab.UiEffects)) { text = "UI FX" };
         _tabEvents = new Button(() => SetTab(Tab.Events)) { text = "EVENTS" };
-        foreach (var b in new[] { _tabTuning, _tabEvents })
+        foreach (var b in new[] { _tabTuning, _tabUiEffects, _tabEvents })
         {
             b.style.flexGrow = 1;
             b.style.marginLeft = 0; b.style.marginRight = 4;
@@ -220,7 +233,7 @@ public class DebugMenu : MonoBehaviour
             Round(b.style, 4);
         }
         _tabEvents.style.marginRight = 0;
-        strip.Add(_tabTuning); strip.Add(_tabEvents);
+        strip.Add(_tabTuning); strip.Add(_tabUiEffects); strip.Add(_tabEvents);
         _panel.Add(strip);
     }
 
@@ -231,11 +244,15 @@ public class DebugMenu : MonoBehaviour
     private void UpdateTabVisibility()
     {
         bool tuning = _tab == Tab.Tuning;
+        bool ui = _tab == Tab.UiEffects;
+        bool events = _tab == Tab.Events;
         if (_body != null) _body.style.display = tuning ? DisplayStyle.Flex : DisplayStyle.None;
-        if (_eventsPanel != null) _eventsPanel.style.display = tuning ? DisplayStyle.None : DisplayStyle.Flex;
-        if (_search != null) _search.SetEnabled(tuning);
+        if (_uiBody != null) _uiBody.style.display = ui ? DisplayStyle.Flex : DisplayStyle.None;
+        if (_eventsPanel != null) _eventsPanel.style.display = events ? DisplayStyle.Flex : DisplayStyle.None;
+        if (_search != null) _search.SetEnabled(!events);
         if (_tabTuning != null) _tabTuning.style.backgroundColor = tuning ? TabActive : TabInactive;
-        if (_tabEvents != null) _tabEvents.style.backgroundColor = tuning ? TabInactive : TabActive;
+        if (_tabUiEffects != null) _tabUiEffects.style.backgroundColor = ui ? TabActive : TabInactive;
+        if (_tabEvents != null) _tabEvents.style.backgroundColor = events ? TabActive : TabInactive;
     }
 
     /// <summary>
@@ -461,6 +478,94 @@ public class DebugMenu : MonoBehaviour
             return;
         }
         BuildObject(data, _body, "", new List<FoldRef>());
+    }
+
+    private void BuildUiEffectsBody()
+    {
+        _uiBody = new ScrollView(ScrollViewMode.Vertical);
+        _uiBody.style.flexGrow = 1;
+        _uiBody.style.paddingLeft = 10; _uiBody.style.paddingRight = 10;
+        _uiBody.style.paddingTop = 8; _uiBody.style.paddingBottom = 10;
+        _panel.Add(_uiBody);
+
+        var title = new Label("HALL PRESENTATION RECIPES");
+        title.style.unityFontStyleAndWeight = FontStyle.Bold;
+        title.style.fontSize = 12;
+        title.style.color = new Color(0.95f, 0.79f, 0.42f);
+        title.style.marginBottom = 3;
+        _uiBody.Add(title);
+
+        var note = new Label(
+            "Live edits affect the next interaction. Preview on the Hourstone Table; Save writes " +
+            "Resources/UI/HubPresentation.json.");
+        note.style.whiteSpace = WhiteSpace.Normal;
+        note.style.fontSize = 11;
+        note.style.color = Muted;
+        note.style.marginBottom = 7;
+        _uiBody.Add(note);
+
+        var previews = new VisualElement();
+        previews.style.flexDirection = FlexDirection.Row;
+        previews.style.flexWrap = Wrap.Wrap;
+        previews.style.marginBottom = 8;
+        AddUiPreviewButton(previews, "REVEAL", UiPolishSignals.Cue.Reveal);
+        AddUiPreviewButton(previews, "HOVER", UiPolishSignals.Cue.Preview);
+        AddUiPreviewButton(previews, "SELECT", UiPolishSignals.Cue.Select);
+        AddUiPreviewButton(previews, "COMMIT", UiPolishSignals.Cue.Purchase);
+        AddUiPreviewButton(previews, "REROLL", UiPolishSignals.Cue.Reroll);
+        AddUiPreviewButton(previews, "ROUTE", UiPolishSignals.Cue.Route);
+        AddUiPreviewButton(previews, "ATTENTION", UiPolishSignals.Cue.Attention);
+        AddUiPreviewButton(previews, "ERROR", UiPolishSignals.Cue.Error);
+        AddUiPreviewButton(previews, "BUY RANK", UiTransactionKind.BuyRank);
+        AddUiPreviewButton(previews, "BUY GEAR", UiTransactionKind.BuyWeapon);
+        AddUiPreviewButton(previews, "BIND", UiTransactionKind.BindInscription);
+        AddUiPreviewButton(previews, "EQUIP", UiTransactionKind.Equip);
+        AddUiPreviewButton(previews, "FORGE", UiTransactionKind.Reforge);
+        AddUiPreviewButton(previews, "MUSTER +", UiTransactionKind.MusterSelect);
+        AddUiPreviewButton(previews, "MUSTER −", UiTransactionKind.MusterDeselect);
+        _uiBody.Add(previews);
+
+        if (_uiConfig == null)
+        {
+            var wait = new Label("Waiting for UI presentation configuration…");
+            wait.style.color = Muted;
+            _uiBody.Add(wait);
+            return;
+        }
+
+        BuildObject(_uiConfig, _uiBody, "ui", new List<FoldRef>());
+    }
+
+    private static void AddUiPreviewButton(VisualElement row, string text,
+                                           UiPolishSignals.Cue cue)
+    {
+        var button = new Button(() => UiPolishSignals.Preview(cue)) { text = text };
+        button.style.minWidth = 92;
+        button.style.marginLeft = 0;
+        button.style.marginRight = 4;
+        button.style.marginBottom = 4;
+        button.style.paddingLeft = 6;
+        button.style.paddingRight = 6;
+        button.style.color = TextCol;
+        button.style.backgroundColor = new Color(0.20f, 0.24f, 0.32f);
+        Round(button.style, 4);
+        row.Add(button);
+    }
+
+    private static void AddUiPreviewButton(VisualElement row, string text,
+                                           UiTransactionKind transaction)
+    {
+        var button = new Button(() => UiPolishSignals.Preview(transaction)) { text = text };
+        button.style.minWidth = 92;
+        button.style.marginLeft = 0;
+        button.style.marginRight = 4;
+        button.style.marginBottom = 4;
+        button.style.paddingLeft = 6;
+        button.style.paddingRight = 6;
+        button.style.color = TextCol;
+        button.style.backgroundColor = new Color(0.27f, 0.21f, 0.13f);
+        Round(button.style, 4);
+        row.Add(button);
     }
 
     // ---- events tab ----------------------------------------------------------
@@ -940,12 +1045,15 @@ public class DebugMenu : MonoBehaviour
     private void OnSave()
     {
         if (_config != null) _config.WriteToJson();
+        HubPresentationConfig.Save();
         SaveRanges();
     }
 
     private void OnReload()
     {
         if (_config != null) _config.LoadFromJson();
+        HubPresentationConfig.Reload();
+        _uiConfig = HubPresentationConfig.Load();
         LoadRanges();     // reset ranges from disk; BuildBody re-adds any missing defaults
         BuildUI();
         Apply();

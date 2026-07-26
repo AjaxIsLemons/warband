@@ -29,7 +29,9 @@ namespace Warband.Sim
         OverhealToShield, // while held, overflow healing converts to Shield (censer mastery, Crimson Tide)
         MultiShotRamp,    // Mag = extra arrows per swing while a window is open (Volleyer ramp; permanent)
         MultiShotWindow,  // swing-scoped window; Mag = % damage per extra arrow (Volley cast)
-        Frenzied,         // swing-scoped: swings come every tick (Berserker Frenzy)
+        Frenzied,         // swing-scoped: +300% attack speed for the window's swings (Berserker
+                          // Frenzy). Was "a swing every tick", which ignored AttackInterval and so
+                          // paid out purely in weapon weight — see Battle.FrenzySpeedFp.
         NextSwingCrit,    // swing-scoped: the next swing is an automatic crit (Cold Return, sabre mastery)
         SwingAmpPct,      // swing-scoped: +Mag% swing damage (musket mastery opening shot)
         CounterCharge,    // ammo for Counter-law content: consumed by the riposte trigger (Phalanx)

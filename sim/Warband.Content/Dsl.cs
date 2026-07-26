@@ -80,6 +80,23 @@ namespace Warband.Content
         public static EffectDef Glyph(Selector sel, FieldDef field) =>
             new EffectDef { Kind = EffectKind.CreateField, Select = sel, Field = field };
 
+        // ---- signature patches: degree, not verb (2026-07-25 systems review §4) ----
+        /// <summary>Author "the same signature, more of it". Use a SignatureOverride only when the
+        /// node genuinely changes the VERB — a patch keeps the inherited effects, so an A-rank
+        /// amplifier survives an S-rank crown instead of being silently replaced by it.</summary>
+        public static SignaturePatch Patch(int radius = 0, int? line = null, int amountPct = 100,
+                                           int? escalate = null, int? fieldRadius = null,
+                                           int? fieldTicks = null, int repeat = 1, params EffectDef[] add)
+        {
+            var p = new SignaturePatch
+            {
+                RadiusDelta = radius, LineRange = line, AmountPct = amountPct, Escalate = escalate,
+                FieldRadius = fieldRadius, FieldTicks = fieldTicks, Repeat = repeat,
+            };
+            p.Add.AddRange(add);
+            return p;
+        }
+
         // ---- triggers / rules ----
         public static Trigger On(EventKind ev, Cond[] when, params EffectDef[] effects)
         {

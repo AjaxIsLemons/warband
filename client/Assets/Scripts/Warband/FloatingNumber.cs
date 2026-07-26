@@ -12,19 +12,17 @@ public class FloatingNumber : MonoBehaviour
     private TextMesh _text;
     private Quaternion _face;
     private Vector3 _vel;
-    private float _t, _life, _baseSize, _rise;
+    private float _t, _life, _baseSize, _gravity;
     private Color _color;
     private Action<FloatingNumber> _release;
 
-    public static FloatingNumber Create(Transform parent, Font font, float characterSize, int fontSize)
+    public static FloatingNumber Create(Transform parent, Font font)
     {
         var go = new GameObject("number");
         go.transform.SetParent(parent, false);
         var tm = go.AddComponent<TextMesh>();
         tm.font = font;
         go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
-        tm.fontSize = fontSize;
-        tm.characterSize = characterSize;
         tm.anchor = TextAnchor.MiddleCenter;
         tm.alignment = TextAlignment.Center;
         tm.fontStyle = FontStyle.Bold;
@@ -34,11 +32,20 @@ public class FloatingNumber : MonoBehaviour
         return fn;
     }
 
-    public void Play(Vector3 pos, string s, Color color, float scale, Quaternion face, float rise, float life, Action<FloatingNumber> release)
+    /// <summary>Size is applied per-play, not at Create: these are pooled, so baking it at
+    /// construction froze recycled numbers at whatever the tuning was when they were first made.
+    /// <paramref name="velocity"/> is the FULL launch vector (column splay + rise) and
+    /// <paramref name="gravity"/> the downward decel — the caller owns the trajectory. This used to
+    /// jitter x by Random, which both read as noise and made frozen RenderShots captures
+    /// irreproducible; placement is now scheduled upstream, so the same tick renders the same way.</summary>
+    public void Play(Vector3 pos, Vector3 velocity, float gravity, string s, Color color, float scale,
+                     Quaternion face, float life, float characterSize, int fontSize, Action<FloatingNumber> release)
     {
-        _release = release; _face = face; _color = color; _baseSize = scale; _rise = rise; _life = life;
+        _release = release; _face = face; _color = color; _baseSize = scale; _gravity = gravity; _life = life;
         _t = 0f;
-        _vel = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), rise, 0f);
+        _vel = velocity;
+        _text.characterSize = characterSize;
+        _text.fontSize = fontSize;
         _text.text = s;
         _text.color = color;
         transform.SetPositionAndRotation(pos, face);
@@ -46,12 +53,15 @@ public class FloatingNumber : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    private void Update()
+    /// <summary>Advance one clock step; returns false once expired (then it's back in the pool).
+    /// Director-STEPPED like Tracer/Burst — this used to self-Update, which froze numbers in
+    /// edit-mode previews and so made the RenderShots contact sheet unable to show combat text in
+    /// flight. One clock now drives play mode and the frozen captures alike.</summary>
+    public bool Step(float dt)
     {
-        if (!Application.isPlaying) return; // frozen in edit-mode previews
-        _t += Time.deltaTime;
-        transform.position += _vel * Time.deltaTime;
-        _vel.y -= _rise * 1.5f * Time.deltaTime;
+        _t += dt;
+        transform.position += _vel * dt;
+        _vel.y -= _gravity * dt;
         transform.rotation = _face;
 
         float k = _t / _life;
@@ -60,6 +70,7 @@ public class FloatingNumber : MonoBehaviour
         _color.a = 1f - Mathf.Clamp01((k - 0.45f) / 0.55f);
         _text.color = _color;
 
-        if (_t >= _life) { gameObject.SetActive(false); _release?.Invoke(this); }
+        if (_t >= _life) { _release?.Invoke(this); return false; }
+        return true;
     }
 }

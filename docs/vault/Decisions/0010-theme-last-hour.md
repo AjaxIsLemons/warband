@@ -3,6 +3,10 @@
 **Date:** 2026-07-22 · **Status:** accepted; ghost fiction amended by ADR 0016 ·
 **Participants:** Jake + Claude
 
+> **2026-07-24 amendment:** ADR 0017 replaces the generic Tower-issued run banner with the
+> expedition's **Hourstone**, whose persistent Inscriptions bind and affect the whole
+> warband. Literal Banneret and Company Standard fiction remains.
+
 ## Context
 Jake paused hero deep dives on realizing names/themes ripped too hard from Guild Wars, and
 sketched: multiverse + time, a tower hub, fantasy bending into sci-fi — worried it was

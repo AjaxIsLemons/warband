@@ -30,7 +30,14 @@ namespace Warband.Sim
     public sealed class Battle
     {
         public const int FP = 1000;
-        public const int ManaPerAttack = 10;
+        public const int ManaPerAttack = 10;      // the default; a weapon may author its own (WeaponDef.ManaPerSwing)
+        /// <summary>Frenzy's attack-speed bonus: +300%, i.e. 4× swing rate for the window's swings.
+        /// It used to bypass the interval entirely ("a swing every tick"), which quietly made a
+        /// Frenzy window worth 4 × weapon Damage with NO interval cost — so the heaviest weapon in
+        /// the game was always the correct Frenzy weapon (musket 64 vs the Berserker's own daggers
+        /// 24) and his dagger specialization was a trap. As a speed multiplier the burst still
+        /// scales with weapon weight, but light weapons now win the window on damage per tick.</summary>
+        public const int FrenzySpeedFp = FP * 3;
         public const int ManaPerHitTaken = 5;
         public const int PulseInterval = 10;       // 1s: regen/DoT/trickle cadence
         public const int ManaTrickle = 1;
@@ -223,9 +230,34 @@ namespace Warband.Sim
 
                 if (inRange)
                 {
-                    bool ready = _tick >= u.NextAttackTick || u.Has(StatusKind.Frenzied);
+                    bool ready = _tick >= u.NextAttackTick;
                     if (ready && !u.Has(StatusKind.Disarm))
                         attacks.Add((u, target));
+
+                    // Standoff: a unit with a preferred fighting distance gives ground when its
+                    // target closes inside it, one hex per step, and only to hexes it can still
+                    // shoot from — so it never retreats itself out of the fight. It keeps swinging
+                    // while it withdraws (ADR 0018 clause 6). This terminates: the retreat stops the
+                    // moment the target is at or beyond Standoff, or when the board edge / a body
+                    // leaves nowhere farther to stand.
+                    if (u.Def.Standoff > 0 && dist < u.Def.Standoff && !u.Walking && !u.Has(StatusKind.Root))
+                    {
+                        Hex? back = null;
+                        int bestDist = dist;
+                        for (int d = 0; d < 6; d++)
+                        {
+                            Hex n = u.Pos.Neighbor(d);
+                            if (!InBounds(n) || occupied.Contains(n)) continue;
+                            int nd = Hex.Distance(n, target.Pos);
+                            if (nd > u.Def.Range || nd > u.Def.Standoff) continue;
+                            if (nd > bestDist) { bestDist = nd; back = n; }
+                        }
+                        if (back != null)
+                        {
+                            occupied.Add(back.Value);
+                            moves.Add((u, back.Value));
+                        }
+                    }
                 }
                 else if (!u.Walking && !u.Has(StatusKind.Root))
                 {
@@ -302,7 +334,7 @@ namespace Warband.Sim
                     bool healCrit = RollCrit(u);
                     if (healCrit) healAmt = healAmt * CritMult(u) / FP;
                     Heal(u.Id, target, healAmt, 0, u.Id);
-                    GainMana(u, ManaPerAttack);
+                    GainMana(u, u.Def.ManaPerSwing);
                     DecrementSwingCharges(u);
                     continue;
                 }
@@ -365,7 +397,7 @@ namespace Warband.Sim
                 if (riders != null)
                     foreach (var eff in riders)
                         ApplyToTarget(u.Id, target, eff, Cause.Field, 0, u.Id, eff.Amount);
-                GainMana(u, ManaPerAttack);
+                GainMana(u, u.Def.ManaPerSwing);
                 DecrementSwingCharges(u);
             }
             foreach (var u in casts)
@@ -804,7 +836,7 @@ namespace Warband.Sim
             bool crit = RollCrit(owner);
             if (crit) damage = damage * CritMult(owner) / FP;
             DealDamage(owner.Id, victim, damage, cause, depth, owner.Id, crit);
-            GainMana(owner, ManaPerAttack);
+            GainMana(owner, owner.Def.ManaPerSwing);
         }
 
         private bool RollCrit(UnitState u)
@@ -1036,7 +1068,7 @@ namespace Warband.Sim
                 PostHp = target.Hp, PostShield = target.Shield,
             });
             if (cause != Cause.Storm)
-                GainMana(target, ManaPerHitTaken);
+                GainMana(target, target.Def.ManaPerHitTaken);
         }
 
         private void Heal(int sourceId, UnitState target, int amount, int depth, int root)
@@ -1121,9 +1153,10 @@ namespace Warband.Sim
 
         // ---- lookups / bookkeeping ----
 
-        /// <summary>ADR 0013 targeting law: acquire nearest → sticky until death,
-        /// untargetability (Phase) or Taunt. Taunt forces the target to the taunter
-        /// while it lasts (last-applied instance wins — deterministic list order).</summary>
+        /// <summary>ADR 0013 targeting law: acquire by the unit's <see cref="TargetPref"/>
+        /// (Nearest unless the kit says otherwise) → sticky until death, untargetability
+        /// (Phase) or Taunt. Taunt forces the target to the taunter while it lasts
+        /// (last-applied instance wins — deterministic list order).</summary>
         private void AcquireTargets()
         {
             foreach (var u in _units)
@@ -1141,13 +1174,25 @@ namespace Warband.Sim
 
                 var cur = ById(u.TargetId);
                 if (cur != null && !cur.Has(StatusKind.Phase)) continue; // sticky
+
+                // Whose fight is it? Nearest is ADR 0013's default and stays the default; a kit
+                // may declare otherwise (combat-grammar.md's long-promised "kits override"). Only
+                // ACQUISITION is preference-driven — stickiness, Phase and Taunt above are
+                // untouched. Every comparison is strict, and iteration is by ascending id, so
+                // ties always fall to the lowest id: order-independent, no rng, no floats.
                 UnitState? best = null;
-                int bestDist = int.MaxValue;
+                int bestScore = 0;
                 foreach (var e in _units)
                 {
                     if (!Targetable(e) || e.Team == u.Team) continue;
-                    int d = Hex.Distance(u.Pos, e.Pos);
-                    if (d < bestDist) { bestDist = d; best = e; }
+                    int score = u.Def.TargetPref switch
+                    {
+                        TargetPref.Farthest => Hex.Distance(u.Pos, e.Pos),
+                        TargetPref.LowestHp => -(e.Hp + e.Shield),
+                        TargetPref.HighestHp => e.Hp + e.Shield,
+                        _ => -Hex.Distance(u.Pos, e.Pos),   // Nearest
+                    };
+                    if (best == null || score > bestScore) { bestScore = score; best = e; }
                 }
                 u.TargetId = best?.Id ?? -1;
             }

@@ -58,11 +58,11 @@ Volleyer × musket: every swing a shotgun blast — fewer, monster volleys · un
 spice: Volleyer × daggers — point-blank barrage, Full Draw at zero (she gave up her whole
 innate for speed).
 
-## Banner hooks
-- Opening-kill / "first blood" banners — Sniper deletes a backliner before lines lock.
-- Cast-count banners (*"every 3rd ally cast: X"*) — Volley cadence stays constant (the
+## Inscription hooks
+- Opening-kill / "first blood" Inscriptions — Sniper deletes a backliner before lines lock.
+- Cast-count Inscriptions (*"every 3rd ally cast: X"*) — Volley cadence stays constant (the
   window is fixed, only width ramps), so the hook survives the rework.
-- Positional banner texture: *"allies 4+ hexes from their target gain X"* — her lifestyle,
+- Positional Inscription texture: *"allies 4+ hexes from their target gain X"* — her lifestyle,
   and placement-legible team play (also feeds Full Draw comps).
 
 ## Sim gaps this dive adds

@@ -1,0 +1,15 @@
+{
+    "asset": "8ff81e14cc7176d44a8edc7ff6f2ad3f",
+    "fileName": "019f9b21-05c5-7eeb-a0d8-98d11ed567fd.wav",
+    "prompt": "A small bone token set firmly into a shallow iron socket, one precise click with a muted stone body, about 120 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

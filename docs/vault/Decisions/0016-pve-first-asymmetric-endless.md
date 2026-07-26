@@ -2,6 +2,10 @@
 
 **Date:** 2026-07-23 · **Status:** accepted · **Participants:** Jake + Codex
 
+> **2026-07-24 amendment:** ADR 0017 renames and expands the former Banner layer into
+> unlimited persistent Hourstone **Inscriptions**, now a primary source of compounding
+> player engines.
+
 ## Context
 The original pitch made PvE the workshop and a same-act player ghost the exam. After
 reviewing the current game, Guildrun, and other PvE autobattlers, Jake changed the center:
@@ -16,8 +20,9 @@ item, shop, run, replay, and Unity foundations survive.
 1. **PvE is the product and the run outcome.** The player advances through authored PvE
    acts and bosses toward a clear victory. PvP is not required for the core loop, first
    playable, progression, balance target, or shipping path.
-2. **The power fantasy is finding a build that feels illegal.** Specs, weapons, banners,
-   placement, the Clock, and the Field should compound into engines that visibly pop off.
+2. **The power fantasy is finding a build that feels illegal.** Specs, weapons,
+   Inscriptions, placement, the Clock, and the Field should compound into engines that
+   visibly pop off.
    A successful run may become wildly unfair in the player's favor. Balance protects a
    wide ecology of broken builds; it does not flatten every build toward parity.
 3. **PvE encounters are deliberately asymmetrical.** Enemies are not constrained to

@@ -5,3 +5,9 @@ obj/
 # render verification captures (throwaway)
 shots/
 client/shots/
+client/McpCaptures/
+
+# generated/quarantined asset batches (156MB of rejected 1.5M-tri mesh candidates et al).
+# Editor-time scratch, referenced by no runtime code. Kept on disk + Syncthing, out of git
+# history until Jake decides (commit / git-lfs / drop) — see roadmap gap analysis 2026-07-26.
+client/Assets/GeneratedAssets/

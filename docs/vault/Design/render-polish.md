@@ -2,7 +2,7 @@
 
 How the Unity client goes from "capsules on a plane" to a good-looking, **readable** hex
 autobattler — built as reusable SYSTEMS, not per-effect hacks, while still in PoC land.
-Extends `render-contract.md` (the fold is the view-model; one tell per event kind). Synthesized
+Extends `render-contract.md` (the fold is the view-model; one canonical tell per event *signature*). Synthesized
 from two research passes (spectator-juice + reference games; Unity 6.3 / URP 17 implementation).
 
 ## North star: this is a SPECTATOR battler
@@ -36,10 +36,19 @@ Rendering splits into two layers over the same fold:
 - **Tell layer** (new): as each event is *applied*, dispatch it to the **Feedback Director**.
 
 Three parts, all hand-rolled (~1-2 files):
-1. **Registry** — a ScriptableObject mapping `EventKind`/status → a `FeedbackDefinition`
-   (particle prefab, combat-text style, shake trauma, sound, tween, **blocking?** flag). One
-   asset per event kind → designer-editable, no code per new tell, swap-friendly (content is
-   placeholder). This IS "one tell per event kind" as data.
+1. **Registry** — ~~a ScriptableObject mapping `EventKind`/status → a `FeedbackDefinition`~~
+   **SUPERSEDED 2026-07-23/24 — built as JSON, and keyed on the SIGNATURE, not the kind.** Jake's
+   call: config must be AI-editable text, not Inspector-only `.asset`, so the SO registry was
+   deleted. The registry is now `StreamingAssets/tuning.json` (`tells[]`) → `TuningData`/`TellDef`,
+   parsed with Newtonsoft (string enums + hex colors), hot-reloadable with **no recompile**
+   (`TuningConfig.ReloadAndApply()`), plus an F1 in-game slider overlay that writes back to the same
+   JSON. And a tell no longer keys on `EventKind` alone — it declares a kind plus OPTIONAL `Cause` /
+   `StatusKind` / `FieldFlavor` filters, and the **most specific matching rule wins** (a filterless
+   `DamageDealt` is the fallback; `cause: Burn` overrides it for burn ticks). That matching lives in
+   `Warband.Sim.TellMatch` (headless-tested) so the Unity Director is a thin executor. Net effect is
+   the same intent — designer/agent-editable, no code per new tell — at a finer grain, because
+   "DamageDealt" alone was too coarse to tell a sword hit from a burn tick. See
+   [[Projects/roadmap]] item 4b for the built state.
 2. **Beat sequencer** — group events by tick into a **beat** (Hearthstone BLOCK). Play beats in
    order; within a beat, sub-events fire in emit order with tiny inter-event delays
    (Attack → delay → DamageDealt → StatusApplied → Death); the next beat waits on the current
@@ -69,9 +78,13 @@ loudest thing on screen · marquee cast = a *hero moment* (brief slow-mo + camer
 dim everything else). If deaths/ults don't dominate, the fight reads as uniform noise.
 
 ## Readability strategy for a dense fight
-- **One tell per kind** (discipline — the registry enforces it).
+- **One tell per signature** (discipline — the registry enforces it). Amended 2026-07-24: the unit
+  is the signature (kind + optional Cause/StatusKind/FieldFlavor), most-specific-wins — a burn tick,
+  a sword hit and a crit are distinct tells; a healing glyph is not colored like a fire glyph.
 - **Causal-linking:** visible projectile travel; victim flash timed to *arrival*, not cast start;
   hit-stop freezes attacker+victim together so they're visually bound.
+  *Implementation spec 2026-07-24 → [[directed-tells]]:* motion tells (lunge/tracer/burst) +
+  Root-keyed impact latch on the existing JSON tell system.
 - **Focus/defocus:** slow-mo + vignette/desaturate on big beats; tilt-shift DoF permanently
   softens edges so the eye stays on the board.
 - **Spatial stability:** fixed hexes + a per-unit cast/cooldown **ring** so the viewer can
@@ -80,6 +93,29 @@ dim everything else). If deaths/ults don't dominate, the fight reads as uniform 
   cancel visually; hit-stop naturally de-clutters by inserting gaps.
 - **Post-fight readout** (damage / MVP / "died to X") — the causality safety net for what the eye
   misses live; also the natural home for the "what wrecked me" story.
+
+## Magnitude → spectacle (BUILT 2026-07-24) — `ImpactTune` in tuning.json
+A hit's *size* must be felt, not read. One normalized intensity drives every channel, so
+"bigger hits feel bigger" stays a single tunable idea rather than five unrelated hacks:
+
+`t = clamp01(|amount| / bigHit) ^ curve` → then each channel is a lerp off `t`:
+
+| channel | at t=0 | at t=1 | why |
+|---|---|---|---|
+| number size | `minScale` | `maxScale` | the primary read |
+| launch speed | 1× | `1 + riseBoost` | big hits *leap* |
+| hang time | 1× | `1 + lifeBoost` | big hits linger to be read |
+| target recoil | tell's `punchAmount` | `× (1 + punchBoost)` | the victim sells the hit |
+| color | tell's color | `tintAmount` toward `heavyTint` | heat |
+
+**`heavyTint` is hot-white, deliberately not gold.** Crit already owns gold as a *categorical*
+signal; magnitude is a *continuous* one. Keeping magnitude on brightness and crit on hue means a
+big normal hit never lies as a crit — and a big crit is visibly both. Same reason the per-tell
+`numberScale` still multiplies on top: a tell can stay quiet at any magnitude.
+
+`bigHit: 40` is grounded in the real spread (all scenarios run ~1–54, bulk 5–30, ceiling 42–54),
+so haymakers saturate rather than the curve wasting its range on values that never occur. Re-check
+it whenever the stat law moves. Set `enabled: false` to collapse back to flat behaviour.
 
 ## Visual direction: tabletop diorama (TFT-style) — RECOMMENDED, pending Jake's nod
 Both passes converge on this as *the* answer for this genre. Cheap, programmer-art-friendly, and
@@ -106,10 +142,12 @@ it fits "a warband arrayed on a board."
 (the one 3rd-party dep worth taking — zero-alloc, destroy-safe, deterministic; beats DOTween's
 GC + footguns) · *optional* MiniBokeh (tilt-shift) · *optional* Cinemachine 3 (only if also used
 for camera framing).
-**HAND-ROLL:** Feedback Director + `EventKind`→SO registry + beat sequencer · `ObjectPool<T>`
+**HAND-ROLL:** Feedback Director + signature→tell registry (**built as JSON, not SO** — see above) +
+beat sequencer · `ObjectPool<T>`
 (built-in) · trauma screen-shake (~30 lines, magnitude = trauma², + a touch of rotation) ·
 hit-stop via playback-clock hold · hex mesh (one combined static mesh) + **URP Decal Projector**
-highlight/AoE pool · pooled world-space TMP combat text.
+highlight/AoE pool · pooled world-space TMP combat text (**built with legacy `TextMesh` instead —
+dependency-free; revisit TMP only if the numbers need better glyph quality**).
 **SKIP:** VFX Graph (Shuriken is enough at our scale) · Feel/MMFeedbacks (fights the typed-event /
 decoupled-clock architecture) · DOTween/LeanTween.
 

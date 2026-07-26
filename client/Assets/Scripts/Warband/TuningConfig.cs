@@ -11,7 +11,11 @@ public class TuningConfig : MonoBehaviour
 {
     public TuningData data = new TuningData();
 
-    public void LoadFromJson() => TuningIO.Load(data);
+    /// <summary>Bumped on every reload. Live UI built by reflecting over <see cref="data"/> watches
+    /// this and rebuilds: a reload replaces the tells list, so cached rows would edit orphans.</summary>
+    public int Version { get; private set; }
+
+    public void LoadFromJson() { TuningIO.Load(data); Version++; }
     public void WriteToJson() => TuningIO.Save(data);
 
     /// <summary>Reload every TuningConfig from JSON, then rebuild the ReplayPlayer so the change shows.</summary>

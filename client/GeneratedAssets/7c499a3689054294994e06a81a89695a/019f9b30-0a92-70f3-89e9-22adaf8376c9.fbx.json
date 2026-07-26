@@ -1,0 +1,23 @@
+{
+    "asset": "7c499a3689054294994e06a81a89695a",
+    "fileName": "019f9b30-0a92-70f3-89e9-22adaf8376c9.fbx",
+    "prompt": "Preserve the reference silhouette as a singular ancient Hourstone: a faceted suspended amber-gold crystal with a compact dark iron retaining crown integrated around its upper third. Watertight unified object, symmetrical enough to read from every angle, low-to-mid polygon game topology, mobile-friendly Unity URP prop. No pedestal, no floor, no text, no detached pieces, no background. Give the crystal broad readable facets and the iron restraint crisp beveled planes.",
+    "negativePrompt": "",
+    "model": "model3d-tripo3-1",
+    "modelName": "Tripo 3.1",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "promptImageReferenceGuid": "95fcf72021486e44cbd7df6c28874315",
+    "modelReferenceGuid": "",
+    "multiviewFrontGuid": "",
+    "multiviewBackGuid": "",
+    "multiviewLeftGuid": "",
+    "multiviewRightGuid": "",
+    "multiviewTopGuid": "",
+    "multiviewBottomGuid": "",
+    "multiviewLeftFrontGuid": "",
+    "multiviewRightFrontGuid": "",
+    "faceLimit": -1
+}

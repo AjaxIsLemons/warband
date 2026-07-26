@@ -6,8 +6,8 @@ encounters — then take the same broken build into endless until time finally k
 
 **The fantasy:** You are not assembling a fair team. You are finding a loophole in the Tower:
 a healer turned immortal frontline, a field engine that consumes the board, a firing line
-that accelerates until the enemy never acts. Every shop, rank-up fork, weapon, banner, and
-placement is another part of the machine. The payoff is watching the machine come online.
+that accelerates until the enemy never acts. Every shop, rank-up fork, weapon, Inscription,
+and placement is another part of the machine. The payoff is watching the machine come online.
 
 **The identity:** Guildrun-depth hero transformation + TFT-style hex positioning, built for
 authored PvE rather than competitive parity. Enemies are free to be monsters: uneven unit
@@ -58,9 +58,9 @@ the battlefield — placement is the only order you give."**
   a healer can become a frontline anchor on the right path (Guildrun's multiclass model).
 - **Weapons/trinkets** tie builds together across heroes and are the churny re-tool axis; heroes
   are sticky and never bricked (circuit's lesson).
-- Banners and cross-system riders turn several individually understandable pieces into a team
-  engine. The balance target is many discoverable ways to become outrageously strong, not a
-  narrow band of equal outcomes.
+- Persistent Hourstone Inscriptions and cross-system riders turn several individually
+  understandable pieces into a team engine. The balance target is many discoverable ways
+  to become outrageously strong, not a narrow band of equal outcomes.
 
 ## Tech
 - Unity 6.3 LTS, Guildrun/TFT isometric camera, 2.5D programmer art until the loop is proven.

@@ -1,0 +1,15 @@
+{
+    "asset": "68fbc3568e442994f932e62c70b64f32",
+    "fileName": "019f9b07-32ee-788c-bfe4-c1a8dd6e5eba.wav",
+    "prompt": "ancient reed pipe drone rising, hoplite war signal, tense windup riser, short, no melody",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2999999523162842,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

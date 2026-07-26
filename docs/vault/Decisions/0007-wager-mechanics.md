@@ -1,6 +1,9 @@
 # ADR 0007 — Wager mechanics: risk tiers, per-kill payout, tier-scaled success bonus
 
-**Date:** 2026-07-22 · **Status:** accepted (design session w/ Jake) · **Participants:** Jake + Claude
+**Date:** 2026-07-22 · **Status:** superseded by ADR 0019 · **Participants:** Jake + Claude
+
+> **2026-07-24:** terminal losses, zero loss payout, one fixed visible reward, and
+> Stable/Fraying/Collapsing replace the recoverable-loss/kill-share design below.
 
 ## Context
 ADR 0002 made PvE the wager layer but left the shape open. ADR 0006 settled the sink side

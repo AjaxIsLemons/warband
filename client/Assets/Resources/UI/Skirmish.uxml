@@ -1,0 +1,133 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="skirmish-root" class="skirmish-root state--planning">
+        <ui:VisualElement name="board-hit-surface" class="board-hit-surface" />
+
+        <ui:VisualElement name="encounter-strip" class="panel encounter-strip">
+            <ui:VisualElement class="encounter-heading">
+                <ui:VisualElement>
+                    <ui:Label name="step-label" class="eyebrow" />
+                    <ui:Label name="title-label" class="encounter-title" />
+                </ui:VisualElement>
+                <ui:Label text="FULL INFO" class="public-info-pill" />
+            </ui:VisualElement>
+            <ui:Label name="pressure-label" class="body-copy pressure-copy" />
+            <ui:VisualElement class="rule-card">
+                <ui:Label name="rule-label" class="rule-copy" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="enemy-card" class="panel enemy-card">
+            <ui:Label text="ENEMY FORMATION" class="eyebrow eyebrow--danger" />
+            <ui:VisualElement name="enemy-list" class="enemy-list" />
+            <ui:Label
+                text="Formation and rules are final. Combat has no hidden phase."
+                class="body-copy enemy-note" />
+        </ui:VisualElement>
+
+        <ui:Label name="feedback-label" class="feedback-label" />
+
+        <ui:VisualElement name="muster-drawer" class="muster-drawer">
+            <ui:Button name="drawer-toggle" class="drawer-toggle">
+                <ui:VisualElement class="drawer-handle-copy">
+                    <ui:Label text="MUSTER" class="drawer-title" />
+                    <ui:Label name="drawer-count-label" class="drawer-count" />
+                </ui:VisualElement>
+                <ui:Label name="drawer-chevron-label" text="▼" class="drawer-chevron" />
+            </ui:Button>
+
+            <ui:VisualElement name="drawer-body" class="panel drawer-body">
+                <ui:VisualElement name="roster-pane" class="drawer-pane roster-pane">
+                    <ui:VisualElement class="pane-heading">
+                        <ui:Label text="WARBAND" class="section-label" />
+                        <ui:VisualElement class="history-buttons">
+                            <ui:Button name="undo-button" text="↶ UNDO" class="micro-button" />
+                            <ui:Button name="redo-button" text="↷ REDO" class="micro-button" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:Label text="FIELD" class="subsection-label" />
+                    <ui:ScrollView
+                        name="field-scroll"
+                        mode="Horizontal"
+                        horizontal-scroller-visibility="Auto"
+                        vertical-scroller-visibility="Hidden"
+                        class="roster-scroll">
+                        <ui:VisualElement name="field-list" class="roster-list" />
+                    </ui:ScrollView>
+
+                    <ui:VisualElement class="reserve-heading">
+                        <ui:Label text="RESERVES" class="subsection-label" />
+                        <ui:Label text="Drag onto a fielded hero to swap" class="tiny-help" />
+                    </ui:VisualElement>
+                    <ui:ScrollView
+                        name="bench-scroll"
+                        mode="Horizontal"
+                        horizontal-scroller-visibility="Auto"
+                        vertical-scroller-visibility="Hidden"
+                        class="roster-scroll reserve-scroll">
+                        <ui:VisualElement name="bench-list" class="roster-list" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+
+                <ui:VisualElement name="inspector-pane" class="drawer-pane inspector-pane">
+                    <ui:Label name="loadout-hero-label" class="loadout-title" />
+                    <ui:Label name="loadout-champion-label" class="body-copy champion-copy" />
+                    <ui:VisualElement class="role-action-row">
+                        <ui:Label name="loadout-role-label" class="role-pill" />
+                        <ui:Button name="roster-action-button" class="micro-button roster-action-button" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="stat-list" class="stat-list" />
+
+                    <ui:VisualElement class="ability-row">
+                        <ui:VisualElement class="ability-card ability-card--first">
+                            <ui:Label name="passive-name-label" class="ability-name" />
+                            <ui:Label name="passive-text-label" class="body-copy ability-copy" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="ability-card">
+                            <ui:Label name="signature-name-label" class="ability-name ability-name--signature" />
+                            <ui:Label name="signature-text-label" class="body-copy ability-copy" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="ability-card mastery-card">
+                        <ui:Label name="mastery-name-label" class="ability-name ability-name--mastery" />
+                        <ui:Label name="mastery-text-label" class="body-copy ability-copy" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement name="armory-pane" class="drawer-pane armory-pane">
+                    <ui:VisualElement class="pane-heading">
+                        <ui:Label text="ARMORY" class="section-label" />
+                        <ui:Label text="OWNED • FREE TO RE-EQUIP" class="tiny-help tiny-help--gold" />
+                    </ui:VisualElement>
+                    <ui:ScrollView
+                        name="weapon-scroll"
+                        mode="Vertical"
+                        horizontal-scroller-visibility="Hidden"
+                        vertical-scroller-visibility="Auto"
+                        class="weapon-scroll">
+                        <ui:VisualElement name="weapon-list" class="weapon-list" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="commit-cluster" class="commit-cluster">
+            <ui:Label
+                name="instruction-label"
+                text="Select a hero, reserve, weapon, or hex. Everything stays editable until the fight."
+                class="commit-help" />
+            <ui:Button name="primary-button" class="primary-button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="result-panel" class="panel result-panel">
+            <ui:Label text="ENCOUNTER RESULT" class="eyebrow" />
+            <ui:Label name="outcome-label" class="outcome-label" />
+            <ui:Label
+                text="Your last warband and formation are preserved. Return to Planning to iterate."
+                class="body-copy result-copy" />
+        </ui:VisualElement>
+
+        <ui:Label name="drag-ghost" class="drag-ghost" />
+    </ui:VisualElement>
+</ui:UXML>

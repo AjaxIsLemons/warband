@@ -1,0 +1,15 @@
+{
+    "asset": "eb9657987681e10469daf4b3e6c601eb",
+    "fileName": "019f9b07-f10a-7597-b01a-e6d5b8eb668b.wav",
+    "prompt": "guttural breath intake building to a roar, beast-like rage rising, short windup, visceral",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.2000000476837159,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

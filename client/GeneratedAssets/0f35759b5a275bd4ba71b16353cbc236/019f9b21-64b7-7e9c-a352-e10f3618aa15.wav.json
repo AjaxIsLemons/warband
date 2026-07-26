@@ -1,0 +1,15 @@
+{
+    "asset": "0f35759b5a275bd4ba71b16353cbc236",
+    "fileName": "019f9b21-64b7-7e9c-a352-e10f3618aa15.wav",
+    "prompt": "A compact cold-iron pin seating into obsidian, dry mechanical tick and soft low tail, about 130 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

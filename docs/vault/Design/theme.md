@@ -13,8 +13,8 @@ another era being eaten.
    is a knight, the gunslinger is a gunslinger. The clash lives *between* units, never
    inside one. **v1 law: 8 champions, 8 eras, no repeats.**
 3. **The Tower is the constant.** Hub outside time: shops after every node are the Tower's
-   door behind you; your banner is the Tower-issued mark that unifies an era-spanning
-   warband on the board.
+   door behind you. Each expedition carries an **Hourstone**, a tablet cut from the Tower
+   that binds its era-spanning champions to one shared Hour.
 
 ## Mechanics ↔ fiction (candidates — Jake steers)
 - **Asymmetrical PvE = a timeline's death throes**: the consuming Hour does not recruit a
@@ -27,6 +27,9 @@ another era being eaten.
   authored victory.
 - **Endless = Beyond the Hour** (candidate): the Tower keeps the victorious warband in the
   collapse until some deeper timeline finally breaks its engine.
+- **Inscriptions = stolen laws of dying timelines:** the Tower etches them into the
+  expedition's Hourstone. Every bound champion obeys every acquired rule until the stone
+  is sealed or fractures with the run.
 - **Future PvP = Echoes**: optional no-stakes exhibitions against brother-timeline
   warbands. Echoes are compatible with the fiction but are not part of the core run.
 - **Wager tiers → timefront stability**: Safe/Even/Greedy → **Stable / Fraying /

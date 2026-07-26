@@ -41,6 +41,7 @@ namespace Warband.Content
             Chassis["cleric"] = new ChassisDef
             {
                 Name = "Cleric", MaxHp = 130, ManaMax = 40, RankHp = 25, RankAttack = 2,
+                MoveInterval = 5,
                 StarterWeapon = Weapons.All["censer"],
                 Specializations = { "censer", "staff" },
                 // Mercy Aura [MUSTER, ADR 0014]: allies placed within 2 Regen for the fight.
@@ -53,13 +54,17 @@ namespace Warband.Content
 
             Node("cleric.warpriest", new SpecNode   // DEEPEN the bruiser: bigger Pyre + Burn
             {
-                SignatureOverride = new List<EffectDef>
-                    { Dmg(Enemies(2), 12), Status(StatusKind.Burn, 3, Enemies(2)), Heal(Allies(2, exSelf: false), 10) },
+                // The Pyre grows and starts to burn — same verb, more of it.
+                SignaturePatch = Patch(radius: 1, add: Status(StatusKind.Burn, 3, Enemies(2))),
             });
             Node("cleric.lifebinder", new SpecNode  // SWAP to backline: pulse on the lowest ally
             {
                 SignatureOverride = new List<EffectDef>
                     { Heal(Lowest, 18), Status(StatusKind.Haste, 300, Lowest, ticks: 30) },
+                // The SWAP is a placement decision (dive #1) — so it now moves her. Before this,
+                // "retreat from the scrum" was advice to the player that the unit itself ignored:
+                // both forks walked at the nearest enemy at identical speed.
+                Standoff = 3,
             });
 
             Offer("cleric", Rank.A, "cleric.warpriest", "cleric.warpriest.scorched", "cleric.warpriest.contagion");
@@ -109,11 +114,7 @@ namespace Warband.Content
             Offer("cleric", Rank.S, "cleric.lifebinder", "cleric.lifebinder.greatchorus", "cleric.lifebinder.sanctuary");
             Node("cleric.lifebinder.greatchorus", new SpecNode // fires twice — second re-resolves the lowest
             {
-                SignatureOverride = new List<EffectDef>
-                {
-                    Heal(Lowest, 18), Status(StatusKind.Haste, 300, Lowest, ticks: 30),
-                    Heal(Lowest, 18), Status(StatusKind.Haste, 300, Lowest, ticks: 30),
-                },
+                SignaturePatch = Patch(repeat: 2),
             });
             Node("cleric.lifebinder.sanctuary", new SpecNode
             {
@@ -128,6 +129,7 @@ namespace Warband.Content
             Chassis["bulwark"] = new ChassisDef
             {
                 Name = "Bulwark", MaxHp = 200, ManaMax = 30, RankHp = 40, RankAttack = 1,
+                MoveInterval = 7,                    // the wall arrives last and leaves never
                 StarterWeapon = Weapons.All["towershield"],
                 Specializations = { "towershield", "mace" },
                 Passives = { AtStart(Shield(Self, 30)) },           // Bastion
@@ -160,8 +162,7 @@ namespace Warband.Content
             Offer("bulwark", Rank.S, "bulwark.juggernaut", "bulwark.juggernaut.faultline", "bulwark.juggernaut.grudgekeeper");
             Node("bulwark.juggernaut.faultline", new SpecNode
             {
-                SignatureOverride = new List<EffectDef>
-                    { Dmg(Enemies(2), 10), Status(StatusKind.Stun, 0, Enemies(2), ticks: 15) },
+                SignaturePatch = Patch(radius: 1),   // the Slam reaches a ring farther
             });
             Node("bulwark.juggernaut.grudgekeeper", new SpecNode // the wall swings with its own weight
             {
@@ -180,8 +181,10 @@ namespace Warband.Content
             Offer("bulwark", Rank.S, "bulwark.warden", "bulwark.warden.challenge", "bulwark.warden.retribution");
             Node("bulwark.warden.challenge", new SpecNode
             {
-                SignatureOverride = new List<EffectDef>
-                    { Status(StatusKind.Taunt, 0, Enemies(4), ticks: 40), Shield(Self, 35) },
+                // Wider Taunt, heavier self-Shield. Taunt's magnitude is 0, so the amount scale
+                // lands only on the Shield — the patch says what it means without listing the
+                // Taunt again.
+                SignaturePatch = Patch(radius: 1, amountPct: 175),
             });
             Node("bulwark.warden.retribution", new SpecNode // thorns while they carry his Taunt
             {
@@ -197,6 +200,13 @@ namespace Warband.Content
             Chassis["shade"] = new ChassisDef
             {
                 Name = "Shade", MaxHp = 95, ManaMax = 35, RankHp = 18, RankAttack = 3,
+                MoveInterval = 3,                    // the fastest body on the board
+                // The knife picks its moment: he acquires the WEAKEST enemy, not the closest.
+                // With Ambush's opening Leap and the kill→re-Leap engine this is what makes the
+                // roster contract ("chains through vulnerable targets") true in the sim rather
+                // than only on the page — he strings wounded bodies together instead of
+                // brawling whatever he happens to land beside.
+                TargetPref = TargetPref.LowestHp,
                 StarterWeapon = Weapons.All["daggers"],
                 Specializations = { "daggers", "bow" },
                 Passives = { AtStart(Leap(Farthest)) },              // Ambush
@@ -263,6 +273,13 @@ namespace Warband.Content
             Chassis["sharpshot"] = new ChassisDef
             {
                 Name = "Sharpshot", MaxHp = 90, ManaMax = 45, RankHp = 15, RankAttack = 3,
+                MoveInterval = 5,
+                // Full Draw pays her per hex of distance, but every unit advanced to exactly max
+                // range and then stood there, so her signature stat could only ever decay from
+                // first contact onward and she had no tool to defend it. She now gives ground to
+                // hold her firing distance — the gradient becomes something she plays, not
+                // something that happens to her.
+                Standoff = 4,
                 StarterWeapon = Weapons.All["bow"],
                 Specializations = { "bow", "musket" },
                 // Full Draw: +2 damage per hex to her target — the visible gradient.
@@ -291,7 +308,7 @@ namespace Warband.Content
             });
             Node("sharpshot.sniper.overpen", new SpecNode // each body passed adds +25% for those farther down
             {
-                SignatureOverride = new List<EffectDef> { Dmg(LineFar(0), 35, escalate: 25) },
+                SignaturePatch = Patch(escalate: 25),
             });
             Offer("sharpshot", Rank.S, "sharpshot.sniper", "sharpshot.sniper.onebreath", "sharpshot.sniper.killwindow");
             Node("sharpshot.sniper.onebreath", new SpecNode // half as often, twice as hard
@@ -341,6 +358,8 @@ namespace Warband.Content
             Chassis["pyromancer"] = new ChassisDef
             {
                 Name = "Pyromancer", MaxHp = 85, ManaMax = 50, RankHp = 15, RankAttack = 2,
+                MoveInterval = 6,
+                Standoff = 3,                        // she keeps her own fire between herself and them
                 StarterWeapon = Weapons.All["staff"],
                 Specializations = { "staff", "censer" },
                 // Firebrand: her swings apply 1 Burn.
@@ -352,7 +371,7 @@ namespace Warband.Content
 
             Node("pyromancer.inferno", new SpecNode // the ground is the weapon: r2 + spread on kill
             {
-                SignatureOverride = new List<EffectDef> { Glyph(Cur, Blaze(radius: 2, ticks: 80)) },
+                SignaturePatch = Patch(fieldRadius: 2),
                 Triggers = { On(EventKind.Death, W(TgtAlly(not: true), TgtHas(StatusKind.Burn)),
                     Glyph(EvTgt, Blaze(radius: 1, ticks: 60))) },
             });
@@ -384,7 +403,9 @@ namespace Warband.Content
             });
             Node("pyromancer.inferno.everburn", new SpecNode // the board slowly becomes fire
             {
-                SignatureOverride = new List<EffectDef> { Glyph(Cur, Blaze(radius: 2, ticks: -1)) },
+                // Inherits Inferno's radius instead of restating it — the two nodes can no longer
+                // disagree about how big her fire is.
+                SignaturePatch = Patch(fieldTicks: -1),
             });
 
             Offer("pyromancer", Rank.A, "pyromancer.starfall", "pyromancer.starfall.detonate", "pyromancer.starfall.kindling");
@@ -415,6 +436,7 @@ namespace Warband.Content
             Chassis["berserker"] = new ChassisDef
             {
                 Name = "Berserker", MaxHp = 160, ManaMax = 40, RankHp = 30, RankAttack = 3,
+                MoveInterval = 4,                    // he closes
                 StarterWeapon = Weapons.All["greataxe"],
                 Specializations = { "greataxe", "daggers" },
                 // Burning Hours: faster the lower his HP (per 10% missing).
@@ -483,6 +505,7 @@ namespace Warband.Content
             Chassis["phalanx"] = new ChassisDef
             {
                 Name = "Phalanx", MaxHp = 150, ManaMax = 35, RankHp = 30, RankAttack = 2,
+                MoveInterval = 6,                    // the line moves at the line's pace
                 StarterWeapon = Weapons.All["pike"],
                 Specializations = { "pike", "towershield" },
                 Passives =
@@ -509,7 +532,7 @@ namespace Warband.Content
             });
             Node("phalanx.lancer", new SpecNode // the lunge: every enemy on the line
             {
-                SignatureOverride = new List<EffectDef> { Dmg(Line(4), 12) },
+                SignaturePatch = Patch(line: 4),
             });
 
             Offer("phalanx", Rank.A, "phalanx.pikewall", "phalanx.pikewall.spearpoint", "phalanx.pikewall.sharprebuke");
@@ -547,14 +570,15 @@ namespace Warband.Content
             });
             Node("phalanx.lancer.deepthrust", new SpecNode // the lunge drives harder per body it passes
             {
-                // Composition wart (documented): Sarissa's S-override replaces this sig —
-                // the "Breach the Line" combo keeps length, drops escalation. Placeholder.
-                SignatureOverride = new List<EffectDef> { Dmg(Line(4), 12, escalate: 30) },
+                // The wart this used to carry is gone: as a patch, the escalation SURVIVES Sarissa's
+                // crown, so "Breach the Line" is finally board-length AND escalating — the build the
+                // dive promised, instead of a crown that silently ate its own amplifier.
+                SignaturePatch = Patch(escalate: 30),
             });
             Offer("phalanx", Rank.S, "phalanx.lancer", "phalanx.lancer.sarissa", "phalanx.lancer.perfectform");
             Node("phalanx.lancer.sarissa", new SpecNode // the lunge runs board-length
             {
-                SignatureOverride = new List<EffectDef> { Dmg(Line(0), 12) },
+                SignaturePatch = Patch(line: 0),
             });
             Node("phalanx.lancer.perfectform", new SpecNode // the untouched-spearman tempo
             {
@@ -569,6 +593,7 @@ namespace Warband.Content
             Chassis["banneret"] = new ChassisDef
             {
                 Name = "Banneret", MaxHp = 120, ManaMax = 25, RankHp = 25, RankAttack = 1,
+                MoveInterval = 5,
                 StarterWeapon = Weapons.All["standard"],
                 Specializations = { "standard", "sabre" },
                 // Standard-Bearer [MUSTER]: the Company swings faster, wherever they drift.
@@ -580,12 +605,11 @@ namespace Warband.Content
 
             Node("banneret.herald", new SpecNode // the shieldward
             {
-                SignatureOverride = new List<EffectDef> { Mana(Allies(2), 10), Shield(Allies(2), 10) },
+                SignaturePatch = Patch(add: Shield(Allies(2), 10)),
             });
             Node("banneret.warcaller", new SpecNode // the dread captain: one cast, both tempos
             {
-                SignatureOverride = new List<EffectDef>
-                    { Mana(Allies(2), 10), Status(StatusKind.Slow, 250, Enemies(2), ticks: 25) },
+                SignaturePatch = Patch(add: Status(StatusKind.Slow, 250, Enemies(2), ticks: 25)),
             });
 
             Offer("banneret", Rank.A, "banneret.herald", "banneret.herald.steady", "banneret.herald.secondwind");

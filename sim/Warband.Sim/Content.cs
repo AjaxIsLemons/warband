@@ -70,6 +70,8 @@ namespace Warband.Sim
         public bool SkipCtxTarget;     // line kinds: skip the through-target itself (Overreach's "behind")
         public int BelowHpPct;         // >0: only units under this HP% (Second Wind's triage filter)
         public StatusKind? MustHave; // filter: only units carrying this status ("nearest Burning enemy")
+
+        public Selector Clone() => (Selector)MemberwiseClone();
     }
 
     // Leap: the OWNER moves to a free hex adjacent to the selected target, drops its
@@ -108,6 +110,18 @@ namespace Warband.Sim
         public int EscalatePctPerIndex;  // multi-target effects: +% per resolved-target index —
                                          // enemies farther down the line take more (Overpenetration)
         public bool AsCounter;     // Swing only: apply the directional Counter law + Cause.Counter
+
+        /// <summary>Deep copy down to the Selector and FieldDef. The composer patches signatures
+        /// in place (SignaturePatch), and every UnitDef's signature starts life pointing at the
+        /// STATIC content catalog — so a patch that mutated in place would rewrite the kit for
+        /// every later composition in the process. Clone first, always.</summary>
+        public EffectDef Clone()
+        {
+            var c = (EffectDef)MemberwiseClone();
+            c.Select = Select.Clone();
+            c.Field = Field?.Clone();
+            return c;
+        }
     }
 
     public sealed class Trigger

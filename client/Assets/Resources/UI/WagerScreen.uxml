@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="wager-root" class="wager-screen shell-screen">
+        <ui:VisualElement class="wager-topbar">
+            <ui:VisualElement>
+                <ui:Label text="THE NEXT HOUR" class="wager-topbar__eyebrow" />
+                <ui:Label name="act" class="wager-topbar__act" />
+            </ui:VisualElement>
+            <ui:VisualElement name="track" class="management-track" />
+            <ui:VisualElement class="management-resource">
+                <ui:Label text="SAND" class="management-resource__label" />
+                <ui:Label name="sand" class="management-resource__value management-resource__value--sand" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement class="wager-main">
+            <ui:Label name="beat" class="wager-beat" />
+            <ui:Label name="heading" class="wager-title" />
+            <ui:Label name="brief" class="wager-brief" />
+            <ui:VisualElement name="risks" class="wager-risks" />
+            <ui:VisualElement class="wager-disclosure">
+                <ui:Label text="FORMATION DISCLOSURE" class="wager-disclosure__label" />
+                <ui:Label name="disclosure" class="wager-disclosure__copy" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement class="wager-footer">
+            <ui:Button name="back" text="‹  BACK TO HALL" class="btn btn--ghost wager-back" />
+            <ui:Label text="The wager changes enemy pressure and the Sand paid for victory." class="wager-footer__hint" />
+            <ui:Button name="continue" class="btn btn--primary wager-continue" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

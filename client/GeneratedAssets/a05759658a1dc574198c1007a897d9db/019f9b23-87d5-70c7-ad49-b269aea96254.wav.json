@@ -1,0 +1,15 @@
+{
+    "asset": "a05759658a1dc574198c1007a897d9db",
+    "fileName": "019f9b23-87d5-70c7-ad49-b269aea96254.wav",
+    "prompt": "A general authoritative Tower receipt: compact stone compression, dry stamp, one low mineral answer, about 320 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

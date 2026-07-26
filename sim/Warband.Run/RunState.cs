@@ -52,6 +52,47 @@ namespace Warband.Run
 
     public enum InterludePath { Treasury, Armory, Hourstone }
 
+    public enum PurchaseOutcome
+    {
+        Recruit,
+        RankUp,
+        Weapon,
+        Trinket,
+        Inscription,
+        Capacity,
+    }
+
+    /// <summary>
+    /// Authoritative receipt for a Market purchase. Presentation can animate this result without
+    /// diffing mutable state or guessing whether a Hero offer recruited or ranked up.
+    /// </summary>
+    public sealed class PurchaseResult
+    {
+        public int OfferIndex = -1;
+        public OfferKind OfferKind;
+        public PurchaseOutcome Outcome;
+        public string ContentId = "";
+        public int SandSpent;
+        public Rank? PreviousRank;
+        public Rank? NewRank;
+        public long ItemInstanceId;
+        public string PendingOptionA = "";
+        public string PendingOptionB = "";
+    }
+
+    public sealed class ReforgeResult
+    {
+        public RosterZone Zone;
+        public int HeroIndex;
+        public string WeaponId = "";
+        public long ItemInstanceId;
+        public bool IsStarter;
+        public WeaponTier PreviousTier;
+        public WeaponTier NewTier;
+        public int SandSpent;
+        public int TotalWeaponInvestment;
+    }
+
     public sealed class RewardOffer
     {
         public InterludePath Path;
@@ -78,9 +119,13 @@ namespace Warband.Run
 
     public sealed class ItemRef
     {
+        /// <summary>Stable within one run. UI selections survive list reordering by this id.</summary>
+        public long InstanceId;
         public ItemKind Kind;
         public string Id = "";
         public WeaponTier Tier = WeaponTier.Worn; // travels with the weapon (ADR 0015)
+        /// <summary>Purchase plus forge spend. Resale refunds a percentage of the actual sink.</summary>
+        public int SandInvested;
     }
 
     /// <summary>A rank-up's 1-of-2 spec choice, blocking the shop until resolved (ADR 0009).</summary>
@@ -105,7 +150,13 @@ namespace Warband.Run
         public int GoldSpent;                    // legacy storage name: Sand sunk into card + dupes
         public string? WeaponId;                 // null = chassis starter weapon
         public WeaponTier WeaponTier = WeaponTier.Worn; // temper of the weapon in hand (starter included)
+        public long WeaponInstanceId;            // 0 = implicit starter, otherwise stable item id
+        public int WeaponSandInvested;            // currently held weapon's purchase + forge spend
+        public WeaponTier StarterWeaponTier = WeaponTier.Worn;
+        public int StarterWeaponSandInvested;
         public List<string> TrinketIds = new List<string>();
+        public long TrinketInstanceId;
+        public int TrinketSandInvested;
         public List<string> SpecNodeIds = new List<string>();
         public List<RunBonus> RunBonuses = new List<RunBonus>();  // growth rules (content-granted)
         public List<Status> Earned = new List<Status>();          // run-scoped statuses earned so far
@@ -115,7 +166,13 @@ namespace Warband.Run
             var c = new HeroInstance
             {
                 ChassisId = ChassisId, Rank = Rank, WeaponId = WeaponId,
-                WeaponTier = WeaponTier, PathId = PathId, GoldSpent = GoldSpent,
+                WeaponTier = WeaponTier, WeaponInstanceId = WeaponInstanceId,
+                WeaponSandInvested = WeaponSandInvested,
+                StarterWeaponTier = StarterWeaponTier,
+                StarterWeaponSandInvested = StarterWeaponSandInvested,
+                TrinketInstanceId = TrinketInstanceId,
+                TrinketSandInvested = TrinketSandInvested,
+                PathId = PathId, GoldSpent = GoldSpent,
             };
             c.TrinketIds.AddRange(TrinketIds);
             c.SpecNodeIds.AddRange(SpecNodeIds);
@@ -161,6 +218,7 @@ namespace Warband.Run
         public List<HeroInstance> Bench = new List<HeroInstance>();
         public List<ShopOffer?> ShopOffers = new List<ShopOffer?>();  // null = bought/empty slot
         public int ShopRolls;                    // generation counter — stateless shop rng (ADR 0008)
+        public long NextItemInstanceId = 1;
         public List<ItemRef> Inventory = new List<ItemRef>();
         public List<string> Banners = new List<string>();
         public PendingSpec? PendingSpec;

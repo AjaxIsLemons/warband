@@ -23,19 +23,50 @@ namespace Warband.Sim.Tests
             return d;
         }
 
-        // ---- Frenzied: instant swings while charges last ----
+        // ---- Frenzied: a 4× attack-speed window while charges last ----
 
         [Fact]
-        public void FrenziedSwingsEveryTickThenNormal()
+        public void FrenziedMultipliesAttackSpeedThenNormalCadenceResumes()
         {
-            var zerk = BattleTests.Grunt(hp: 400, atk: 1);
+            var zerk = BattleTests.Grunt(hp: 400, atk: 1);   // AttackInterval 10
             zerk.Triggers.Add(AtStart(Apply(StatusKind.Frenzied, 0, SelKind.Self, ticks: -1, swings: 3)));
             var result = new Battle(BattleTests.Duel(zerk, Dummy())).Run();
 
             var swings = result.Events
                 .Where(e => e.Kind == EventKind.Attack && e.Source == 0)
-                .Select(e => e.Tick).Take(4).ToList();
-            Assert.Equal(new List<int> { 0, 1, 2, 12 }, swings); // 3 instant, then interval resumes
+                .Select(e => e.Tick).Take(5).ToList();
+            // +300% speed → interval 10 becomes 2 while charges last. The swing that spends the
+            // last charge has already scheduled its successor (NextAttackTick is set before charges
+            // decrement), so tick 6 rides the window out; the normal 10-tick interval resumes after.
+            Assert.Equal(new List<int> { 0, 2, 4, 6, 16 }, swings);
+        }
+
+        /// <summary>
+        /// The regression this pins: Frenzy used to bypass AttackInterval outright ("a swing every
+        /// tick"), so a window was worth 4 × weapon Damage regardless of how slow the weapon was.
+        /// That made the heaviest weapon in the game always the correct Frenzy weapon — musket 64
+        /// vs the Berserker's own specialized daggers at 24 — and quietly turned his dagger
+        /// specialization into a trap. As a speed multiplier the heavy weapon still hits harder per
+        /// swing, but pays for it in ticks.
+        /// </summary>
+        [Fact]
+        public void FrenzyScalesWithAttackSpeedNotWeaponWeight()
+        {
+            List<int> Window(int interval)
+            {
+                var u = new UnitDef
+                {
+                    Name = "zerk", MaxHp = 400, Attack = 1,
+                    AttackInterval = interval, Range = 1, MoveInterval = 5,
+                };
+                u.Triggers.Add(AtStart(Apply(StatusKind.Frenzied, 0, SelKind.Self, ticks: -1, swings: 4)));
+                return new Battle(BattleTests.Duel(u, Dummy())).Run().Events
+                    .Where(e => e.Kind == EventKind.Attack && e.Source == 0)
+                    .Select(e => e.Tick).Take(4).ToList();
+            }
+
+            Assert.Equal(new List<int> { 0, 1, 2, 3 }, Window(4));    // light blade: 4 swings, 3 ticks
+            Assert.Equal(new List<int> { 0, 4, 8, 12 }, Window(16));  // musket: the same 4 cost 12
         }
 
         // ---- NextSwingCrit + SwingAmpPct (musket opening shot, sabre mastery) ----

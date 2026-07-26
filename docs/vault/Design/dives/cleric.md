@@ -59,9 +59,9 @@ staff: backline gardener (staff mastery: Haste on cast) · Lifebinder × censer:
 (censer mastery: overheal → Shield) · unmastered spice: War-Priest × bow — reach without a
 rider. **Wardrobe test: 5 distinct loadouts ✓.**
 
-## Banner hooks (team triggers, all expressible today)
-- Any **On-Heal** banner is a Cleric amplifier — and heal-AUTO units fire it every swing:
-  magnitude design must assume censer-class frequency (balance note for the banner pass).
+## Inscription hooks
+- Any **On-Heal** Inscription is a Cleric amplifier — and heal-AUTO units fire it every
+  swing: magnitude design must assume censer-class frequency.
 - *"Enemies you Burn take +X% damage from all sources"* — War-Priest team play.
 - *"Healing ground also burns enemies standing in it"* — Lifebinder A-node zones go
   dual-purpose.

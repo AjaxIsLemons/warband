@@ -1,0 +1,15 @@
+{
+    "asset": "6c3a0830be6d4cb4592acc8aab6d8377",
+    "fileName": "019f9b22-d704-71e8-b8af-a773a4fa6700.wav",
+    "prompt": "Two dense Sand grains dropping into a divided stone ledger followed by one dry acquisition stamp, about 320 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

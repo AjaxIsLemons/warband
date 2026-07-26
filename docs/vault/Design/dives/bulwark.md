@@ -66,8 +66,8 @@ Juggernaut × bow — a ranged stun-battery who wants to be hit less (fights his
 engine; legal, weird, someone will make it work).
 **Wardrobe test: 5 distinct loadouts ✓.**
 
-## Banner hooks
-- **On-Shield banner family** ("whenever an ally gains Shield: …") — Warden fires it
+## Inscription hooks
+- **On-Shield Inscription family** ("whenever an ally gains Shield: …") — Warden fires it
   constantly; like On-Heal, magnitude must assume per-swing frequency (balance note).
 - *"Enemies recovering from Stun stay Slowed"* — Juggernaut amplifier.
 - Cross-class: Warden clump + Cleric's Fortress Garden = the ultimate turtle — placement

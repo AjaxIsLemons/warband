@@ -33,10 +33,28 @@ The weapon is the hero's basic attack profile:
 
 - damage or healing;
 - attack interval;
+- **mana per swing — the cast cadence** (ADR 0022);
 - range;
 - crit profile;
 - attack shape; and
 - one latent mastery rider.
+
+### Cadence is the second axis (ADR 0022, 2026-07-25)
+
+Mana per swing used to be a global flat rate, which made cast cadence exactly `1/Interval` — so a
+fast weapon won swing events, casts, and (since damage-per-tick sits in a 0.80–1.00 band for nine of
+eleven weapons) damage as well. There was only one axis, and it pointed one way.
+
+Authored per weapon, mana-per-tick now runs **0.83 (daggers) → 1.40 (mace; 2.80 mastered)**. Read a
+weapon as a pair: how often it swings, and how much of a cast each swing buys.
+
+- **Twin Daggers** — swing-spam: many on-hit events, and a signature that rarely fires.
+- **Matchlock Musket** — artillery: rare, enormous shots, each most of a cast.
+- **Temple Mace** — the cast engine; its mastery doubles the same number it earns.
+- **Longbow** — steady fire, cast-light.
+
+This is what makes an off-label weapon a real decision rather than a range decision: putting a
+musket on a cast-driven hero is now a coherent build, not a downgrade.
 
 The chassis still owns HP, movement, Mana capacity, innate passives, and the signature
 ability. Spec nodes still own class verbs. A weapon can make the same hero faster, slower,
@@ -138,7 +156,7 @@ Weapon decisions operate through three different levers:
 1. **Physics × hero engine.** Fast daggers produce many on-swing events; a musket creates
    fewer, larger events; a bow changes which formation slots can contribute.
 2. **Mastery × compounding engine.** Mace Mana, staff cast-Haste, censer shielding, and
-   standard muster all feed loops that another hero, banner, or spec node can amplify.
+   standard muster all feed loops that another hero, Inscription, or spec node can amplify.
 3. **Relic × off-label pivot.** A non-specialist gains the rider late enough to transform an
    experiment without erasing the specialist's advantage.
 

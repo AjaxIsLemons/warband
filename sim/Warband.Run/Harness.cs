@@ -151,12 +151,28 @@ namespace Warband.Run
         }
 
         /// <summary>First pool chassis fill the starting slots.</summary>
+        /// <summary>
+        /// A PLAUSIBLE opening draft, not the first N ids in the pool. The real game hands the
+        /// player 5 cards and asks for 3 (RunSetup), so a bot that always fielded pool[0..2] was
+        /// measuring one arbitrary comp — and the arbitrary one it landed on (Cleric + Bulwark +
+        /// Shade) has a heal-auto on the Cleric and a Tower Shield on the Bulwark, i.e. exactly one
+        /// real damage source in the whole warband. Against authored encounters it lost the first
+        /// fight of every run, which said nothing about the encounters.
+        ///
+        /// Preferred shape: a front-line body, a source of area damage, and a ranged threat —
+        /// falling back to pool order for any content that lacks them.
+        /// </summary>
         public static List<HeroInstance> StarterWarband(IRunContent content, RunConfig cfg)
         {
             var pool = content.HeroPool(1);
+            var preferred = new[] { "bulwark", "pyromancer", "sharpshot" };
             var band = new List<HeroInstance>();
-            for (int i = 0; i < cfg.StartingFieldSlots && i < pool.Count; i++)
-                band.Add(new HeroInstance { ChassisId = pool[i] });
+            foreach (var id in preferred)
+                if (band.Count < cfg.StartingFieldSlots && pool.Contains(id))
+                    band.Add(new HeroInstance { ChassisId = id });
+            foreach (var id in pool)
+                if (band.Count < cfg.StartingFieldSlots && band.All(h => h.ChassisId != id))
+                    band.Add(new HeroInstance { ChassisId = id });
             return band;
         }
 

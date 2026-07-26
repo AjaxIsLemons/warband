@@ -1,0 +1,12 @@
+{
+    "asset": "089f2c41f6e16f141b68ad29510fcc87",
+    "fileName": "019f9b38-4245-7899-8bc6-44210dc0daaf_Preview.jpg",
+    "prompt": "Seamless tileable charcoal slate surface for a dark-fantasy UI chamber. Continuous natural stone with fine horizontal sediment and restrained roughness variation. No masonry blocks, no tile seams, no symbols, no runes, no borders, no text, no focal lighting, no objects. Uniform albedo texture.",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 288229548,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

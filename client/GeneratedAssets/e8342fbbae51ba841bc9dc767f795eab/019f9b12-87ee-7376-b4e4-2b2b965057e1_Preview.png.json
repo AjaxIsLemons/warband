@@ -1,0 +1,12 @@
+{
+    "asset": "e8342fbbae51ba841bc9dc767f795eab",
+    "fileName": "019f9b12-87ee-7376-b4e4-2b2b965057e1_Preview.png",
+    "prompt": "Seamless tileable PBR material for a monumental obsidian war table: near-black volcanic glass with extremely subtle charcoal mineral grain, sparse hairline wear, broad low-contrast facets, restrained roughness variation, no large cracks, no central focal feature, no symbols, no gold, no text. Scale-neutral and practical under cool URP lighting. Obsidian Tower instrument outside time; cold iron structure; bone-white readable marks; living Sand is the only flowing or warm material; restrained stylized realism; strong silhouette and practical game readability. No parchment, tavern, medieval filigree, rainbow neon, sci-fi hologram chrome, characters, readable text, logos, or watermark.",
+    "negativePrompt": "",
+    "model": "gemini-3.1-flash-texture",
+    "modelName": "Gemini 3.1 Nano Banana 2",
+    "customSeed": 226904290,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

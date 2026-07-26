@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="card" class="market-offer-card" focusable="true">
+        <ui:VisualElement class="market-offer-card__selected-rail" />
+        <ui:VisualElement name="main" class="market-offer-card__main">
+            <ui:VisualElement class="market-offer-card__identity">
+                <ui:Label name="classification" class="market-offer-card__classification" />
+                <ui:Label name="title" class="market-offer-card__title" />
+                <ui:VisualElement name="art-stage" class="market-offer-card__art">
+                    <ui:VisualElement name="art-vector" class="market-offer-card__art-vector" />
+                    <ui:Label name="art-fallback" class="market-offer-card__art-fallback" />
+                    <ui:Label name="qualifier" class="market-offer-card__qualifier" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="read" class="market-offer-card__read">
+                <ui:VisualElement name="metrics" class="market-offer-card__metrics" />
+                <ui:VisualElement name="rule" class="market-offer-card__rule">
+                    <ui:Label name="rule-label" class="market-offer-card__rule-label" />
+                    <ui:Label name="rule-name" class="market-offer-card__rule-name" />
+                    <ui:Label name="rule-copy" class="market-offer-card__rule-copy" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="commerce" class="market-offer-card__commerce">
+            <ui:VisualElement class="market-offer-card__commerce-state">
+                <ui:Label name="held" text="HELD" class="market-offer-card__held" />
+                <ui:Label name="economy-state" class="market-offer-card__economy-state" />
+            </ui:VisualElement>
+            <ui:Label name="price" class="market-offer-card__price" />
+        </ui:VisualElement>
+        <ui:VisualElement class="market-offer-card__selection">
+            <ui:Label text="SELECTED" class="market-offer-card__selection-label" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

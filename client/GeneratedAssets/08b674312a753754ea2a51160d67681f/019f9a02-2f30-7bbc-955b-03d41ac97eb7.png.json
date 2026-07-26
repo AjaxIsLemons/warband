@@ -1,0 +1,41 @@
+{
+    "asset": "08b674312a753754ea2a51160d67681f",
+    "fileName": "019f9a02-2f30-7bbc-955b-03d41ac97eb7.png",
+    "prompt": "Bust portrait of a chunky stylized low-poly toy miniature version of this armored pyromancer: heavy angular helm with glowing ember eye-slit, dark bronze plate armor with a glowing orange core, deep blue cloak. Big simple shapes, toy-like proportions, polished 3D render. Keep the ORIGINAL dark moody palette: near-black background, ember-orange rim light, grim dying-world atmosphere. No text.",
+    "negativePrompt": "",
+    "model": "stylized-3d",
+    "modelName": "Stylized 3D",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "acfad62f12200684f8d21f14d59018c1",
+                "unlabeledIndex": -1
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 512,
+        "height": 512
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

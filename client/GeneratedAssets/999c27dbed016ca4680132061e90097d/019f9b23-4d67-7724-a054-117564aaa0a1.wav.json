@@ -1,0 +1,15 @@
+{
+    "asset": "999c27dbed016ca4680132061e90097d",
+    "fileName": "019f9b23-4d67-7724-a054-117564aaa0a1.wav",
+    "prompt": "Fine glass-mineral grains orbit once and resolve into a compact harmonic chime, mysterious but not melodic, about 520 milliseconds. Game UI sound for a dark obsidian Tower instrument. Dry, tactile, restrained, low-fatigue, close-miked, no voice, no music, no melody, no synth beep, no casino sparkle, no trailer boom, no combat impact. The meaningful transient should be very short and the remaining clip should decay naturally into silence.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}
