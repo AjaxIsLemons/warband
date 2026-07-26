@@ -21,24 +21,37 @@ want the blow-by-blow of how something was built, read the daily note for that d
 breaking the game with a compounding warband, then seeing how far asymmetrical PvE and
 endless pressure can push it.**
 
-**STATE, 2026-07-25 (honest):** the first-playable run shape and between-fight UX are
+**STATE, 2026-07-26 (honest):** the first-playable run shape and between-fight UX are
 walkable end to end: Menu → five-card Draft → full-screen Management Hall → stakes-first Wager
 → formation-reveal Deployment → Fight/replay → blocking result report → spatial Hourstone Table
 → Victory/Defeat. Three acts × five
-beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **368 tests
+beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **392 tests
 green.** The workspace has data-first cards/inspector, portraits, explicit economic actions,
 responsive landscape phone/tablet compositions, safe-area rules, reduced motion, and timing
 polish. The old Management drawer has been replaced by stable Market/Warband/Armory/Hourstone
 geography and bespoke workspaces; the Armory previews exact equipment deltas. **Combat viewing still does not read well enough.** Authored
-encounters landed 2026-07-25 (ADR 0023) — deployment now has real problems to answer, but the act
-boss and the encounter-rule UI are still missing, and none of it has been watched in Unity.
+encounters landed 2026-07-25 (ADR 0023) and per-act bosses + full encounter disclosure landed
+2026-07-26 (ADR 0024) — deployment has real problems to answer and every fight now states its rule.
+**None of the last three days' combat work has been watched in Unity**, which is now the single
+biggest blocker on the board (see item 1).
 **Opening Muster readability pass built 2026-07-26:** its universal cards were replaced by a
 dedicated three-fact / two-rule scan grammar with code-native semantic glyphs, in-portrait exact
 mechanics, ordered party sockets, semantic select/deselect feedback, cancellable reveal/lens
 timers, F1 tuning, and F2 previews. Desktop verification is the remaining gate; mobile is
 deliberately deferred.
 
-1. **FEEL & READABILITY — the fight does not read** — **DESIGN → then BUILD. THE TOP ITEM.**
+1. **FEEL & READABILITY — the fight does not read** — **VERIFY (was DESIGN → BUILD). THE TOP ITEM,
+   AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**
+   **The four live threads, so nobody has to read 90 lines to find them:**
+   **1a — combat spectacle P0–P6** (casts, fields, status icons, deaths, dress): BUILT, machine-gated
+   green, **never seen in motion.** Needs one play pass; the specific knobs to judge are listed at
+   the end of the arc paragraph below. **1b — Hall polish:** BUILT + Unity-verified; four named
+   polish slices open (Bind choreography · Rule Preview diagrams · real-device safe-area/haptics ·
+   audio/motion feel). **1c — fight-legibility Phase 4 client UI:** HALF built — the damage-share +
+   died-to readout shipped (`40eb076`), but `BattleForecast` exists in the sim and is referenced by
+   **zero** client code, so the win-probability half has no home. **1d — camera/framing pass:**
+   unbuilt, and taste-gated on Jake.
+   **Nothing here needs a design conversation any more.** It needs Jake to watch a fight.
    **Jake, 2026-07-24, after playing it:** *"playing it now still does not feel great for a
    lot of reasons (UI is not great, sim viewing has some issues and is not quite clear what's
    happening)."* Take this at face value: **item 4b's entire render arc — signature-matched
@@ -47,12 +60,16 @@ deliberately deferred.
    move is to find out *why* it does not read before building more of the same.
    **Do not start by building.** Watch a fight with Jake, or capture one and go through it
    beat by beat, and separate the three candidates:
-   ① **Presentation** — too much at once, no pacing, no emphasis; the decoupled clock /
-   beat-sequencer / hit-stop work (4b, still unbuilt) is the designed answer to precisely this
-   and was never finished. ② **Legibility of state** — you cannot tell what a unit IS mid-fight,
-   what statuses are on it, or why it did what it did. ③ **UI quality** — the shell screens are
-   functional-but-plain; density, hierarchy and typography were never passed over.
-   Likely all three, in different measure. **Name which before spending a session on any.**
+   ① **Presentation** — too much at once, no pacing, no emphasis. ② **Legibility of state** — you
+   cannot tell what a unit IS mid-fight, what statuses are on it, or why it did what it did.
+   ③ **UI quality** — the shell screens are functional-but-plain; density, hierarchy and typography
+   were never passed over. Likely all three, in different measure.
+   **STATUS 2026-07-26: all three have now been built against, and NONE has been watched.** The
+   "name which before building" instruction above was overtaken by events — three sessions built
+   answers to all three candidates. So this item is no longer DESIGN or BUILD, it is **VERIFY, and
+   the only person who can advance it is Jake** (see the four threads below). (Superseded detail:
+   the beat sequencer and hit-stop, described below as "still unbuilt" in the 07-24 wording, landed
+   in `a1fcf8b` the next day. They have never been seen in motion.)
    **Candidate ③ now has its third real pass:** ADRs 0020–0021 replace the over-dense board-first
    workspace with distinct Management / Wager / Deployment / Combat states, exact card grammar,
    a result gate that preserves the fight receipt, a spatial Hourstone Table, bespoke station
@@ -239,7 +256,10 @@ cannot happen without them, and each is the kind of work that is discovered too 
     **reproduces with every VFX instance hidden**, so it is not the new FX; it predates the whole
     arc. A swing's own tell is competing with the victim ballooning over it. The fix is a
     `punchAmount` value in `tuning.json`, hot-reload, no recompile. Highest suspicion-to-effort
-    ratio on the board.
+    ratio on the board. **Exact knobs (checked 2026-07-26):** the balloon is
+    `punchAmount` (per tell row, default 0.25) × `(1 + impact.punchBoost × t)` with
+    `punchBoost` defaulting to **0.8** — so `impact.punchBoost` is a single global slider in the F1
+    cockpit that scales every impact recoil at once. Try that before touching 197 tell rows.
 11. **Overtime is completely invisible — a pillar renders as nothing.** — **SPEC'D.**
     `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to every unit
     every tick until someone dies. The pitch calls this a pillar (*"escalating overtime clock
@@ -273,6 +293,15 @@ cannot happen without them, and each is the kind of work that is discovered too 
     beat; it currently reads *"A QUIET STRETCH — No one contests the road. Take the coin and move
     on"* with one button. The content budget explicitly funds **one event**, and it has not been
     spent. A single two-or-three-way risk/reward choice would make the beat exist.
+16. **There is no defeat/retry rule — one loss ends everything.** — **DESIGN.** Extracted from
+    item 5's remaining-scope list during the 07-26 grooming, because it is a real open decision that
+    was buried in a laws page. `RunPhase.Defeated` is terminal by Jake's explicit PoC rule (ADR
+    0019), and that was the right call for measuring the machine. But it now compounds with two
+    things that arrived later: authored encounters dropped bot completion to **3/12**, and there is
+    still **no save** (item 7). A friend's first run therefore ends, permanently, in act 2, roughly
+    fifteen minutes in, with no way to resume and nothing learned. Either terminal loss stays and
+    the run gets shorter/more forgiving, or a retry currency exists. **This is a playtest-shaping
+    decision, not a tuning value.**
 
 **Deliberately NOT proposed** (so the next session does not re-derive them): more heroes, more
 weapons, a second trinket family, multi-act expansion, difficulty ladders, PvP-adjacent anything,
@@ -343,13 +372,16 @@ actually needs from them:
    terminal losses; Stable/Fraying/Collapsing fixed rewards; choose 3 of 5 opening draft;
    full-screen Management Hall → Wager → Deployment → Combat flow; Sand
    Market/Armory/Hourstone; visible Interlude and boss choices; and
-   3→6 capacity unlock/purchases. **Still scaffolding:** normal fights are random
-   kits-as-monsters; `Catalog.Boss` returns the
-   act-scaled Last Oath for every act. **Remaining scope:** one small enemy-role grammar ·
-   several encounters posing different build/placement problems · one boss · encounter/intent
-   preview · defeat/retry rule · how risk tiers alter authored encounters · the cheapest
-   post-boss continue-until-defeat
-   seam. **Balance law:** preserve spectacular system-breaking engines; intervene only
+   3→6 capacity unlock/purchases.
+   **GROOMED 2026-07-26 — this item is now a LAWS page, not a work item.** Its two "still
+   scaffolding" claims are both false (authored encounters, ADR 0023; per-act bosses, ADR 0024), and
+   four of its seven remaining-scope bullets are done: ~~enemy-role grammar~~ ✓ · ~~several
+   encounters~~ ✓ · ~~one boss~~ ✓ (three) · ~~encounter/intent preview~~ ✓. What actually remains
+   is tracked elsewhere and should not be re-derived here: **risk-tier mutation of authored
+   encounters** → item 2④ · **the endless seam** → item 13 · **a defeat/retry rule** → item 16
+   (new, below). Everything below this line is settled law that ADRs and design docs reference by
+   name, which is why the item keeps its number and its text.
+   **Balance law:** preserve spectacular system-breaking engines; intervene only
    when one line erases discovery, all encounter problems, determinism, resolution, or
    readability. **Design notes:** `Design/pve-encounters.md` now owns the settled laws that
    the encounter itself is the boss, every boss is a multi-answer strength exam, the boss
@@ -390,6 +422,15 @@ Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE conten
 expand to multiple acts, a full endless mode, or a catalog beyond the 24-effect proof before
 playtest #1.
 
+⚠ **THIS CAP IS NOW SELF-CONTRADICTORY — needs Jake's call (flagged 2026-07-26).** It says "one
+complete authored PvE act", "one boss", and "do not expand to multiple acts". But ADR 0019 shipped
+**three acts × five beats** as the first-playable run shape, and ADR 0024 shipped **three bosses**,
+one per act. Either the budget line predates ADR 0019 and should read "one three-act run with one
+boss per act", or the run structure is over budget and should collapse to one act. **This is not a
+technicality:** it decides whether the next content work is "make acts 2 and 3 distinct" (item 14)
+or "cut to one act and go to playtest". Nothing else on the board can be prioritised honestly
+until it is answered.
+
 ## Deferred (explicitly NOT now — don't resurrect without Jake)
 **All PvP:** ghost server · matchmaking · ratings/leaderboards · PvP rewards · no-stakes
 Echo exhibitions (the snapshot seam may remain, but no feature work) ·
@@ -413,7 +454,9 @@ returning to an implicit starter resets its temper; Company Standard currently e
 Inscriptions: pool assignment · first twelve effect contracts ·
 per-root activation representation · exact Bearer of the Mark replacement · legacy
 Banner-data migration ·
-PvE vertical slice: encounter-role budget · enemy intent preview · risk-tier mutation shape ·
+PvE vertical slice: ~~encounter-role budget~~ (answered, ADR 0023: five roles) ·
+~~enemy intent preview~~ (answered, ADR 0024: rule + per-body behavior disclosed every fight;
+the DEEP enemy inspector is still open — item 12) · risk-tier mutation shape ·
 endless cycle/post-rank-S decisions/scaling/score ·
 Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cost (free-for-now decided,
 revisit) · per-rank stat scaling.
