@@ -33,6 +33,85 @@ namespace Warband.Run
         private readonly IRunContent _content;
         private readonly RunConfig _cfg;
 
+        /// <summary>
+        /// Resume a saved run (roadmap item 7). Everything the machine needs is already in
+        /// `RunState` — the rng is stateless-by-salt over (Seed, purpose, act, node) plus the
+        /// persisted `ShopRolls`, so a resumed run rolls exactly the encounters, shops, Interludes
+        /// and boss rewards the original would have. Nothing is regenerated here; regenerating maps
+        /// or shop stock would silently replace what the player was looking at.
+        ///
+        /// Content ids are resolved eagerly against the catalog so a save written by an older
+        /// content build fails HERE, with a message naming the id, rather than mid-fight. The caller
+        /// discards the save and offers a new run.
+        /// </summary>
+        public static RunController Resume(RunState state, IRunContent content, RunConfig? config = null)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            var run = new RunController(state, content, config);
+            run.ValidateAgainstContent();
+            return run;
+        }
+
+        private RunController(RunState state, IRunContent content, RunConfig? config)
+        {
+            _content = content;
+            _cfg = config ?? new RunConfig();
+            ValidateConfig();
+            State = state;
+        }
+
+        /// <summary>Every id the resumed run will ask the catalog for, asked now. A save from a
+        /// build where "cleric.warpriest" was called something else must not load.</summary>
+        private void ValidateAgainstContent()
+        {
+            foreach (var zone in new[] { State.Field, State.Bench })
+                foreach (var h in zone)
+                {
+                    Resolve(() => _content.Chassis(h.ChassisId), "chassis", h.ChassisId);
+                    if (h.WeaponId != null) Resolve(() => _content.Weapon(h.WeaponId), "weapon", h.WeaponId);
+                    foreach (string t in h.TrinketIds) Resolve(() => _content.Trinket(t), "trinket", t);
+                    foreach (string n in h.SpecNodeIds) Resolve(() => _content.Node(n), "spec node", n);
+                }
+            foreach (string b in State.Banners) Resolve(() => _content.Banner(b), "inscription", b);
+            foreach (string b in State.PendingBossRewards) Resolve(() => _content.Banner(b), "inscription", b);
+            foreach (var o in State.ShopOffers)
+            {
+                if (o == null) continue;
+                switch (o.Kind)
+                {
+                    case OfferKind.Hero: Resolve(() => _content.Chassis(o.Id), "chassis", o.Id); break;
+                    case OfferKind.Weapon: Resolve(() => _content.Weapon(o.Id), "weapon", o.Id); break;
+                    case OfferKind.Trinket: Resolve(() => _content.Trinket(o.Id), "trinket", o.Id); break;
+                    default: Resolve(() => _content.Banner(o.Id), "inscription", o.Id); break;
+                }
+            }
+            foreach (var it in State.Inventory)
+            {
+                if (it.Kind == ItemKind.Weapon) Resolve(() => _content.Weapon(it.Id), "weapon", it.Id);
+                else Resolve(() => _content.Trinket(it.Id), "trinket", it.Id);
+            }
+            if (State.PendingSpec != null)
+            {
+                Resolve(() => _content.Node(State.PendingSpec.OptionA), "spec node", State.PendingSpec.OptionA);
+                Resolve(() => _content.Node(State.PendingSpec.OptionB), "spec node", State.PendingSpec.OptionB);
+            }
+            if (State.Act > _cfg.Acts)
+                throw new RunSaveException($"save is at act {State.Act} but this build has {_cfg.Acts}");
+            if (State.Field.Count > _cfg.MaxFieldSlots)
+                throw new RunSaveException(
+                    $"save fields {State.Field.Count} heroes, past this build's cap of {_cfg.MaxFieldSlots}");
+        }
+
+        private static void Resolve(Func<object> lookup, string what, string id)
+        {
+            try { lookup(); }
+            catch (Exception ex)
+            {
+                throw new RunSaveException(
+                    $"saved run references a {what} this build does not have: '{id}' ({ex.GetType().Name})");
+            }
+        }
+
         public RunController(ulong seed, IRunContent content, IEnumerable<HeroInstance> warband,
                              RunConfig? config = null)
         {

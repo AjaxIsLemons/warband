@@ -853,3 +853,282 @@
 
 .motion--reduced .hub--routing .hub-workspace,
 .motion--reduced .hub--routing .hub-overview { opacity: 0.90; }
+
+/* Unified split-stage decision workspace.
+   Browse with compact Stock/Target profiles on the left; decide from one full Detail profile. */
+.hub-selection-tray {
+    display: none;
+}
+
+.hub-collection {
+    width: 38%;
+    min-width: 350px;
+    flex-shrink: 0;
+    background-color: rgba(6, 10, 16, 0.72);
+    border-right-width: 1px;
+    border-right-color: rgba(83, 103, 133, 0.50);
+}
+
+.hub-collection__toolbar {
+    min-height: 62px;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 18px;
+    padding-right: 14px;
+    background-color: rgba(8, 13, 21, 0.98);
+}
+
+.hub-collection__note {
+    font-size: 15px;
+}
+
+.hub-collection__scroll {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.hub-card-grid,
+.hub--market .hub-card-grid,
+.hub--market #primary-grid {
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.hub--market .unity-scroll-view__content-container {
+    min-width: 100%;
+    align-items: stretch;
+}
+
+.hub-inspector-scrim {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: 62%;
+    min-width: 0;
+    height: 100%;
+    flex-grow: 1;
+    align-items: stretch;
+    background-color: rgba(3, 6, 10, 0);
+}
+
+.hub-inspector-pane {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    background-color: rgba(8, 13, 20, 0.985);
+    border-left-width: 1px;
+    border-left-color: rgba(104, 165, 231, 0.48);
+}
+
+.hub-inspector-pane__top {
+    height: 54px;
+    min-height: 54px;
+    padding-left: 22px;
+    padding-right: 14px;
+    background-color: rgba(6, 10, 16, 0.96);
+}
+
+.hub-inspector-pane__label {
+    color: rgb(151, 183, 222);
+    font-size: 12px;
+}
+
+.hub-inspector-close {
+    display: flex;
+    min-width: 122px;
+    min-height: 40px;
+    font-size: 12px;
+}
+
+.hub-inspector-scrim--expanded {
+    position: absolute;
+    left: -16px;
+    right: -16px;
+    top: -14px;
+    bottom: -14px;
+    width: auto;
+    height: auto;
+    align-items: flex-end;
+    background-color: rgba(2, 5, 9, 0.78);
+}
+
+.hub-inspector-scrim--expanded .hub-inspector-pane {
+    width: 760px;
+    min-width: 760px;
+    border-left-width: 2px;
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-inspector--hub .wb-inspector__portrait {
+    height: 196px;
+    min-height: 196px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.wb-inspector--hub .wb-inspector__heading {
+    padding-left: 22px;
+    padding-right: 22px;
+    padding-top: 13px;
+    padding-bottom: 10px;
+}
+
+.wb-inspector--hub .wb-inspector__title {
+    font-size: 30px;
+}
+
+.wb-inspector--hub .wb-inspector__subtitle,
+.wb-inspector--hub .wb-inspector__line-copy {
+    font-size: 17px;
+}
+
+.wb-inspector--hub .wb-inspector__line-title {
+    font-size: 19px;
+}
+
+.wb-inspector--hub .wb-inspector-stat {
+    min-width: 116px;
+    min-height: 70px;
+    margin-right: 7px;
+    margin-bottom: 7px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: rgba(19, 29, 43, 0.96);
+    border-top-width: 3px;
+    border-top-color: rgba(100, 124, 158, 0.62);
+}
+
+.wb-inspector--hub .wb-inspector-stat__label {
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.wb-inspector--hub .wb-inspector-stat__value {
+    font-size: 22px;
+}
+
+.hub-inspector-action-dock .wb-inspector__actions {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 12px;
+}
+
+.hub-inspector-action-dock .wb-inspector__actions .btn {
+    min-height: 52px;
+    font-size: 14px;
+}
+
+/* Compact reusable Stock and Target profiles used by every management station. */
+.wb-card--hub.decision-card--stock,
+.wb-card--hub.decision-card--target {
+    width: 178px;
+    min-width: 178px;
+    height: 226px;
+    margin-left: 0;
+    margin-right: 9px;
+    margin-bottom: 9px;
+    overflow: hidden;
+    background-color: rgba(12, 19, 29, 0.99);
+    border-bottom-width: 3px;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__portrait,
+.wb-card--hub.decision-card--target .wb-card__portrait {
+    width: 100%;
+    height: 126px;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__body,
+.wb-card--hub.decision-card--target .wb-card__body {
+    margin-left: 0;
+    margin-top: 126px;
+    min-height: 62px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+    overflow: hidden;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__eyebrow,
+.wb-card--hub.decision-card--target .wb-card__eyebrow {
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__title,
+.wb-card--hub.decision-card--target .wb-card__title {
+    max-height: 42px;
+    font-size: 18px;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__subtitle,
+.wb-card--hub.decision-card--target .wb-card__subtitle,
+.wb-card--hub.decision-card--stock .wb-card__stats,
+.wb-card--hub.decision-card--target .wb-card__stats,
+.wb-card--hub.decision-card--stock .wb-card__ability,
+.wb-card--hub.decision-card--target .wb-card__ability,
+.wb-card--hub.decision-card--stock .wb-card__passive,
+.wb-card--hub.decision-card--target .wb-card__passive,
+.wb-card--hub.decision-card--stock .wb-card__tags,
+.wb-card--hub.decision-card--target .wb-card__tags {
+    display: none;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__footer,
+.wb-card--hub.decision-card--target .wb-card__footer {
+    height: 38px;
+    min-height: 38px;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__price {
+    color: rgb(238, 188, 85);
+    font-size: 18px;
+}
+
+.layout--compact .hub-collection {
+    width: 40%;
+    min-width: 330px;
+}
+
+.layout--compact .hub-inspector-scrim {
+    width: 60%;
+}
+
+.layout--compact .wb-card--hub.decision-card--stock,
+.layout--compact .wb-card--hub.decision-card--target {
+    width: 160px;
+    min-width: 160px;
+}
+
+/* Mobile is intentionally compatibility-only for this desktop-first pass. */
+.layout--phone .hub-collection {
+    width: 100%;
+}
+
+.layout--phone .hub-inspector-scrim {
+    position: absolute;
+    left: -8px;
+    right: -8px;
+    top: -6px;
+    bottom: -6px;
+    width: auto;
+    height: auto;
+    align-items: flex-end;
+    background-color: rgba(2, 5, 9, 0.76);
+}
+
+.layout--phone .hub-inspector-pane {
+    width: 72%;
+    min-width: 620px;
+}

@@ -58,6 +58,7 @@ internal sealed class WarbandCard
         s_template.CloneTree(host);
         Root = Required<VisualElement>(host, "card");
         Root.RemoveFromHierarchy();
+        DecisionCardPresentation.ApplyProfile(Root, DecisionCardProfile.Target);
 
         _portrait = Required<VisualElement>(Root, "portrait");
         _portraitFallback = Required<Label>(Root, "portrait-fallback");
@@ -168,6 +169,10 @@ internal sealed class WarbandCard
             ruleCard && !marketEquipment && !string.IsNullOrEmpty(_model.AbilityName));
         SetDisplayed(_passive, false);
         SetDisplayed(_tags, false);
+        DecisionCardPresentation.ApplyProfile(Root,
+            variant == "armory" || variant == "hourstone" || variant == "market"
+                ? DecisionCardProfile.Stock
+                : DecisionCardProfile.Target);
     }
 
     private void OnClick(ClickEvent evt)
@@ -190,10 +195,13 @@ internal sealed class WarbandCard
         {
             var chip = new VisualElement();
             chip.AddToClassList("wb-mini-stat");
+            var icon = new WarbandGlyph { name = "icon" };
+            icon.AddToClassList("wb-mini-stat__icon");
             var label = new Label { name = "label" };
             label.AddToClassList("wb-mini-stat__label");
             var value = new Label { name = "value" };
             value.AddToClassList("wb-mini-stat__value");
+            chip.Add(icon);
             chip.Add(label);
             chip.Add(value);
             _stats.Add(chip);
@@ -201,14 +209,18 @@ internal sealed class WarbandCard
         for (int i = 0; i < models.Count; i++)
         {
             var chip = _stats.ElementAt(i);
-            string semantic = StatSemantic(models[i].Label);
-            ((Label)chip.ElementAt(0)).text = StatDisplayLabel(models[i].Label);
-            ((Label)chip.ElementAt(1)).text = models[i].Value;
+            StatChipModel model = models[i];
+            DecisionFactDefinition definition = DecisionCardPresentation.Fact(model);
+            WarbandGlyph icon = chip.Q<WarbandGlyph>("icon");
+            icon.Set(definition.Glyph);
+            icon.SetColor(definition.Color);
+            chip.Q<Label>("label").text = DecisionCardPresentation.DisplayLabel(model);
+            chip.Q<Label>("value").text = model.Value;
+            chip.tooltip = DecisionCardPresentation.Tooltip(model);
+            DecisionCardPresentation.ApplyFact(chip, model);
             chip.EnableInClassList("wb-mini-stat--good", models[i].Tone == "good");
             chip.EnableInClassList("wb-mini-stat--warn", models[i].Tone == "warn");
             chip.EnableInClassList("wb-mini-stat--bad", models[i].Tone == "bad");
-            foreach (string value in new[] { "hp", "attack", "heal", "reach", "speed", "crit" })
-                chip.EnableInClassList("wb-mini-stat--" + value, value == semantic);
         }
     }
 

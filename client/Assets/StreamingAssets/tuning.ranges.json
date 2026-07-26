@@ -1506,5 +1506,3153 @@
   "board.tileScale": {
     "min": 0.5,
     "max": 1.0
+  },
+  "playback.ticksPerSecond": {
+    "min": 1.0,
+    "max": 40.0
+  },
+  "fx.deathLingerSeconds": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "fx.dissolveSeconds": {
+    "min": 0.1,
+    "max": 3.0
+  },
+  "fx.ashMarkAlpha": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "fx.graveTilt": {
+    "min": 0.0,
+    "max": 90.0
+  },
+  "fx.fieldSpawnSeconds": {
+    "min": 0.05,
+    "max": 1.5
+  },
+  "fx.fieldExpireSeconds": {
+    "min": 0.05,
+    "max": 1.5
+  },
+  "fx.fieldPulseBoost": {
+    "min": 1.0,
+    "max": 4.0
+  },
+  "fx.fieldIdleAlpha": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "fx.fieldEdgeAlpha": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "fx.statusIconSize": {
+    "min": 0.05,
+    "max": 0.6
+  },
+  "fx.statusIconGap": {
+    "min": 0.0,
+    "max": 0.3
+  },
+  "fx.statusIconCap": {
+    "min": 1.0,
+    "max": 20.0
+  },
+  "fx.announceCooldownSeconds": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "fx.deathlessHoldSeconds": {
+    "min": 0.0,
+    "max": 1.5
+  },
+  "fx.deathlessDimAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "fx.deathlessDimSeconds": {
+    "min": 0.1,
+    "max": 3.0
+  },
+  "fx.enderSlowScale": {
+    "min": 0.05,
+    "max": 1.0
+  },
+  "fx.enderSlowSeconds": {
+    "min": 0.0,
+    "max": 3.0
+  },
+  "fx.enderVignetteBoost": {
+    "min": 0.0,
+    "max": 0.8
+  },
+  "fx.cameraPunchAmount": {
+    "min": 0.0,
+    "max": 1.5
+  },
+  "fx.cameraPunchSeconds": {
+    "min": 0.02,
+    "max": 0.5
+  },
+  "fx.cameraShakeAmount": {
+    "min": 0.0,
+    "max": 0.6
+  },
+  "fx.cameraShakeSeconds": {
+    "min": 0.05,
+    "max": 1.5
+  },
+  "fx.shakeRationSeconds": {
+    "min": 0.0,
+    "max": 10.0
+  },
+  "tells[0].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[1].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[2].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[3].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[4].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[5].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[6].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[7].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[8].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[9].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[10].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[11].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[12].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[13].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[14].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[15].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[16].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[17].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[18].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[19].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[20].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[21].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[22].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[23].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[24].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[25].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[26].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[27].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[28].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[29].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.reducedFadeMs": {
+    "min": 0.0,
+    "max": 320.0
+  },
+  "ui.press.durationMs": {
+    "min": 0.0,
+    "max": 280.0
+  },
+  "ui.press.settleMs": {
+    "min": 0.0,
+    "max": 300.0
+  },
+  "ui.press.distancePx": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.press.scale": {
+    "min": 0.8,
+    "max": 3.928
+  },
+  "ui.press.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.press.particles": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.press.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.press.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.hover.durationMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.hover.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.hover.distancePx": {
+    "min": 0.0,
+    "max": 12.0
+  },
+  "ui.hover.scale": {
+    "min": 0.8,
+    "max": 4.048
+  },
+  "ui.hover.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.hover.particles": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.hover.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.hover.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.focus.durationMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.focus.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.focus.distancePx": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "ui.focus.scale": {
+    "min": 0.8,
+    "max": 4.056
+  },
+  "ui.focus.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.focus.particles": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "ui.focus.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.focus.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.select.durationMs": {
+    "min": 0.0,
+    "max": 580.0
+  },
+  "ui.select.settleMs": {
+    "min": 0.0,
+    "max": 440.0
+  },
+  "ui.select.distancePx": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "ui.select.scale": {
+    "min": 0.8,
+    "max": 4.18
+  },
+  "ui.select.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.select.particles": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "ui.select.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.select.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.reveal.durationMs": {
+    "min": 0.0,
+    "max": 920.0
+  },
+  "ui.reveal.settleMs": {
+    "min": 0.0,
+    "max": 320.0
+  },
+  "ui.reveal.distancePx": {
+    "min": 0.0,
+    "max": 72.0
+  },
+  "ui.reveal.scale": {
+    "min": 0.8,
+    "max": 3.9
+  },
+  "ui.reveal.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.reveal.particles": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "ui.reveal.staggerMs": {
+    "min": 0.0,
+    "max": 168.0
+  },
+  "ui.reveal.staggerCapMs": {
+    "min": 0.0,
+    "max": 840.0
+  },
+  "ui.route.durationMs": {
+    "min": 0.0,
+    "max": 1040.0
+  },
+  "ui.route.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.route.distancePx": {
+    "min": 0.0,
+    "max": 120.0
+  },
+  "ui.route.scale": {
+    "min": 0.8,
+    "max": 3.96
+  },
+  "ui.route.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.route.particles": {
+    "min": 0.0,
+    "max": 28.0
+  },
+  "ui.route.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.route.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.attention.durationMs": {
+    "min": 0.0,
+    "max": 1120.0
+  },
+  "ui.attention.settleMs": {
+    "min": 0.0,
+    "max": 520.0
+  },
+  "ui.attention.distancePx": {
+    "min": 0.0,
+    "max": 12.0
+  },
+  "ui.attention.scale": {
+    "min": 0.8,
+    "max": 4.14
+  },
+  "ui.attention.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.attention.particles": {
+    "min": 0.0,
+    "max": 16.0
+  },
+  "ui.attention.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.attention.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.commit.durationMs": {
+    "min": 0.0,
+    "max": 1360.0
+  },
+  "ui.commit.settleMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.commit.distancePx": {
+    "min": 0.0,
+    "max": 40.0
+  },
+  "ui.commit.scale": {
+    "min": 0.8,
+    "max": 4.22
+  },
+  "ui.commit.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.commit.particles": {
+    "min": 0.0,
+    "max": 36.0
+  },
+  "ui.commit.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.commit.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.error.durationMs": {
+    "min": 0.0,
+    "max": 620.0
+  },
+  "ui.error.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.error.distancePx": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "ui.error.scale": {
+    "min": 0.8,
+    "max": 4.0
+  },
+  "ui.error.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.error.particles": {
+    "min": 0.0,
+    "max": 12.0
+  },
+  "ui.error.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.error.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.result.durationMs": {
+    "min": 0.0,
+    "max": 1800.0
+  },
+  "ui.result.settleMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.result.distancePx": {
+    "min": 0.0,
+    "max": 88.0
+  },
+  "ui.result.scale": {
+    "min": 0.8,
+    "max": 3.92
+  },
+  "ui.result.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.result.particles": {
+    "min": 0.0,
+    "max": 32.0
+  },
+  "ui.result.staggerMs": {
+    "min": 0.0,
+    "max": 180.0
+  },
+  "ui.result.staggerCapMs": {
+    "min": 0.0,
+    "max": 720.0
+  },
+  "ui.boss.durationMs": {
+    "min": 0.0,
+    "max": 3000.0
+  },
+  "ui.boss.settleMs": {
+    "min": 0.0,
+    "max": 720.0
+  },
+  "ui.boss.distancePx": {
+    "min": 0.0,
+    "max": 112.0
+  },
+  "ui.boss.scale": {
+    "min": 0.8,
+    "max": 3.88
+  },
+  "ui.boss.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.boss.particles": {
+    "min": 0.0,
+    "max": 48.0
+  },
+  "ui.boss.staggerMs": {
+    "min": 0.0,
+    "max": 240.0
+  },
+  "ui.boss.staggerCapMs": {
+    "min": 0.0,
+    "max": 960.0
+  },
+  "ui.muster.lensInitialDelayMs": {
+    "min": 0.0,
+    "max": 880.0
+  },
+  "ui.muster.lensReshowMs": {
+    "min": 0.0,
+    "max": 280.0
+  },
+  "ui.muster.lensCloseMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.muster.revealInfoDelayMs": {
+    "min": 0.0,
+    "max": 280.0
+  },
+  "ui.muster.slotCompactMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.muster.reducedFadeMs": {
+    "min": 0.0,
+    "max": 320.0
+  },
+  "ui.muster.reveal.durationMs": {
+    "min": 0.0,
+    "max": 960.0
+  },
+  "ui.muster.reveal.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.muster.reveal.distancePx": {
+    "min": 0.0,
+    "max": 72.0
+  },
+  "ui.muster.reveal.scale": {
+    "min": 0.8,
+    "max": 3.94
+  },
+  "ui.muster.reveal.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.reveal.particles": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.reveal.staggerMs": {
+    "min": 0.0,
+    "max": 220.0
+  },
+  "ui.muster.reveal.staggerCapMs": {
+    "min": 0.0,
+    "max": 880.0
+  },
+  "ui.muster.select.durationMs": {
+    "min": 0.0,
+    "max": 880.0
+  },
+  "ui.muster.select.settleMs": {
+    "min": 0.0,
+    "max": 640.0
+  },
+  "ui.muster.select.distancePx": {
+    "min": 0.0,
+    "max": 32.0
+  },
+  "ui.muster.select.scale": {
+    "min": 0.8,
+    "max": 4.18
+  },
+  "ui.muster.select.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.select.particles": {
+    "min": 0.0,
+    "max": 28.0
+  },
+  "ui.muster.select.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.select.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.deselect.durationMs": {
+    "min": 0.0,
+    "max": 640.0
+  },
+  "ui.muster.deselect.settleMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.muster.deselect.distancePx": {
+    "min": 0.0,
+    "max": 24.0
+  },
+  "ui.muster.deselect.scale": {
+    "min": 0.8,
+    "max": 4.1
+  },
+  "ui.muster.deselect.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.deselect.particles": {
+    "min": 0.0,
+    "max": 16.0
+  },
+  "ui.muster.deselect.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.deselect.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.blocked.durationMs": {
+    "min": 0.0,
+    "max": 620.0
+  },
+  "ui.muster.blocked.settleMs": {
+    "min": 0.0,
+    "max": 360.0
+  },
+  "ui.muster.blocked.distancePx": {
+    "min": 0.0,
+    "max": 20.0
+  },
+  "ui.muster.blocked.scale": {
+    "min": 0.8,
+    "max": 4.0
+  },
+  "ui.muster.blocked.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.blocked.particles": {
+    "min": 0.0,
+    "max": 12.0
+  },
+  "ui.muster.blocked.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.blocked.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.ready.durationMs": {
+    "min": 0.0,
+    "max": 880.0
+  },
+  "ui.muster.ready.settleMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.muster.ready.distancePx": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "ui.muster.ready.scale": {
+    "min": 0.8,
+    "max": 4.1
+  },
+  "ui.muster.ready.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.ready.particles": {
+    "min": 0.0,
+    "max": 16.0
+  },
+  "ui.muster.ready.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.muster.ready.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.recruit.durationMs": {
+    "min": 0.0,
+    "max": 1640.0
+  },
+  "ui.transactions.recruit.settleMs": {
+    "min": 0.0,
+    "max": 600.0
+  },
+  "ui.transactions.recruit.distancePx": {
+    "min": 0.0,
+    "max": 48.0
+  },
+  "ui.transactions.recruit.scale": {
+    "min": 0.8,
+    "max": 4.26
+  },
+  "ui.transactions.recruit.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.recruit.particles": {
+    "min": 0.0,
+    "max": 48.0
+  },
+  "ui.transactions.recruit.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.recruit.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rank.durationMs": {
+    "min": 0.0,
+    "max": 1920.0
+  },
+  "ui.transactions.rank.settleMs": {
+    "min": 0.0,
+    "max": 680.0
+  },
+  "ui.transactions.rank.distancePx": {
+    "min": 0.0,
+    "max": 56.0
+  },
+  "ui.transactions.rank.scale": {
+    "min": 0.8,
+    "max": 4.3
+  },
+  "ui.transactions.rank.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rank.particles": {
+    "min": 0.0,
+    "max": 56.0
+  },
+  "ui.transactions.rank.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rank.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.weapon.durationMs": {
+    "min": 0.0,
+    "max": 1440.0
+  },
+  "ui.transactions.weapon.settleMs": {
+    "min": 0.0,
+    "max": 480.0
+  },
+  "ui.transactions.weapon.distancePx": {
+    "min": 0.0,
+    "max": 36.0
+  },
+  "ui.transactions.weapon.scale": {
+    "min": 0.8,
+    "max": 4.18
+  },
+  "ui.transactions.weapon.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.weapon.particles": {
+    "min": 0.0,
+    "max": 32.0
+  },
+  "ui.transactions.weapon.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.weapon.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.trinket.durationMs": {
+    "min": 0.0,
+    "max": 1560.0
+  },
+  "ui.transactions.trinket.settleMs": {
+    "min": 0.0,
+    "max": 520.0
+  },
+  "ui.transactions.trinket.distancePx": {
+    "min": 0.0,
+    "max": 40.0
+  },
+  "ui.transactions.trinket.scale": {
+    "min": 0.8,
+    "max": 4.2
+  },
+  "ui.transactions.trinket.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.trinket.particles": {
+    "min": 0.0,
+    "max": 40.0
+  },
+  "ui.transactions.trinket.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.trinket.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.inscription.durationMs": {
+    "min": 0.0,
+    "max": 2080.0
+  },
+  "ui.transactions.inscription.settleMs": {
+    "min": 0.0,
+    "max": 720.0
+  },
+  "ui.transactions.inscription.distancePx": {
+    "min": 0.0,
+    "max": 60.0
+  },
+  "ui.transactions.inscription.scale": {
+    "min": 0.8,
+    "max": 4.28
+  },
+  "ui.transactions.inscription.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.inscription.particles": {
+    "min": 0.0,
+    "max": 64.0
+  },
+  "ui.transactions.inscription.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.inscription.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.capacity.durationMs": {
+    "min": 0.0,
+    "max": 1760.0
+  },
+  "ui.transactions.capacity.settleMs": {
+    "min": 0.0,
+    "max": 600.0
+  },
+  "ui.transactions.capacity.distancePx": {
+    "min": 0.0,
+    "max": 48.0
+  },
+  "ui.transactions.capacity.scale": {
+    "min": 0.8,
+    "max": 4.24
+  },
+  "ui.transactions.capacity.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.capacity.particles": {
+    "min": 0.0,
+    "max": 48.0
+  },
+  "ui.transactions.capacity.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.capacity.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rankChoice.durationMs": {
+    "min": 0.0,
+    "max": 2240.0
+  },
+  "ui.transactions.rankChoice.settleMs": {
+    "min": 0.0,
+    "max": 760.0
+  },
+  "ui.transactions.rankChoice.distancePx": {
+    "min": 0.0,
+    "max": 64.0
+  },
+  "ui.transactions.rankChoice.scale": {
+    "min": 0.8,
+    "max": 4.32
+  },
+  "ui.transactions.rankChoice.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rankChoice.particles": {
+    "min": 0.0,
+    "max": 72.0
+  },
+  "ui.transactions.rankChoice.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.rankChoice.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.equip.durationMs": {
+    "min": 0.0,
+    "max": 1200.0
+  },
+  "ui.transactions.equip.settleMs": {
+    "min": 0.0,
+    "max": 440.0
+  },
+  "ui.transactions.equip.distancePx": {
+    "min": 0.0,
+    "max": 32.0
+  },
+  "ui.transactions.equip.scale": {
+    "min": 0.8,
+    "max": 4.16
+  },
+  "ui.transactions.equip.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.equip.particles": {
+    "min": 0.0,
+    "max": 28.0
+  },
+  "ui.transactions.equip.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.equip.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.reforge.durationMs": {
+    "min": 0.0,
+    "max": 2480.0
+  },
+  "ui.transactions.reforge.settleMs": {
+    "min": 0.0,
+    "max": 840.0
+  },
+  "ui.transactions.reforge.distancePx": {
+    "min": 0.0,
+    "max": 72.0
+  },
+  "ui.transactions.reforge.scale": {
+    "min": 0.8,
+    "max": 4.34
+  },
+  "ui.transactions.reforge.startOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.reforge.particles": {
+    "min": 0.0,
+    "max": 80.0
+  },
+  "ui.transactions.reforge.staggerMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.transactions.reforge.staggerCapMs": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.fx.lineWidth": {
+    "min": 0.5,
+    "max": 8.0
+  },
+  "ui.fx.arcHeight": {
+    "min": 0.0,
+    "max": 256.0
+  },
+  "ui.fx.grainSize": {
+    "min": 1.0,
+    "max": 14.0
+  },
+  "ui.fx.maxEffects": {
+    "min": 0.0,
+    "max": 96.0
+  },
+  "ui.fx.trailOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.environment.cameraDurationMs": {
+    "min": 80.0,
+    "max": 1120.0
+  },
+  "ui.environment.cameraOvershoot": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.environment.parallax": {
+    "min": 0.0,
+    "max": 2.0
+  },
+  "ui.environment.ambientRingDegreesPerSecond": {
+    "min": 0.0,
+    "max": 7.2
+  },
+  "ui.environment.ambientPulse": {
+    "min": 0.0,
+    "max": 2.0
+  },
+  "ui.environment.routePulse": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "ui.environment.ambientMotes": {
+    "min": 0.0,
+    "max": 64.0
+  },
+  "ui.environment.transactionMotes": {
+    "min": 0.0,
+    "max": 64.0
+  },
+  "ui.audio.volume": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.audio.pitchVariance": {
+    "min": 0.0,
+    "max": 0.2
+  },
+  "ui.audio.hoverCooldownMs": {
+    "min": 0.0,
+    "max": 180.0
+  },
+  "ui.audio.ambienceVolume": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.audio.commitDuck": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "ui.haptics.selectMs": {
+    "min": 1.0,
+    "max": 60.0
+  },
+  "ui.haptics.successMs": {
+    "min": 1.0,
+    "max": 120.0
+  },
+  "ui.haptics.errorMs": {
+    "min": 1.0,
+    "max": 120.0
+  },
+  "tells[30].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[30].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[30].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[30].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[30].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[30].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[30].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[30].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[30].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[30].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[30].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[30].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[31].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[31].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[31].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[31].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[31].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[31].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[31].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[31].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[31].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[31].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[31].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[31].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[32].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[32].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[32].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[32].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[32].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[32].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[32].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[32].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[32].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[32].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[32].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[32].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[33].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[33].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[33].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[33].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[33].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[33].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[33].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[33].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[33].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[33].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[33].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[33].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[34].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[34].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[34].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[34].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[34].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[34].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[34].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[34].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[34].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[34].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[34].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[34].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[35].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[35].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[35].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[35].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[35].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[35].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[35].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[35].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[35].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[35].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[35].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[35].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[36].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[36].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[36].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[36].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[36].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[36].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[36].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[36].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[36].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[36].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[36].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[36].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[37].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[37].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[37].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[37].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[37].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[37].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[37].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[37].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[37].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[37].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[37].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[37].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[38].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[38].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[38].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[38].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[38].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[38].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[38].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[38].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[38].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[38].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[38].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[38].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[39].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[39].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[39].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[39].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[39].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[39].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[39].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[39].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[39].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[39].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[39].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[39].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[40].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[40].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[40].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[40].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[40].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[40].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[40].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[40].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[40].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[40].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[40].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[40].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[41].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[41].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[41].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[41].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[41].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[41].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[41].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[41].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[41].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[41].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[41].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[41].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[42].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[42].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[42].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[42].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[42].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[42].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[42].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[42].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[42].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[42].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[42].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[42].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[43].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[43].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[43].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[43].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[43].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[43].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[43].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[43].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[43].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[43].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[43].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[43].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[44].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[44].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[44].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[44].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[44].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[44].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[44].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[44].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[44].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[44].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[44].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[44].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[45].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[45].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[45].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[45].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[45].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[45].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[45].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[45].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[45].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[45].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[45].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[45].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[46].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[46].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[46].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[46].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[46].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[46].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[46].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[46].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[46].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[46].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[46].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[46].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[47].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[47].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[47].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[47].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[47].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[47].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[47].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[47].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[47].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[47].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[47].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[47].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[48].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[48].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[48].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[48].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[48].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[48].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[48].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[48].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[48].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[48].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[48].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[48].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[49].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[49].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[49].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[49].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[49].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[49].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[49].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[49].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[49].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[49].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[49].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[49].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[50].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[50].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[50].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[50].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[50].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[50].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[50].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[50].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[50].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[50].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[50].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[50].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[51].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[51].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[51].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[51].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[51].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[51].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[51].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[51].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[51].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[51].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[51].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[51].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[52].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[52].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[52].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[52].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[52].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[52].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[52].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[52].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[52].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[52].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[52].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[52].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[53].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[53].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[53].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[53].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[53].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[53].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[53].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[53].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[53].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[53].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[53].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[53].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[54].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[54].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[54].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[54].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[54].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[54].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[54].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[54].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[54].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[54].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[54].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[54].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[55].flashSeconds": {
+    "min": 0.01,
+    "max": 1.6
+  },
+  "tells[55].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[55].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[55].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[55].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[55].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[55].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[55].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[55].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[55].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[55].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[55].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[56].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[56].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[56].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[56].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[56].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[56].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[56].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[56].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[56].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[56].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[56].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[56].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[57].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[57].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[57].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[57].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[57].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[57].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[57].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[57].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[57].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[57].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[57].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[57].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[58].flashSeconds": {
+    "min": 0.01,
+    "max": 1.2
+  },
+  "tells[58].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[58].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[58].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[58].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[58].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[58].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[58].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[58].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[58].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[58].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[58].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[59].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[59].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[59].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[59].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[59].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[59].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[59].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[59].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[59].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[59].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[59].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[59].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[60].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[60].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[60].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[60].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[60].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[60].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[60].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[60].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[60].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[60].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[60].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[60].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[61].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[61].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[61].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[61].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[61].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[61].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[61].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[61].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[61].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[61].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[61].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[61].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[62].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[62].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[62].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[62].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[62].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[62].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[62].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[62].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[62].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[62].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[62].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[62].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[63].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[63].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[63].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[63].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[63].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[63].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[63].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[63].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[63].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[63].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[63].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[63].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[64].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[64].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[64].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[64].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[64].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[64].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[64].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[64].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[64].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[64].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[64].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[64].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[65].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[65].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[65].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[65].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[65].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[65].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[65].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[65].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[65].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[65].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[65].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[65].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[66].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[66].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[66].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[66].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[66].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[66].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[66].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[66].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[66].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[66].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[66].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[66].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[67].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[67].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[67].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[67].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[67].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[67].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[67].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[67].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[67].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[67].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[67].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[67].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[68].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[68].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[68].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[68].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[68].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[68].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[68].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[68].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[68].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[68].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[68].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[68].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[69].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[69].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[69].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[69].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[69].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[69].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[69].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[69].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[69].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[69].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[69].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[69].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[70].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[70].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[70].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[70].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[70].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[70].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[70].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[70].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[70].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[70].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[70].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[70].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[71].flashSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[71].punchAmount": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[71].punchSeconds": {
+    "min": 0.01,
+    "max": 1.01
+  },
+  "tells[71].minAmount": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "tells[71].numberScale": {
+    "min": 0.2,
+    "max": 3.0
+  },
+  "tells[71].numberBand": {
+    "min": -1.5,
+    "max": 2.0
+  },
+  "tells[71].numberLife": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "tells[71].motionSeconds": {
+    "min": 0.02,
+    "max": 1.0
+  },
+  "tells[71].motionGlow": {
+    "min": 0.0,
+    "max": 8.0
+  },
+  "tells[71].motionScale": {
+    "min": 0.2,
+    "max": 4.0
+  },
+  "tells[71].windupSeconds": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "tells[71].hitAnimMinT": {
+    "min": 0.0,
+    "max": 1.0
   }
 }

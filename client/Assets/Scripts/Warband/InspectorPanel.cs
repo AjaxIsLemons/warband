@@ -51,6 +51,7 @@ internal sealed class InspectorPanel
         s_template.CloneTree(host);
         Root = Required<VisualElement>(host, "inspector");
         Root.RemoveFromHierarchy();
+        DecisionCardPresentation.ApplyProfile(Root, DecisionCardProfile.Detail);
 
         _empty = Required<Label>(Root, "empty");
         _content = Required<VisualElement>(Root, "content");
@@ -123,25 +124,7 @@ internal sealed class InspectorPanel
         _comparisonTitle.text = model.ComparisonTitle;
         _comparisonRows.Clear();
         foreach (var comparison in model.Comparisons)
-        {
-            var row = new VisualElement();
-            row.AddToClassList("wb-comparison");
-            row.EnableInClassList("wb-comparison--good", comparison.Tone == "good");
-            row.EnableInClassList("wb-comparison--bad", comparison.Tone == "bad");
-            var label = new Label(comparison.Label);
-            label.AddToClassList("wb-comparison__label");
-            var before = new Label(comparison.Before);
-            before.AddToClassList("wb-comparison__before");
-            var arrow = new Label("→");
-            arrow.AddToClassList("wb-comparison__arrow");
-            var after = new Label(comparison.After);
-            after.AddToClassList("wb-comparison__after");
-            row.Add(label);
-            row.Add(before);
-            row.Add(arrow);
-            row.Add(after);
-            _comparisonRows.Add(row);
-        }
+            _comparisonRows.Add(ComparisonRow(comparison));
         SetDisplayed(_comparison, model.Comparisons.Count > 0);
 
         _choicePreviewOptions.Clear();
@@ -169,10 +152,20 @@ internal sealed class InspectorPanel
         {
             var chip = new VisualElement();
             chip.AddToClassList("wb-inspector-stat");
-            var label = new Label(stat.Label);
+            DecisionFactDefinition definition = DecisionCardPresentation.Fact(stat);
+            DecisionCardPresentation.ApplyFact(chip, stat);
+            chip.tooltip = DecisionCardPresentation.Tooltip(stat);
+            var icon = new WarbandGlyph(definition.Glyph);
+            icon.SetColor(definition.Color);
+            icon.AddToClassList("wb-inspector-stat__icon");
+            var label = new Label(DecisionCardPresentation.DisplayLabel(stat));
             label.AddToClassList("wb-inspector-stat__label");
             var value = new Label(stat.Value);
             value.AddToClassList("wb-inspector-stat__value");
+            chip.EnableInClassList("wb-inspector-stat--good", stat.Tone == "good");
+            chip.EnableInClassList("wb-inspector-stat--warn", stat.Tone == "warn");
+            chip.EnableInClassList("wb-inspector-stat--bad", stat.Tone == "bad");
+            chip.Add(icon);
             chip.Add(label);
             chip.Add(value);
             _stats.Add(chip);
@@ -220,6 +213,8 @@ internal sealed class InspectorPanel
     {
         var row = new VisualElement();
         row.AddToClassList("wb-comparison");
+        DecisionCardPresentation.ApplyFact(row,
+            DecisionCardPresentation.FactId(comparison.Label));
         row.EnableInClassList("wb-comparison--good", comparison.Tone == "good");
         row.EnableInClassList("wb-comparison--bad", comparison.Tone == "bad");
         var label = new Label(comparison.Label);

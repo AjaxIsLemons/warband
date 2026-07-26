@@ -63,6 +63,7 @@ internal sealed class MarketOfferCard
         s_template.CloneTree(host);
         Root = Required<VisualElement>(host, "card");
         Root.RemoveFromHierarchy();
+        DecisionCardPresentation.ApplyProfile(Root, DecisionCardProfile.Stock);
         Root.usageHints |= UsageHints.DynamicTransform;
 
         _classification = Required<Label>(Root, "classification");
@@ -105,7 +106,7 @@ internal sealed class MarketOfferCard
         Root.SetEnabled(_selectable);
         Root.tooltip = _model.Sold
             ? "This offer has already been purchased."
-            : $"{_model.RuleLabel} · {_model.ExactRule}";
+            : $"{_model.Classification}. Select to inspect. {_model.Price}.";
 
         _classification.text = _model.Classification;
         _title.text = _model.Sold ? "SOLD" : _model.Title;
@@ -172,19 +173,14 @@ internal sealed class MarketOfferCard
         {
             StatChipModel model = models[i];
             VisualElement metric = _metrics.ElementAt(i);
-            ((Label)metric.ElementAt(0)).text = MetricLabel(model.Label);
+            ((Label)metric.ElementAt(0)).text =
+                DecisionCardPresentation.DisplayLabel(model);
             ((Label)metric.ElementAt(1)).text = model.Value;
             metric.EnableInClassList("market-offer-metric--good", model.Tone == "good");
             metric.EnableInClassList("market-offer-metric--warn", model.Tone == "warn");
             metric.EnableInClassList("market-offer-metric--bad", model.Tone == "bad");
-            metric.tooltip = model.Tooltip;
-            string semantic = MetricSemantic(model.Label);
-            foreach (string value in new[]
-                     {
-                         "hp", "attack", "heal", "reach", "speed", "scope", "term",
-                         "field", "cap", "mana", "rank", "choice", "cleave",
-                     })
-                metric.EnableInClassList("market-offer-metric--" + value, value == semantic);
+            metric.tooltip = DecisionCardPresentation.Tooltip(model);
+            DecisionCardPresentation.ApplyFact(metric, model);
         }
         SetDisplayed(_metrics, count > 0);
     }

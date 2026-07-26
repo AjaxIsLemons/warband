@@ -25,9 +25,10 @@ endless pressure can push it.**
 **0. JAKE'S VERIFY PASS on item 1** — watch a fight. Three days of combat work is unwatched and
 nothing else in item 1 can be judged without it. This is the top of the board and it is not
 something a session can do.
-**1. Items 7 → 8 → 9** (save/resume · a standalone build · an options screen) — the invisible
-blockers on item 6. Build these next; item 8 especially, because a first standalone build always
-finds ten things and it should find them on a Tuesday.
+**1. Items ~~7~~ → 8 → 9** (~~save/resume~~ **BUILT 2026-07-26, client half needs a click-through** ·
+a standalone build · an options screen) — the invisible blockers on item 6. **Item 8 is next**, and
+it is also the natural verifier for item 7: a real build is where `Application.persistentDataPath`
+stops being a theory.
 **2. Then re-decide** from the verify pass. Standing candidates, in Jake's stated preference order
 if nothing changes: cheap feel wins (10, 11) · Inscription engine (5a) · act identity (14).
 Items 4, 12, 13, 15 are live but unranked. Item 16 is settled — see it. Item 5 is a laws page.
@@ -237,14 +238,10 @@ property that makes them urgent out of proportion to their size: **item 6 (frien
 cannot happen without them, and each is the kind of work that is discovered too late.**
 
 **P1 — silently blocks friends playtest #1 (item 6).**
-7. **A run cannot be saved. Quitting the app destroys it.** — **SPEC'D (small).** The menu's
-   CONTINUE is memory-only: `RunShell.cs:1604` is `CanContinue = _run != null && !_run.State.Over`,
-   and the only thing this game writes to disk about a player is `PlayerPrefs["ui.reducedMotion"]`.
-   A first-playable run is three acts × five beats plus Hall time. Put that on a friend's machine
-   and alt-tab, a crash, or dinner ends it — and **losses are already terminal (ADR 0019)**, so
-   there is nothing to soften it. ADR 0008 made `RunState` a pure serializable ids-only record
-   *precisely* so this would be cheap; nothing has ever used that property. Do it before, not
-   after, someone loses an hour.
+7. **A run cannot be saved.** — **BUILT 2026-07-26 (412 tests). VERIFY: the client half is
+   compile-checked but not yet clicked through.** See the Done entry for what landed and what is
+   still unverified. Jake also settled item 16 on the back of this: terminal loss stays, and
+   save/resume is the whole mitigation.
 8. **No standalone build has ever been produced.** — **SPEC'D (small, do it EARLY).** Every
    verification to date is in-Editor. One landmine is already known and written down in the FX
    ledger: the six hand-HLSL shaders are found by `Shader.Find`, which **silently falls back to a
@@ -365,6 +362,15 @@ actually needs from them:
   edit-mode probe finds no `ReplayPlayer`. Open `Assets/Scenes/Game.unity` first.
 - **Game View capture stalls unattended** (`WaitForEndOfFrame` never completes). Driving the live
   UI tree over MCP is the reliable verification; screenshots need Jake's focused Editor.
+- **PLAY MODE IS UNREACHABLE FROM A SESSION (found 2026-07-26).** `EditorApplication.EnterPlaymode()`
+  inside `Unity_RunCommand` is refused outright: *"User interactions are not supported for MCP tool
+  calls."* So **no agent can ever click through the runtime UI** — anything that only exists in Play
+  Mode (button wiring, shell state transitions, frame-driven feel) is Jake-only verification, full
+  stop. The workable substitute is a **committed edit-mode Editor script + `ExecuteMenuItem`**
+  exercising the real DLLs (see `Assets/Editor/RunSaveCheck.cs` and `RenderShots.cs`). Note
+  `Unity_RunCommand`'s dynamic assembly cannot reference Warband plugin types, which is *why* the
+  harness must be a real Editor script; and Editor scripts live in Assembly-CSharp-**Editor**, so they
+  cannot see `internal` types in Assembly-CSharp either.
 - **`Unity_RunCommand` rejects `System.Reflection`** outright, and its dynamic assembly cannot
   reference Warband plugin types. Use `SerializedObject.FindProperty` / `SendMessage`, or a real
   `Assets/Editor` script driven by `ExecuteMenuItem`.
@@ -473,6 +479,44 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — RUN SAVE/RESUME (item 7, 412 tests).** Quitting the app no longer destroys the run.
+  `Warband.Run.RunSave` converts `RunState` ⇄ text and **does no file IO** (the run layer is pure by
+  law, ADR 0008) — the host owns the bytes, which is also what keeps the format headless-testable.
+  Hand-rolled rather than JSON: Warband.Run has zero package references so the DLL drops into Unity
+  unchanged, and reflection-based serialization gets stripped by IL2CPP. Format is
+  `dotted.key=value` lines behind a version header — order-independent, unknown keys ignored,
+  explicit `.count` on every list, and **content ids that could collide with a delimiter throw at
+  WRITE time** rather than silently corrupting a save.
+  `RunController.Resume(state, content, cfg)` rebuilds the machine without regenerating anything
+  (regenerating maps or shop stock would replace what the player was looking at) and **resolves every
+  content id eagerly**, so a save from an older build fails with the offending id named instead of
+  mid-fight. Client half: `RunSaveFile` writes temp-then-move so a crash mid-write leaves the
+  previous good save intact, never throws at the caller, and **deletes any save it cannot read** so
+  CONTINUE can't fail forever. Autosave hangs off `Rebuild()` — the shell's single choke point, so no
+  future action can change the run without the save following — plus `OnApplicationPause/Quit` for
+  alt-tab. CONTINUE now means "a run exists, in memory or on disk"; a discarded save says so on the
+  menu instead of failing silently.
+  **The test that matters:** a run saved, serialized, and rebuilt from text plays out **identical**
+  to one that was never saved — same encounters, same battles event-for-event (order-sensitive log
+  hash), same Sand. Plus: earned growth and frozen offers survive · sold-out offer slots stay empty ·
+  an implicit starter weapon stays implicit (null ≠ "") · a hero with no trinkets resumes with none ·
+  truncated/garbage/future-format saves are refused · Reward-phase and PendingSpec saves resume still
+  owing the choice.
+  **Verified ON WINDOWS, not just headless.** New committed harness
+  `client/Assets/Editor/RunSaveCheck.cs` → menu `Warband/Verify Run Save`, MCP-drivable, edit-mode
+  only. Run this session against the real DLLs: save lands at
+  `C:/Users/jwjwi/AppData/LocalLow/InhouseBoyz/Warband` (2066 bytes) · temp file consumed by the
+  move · **bytes survive Windows text IO unchanged and no CR is injected into the record
+  separator** · resumed act/beat/phase, Sand, warband and shop stock all match · a future format is
+  refused · cleanup works. 12/12 PASS, console 0 errors.
+  **STILL UNVERIFIED — needs Jake at the keyboard:** the shell wiring (does the CONTINUE button
+  appear on a cold start, does clicking it resume, does the autosave hook fire on every action).
+  **`EditorApplication.EnterPlaymode` is refused over MCP** — *"User interactions are not supported
+  for MCP tool calls"* — so Play Mode is not reachable from a session at all. **That is a new,
+  permanent constraint worth knowing: no agent can ever click-through this client.** Add it to the
+  client gotchas.
+  **Known behavior, not a bug:** quitting mid-fight-playback resumes at the *next* beat — the fight
+  had already resolved and paid, so nothing is lost, but the result report is skipped.
 - **2026-07-26 — ACT BOSSES + THE DISCLOSURE CONTRACT (item 2 ①②, ADR 0024, 392 tests).** Built
   overnight, unattended. Each act now closes on a different strength exam instead of the same bonded
   pair three times: act 1 **The Last Oath** (`BOND`, unchanged and deliberately so — it is the only

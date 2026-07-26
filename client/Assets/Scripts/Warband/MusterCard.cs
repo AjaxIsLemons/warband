@@ -47,11 +47,23 @@ internal sealed class MusterCard
 
         public void Bind(MusterFactModel model)
         {
+            PresentationFactId id = model.Id == PresentationFactId.Unknown
+                ? DecisionCardPresentation.FactId(model.Kind)
+                : model.Id;
+            DecisionFactDefinition fact = model.Icon == UiGlyphId.Heal
+                ? DecisionCardPresentation.Fact(new StatChipModel("HEAL", model.Value))
+                : DecisionCardPresentation.Fact(id);
             Icon.Set(model.Icon);
+            Icon.SetColor(fact.Color);
             Value.text = model.Value;
             SecondaryIcon.Set(model.SecondaryIcon);
+            SecondaryIcon.SetColor(DecisionCardPresentation.Fact(
+                model.SecondaryIcon == UiGlyphId.Cadence
+                    ? PresentationFactId.Cadence
+                    : id).Color);
             SecondaryValue.text = model.SecondaryValue;
             Root.tooltip = model.AccessibleLabel + " · " + model.TooltipBody;
+            DecisionCardPresentation.ApplyFact(Root, fact);
             SetDisplayed(SecondaryIcon, model.SecondaryIcon != UiGlyphId.Unknown);
             SetDisplayed(SecondaryValue, !string.IsNullOrEmpty(model.SecondaryValue));
         }
@@ -62,11 +74,15 @@ internal sealed class MusterCard
         public readonly MusterRuleKind Kind;
         public readonly VisualElement Root = new VisualElement();
         public readonly WarbandGlyph Icon = new WarbandGlyph();
+        public readonly Label Type = new Label();
         public readonly Label Name = new Label();
         public readonly VisualElement Keyword = new VisualElement();
         public readonly WarbandGlyph KeywordIcon = new WarbandGlyph();
         public readonly Label KeywordText = new Label();
         public readonly Label Context = new Label();
+        public readonly VisualElement Cost = new VisualElement();
+        public readonly WarbandGlyph CostIcon = new WarbandGlyph(UiGlyphId.Mana);
+        public readonly Label CostValue = new Label();
 
         public RuleView(MusterRuleKind kind)
         {
@@ -80,6 +96,8 @@ internal sealed class MusterCard
 
             var copy = new VisualElement();
             copy.AddToClassList("muster-rule__copy");
+            Type.AddToClassList("muster-rule__type");
+            copy.Add(Type);
             Name.AddToClassList("muster-rule__name");
             copy.Add(Name);
 
@@ -91,6 +109,15 @@ internal sealed class MusterCard
             copy.Add(Keyword);
             Root.Add(copy);
 
+            Cost.AddToClassList("muster-rule__cost");
+            CostIcon.AddToClassList("muster-rule__cost-icon");
+            CostIcon.SetColor(DecisionCardPresentation.Fact(
+                PresentationFactId.ManaThreshold).Color);
+            CostValue.AddToClassList("muster-rule__cost-value");
+            Cost.Add(CostIcon);
+            Cost.Add(CostValue);
+            Root.Add(Cost);
+
             Context.AddToClassList("muster-rule__context");
             Root.Add(Context);
         }
@@ -98,11 +125,20 @@ internal sealed class MusterCard
         public void Bind(MusterRuleModel model)
         {
             Icon.Set(model.Icon);
+            Type.text = model.Kind == MusterRuleKind.Signature ? "SIGNATURE" : "PASSIVE";
             Name.text = model.Name;
             KeywordIcon.Set(model.KeywordIcon);
             KeywordText.text = model.Keyword.ToUpperInvariant();
             Context.text = model.Context;
-            Root.tooltip = model.Name + " · " + model.ExactRule;
+            CostValue.text = model.ManaCost >= 0 ? model.ManaCost.ToString() : "";
+            Root.tooltip = model.Name + " · " + model.ExactRule +
+                (string.IsNullOrWhiteSpace(model.AdvancedRule)
+                    ? ""
+                    : "\n\nADVANCED · " + model.AdvancedRule);
+            SetDisplayed(Cost, model.Kind == MusterRuleKind.Signature &&
+                model.ManaCost >= 0);
+            SetDisplayed(Context, model.Kind != MusterRuleKind.Signature ||
+                model.ManaCost < 0);
         }
     }
 
@@ -159,6 +195,7 @@ internal sealed class MusterCard
             pickingMode = PickingMode.Position,
         };
         Root.AddToClassList("muster-card");
+        DecisionCardPresentation.ApplyProfile(Root, DecisionCardProfile.Feature);
         Root.usageHints |= UsageHints.DynamicTransform;
 
         _portrait = new VisualElement();
@@ -452,7 +489,8 @@ internal sealed class MusterCard
             _lensContext.text = _model.Role.ToUpperInvariant() + " · EXACT RULES";
             _lensBody.text =
                 $"{BasicScanLine()}\n\n" +
-                $"{_model.Signature.Name.ToUpperInvariant()} · {_model.Signature.ExactRule}\n\n" +
+                $"{_model.Signature.Name.ToUpperInvariant()} · " +
+                $"{SignatureCostLine(_model.Signature)}{_model.Signature.ExactRule}\n\n" +
                 $"{_model.Passive.Name.ToUpperInvariant()} · {_model.Passive.ExactRule}";
             AddKeyword(_model.Signature.Keyword, _model.Signature.KeywordIcon);
             AddKeyword(_model.Passive.Keyword, _model.Passive.KeywordIcon);
@@ -479,7 +517,12 @@ internal sealed class MusterCard
         _lensContext.text = string.IsNullOrEmpty(rule.Context)
             ? rule.Keyword.ToUpperInvariant()
             : rule.Keyword.ToUpperInvariant() + " · " + rule.Context;
-        _lensBody.text = rule.ExactRule;
+        if (rule.Kind == MusterRuleKind.Signature && rule.ManaCost >= 0)
+            _lensContext.text = $"{rule.ManaCost} MANA · {rule.Keyword.ToUpperInvariant()}";
+        _lensBody.text = rule.ExactRule +
+            (string.IsNullOrWhiteSpace(rule.AdvancedRule)
+                ? ""
+                : "\n\nADVANCED · " + rule.AdvancedRule);
         AddKeyword(rule.Keyword, rule.KeywordIcon);
         foreach (string note in rule.KeywordNotes) AddKeyword(note, UiGlyphId.Unknown);
     }
@@ -491,6 +534,9 @@ internal sealed class MusterCard
         if (basic == null || reach == null) return "";
         return $"{basic.AccessibleLabel} · REACH {reach.Value}";
     }
+
+    private static string SignatureCostLine(MusterRuleModel rule) =>
+        rule != null && rule.ManaCost >= 0 ? $"{rule.ManaCost} MANA · " : "";
 
     private void AddKeyword(string text, UiGlyphId glyph)
     {
@@ -639,6 +685,8 @@ internal static class MusterPresentationContract
             MusterFactModel fact = card.Facts[i];
             Require(fact.Kind == ExpectedFacts[i],
                 card.Key + " fact order must be Health, Basic, Reach");
+            Require(fact.Id == DecisionCardPresentation.FactId(fact.Kind),
+                card.Key + " facts need the canonical semantic id");
             Require(fact.Icon != UiGlyphId.Unknown, card.Key + " facts need glyphs");
             Require(!string.IsNullOrWhiteSpace(fact.Value), card.Key + " facts need values");
             Require(!string.IsNullOrWhiteSpace(fact.TooltipTitle),
@@ -658,6 +706,13 @@ internal static class MusterPresentationContract
         Require(!string.IsNullOrWhiteSpace(rule.Name), key + " rules need names");
         Require(!string.IsNullOrWhiteSpace(rule.Keyword), key + " rules need scan keywords");
         Require(!string.IsNullOrWhiteSpace(rule.ExactRule), key + " rules need exact language");
+        if (expected == MusterRuleKind.Signature && rule.ManaCost >= 0)
+        {
+            Require(!rule.Context.StartsWith("BASE:", StringComparison.OrdinalIgnoreCase),
+                key + " Signature scan language must show Mana, not attacks-to-cast");
+            Require(rule.Context.IndexOf("MANA", StringComparison.OrdinalIgnoreCase) >= 0,
+                key + " Signature Mana cost needs visible scan language");
+        }
     }
 
     private static void Require(bool condition, string message)

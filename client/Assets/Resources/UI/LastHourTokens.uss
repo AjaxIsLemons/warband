@@ -13,6 +13,16 @@
     --lh-blue: rgb(104, 165, 231);
     --lh-green: rgb(101, 201, 154);
     --lh-blood: rgb(180, 76, 67);
+    --fact-health: rgb(218, 100, 103);
+    --fact-power: rgb(235, 143, 81);
+    --fact-healing: rgb(101, 201, 154);
+    --fact-reach: rgb(104, 165, 231);
+    --fact-cadence: rgb(172, 132, 229);
+    --fact-mana: rgb(77, 205, 207);
+    --fact-precision: rgb(220, 116, 207);
+    --fact-rank: rgb(207, 218, 232);
+    --fact-field: rgb(108, 194, 155);
+    --fact-choice: rgb(225, 183, 91);
 }
 
 .ui-fx-layer {
@@ -282,6 +292,68 @@
     transition-duration: 0.08s;
     translate: 0 0;
     scale: 1 1;
+}
+
+/* Shared fact language. Color is always paired with a glyph and canonical label. */
+.hub .decision-fact {
+    border-top-width: 2px;
+    border-top-color: rgba(112, 132, 161, 0.58);
+}
+
+.hub .decision-fact--health { border-top-color: var(--fact-health); }
+.hub .decision-fact--power { border-top-color: var(--fact-power); }
+.hub .decision-fact--healing,
+.hub .decision-fact--field { border-top-color: var(--fact-healing); }
+.hub .decision-fact--reach { border-top-color: var(--fact-reach); }
+.hub .decision-fact--cadence { border-top-color: var(--fact-cadence); }
+.hub .decision-fact--mana { border-top-color: var(--fact-mana); }
+.hub .decision-fact--precision { border-top-color: var(--fact-precision); }
+.hub .decision-fact--rank { border-top-color: var(--fact-rank); }
+.hub .decision-fact--choice,
+.hub .decision-fact--duration { border-top-color: var(--fact-choice); }
+
+.hub .decision-fact--health .wb-mini-stat__value,
+.hub .decision-fact--health .wb-inspector-stat__value { color: rgb(244, 153, 155); }
+.hub .decision-fact--power .wb-mini-stat__value,
+.hub .decision-fact--power .wb-inspector-stat__value { color: rgb(249, 177, 117); }
+.hub .decision-fact--healing .wb-mini-stat__value,
+.hub .decision-fact--healing .wb-inspector-stat__value,
+.hub .decision-fact--field .wb-mini-stat__value,
+.hub .decision-fact--field .wb-inspector-stat__value { color: rgb(139, 224, 179); }
+.hub .decision-fact--reach .wb-mini-stat__value,
+.hub .decision-fact--reach .wb-inspector-stat__value { color: rgb(151, 197, 246); }
+.hub .decision-fact--cadence .wb-mini-stat__value,
+.hub .decision-fact--cadence .wb-inspector-stat__value { color: rgb(202, 177, 245); }
+.hub .decision-fact--mana .wb-mini-stat__value,
+.hub .decision-fact--mana .wb-inspector-stat__value { color: rgb(132, 234, 231); }
+.hub .decision-fact--precision .wb-mini-stat__value,
+.hub .decision-fact--precision .wb-inspector-stat__value { color: rgb(241, 164, 228); }
+.hub .decision-fact--choice .wb-mini-stat__value,
+.hub .decision-fact--choice .wb-inspector-stat__value,
+.hub .decision-fact--duration .wb-mini-stat__value,
+.hub .decision-fact--duration .wb-inspector-stat__value { color: rgb(244, 207, 130); }
+
+.hub .decision-fact--health .wb-comparison__after,
+.hub .decision-fact--health .management-choice__delta-value { color: rgb(244, 153, 155); }
+.hub .decision-fact--power .wb-comparison__after,
+.hub .decision-fact--power .management-choice__delta-value { color: rgb(249, 177, 117); }
+.hub .decision-fact--reach .wb-comparison__after,
+.hub .decision-fact--reach .management-choice__delta-value { color: rgb(151, 197, 246); }
+.hub .decision-fact--cadence .wb-comparison__after,
+.hub .decision-fact--cadence .management-choice__delta-value { color: rgb(202, 177, 245); }
+.hub .decision-fact--mana .wb-comparison__after,
+.hub .decision-fact--mana .management-choice__delta-value { color: rgb(132, 234, 231); }
+
+.hub .wb-mini-stat__icon {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 2px;
+}
+
+.hub .wb-inspector-stat__icon {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 3px;
 }
 
 /* UI Toolkit's default runtime scrollers are bright desktop chrome. Keep the full affordance,

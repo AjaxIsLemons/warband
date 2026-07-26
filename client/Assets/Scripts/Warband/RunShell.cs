@@ -62,6 +62,12 @@ public sealed class RunShell : MonoBehaviour
     private bool _debugPhoneLayout;
 
     private ulong _seed;
+    /// <summary>The exact text last written to disk. Autosave compares against it so an idle
+    /// Rebuild (a hover, a selection) does not rewrite an unchanged file.</summary>
+    private string _savedText = "";
+    /// <summary>Menu-scoped message (a discarded save). Separate from _feedback so a load failure
+    /// cannot leak into the Hall's transaction receipts.</summary>
+    private string _menuNotice = "";
     private List<string> _offer = new List<string>();
     private readonly List<string> _picked = new List<string>();
     private FightTier _tier = FightTier.Fraying;
@@ -139,8 +145,21 @@ public sealed class RunShell : MonoBehaviour
         };
         _actions.ContinueRun = () =>
         {
-            if (_run == null) Go(RunScreen.Menu);
-            else OpenHallOverview();
+            // A run already in memory just re-opens. Otherwise this is a cold CONTINUE from disk —
+            // the whole point of item 7, since before this the button could only ever mean
+            // "the run you never left".
+            if (_run != null) { OpenHallOverview(); return; }
+
+            var loaded = RunSaveFile.Load(_content, _cfg, out string problem);
+            if (loaded == null)
+            {
+                _menuNotice = problem;
+                Go(RunScreen.Menu);
+                return;
+            }
+            _menuNotice = "";
+            AdoptResumedRun(loaded);
+            OpenHallOverview();
         };
         _actions.Quit = () =>
         {
@@ -203,6 +222,11 @@ public sealed class RunShell : MonoBehaviour
         _actions.BeginRun = () =>
         {
             if (RunSetup.PicksRemaining(_picked.Count, _cfg) > 0) return;
+            // Starting a new run abandons any saved one. Do it here rather than on the menu so a
+            // player who opens the draft and backs out still has their old run.
+            RunSaveFile.Delete();
+            _savedText = "";
+            _menuNotice = "";
             _run = RunSetup.Begin(_seed, _content, _picked, _cfg);
             _planningTab = PlanningTab.Muster;
             _selectedCardKey = "hero:field:0";
@@ -1403,8 +1427,74 @@ public sealed class RunShell : MonoBehaviour
         if (screen == RunScreen.Deploy) ShowDeploymentOnBoard();
     }
 
+    /// <summary>
+    /// Adopt a run rebuilt from disk. Deliberately mirrors `BeginRun`'s shell reset rather than
+    /// sharing it: every piece of transient shell state — chosen tier, deployment, result gate,
+    /// last battle — is fight-scoped and must NOT be inferred from a saved run. A resumed player
+    /// lands in the Hall with nothing half-committed, which is also the only state the run layer
+    /// guarantees is re-enterable.
+    /// </summary>
+    private void AdoptResumedRun(RunController run)
+    {
+        _run = run;
+        _seed = run.State.Seed;
+        _planningTab = PlanningTab.Muster;
+        _selectedCardKey = "hero:field:0";
+        _inspectorOpen = false;
+        _tier = FightTier.Fraying;
+        _tierChosen = false;
+        _hallOverview = true;
+        _recommendedStation = HallStation.Breach;
+        _hubAttention.Reset();
+        _resultGateOpen = false;
+        _lastBattle = null;
+        _lastFightOutcome = null;
+        _pendingHubPlan = new HubSequencePlan { RecommendedStation = HallStation.Breach };
+        _fightsCompleted = 0;              // display-only; the run's own act/beat is authoritative
+        _conclusionReceipt = null;
+        _equipNowItemInstanceId = 0;
+        _equipNowOfferIndex = -1;
+        _placement.Clear();
+        _deploySelected = -1;
+        _selectedItem = -1;
+        _selectedMarketOffer = -1;
+        _feedback = "";
+        _feedbackIsError = false;
+        _savedText = RunSave.Write(run.State);   // already on disk; don't rewrite it immediately
+        if (_player != null) _player.Idle();
+    }
+
+    /// <summary>
+    /// Persist after every action (roadmap item 7). `Rebuild` is the shell's single choke point —
+    /// every action funnels through it — so hooking here means there is no action that can change
+    /// the run without the save following it, which is the only way this stays correct as actions
+    /// are added.
+    /// </summary>
+    private void Autosave()
+    {
+        if (_run == null) return;
+        if (_run.State.Over) { RunSaveFile.Delete(); _savedText = ""; return; }
+
+        string text;
+        try { text = RunSave.Write(_run.State); }
+        catch (Exception ex)
+        {
+            // A run the format cannot represent is a content bug, not a player problem. Say so
+            // loudly in the console and let them keep playing unsaved.
+            Debug.LogError($"[save] this run cannot be serialized: {ex.Message}");
+            return;
+        }
+        if (text == _savedText) return;
+        if (RunSaveFile.Save(_run.State)) _savedText = text;
+    }
+
+    // Mobile and alt-tab: a suspended app may never get another Rebuild. Cheap insurance.
+    private void OnApplicationPause(bool paused) { if (paused) Autosave(); }
+    private void OnApplicationQuit() => Autosave();
+
     private void Rebuild()
     {
+        Autosave();
         BuildModel();
         _hallEnvironment?.SetVisible(_model.Screen == RunScreen.Management,
             _hallOverview ? HallStation.Overview : TabStation(_planningTab), _reducedMotion);
@@ -1601,7 +1691,14 @@ public sealed class RunShell : MonoBehaviour
 #else
         _model.Menu.SeedLabel = "";
 #endif
-        _model.Menu.CanContinue = _run != null && !_run.State.Over;
+        // CONTINUE now means "a run exists", in memory OR on disk. Before item 7 it could only ever
+        // mean the first, so quitting the app silently destroyed the run.
+        // BuildMenu runs on every Rebuild, so only touch the disk when there is no live run to
+        // answer the question — a live run makes the file check redundant anyway.
+        _model.Menu.CanContinue = _run != null
+            ? !_run.State.Over
+            : RunSaveFile.Exists();
+        _model.Menu.Notice = _menuNotice;
         _model.Menu.VersionLine =
             $"First playable · {_cfg.Acts} acts × {_cfg.NodesPerAct + 1} beats · one loss ends the run";
     }
@@ -2222,7 +2319,7 @@ public sealed class RunShell : MonoBehaviour
                 break;
         }
         card.ContentId = offer.Id;
-        card.Price = $"{offer.Price} ◇";
+        card.Price = $"{offer.Price} SAND";
         card.Frozen = offer.Frozen;
         // Affordability disables BUY, never inspection. The Market card remains selectable so
         // the player can learn why an offer is worth saving for.
@@ -2346,7 +2443,7 @@ public sealed class RunShell : MonoBehaviour
             ExactRule = showMastery ? detail.PassiveSummary : detail.AbilitySummary,
             Qualifier = qualifier,
             Price = $"{offer.Price} SAND",
-            EconomyState = shortfall == 0 ? "AVAILABLE" : $"NEED {shortfall}",
+            EconomyState = shortfall == 0 ? "AVAILABLE" : "SHORT",
             Selected = detail.Selected,
             Affordable = shortfall == 0,
             Frozen = offer.Frozen,
@@ -2563,7 +2660,7 @@ public sealed class RunShell : MonoBehaviour
             PortraitFallback = "+",
             RoleIcon = "+",
             Accent = "mending",
-            Price = $"{_run.SlotOfferCost} ◇",
+            Price = $"{_run.SlotOfferCost} SAND",
             AbilityIcon = "⬡",
             AbilityTrigger = "MANAGEMENT · PERMANENT",
             AbilityName = "EXPAND THE MUSTER",
@@ -2598,7 +2695,7 @@ public sealed class RunShell : MonoBehaviour
             RuleName = detail.AbilityName,
             ExactRule = detail.AbilitySummary,
             Price = $"{_run.SlotOfferCost} SAND",
-            EconomyState = shortfall == 0 ? "AVAILABLE" : $"NEED {shortfall}",
+            EconomyState = shortfall == 0 ? "AVAILABLE" : "SHORT",
             Selected = detail.Selected,
             Affordable = shortfall == 0,
             Metrics = new List<StatChipModel>
@@ -2650,6 +2747,7 @@ public sealed class RunShell : MonoBehaviour
 
         var inspector = new InspectorModel
         {
+            Key = card.Key,
             Eyebrow = card.Eyebrow,
             Title = card.Title,
             Subtitle = InspectorSubtitle(card),
@@ -3340,9 +3438,17 @@ public sealed class RunShell : MonoBehaviour
         string passiveRule = MechanicalRulePresenter.Passives(
             passiveTriggers, chassis.StatRules);
         int? baseAttacks = MechanicalRulePresenter.BasicAttacksToSignature(def);
-        string signatureContext = baseAttacks.HasValue
-            ? $"BASE: {baseAttacks.Value} ATTACKS"
-            : "SPECIAL";
+        string signatureContext = def.ManaMax > 0 ? $"{def.ManaMax} MANA" : "SPECIAL";
+        string signatureAdvanced = def.ManaMax <= 0
+            ? ""
+            : def.ManaPerSwing <= 0
+                ? $"Costs {def.ManaMax} Mana. This starting kit does not gain Mana from " +
+                  "ordinary basic attacks."
+                : $"Costs {def.ManaMax} Mana and gains {def.ManaPerSwing} Mana when a basic " +
+                  $"attack resolves." + (baseAttacks.HasValue
+                    ? $" Baseline: ready after {baseAttacks.Value} basic " +
+                      $"hit{(baseAttacks.Value == 1 ? "" : "s")} before modifiers."
+                    : "");
 
         string basicVerb = def.HealAutos ? "Heal" : "Damage";
         var basicDetails = new List<string>
@@ -3373,6 +3479,7 @@ public sealed class RunShell : MonoBehaviour
             {
                 new MusterFactModel
                 {
+                    Id = PresentationFactId.Hp,
                     Kind = MusterFactKind.Health,
                     Icon = UiGlyphId.Health,
                     Value = def.MaxHp.ToString(),
@@ -3382,6 +3489,7 @@ public sealed class RunShell : MonoBehaviour
                 },
                 new MusterFactModel
                 {
+                    Id = PresentationFactId.BasicPower,
                     Kind = MusterFactKind.Basic,
                     Icon = def.HealAutos ? UiGlyphId.Heal : UiGlyphId.Damage,
                     SecondaryIcon = UiGlyphId.Cadence,
@@ -3395,6 +3503,7 @@ public sealed class RunShell : MonoBehaviour
                 },
                 new MusterFactModel
                 {
+                    Id = PresentationFactId.Reach,
                     Kind = MusterFactKind.Reach,
                     Icon = UiGlyphId.Reach,
                     Value = def.Range.ToString(),
@@ -3414,6 +3523,8 @@ public sealed class RunShell : MonoBehaviour
                 Keyword = signatureKeyword,
                 Context = signatureContext,
                 ExactRule = signatureRule,
+                AdvancedRule = signatureAdvanced,
+                ManaCost = def.ManaMax > 0 ? def.ManaMax : -1,
                 KeywordNotes = MusterKeywordNotes(
                     presentation.keywords, signatureKeyword),
             },
@@ -3565,6 +3676,7 @@ public sealed class RunShell : MonoBehaviour
     /// </summary>
     private static List<StatChipModel> StatChips(UnitDef def)
     {
+        int? baselineHits = MechanicalRulePresenter.BasicAttacksToSignature(def);
         var chips = new List<StatChipModel>
         {
             new StatChipModel("HP", def.MaxHp.ToString(), "",
@@ -3582,6 +3694,14 @@ public sealed class RunShell : MonoBehaviour
             new StatChipModel("SIGNATURE", def.ManaMax.ToString(), "",
                 PresentationFactId.ManaThreshold, "Mana required to cast the signature."),
         };
+        if (def.ManaMax > 0 && def.ManaPerSwing > 0 && baselineHits.HasValue)
+        {
+            string calculation =
+                $"{def.ManaMax} Mana ÷ {def.ManaPerSwing} Mana per basic hit = " +
+                $"{baselineHits.Value} baseline hits before modifiers.";
+            chips[4].AdvancedTooltip = calculation;
+            chips[5].AdvancedTooltip = calculation;
+        }
         if (def.CritChance > 0)
             chips.Add(new StatChipModel("CRIT", $"{def.CritChance}%", "",
                 PresentationFactId.CritChance, "Critical-hit chance."));

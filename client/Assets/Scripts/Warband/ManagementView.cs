@@ -205,6 +205,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly VisualElement _inspectorScrim;
     private readonly VisualElement _inspectorPane;
     private readonly VisualElement _inspectorActionDock;
+    private readonly Button _inspectorExpand;
     private readonly Button _secondary;
     private readonly Button _continue;
     private readonly CardPool _primaryCards;
@@ -245,6 +246,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private bool _routePending;
     private bool _reducedMotion;
     private string _lastMarketSelectionKey = "";
+    private string _lastDetailKey = "";
 
     public RunScreen Screen => RunScreen.Management;
     public VisualElement Root => _root;
@@ -297,6 +299,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _inspectorScrim = Required<VisualElement>(_root, "inspector-scrim");
         _inspectorPane = Required<VisualElement>(_root, "inspector-pane");
         _inspectorActionDock = Required<VisualElement>(_root, "inspector-action-dock");
+        _inspectorExpand = Required<Button>(_root, "inspector-close");
         _secondary = Required<Button>(_root, "secondary");
         _continue = Required<Button>(_root, "continue");
 
@@ -307,12 +310,16 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         // inspector still owns and binds its actions; the Hall simply presents that action rail
         // as a pinned command dock outside the scroll view.
         _inspectorActionDock.Add(_inspector.ActionsRoot);
-        Required<Button>(_root, "inspector-close").clicked +=
-            () => _actions.CloseInspector?.Invoke();
+        _inspectorExpand.clicked += () =>
+        {
+            if (_inspectorOpen) _actions.CloseInspector?.Invoke();
+            else _actions.OpenInspector?.Invoke();
+        };
         _selectionTrayInspect.clicked += () => _actions.OpenInspector?.Invoke();
         _inspectorScrim.RegisterCallback<ClickEvent>(evt =>
         {
-            if (evt.target == _inspectorScrim) _actions.CloseInspector?.Invoke();
+            if (_inspectorOpen && evt.target == _inspectorScrim)
+                _actions.CloseInspector?.Invoke();
         });
 
         _choiceScrim = Required<VisualElement>(_root, "choice-scrim");
@@ -335,6 +342,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         RegisterPolishTarget("feedback", _feedback);
         RegisterPolishTarget("action-secondary", _secondary, true);
         RegisterPolishTarget("action-continue", _continue, true);
+        RegisterPolishTarget("selected-detail", _inspector.Root);
 
         _rules = new CardRulesPopover(_root);
         VisualElement primaryGrid = Required<VisualElement>(_root, "primary-grid");
@@ -344,11 +352,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             key => _actions.SelectPlanningCard?.Invoke(key), _polish);
         _marketCards = new MarketOfferPool(primaryGrid,
             key => _actions.SelectPlanningCard?.Invoke(key), _polish,
-            (detail, anchor) =>
-            {
-                if (!_phone) _rules.Show(detail, anchor);
-            },
-            () => _rules.Hide());
+            null, null);
 
         RegisterStation(HallStation.Breach, "station-breach", null);
         RegisterStation(HallStation.Market, "station-market", "anchor-market");
@@ -587,76 +591,33 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _inspector.Bind(model.Inspector);
         BindSelectionTray(model);
         SetDisplayed(_inspectorActionDock, !model.Inspector.Empty);
-        SetDisplayed(_inspectorScrim, model.InspectorOpen && !model.Inspector.Empty);
+        SetDisplayed(_inspectorScrim, !model.HallOverview && !model.Inspector.Empty);
         SetDisplayed(_inspectorPane, true);
+        _inspectorScrim.EnableInClassList("hub-inspector-scrim--expanded",
+            model.InspectorOpen && !model.Inspector.Empty);
+        _inspectorExpand.text = model.InspectorOpen ? "CLOSE  ×" : "EXPAND  ↗";
+        _inspectorExpand.tooltip = model.InspectorOpen
+            ? "Return to the split-stage view."
+            : "Open the selected card as a full dossier.";
+
+        if (!model.Inspector.Empty &&
+            !string.Equals(_lastDetailKey, model.Inspector.Key, StringComparison.Ordinal))
+        {
+            _lastDetailKey = model.Inspector.Key;
+            _polish.Reveal(_inspector.Root, _presentation.detailSwap);
+        }
+        else if (model.Inspector.Empty)
+            _lastDetailKey = "";
     }
 
     private void BindSelectionTray(PlanningModel model)
     {
-        InspectorModel inspector = model.Inspector;
-        bool shown = !model.HallOverview && !inspector.Empty;
-        SetDisplayed(_selectionTray, shown);
-        if (!shown) return;
-
-        _selectionTrayEyebrow.text = inspector.Eyebrow;
-        _selectionTrayTitle.text = inspector.Title;
-        _selectionTrayPrice.text = inspector.Price;
-        SetDisplayed(_selectionTrayPrice, !string.IsNullOrEmpty(inspector.Price));
-
-        if (inspector.Comparisons.Count > 0)
-        {
-            var fragments = new List<string>();
-            int count = Mathf.Min(3, inspector.Comparisons.Count);
-            for (int i = 0; i < count; i++)
-            {
-                StatComparisonModel comparison = inspector.Comparisons[i];
-                fragments.Add($"{comparison.Label}  {comparison.Before} → {comparison.After}");
-            }
-            _selectionTraySummary.text = string.Join("   ·   ", fragments);
-        }
-        else if (!string.IsNullOrEmpty(inspector.AbilitySummary))
-            _selectionTraySummary.text = inspector.AbilitySummary;
-        else if (!string.IsNullOrEmpty(inspector.WeaponSummary))
-            _selectionTraySummary.text = inspector.WeaponSummary;
-        else
-            _selectionTraySummary.text = inspector.Subtitle;
-
-        bool showBasic = model.ActiveStation == HallStation.Market &&
-                         !string.IsNullOrEmpty(inspector.WeaponSummary) &&
-                         !string.Equals(inspector.WeaponSummary,
-                             _selectionTraySummary.text, StringComparison.Ordinal);
-        _selectionTrayBasic.text = showBasic
-            ? "BASIC · " + inspector.WeaponSummary
-            : "";
-        SetDisplayed(_selectionTrayBasic, showBasic);
-
-        _trayTargetIds.Clear();
+        // Detail and actions now live together in the persistent selected-card stage. Retain the
+        // old UXML node as a compatibility seam for serialized captures, but never duplicate the
+        // selected card into a second tray.
+        SetDisplayed(_selectionTray, false);
         _selectionTrayActions.Clear();
-        for (int i = 0; i < inspector.Actions.Count; i++)
-        {
-            InspectorActionModel action = inspector.Actions[i];
-            HallActionId id = action.Id;
-            var button = new Button(() => _actions.InspectorAction?.Invoke(id))
-            {
-                text = action.Label,
-                tooltip = action.Enabled ? "" : action.DisabledReason,
-            };
-            button.AddToClassList("btn");
-            button.AddToClassList(action.Primary ? "btn--primary" : "btn--ghost");
-            button.AddToClassList("hub-selection-tray__action");
-            button.SetEnabled(action.Enabled);
-            _selectionTrayActions.Add(button);
-            string targetId = "tray-action-" + i;
-            _trayTargetIds.Add(targetId);
-            RegisterPolishTarget(targetId, button, true);
-        }
-
-        if (inspector.Actions.Count == 0 && model.ActiveStation == HallStation.Armory)
-        {
-            var hint = new Label("CHOOSE A CHAMPION TO PREVIEW EQUIP");
-            hint.AddToClassList("hub-selection-tray__command-hint");
-            _selectionTrayActions.Add(hint);
-        }
+        _trayTargetIds.Clear();
     }
 
     private static readonly IReadOnlyList<CardModel> EmptyCards = new List<CardModel>();
@@ -799,6 +760,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     {
         var button = new Button(action);
         button.AddToClassList("management-choice");
+        DecisionCardPresentation.ApplyProfile(button, DecisionCardProfile.Feature);
         if (!string.IsNullOrEmpty(change))
         {
             var badge = new Label(change);
@@ -816,6 +778,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             {
                 var row = new VisualElement();
                 row.AddToClassList("management-choice__delta");
+                DecisionCardPresentation.ApplyFact(row,
+                    DecisionCardPresentation.FactId(comparison.Label));
                 var label = new Label(comparison.Label);
                 label.AddToClassList("management-choice__delta-label");
                 var value = new Label(comparison.Before + "  →  " + comparison.After);
@@ -958,50 +922,44 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         if (_activeStation != HallStation.Market || _hallOverview) return cards.Count == 0;
         if (cards.Count == 0) return false;
 
+        VisualElement collection =
+            _root.Q<VisualElement>(className: "hub-collection");
+        if (collection == null || _inspectorScrim.resolvedStyle.display == DisplayStyle.None)
+            return false;
+        if (!_phone && !_inspectorOpen &&
+            collection.worldBound.xMax > _inspectorScrim.worldBound.xMin + 0.75f)
+            return false;
+
         foreach (VisualElement card in cards)
         {
-            VisualElement rule = card.Q<VisualElement>("rule");
+            VisualElement main =
+                card.Q<VisualElement>(className: "market-offer-card__main");
+            VisualElement read =
+                card.Q<VisualElement>(className: "market-offer-card__read");
             VisualElement commerce = card.Q<VisualElement>("commerce");
-            VisualElement metrics = card.Q<VisualElement>("metrics");
-            VisualElement selection =
-                card.Q<VisualElement>(className: "market-offer-card__selection");
+            VisualElement qualifier = card.Q<VisualElement>("qualifier");
             Label title = card.Q<Label>("title");
-            Label copy = card.Q<Label>("rule-copy");
-            if (rule == null || commerce == null || metrics == null ||
-                selection == null || title == null || copy == null)
+            Label price = card.Q<Label>("price");
+            if (main == null || read == null || commerce == null ||
+                qualifier == null || title == null || price == null)
                 return false;
-            if (rule.resolvedStyle.display != DisplayStyle.None &&
-                rule.worldBound.yMax > commerce.worldBound.yMin + 0.75f)
+
+            // Stock cards are intentionally recognition + price only. Exact rules, metrics, and
+            // numeric qualifiers belong to the selected Detail stage.
+            if (read.resolvedStyle.display != DisplayStyle.None ||
+                qualifier.resolvedStyle.display != DisplayStyle.None)
                 return false;
             if (commerce.resolvedStyle.height < 44f) return false;
-            if (copy.resolvedStyle.display != DisplayStyle.None &&
-                copy.resolvedStyle.fontSize < 15.5f)
+            if (main.worldBound.yMax > commerce.worldBound.yMin + 0.75f)
                 return false;
-            if (copy.resolvedStyle.display != DisplayStyle.None)
-            {
-                Vector2 desired = copy.MeasureTextSize(
-                    copy.text, copy.contentRect.width,
-                    VisualElement.MeasureMode.Exactly, 0f,
-                    VisualElement.MeasureMode.Undefined);
-                float visible = Mathf.Max(0f,
-                    rule.worldBound.yMax - copy.worldBound.yMin);
-                if (desired.y > visible + 0.75f) return false;
-            }
+            if (commerce.worldBound.yMax > card.worldBound.yMax + 0.75f)
+                return false;
+            if (title.resolvedStyle.fontSize < 17.5f ||
+                price.resolvedStyle.fontSize < 18f)
+                return false;
             if (title.worldBound.xMin < card.worldBound.xMin - 0.75f ||
                 title.worldBound.xMax > card.worldBound.xMax + 0.75f)
                 return false;
-            if (selection.resolvedStyle.display != DisplayStyle.None &&
-                selection.worldBound.Overlaps(metrics.worldBound))
-                return false;
-            foreach (VisualElement metric in
-                     metrics.Query<VisualElement>(className: "market-offer-metric").ToList())
-            {
-                Label label = metric.Q<Label>(className: "market-offer-metric__label");
-                if (label == null) return false;
-                if (label.worldBound.xMin < metric.worldBound.xMin - 0.75f ||
-                    label.worldBound.xMax > metric.worldBound.xMax + 0.75f)
-                    return false;
-            }
         }
         return true;
     }
@@ -1031,9 +989,11 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _root.EnableInClassList("layout--short", shortLayout);
         _root.EnableInClassList("layout--phone", _phone);
         _root.EnableInClassList("layout--tablet", tablet);
-        _contentScroll.mode = _phone || _activeStation == HallStation.Market
+        _contentScroll.mode = _phone
             ? ScrollViewMode.Horizontal
             : ScrollViewMode.Vertical;
+        if (_phone && !_inspectorOpen)
+            SetDisplayed(_inspectorScrim, false);
 
         Rect safe = UnityEngine.Screen.safeArea;
         float scaleX = width / Mathf.Max(1f, UnityEngine.Screen.width);

@@ -579,3 +579,164 @@
 .motion--reduced .market-offer-card {
     transition-duration: 0.08s;
 }
+
+/* Stock profile: recognition and price only. Exact mechanics live in the selected Detail stage. */
+.hub--market #primary-grid {
+    width: 100%;
+    min-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.market-offer-card.decision-card--stock {
+    width: 178px;
+    min-width: 178px;
+    height: 252px;
+    min-height: 252px;
+    margin-left: 0;
+    margin-right: 9px;
+    margin-bottom: 9px;
+    border-bottom-width: 4px;
+    transition-property: background-color, border-left-color, border-right-color,
+        border-top-color, border-bottom-color, translate;
+    transition-duration: 90ms;
+    transition-timing-function: ease-out;
+}
+
+.market-offer-card.decision-card--stock:hover,
+.market-offer-card.decision-card--stock:focus {
+    translate: 0 -3px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__identity {
+    height: 198px;
+    min-height: 198px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 8px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__classification {
+    height: 18px;
+    min-height: 18px;
+    padding-right: 2px;
+    color: rgb(157, 182, 213);
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    text-overflow: ellipsis;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__title {
+    height: 44px;
+    min-height: 44px;
+    margin-top: 1px;
+    color: rgb(243, 246, 250);
+    font-size: 18px;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 128px;
+    min-height: 128px;
+    margin-top: 0;
+    background-color: rgba(5, 9, 15, 0.92);
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__art-fallback {
+    font-size: 31px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__read {
+    display: none;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__qualifier {
+    display: none;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__commerce {
+    height: 50px;
+    min-height: 50px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgba(5, 9, 15, 0.99);
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__held,
+.market-offer-card.decision-card--stock .market-offer-card__economy-state {
+    font-size: 9px;
+    letter-spacing: 0.7px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__price {
+    color: rgb(242, 191, 85);
+    font-size: 20px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__selection {
+    right: 7px;
+    top: 7px;
+    min-height: 22px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 3px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__selection-label {
+    font-size: 8px;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--selected {
+    translate: 0 -4px;
+    background-color: rgba(20, 38, 58, 0.998);
+}
+
+.layout--compact .market-offer-card.decision-card--stock {
+    width: 160px;
+    min-width: 160px;
+    height: 238px;
+    min-height: 238px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock .market-offer-card__identity {
+    height: 184px;
+    min-height: 184px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 114px;
+    min-height: 114px;
+}
+
+.layout--phone .hub--market #primary-grid {
+    flex-wrap: nowrap;
+    padding-left: 8px;
+    padding-right: 56px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock {
+    width: 218px;
+    min-width: 218px;
+    height: 218px;
+    min-height: 218px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock .market-offer-card__main {
+    flex-direction: column;
+}
+
+.layout--phone .market-offer-card.decision-card--stock .market-offer-card__identity {
+    width: 100%;
+    min-width: 0;
+    height: 164px;
+    min-height: 164px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 94px;
+    min-height: 94px;
+}

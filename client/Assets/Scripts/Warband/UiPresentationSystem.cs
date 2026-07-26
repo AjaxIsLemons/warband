@@ -193,6 +193,11 @@ internal sealed class HubPresentationConfig
         durationMs = 230, settleMs = 80, distancePx = 18f, scale = 0.975f,
         startOpacity = 0f, particles = 2, staggerMs = 42, staggerCapMs = 210,
     };
+    public UiMotionRecipe detailSwap = new UiMotionRecipe
+    {
+        durationMs = 165, settleMs = 70, distancePx = 12f, scale = 0.992f,
+        startOpacity = 0.18f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
     public UiMotionRecipe route = new UiMotionRecipe
     {
         durationMs = 260, settleMs = 90, distancePx = 30f, scale = 0.99f,
@@ -303,6 +308,7 @@ internal sealed class HubPresentationConfig
         Sanitize(Shared.focus);
         Sanitize(Shared.select);
         Sanitize(Shared.reveal);
+        Sanitize(Shared.detailSwap);
         Sanitize(Shared.route);
         Sanitize(Shared.attention);
         Sanitize(Shared.commit);
@@ -1101,8 +1107,14 @@ internal sealed class UiFeedbackDirector : IDisposable
 
     public void Reveal(VisualElement target, int index = 0, int direction = 1)
     {
+        Reveal(target, _config.reveal, index, direction);
+    }
+
+    public void Reveal(VisualElement target, UiMotionRecipe recipe, int index = 0,
+                       int direction = 1)
+    {
         if (!_config.effectsEnabled || target == null) return;
-        UiMotionRecipe recipe = _config.reveal;
+        recipe ??= _config.reveal;
         int generation = Next(target);
         int delay = _reducedMotion ? 0 :
             Mathf.Min(index * recipe.staggerMs, recipe.staggerCapMs);
@@ -1697,10 +1709,13 @@ internal static class UiPresentationContract
     public static void Validate()
     {
         HallStationPresentationCatalog.Validate();
+        DecisionCardPresentation.Validate();
         MarketOfferPresentationContract.ValidateFixtures();
         OfferFactProfiles.Validate();
         HubPresentationConfig config = HubPresentationConfig.Load();
         Require(config.reveal.durationMs >= 0, "reveal duration cannot be negative");
+        Require(config.detailSwap.durationMs >= 0,
+            "selected-card detail swap duration cannot be negative");
         Require(config.reveal.staggerCapMs >= config.reveal.staggerMs,
             "reveal stagger cap must allow at least one stagger");
         Require(config.commit.particles <= config.fx.maxEffects,

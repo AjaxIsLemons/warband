@@ -124,6 +124,7 @@ internal sealed class StatChipModel
     public string Value = "";
     public string Tone = "";          // "" | "good" | "bad" | "warn" — styling hook only
     public string Tooltip = "";
+    public string AdvancedTooltip = "";
     public int Priority;
 
     public StatChipModel() { }
@@ -210,6 +211,7 @@ internal enum MusterFactKind
 /// <summary>One of the three fixed scan facts on every opening-draft card.</summary>
 internal sealed class MusterFactModel
 {
+    public PresentationFactId Id;
     public MusterFactKind Kind;
     public UiGlyphId Icon;
     public UiGlyphId SecondaryIcon;
@@ -239,6 +241,8 @@ internal sealed class MusterRuleModel
     public string Keyword = "";
     public string Context = "";
     public string ExactRule = "";
+    public string AdvancedRule = "";
+    public int ManaCost = -1;
     public List<string> KeywordNotes = new List<string>();
 }
 
@@ -397,6 +401,7 @@ internal sealed class InspectorActionModel
 internal sealed class InspectorModel
 {
     public bool Empty;
+    public string Key = "";
     public string Eyebrow = "";
     public string Title = "";
     public string Subtitle = "";
@@ -551,7 +556,9 @@ internal sealed class MenuModel
     public string Title = "WARBAND";
     public string Tagline = "";
     public string SeedLabel = "";
-    public bool CanContinue;          // a run is in progress
+    public bool CanContinue;          // a run is in progress, in memory or on disk
+    /// <summary>Why CONTINUE just failed, if it did — a discarded save must not fail silently.</summary>
+    public string Notice = "";
     public string VersionLine = "";
 }
 

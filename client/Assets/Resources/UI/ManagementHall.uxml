@@ -156,8 +156,8 @@
                     <ui:VisualElement name="inspector-scrim" class="hub-inspector-scrim">
                         <ui:VisualElement name="inspector-pane" class="hub-inspector-pane">
                             <ui:VisualElement class="hub-inspector-pane__top">
-                                <ui:Label text="SELECTED DOSSIER" class="hub-inspector-pane__label" />
-                                <ui:Button name="inspector-close" text="CLOSE  ×" class="btn btn--ghost hub-inspector-close" />
+                                <ui:Label text="SELECTED CARD" class="hub-inspector-pane__label" />
+                                <ui:Button name="inspector-close" text="EXPAND  ↗" class="btn btn--ghost hub-inspector-close" />
                             </ui:VisualElement>
                             <ui:ScrollView
                                 mode="Vertical"
