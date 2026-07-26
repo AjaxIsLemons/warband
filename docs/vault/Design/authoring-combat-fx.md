@@ -48,16 +48,32 @@ New sigil/texture wanted? GenerateAsset (mono mask, white on black, 512²) →
 `Resources/Board/FX/Sigils/<chassis>.png`; recipes no-op cleanly while it's missing.
 Watch for retry-stub files (memory: unity-mcp-runcommand-quirks §6c).
 
-## Weapon attacks — current truth and the gap
-Autos key on `byRanged` + chassis today (melee lunge / ranged tracer / per-chassis
-swing clips via the weapon-class animator states). The [[combat-spectacle]] §6 per-weapon
-table (dagger crossing nicks, greataxe 1-frame hang, musket instant smoke line, censer
-mote to lowest ally, Relic edge-glow) is **authored direction, not yet reachable from
-data**: tells have no weapon filter. The full implementation spec is
-**[[fx-runtime]] §S5** (filter signature, +1 specificity + tie law, context passing,
-tests, fixture strategy, the Honed/Relic adjacent items, estimates). Short version:
-~30 min of sim filter work unlocks it, then it's one authored row + recipe per weapon
-class — no replay bump, no fixture regen.
+## Weapon attacks — BUILT 2026-07-25 (§6 is now reachable from data)
+Autos used to key on `byRanged` + chassis only. `byWeapon` ([[fx-runtime]] §S5) closed that:
+a tell row can name the catalog's exact `WeaponName` ("Greataxe", "Twin Daggers",
+"Matchlock Musket"), matched off the fold's identity block — no event change, no replay bump.
+
+**Authoring a weapon row — the one rule that is not obvious:** give it
+**`byCause: Attack` as well as `byWeapon`**. Weapon counts +1, a PEER of chassis, so a bare
+byWeapon row ties the `byRanged` auto fallback at 1 and loses on registry order. The cause
+gate makes it 2 and clears both fallbacks — and it is honest, because a Counter/rider swing is
+also `EventKind.Attack` (with `Cause.Trigger`) and should keep the rider language, not borrow
+the weapon's arc. Add `byChassis` on top (specificity 3) when a weapon should take the
+caster's lane — that is how "staff = wisp tinted by chassis lane" is expressed, with one
+untinted `staff-wisp` recipe and two override rows.
+
+Shipped: 11 weapon classes (13 rows incl. the pyromancer/cleric staff lanes) and 11 recipes —
+`nick-cross` · `slash-thin` · `slash-blunt` · `slash-wide` (the 1-frame hang lives in its
+Rotation track, held flat for 0.07 s, which is why the axe row is the one auto with a windup) ·
+`shield-shove` · `thrust-line` · `pole-swipe` · `muzzle-flash` + `smoke-line` · `censer-mote` ·
+`staff-wisp`, with `arrow-streak` reused for the Longbow. Recipes are untinted where the tell
+should paint them. Sounds (`hit_dagger`, `hit_axe`, …) are named but ungenerated — silent no-ops
+until the manifest's 10 per-weapon stings land.
+
+**Fixtures:** the 8 chassis starters were already covered by existing fixtures; only the three
+shop-only classes had none, so `weaponry` (sabre/mace/musket vs a tanky trio) is the single
+addition. Note it hangs the sabre on a *bulwark* — the first cut put it on a shade, which died
+at t21 without ever swinging, i.e. a fixture that never fired the row it existed for.
 
 ## Statuses, fields, deaths — where their looks live
 - **Status icons:** glyph shape/priority in `StatusIconRow.cs`; color stays in the
@@ -75,13 +91,25 @@ class — no replay bump, no fixture regen.
 riser mix + announce density in motion · F1: fieldIdleAlpha (greens hot), statusIconSize
 (small), wall tint, cleric sigil star (regen?) · HP-bar snap vs 0.5s T3 windups → add a
 short bar tween if it reads wrong (render-contract-legal).
-**Small code items:** byWeapon tell filter (unlocks §6 weapon language) · Heal Cause
-one-liner (Boon pulses) · hex-edged field floors (GroundFill fades radially → coins;
+**Impact punch may be the real readability culprit — MEASURED, not fixed (2026-07-25).** While
+probing weapon frames: at `previewAdvanceSeconds` 0, every unit sits at world scale **0.750**;
+0.10 s later the units that were just struck are at **1.026–1.035** — a ~37% balloon that hides
+neighbouring units, their HP bars and any arc drawn near them. It is the existing target-side
+`punch` rider (weapon rows carry `punch: false`), it long predates this work, and it reproduces
+with every VFX instance hidden. It is a strong candidate for Jake's *"not quite clear what's
+happening"* — a swing's own tell is competing with the victim inflating over it. Worth a look
+before authoring more FX; the fix is a `punchAmount` value, not code.
+
+**Small code items:** ~~byWeapon tell filter~~ (BUILT) · Honed +20% tracer brightness and the
+Relic prop edge-glow (fx-runtime §S5.5 — still unbuilt, and now the only §6 lines without a data
+path) · Heal Cause one-liner (Boon pulses) · hex-edged field floors (GroundFill fades radially → coins;
 a hex-distance fade in the shader restores telegraph=hitbox crispness) ·
 **Shader.Find → Always Included Shaders before the FIRST standalone build** (editor-only
 risk flagged in P1; silent URP/Unlit fallback otherwise) · per-ability cast clip variants
 (deferred — VFX carries identity).
-**Asset batch remainder (~18 gens, approved):** 10 per-weapon impact stings · nova whump,
+**Asset batch remainder (~18 gens, approved):** 10 per-weapon impact stings **(now named by live
+rows — `hit_dagger` / `hit_sabre` / `hit_mace` / `hit_axe` / `hit_shield` / `hit_pike` /
+`hit_standard` / `hit_musket` / `hit_censer` / `hit_staff`; each is silent until generated)** · nova whump,
 fissure crack, star whistle+boom, taunt horn, rally drum, mana-full tick, death knell,
 execute shk-thud, Waning drone · 16 status icons · ash/crack decals · skybox.
 **Shelved proposals (next wave):** 6 Waning ambient board · 7 hourglass mana rings ·

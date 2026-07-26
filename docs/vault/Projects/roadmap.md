@@ -98,6 +98,18 @@ does not read well enough, and authored encounters still do not make deployment 
    brightness / icon size / wall tint / cleric sigil, HP-bar snap vs T3 windups → bar
    tween if wrong; Heal carries no Cause so Boon pulses stay dormant — one-line sim change
    when wanted). Detail: Daily/2026-07-25.
+   **S5 byWeapon + per-weapon attack language landed 2026-07-25 (317 tests).** Autos could only
+   key on chassis, so combat-spectacle §6's per-weapon table was direction with no data path.
+   `TellMatch` now filters on the fold's `WeaponName` (+1, a PEER of chassis — a byWeapon row
+   TIES a byChassis one); 11 weapon classes authored with 11 new recipes, plus 2 chassis-lane
+   staff overrides proving the compose path. **Gotcha worth keeping:** a weapon row needs
+   `byCause: Attack` too, or it ties the `byRanged` fallback at 1 and silently loses on registry
+   order — and the gate is honest anyway, since Counter/rider swings are also `EventKind.Attack`.
+   One new fixture (`weaponry`) covers the three shop-only classes; contact sheet 32/32
+   byte-identical ×2. **Found while probing, NOT fixed:** the target-side impact `punch` balloons
+   struck units from scale 0.750 → ~1.03 (+37%), hiding neighbours, HP bars and any arc near them
+   — reproduces with all VFX hidden, predates this work, and is a live candidate for Jake's
+   "not quite clear what's happening". Detail: `Design/authoring-combat-fx.md`.
    `Design/combat-spectacle.md` (direction: palette law + intensity tiers, cast grammar +
    era sigils, per-signature specs, field/status/attack language, ranked go-big proposals,
    asset manifest) + `Design/fx-runtime.md` (engine: VfxLibrary recipes, Director-stepped

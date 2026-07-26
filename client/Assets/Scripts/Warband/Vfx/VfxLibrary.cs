@@ -84,6 +84,240 @@ public static class VfxLibrary
                 SizeMin = 0.05f, SizeMax = 0.10f, ShapeAngle = 35f, Stretch = true, Drag = 0.3f,
             }));
 
+        // ---- per-weapon auto language (combat-spectacle §6) ----------------------
+        // Unreachable from data until the byWeapon tell filter (fx-runtime S5): an Attack row can
+        // now name "Greataxe" and get a different swing than "Twin Daggers", where before every
+        // auto keyed on chassis alone. All T1 — an auto must never outshine a cast (proportionality,
+        // §1) — and all SHAPE, no lane: these carry no Tint, so the tell's motionColor paints them
+        // and the F1 loop can recolour the whole weapon set without a recompile.
+
+        // Daggers: two crossing nicks, not one committed swing. The second arc is the first
+        // delayed and swept the other way — the crossing IS the read, at half a sabre's reach.
+        Add(Def("nick-cross", 0.20f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 1.15f, Tier = 1.0f, Offset = new Vector3(-0.10f, 0.95f, 0.22f),
+                Thickness = 0.09f, Softness = 0.30f,
+                Radius = Curve(0f, 0.40f, 0.11f, 0.80f),
+                Arc = Curve(0f, 0.05f, 0.06f, 0.17f),
+                Rotation = Curve(0f, 0.06f, 0.14f, 0.20f),
+                Alpha = Curve(0f, 1f, 0.07f, 0.85f, 0.15f, 0f),
+            },
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing, Delay = 0.06f,
+                Size = 1.15f, Tier = 1.0f, Offset = new Vector3(0.10f, 1.05f, 0.22f),
+                Thickness = 0.09f, Softness = 0.30f,
+                Radius = Curve(0f, 0.40f, 0.11f, 0.80f),
+                Arc = Curve(0f, 0.05f, 0.06f, 0.17f),
+                Rotation = Curve(0f, 0.62f, 0.14f, 0.48f),   // swept back the other way
+                Alpha = Curve(0f, 1f, 0.07f, 0.85f, 0.15f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 4, Tier = 0.95f, Offset = new Vector3(0f, 1f, 0.28f),
+                LifeMin = 0.06f, LifeMax = 0.14f, SpeedMin = 2.6f, SpeedMax = 4.6f,
+                SizeMin = 0.035f, SizeMax = 0.07f, ShapeAngle = 28f, Stretch = true, Drag = 0.35f,
+            }));
+
+        // Sabre: one thin elegant stroke — the longest reach of the light weapons, least debris.
+        Add(Def("slash-thin", 0.22f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 1.7f, Tier = 1.0f, Offset = new Vector3(0f, 1.0f, 0.26f),
+                Thickness = 0.065f, Softness = 0.40f,
+                Radius = Curve(0f, 0.48f, 0.16f, 0.92f),
+                Arc = Curve(0f, 0.06f, 0.09f, 0.26f),
+                Rotation = Curve(0f, 0.04f, 0.22f, 0.17f),
+                Alpha = Curve(0f, 1f, 0.09f, 0.9f, 0.22f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 3, Tier = 0.9f, Offset = new Vector3(0f, 1.0f, 0.32f),
+                LifeMin = 0.08f, LifeMax = 0.16f, SpeedMin = 2.2f, SpeedMax = 3.8f,
+                SizeMin = 0.035f, SizeMax = 0.065f, ShapeAngle = 20f, Stretch = true, Drag = 0.3f,
+            }));
+
+        // Mace: blunt. Short fat arc low on the body, and the debris falls instead of spraying —
+        // weight reads as things dropping, not sparks flying.
+        Add(Def("slash-blunt", 0.26f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 1.45f, Tier = 1.0f, Offset = new Vector3(0f, 0.80f, 0.24f),
+                Thickness = 0.22f, Softness = 0.22f,
+                Radius = Curve(0f, 0.38f, 0.19f, 0.72f),
+                Arc = Curve(0f, 0.08f, 0.11f, 0.21f),
+                Rotation = Curve(0f, 0.10f, 0.26f, 0.19f),
+                Alpha = Curve(0f, 1f, 0.13f, 0.8f, 0.26f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 7, Tier = 0.95f, Offset = new Vector3(0f, 0.85f, 0.3f),
+                LifeMin = 0.14f, LifeMax = 0.30f, SpeedMin = 1.4f, SpeedMax = 2.8f,
+                SizeMin = 0.055f, SizeMax = 0.11f, ShapeAngle = 42f, Gravity = 2.2f, Drag = 0.4f,
+            }));
+
+        // Greataxe: the widest arc in the game, and the only auto with a HANG — the rotation track
+        // holds nearly still for the first 0.07 s at full alpha, then sweeps. That pause is what
+        // sells the weight, and it is why the axe's tell also carries a windup. Cleave continues
+        // the SAME arc (§6), so the recipe stays one stroke rather than two.
+        Add(Def("slash-wide", 0.34f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 2.25f, Tier = 1.0f, Offset = new Vector3(0f, 0.95f, 0.28f),
+                Thickness = 0.17f, Softness = 0.28f,
+                Radius = Curve(0f, 0.50f, 0.26f, 0.97f),
+                Arc = Curve(0f, 0.09f, 0.07f, 0.12f, 0.26f, 0.44f),
+                Rotation = Curve(0f, 0.02f, 0.07f, 0.035f, 0.30f, 0.24f),  // hold, then sweep
+                Alpha = Curve(0f, 1f, 0.07f, 1f, 0.20f, 0.75f, 0.34f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 11, Tier = 1.0f, Delay = 0.07f, Offset = new Vector3(0f, 0.95f, 0.36f),
+                LifeMin = 0.14f, LifeMax = 0.32f, SpeedMin = 3.2f, SpeedMax = 6.0f,
+                SizeMin = 0.06f, SizeMax = 0.13f, ShapeAngle = 50f,
+                Stretch = true, StretchScale = 2.6f, Drag = 0.32f,
+            }));
+
+        // Tower Shield: not a swing at all — a flat slab shoved forward, plus ground dust. No arc
+        // anywhere, because the shield's whole language is "this did not cut you, it moved you".
+        // The glow sits IN FRONT of the shield rather than over the body, and stays under T1: a soft
+        // round shape is the least weapon-like thing on the board, so it has to stay small enough to
+        // read as a shove and not as fog.
+        Add(Def("shield-shove", 0.26f,
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.UpFacing,
+                Size = 1.35f, Tier = 0.95f, Offset = new Vector3(0f, 0.80f, 0.45f), Falloff = 1.9f,
+                Scale = Curve(0f, 0.55f, 0.10f, 1.15f, 0.26f, 1.25f),
+                Alpha = Curve(0f, 0.85f, 0.10f, 0.7f, 0.26f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 9, Tier = 0.85f, Offset = new Vector3(0f, 0.12f, 0.35f),
+                LifeMin = 0.18f, LifeMax = 0.36f, SpeedMin = 1.2f, SpeedMax = 2.6f,
+                SizeMin = 0.07f, SizeMax = 0.15f, ShapeAngle = 55f, Gravity = 0.6f, Drag = 0.5f,
+            }));
+
+        // Pike: a 2-hex thrust LINE, not a sweep — a tight cone of fast stretched sparks straight
+        // down the attack direction, capped by a small ring where the point arrives.
+        Add(Def("thrust-line", 0.24f,
+            new ParticleElement
+            {
+                Burst = 9, Tier = 1.0f, Offset = new Vector3(0f, 1.0f, 0.3f),
+                LifeMin = 0.10f, LifeMax = 0.18f, SpeedMin = 7f, SpeedMax = 10f,
+                SizeMin = 0.05f, SizeMax = 0.09f, ShapeAngle = 3.5f,
+                Stretch = true, StretchScale = 3.5f, Drag = 0.1f,
+            },
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 0.85f, Tier = 1.0f, Offset = new Vector3(0f, 1.0f, 0.9f),
+                Thickness = 0.13f, Softness = 0.30f,
+                Radius = Curve(0f, 0.25f, 0.14f, 0.85f),
+                Alpha = Curve(0f, 0.95f, 0.16f, 0f),
+            }));
+
+        // Company Standard: a pole swipe with the banner cloth following a beat behind — the
+        // second arc is bigger, softer and slower, and that lag is the ripple.
+        Add(Def("pole-swipe", 0.34f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing,
+                Size = 1.8f, Tier = 1.0f, Offset = new Vector3(0f, 1.05f, 0.26f),
+                Thickness = 0.10f, Softness = 0.30f,
+                Radius = Curve(0f, 0.45f, 0.18f, 0.90f),
+                Arc = Curve(0f, 0.07f, 0.10f, 0.25f),
+                Rotation = Curve(0f, 0.06f, 0.24f, 0.20f),
+                Alpha = Curve(0f, 1f, 0.11f, 0.85f, 0.24f, 0f),
+            },
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.UpFacing, Delay = 0.08f,
+                Size = 2.0f, Tier = 0.55f, Offset = new Vector3(0f, 1.25f, 0.22f),
+                Thickness = 0.26f, Softness = 0.60f,                     // soft + fat = cloth
+                Radius = Curve(0f, 0.40f, 0.26f, 0.88f),
+                Arc = Curve(0f, 0.10f, 0.14f, 0.30f),
+                Rotation = Curve(0f, 0.04f, 0.26f, 0.18f),
+                // dim: the ripple is a suggestion trailing the pole, never a second bright stroke
+                Alpha = Curve(0f, 0.40f, 0.12f, 0.30f, 0.26f, 0f),
+            }));
+
+        // Musket: the muzzle flash at the shooter. Brightest single frame any auto is allowed,
+        // and it is over in 0.12 s — the crack and the smoke do the rest of the work.
+        Add(Def("muzzle-flash", 0.18f,
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 0.9f, Tier = 1.0f, Tint = BoneHot, Offset = new Vector3(0f, 1.0f, 0.35f),
+                Falloff = 2.2f,
+                Scale = Curve(0f, 0.35f, 0.04f, 1.2f, 0.18f, 0.9f),
+                Alpha = Curve(0f, 1f, 0.06f, 0.7f, 0.18f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 7, Tier = 1.0f, Tint = BoneHot, Offset = new Vector3(0f, 1.0f, 0.4f),
+                LifeMin = 0.06f, LifeMax = 0.16f, SpeedMin = 4f, SpeedMax = 8f,
+                SizeMin = 0.04f, SizeMax = 0.09f, ShapeAngle = 14f,
+                Stretch = true, StretchScale = 3f, Drag = 0.5f,
+            }));
+
+        // Musket shot: an INSTANT line. The tell flies this over ~0.04 s, and because the smoke
+        // emits in world space at a high rate with a long life, what is left behind after the ball
+        // lands is the line itself — the shot is already resolved, the smoke is the evidence.
+        Add(Def("smoke-line", 0.65f,
+            new ParticleElement
+            {
+                Rate = 420f, Burst = 0, Tier = 0.55f, MaxParticles = 90,
+                LifeMin = 0.35f, LifeMax = 0.60f, SpeedMin = 0f, SpeedMax = 0.25f,
+                SizeMin = 0.09f, SizeMax = 0.20f, Shape = ParticleShape.Sphere, ShapeRadius = 0.06f,
+                Gravity = -0.18f, Drag = 0.6f,
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 0.30f, Tier = 1.0f, Tint = BoneHot, Falloff = 3f,
+                Alpha = Curve(0f, 1f, 0.06f, 0.6f, 0.12f, 0f),   // the ball outruns its own glow
+            }));
+
+        // Censer: a warm mote lobbed to the lowest ally (the heal-auto is a real Attack event with
+        // an ALLY target, ADR 0012), trailing thurible smoke. Sand, not Verdant — the healing lane
+        // belongs to the heal itself, which lands on arrival; this is only the censer swinging.
+        Add(Def("censer-mote", 0.5f,
+            new ParticleElement
+            {
+                Rate = 60f, Burst = 0, Tier = 0.6f, Tint = Sand, MaxParticles = 36,
+                LifeMin = 0.25f, LifeMax = 0.45f, SpeedMin = 0.1f, SpeedMax = 0.4f,
+                SizeMin = 0.06f, SizeMax = 0.13f, Shape = ParticleShape.Sphere, ShapeRadius = 0.08f,
+                Gravity = -0.5f, Drag = 0.4f,
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 0.5f, Tier = 1.0f, Tint = SandLit, Falloff = 2.4f,
+            }));
+
+        // Staff: a plain wisp, deliberately UNTINTED so the tell's motionColor carries the caster's
+        // lane (§6 "tinted by chassis lane") — a byWeapon+byChassis row repaints it per caster
+        // without touching this recipe.
+        Add(Def("staff-wisp", 0.35f,
+            new ParticleElement
+            {
+                Rate = 100f, Burst = 0, Tier = 0.9f, MaxParticles = 48,
+                LifeMin = 0.14f, LifeMax = 0.28f, SpeedMin = 0.1f, SpeedMax = 0.5f,
+                SizeMin = 0.05f, SizeMax = 0.11f, Shape = ParticleShape.Sphere, ShapeRadius = 0.09f,
+                Gravity = -0.35f, Drag = 0.2f,
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 0.55f, Tier = 1.0f, Falloff = 2.6f,
+            }));
+
         Add(Def("arrow-streak", 0.3f,
             new ParticleElement
             {

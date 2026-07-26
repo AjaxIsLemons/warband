@@ -291,6 +291,13 @@ public class TellDef
     // strictly narrower filter than chassis, so it carries +2 specificity, not +1.
     public bool byAbility = false;
     public string ability = "";
+    // Weapon := the SOURCE unit's WeaponName from the fold's identity block ("Greataxe", "Twin
+    // Daggers", "Matchlock Musket" — the catalog's exact Name strings). This is what gives autos a
+    // per-weapon language (combat-spectacle §6) instead of one swing per chassis. A PEER of chassis
+    // at +1 specificity, not a narrower filter: weapons and chassis cross freely, so a byWeapon row
+    // TIES a byChassis one and the tie falls to registry order.
+    public bool byWeapon = false;
+    public string weapon = "";
     // Flavor := FieldCreated's derived FieldFlavor (Aux3) — a hazard glyph vs a boon glyph.
     public bool byFlavor = false;
     public FieldFlavor flavor = FieldFlavor.Hazard;
@@ -300,8 +307,9 @@ public class TellDef
     [Newtonsoft.Json.JsonIgnore] public bool? RangedFilter => byRanged ? ranged : (bool?)null;
     [Newtonsoft.Json.JsonIgnore] public string ChassisFilter => byChassis && !string.IsNullOrEmpty(chassis) ? chassis : null;
     [Newtonsoft.Json.JsonIgnore] public string AbilityFilter => byAbility && !string.IsNullOrEmpty(ability) ? ability : null;
+    [Newtonsoft.Json.JsonIgnore] public string WeaponFilter => byWeapon && !string.IsNullOrEmpty(weapon) ? weapon : null;
     [Newtonsoft.Json.JsonIgnore] public FieldFlavor? FlavorFilter => byFlavor ? flavor : (FieldFlavor?)null;
-    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter, ability: AbilityFilter);
+    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter, ability: AbilityFilter, weapon: WeaponFilter);
 
     public bool flash = true;
     public Color flashColor = Color.white;

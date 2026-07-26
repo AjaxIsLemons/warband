@@ -46,7 +46,15 @@ agents (event schema empirically checked against real fights) + the architecture
   (measured 218 Attack / 110 Trigger / 20 Ability) and has **no tell today** — the rider
   echo language in [[combat-spectacle]] fills it (built in P6). No field TTL added (no free
   slot on FieldCreated); expiry animates on the FieldExpired event instead.
-- **S5 byWeapon filter (SPEC'D, NOT BUILT — the unlock for §6 per-weapon attack language).**
+- **S5 byWeapon filter — BUILT 2026-07-25.** Shipped as specced below, with one addition the spec
+  did not foresee: **every authored weapon row also carries `byCause: Attack`**, so its specificity
+  is 2, not 1. At 1 a byWeapon row TIES the existing `byRanged` auto fallback and loses it on
+  registry order — the exact hazard the tie law warns about, and it would have silently killed all
+  four ranged weapon rows. The cause gate is also true on its own terms: these rows describe
+  *autos*, and a Counter/rider swing (`EventKind.Attack` with `Cause.Trigger`, real in the pike
+  fixture) correctly falls through to the rider language instead of borrowing the weapon's arc.
+  11 weapon classes + 2 chassis-lane staff overrides authored; 11 new VfxLibrary recipes.
+  Original spec follows.
   Tells can't filter on weapon, so the [[combat-spectacle]] §6 table (dagger crossing
   nicks, greataxe 1-frame hang, musket instant smoke line, censer mote, staff wisp) is
   direction without a data path. The fix, mirroring the chassis filter EXACTLY:

@@ -22,11 +22,15 @@ namespace Warband.Sim
         /// ability identity (the flagged growth path in directed-tells). <paramref name="sourceAbility"/>
         /// is the same context one level narrower: the source's RESOLVED ability id
         /// (Content.AbilityIdentity), so the Pyromancer's Starfall can look different from her
-        /// stock bolt.</summary>
+        /// stock bolt. <paramref name="sourceWeapon"/> is the last of the same family: the source's
+        /// WeaponName off the fold, so a Greataxe swing can hang where Twin Daggers snick — the
+        /// per-weapon attack language in combat-spectacle §6, which autos could not reach while
+        /// chassis was the narrowest thing an Attack row could name.</summary>
         public static bool Matches(BattleEvent e, EventKind kind, Cause? cause, StatusKind? status,
                                    FieldFlavor? flavor = null, bool? ranged = null, int? distance = null,
                                    string? chassis = null, string? sourceChassis = null,
-                                   string? ability = null, string? sourceAbility = null)
+                                   string? ability = null, string? sourceAbility = null,
+                                   string? weapon = null, string? sourceWeapon = null)
         {
             if (e.Kind != kind) return false;
             if (cause.HasValue && e.Cause != cause.Value) return false;
@@ -66,6 +70,15 @@ namespace Warband.Sim
                     || !string.Equals(ability, sourceAbility, System.StringComparison.OrdinalIgnoreCase))
                     return false;
             }
+            if (!string.IsNullOrEmpty(weapon))
+            {
+                // And once more: a Musket's smoke line must not fire for a unit whose weapon the
+                // view can't name. Matched on the catalog's WeaponName ("Twin Daggers", "Greataxe")
+                // — the identity block the fold already carries, so this needs no event change.
+                if (string.IsNullOrEmpty(sourceWeapon)
+                    || !string.Equals(weapon, sourceWeapon, System.StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
             return true;
         }
 
@@ -75,11 +88,18 @@ namespace Warband.Sim
         /// <para>Ability is the one WEIGHTED filter: it counts 2, not 1, so this is no longer a
         /// plain count of declared filters. Every ability belongs to exactly one chassis, so a
         /// byAbility rule is strictly narrower than a byChassis one — at 1 the two would tie and
-        /// the winner would fall to registry order, which is not a decision anyone authored.</para></summary>
+        /// the winner would fall to registry order, which is not a decision anyone authored.</para>
+        /// <para>Weapon counts 1 — a PEER of chassis, deliberately unlike ability. Weapons and
+        /// chassis cross freely (any hero may carry any weapon), so neither contains the other and
+        /// there is no truthful ordering between them: a byWeapon row TIES a byChassis row and the
+        /// tie falls to registry order. If authoring ever needs weapon to outrank chassis, bump this
+        /// consciously and say why — do not discover it from a row that mysteriously lost.</para></summary>
         public static int Specificity(Cause? cause, StatusKind? status, FieldFlavor? flavor = null,
-                                      bool? ranged = null, string? chassis = null, string? ability = null)
+                                      bool? ranged = null, string? chassis = null, string? ability = null,
+                                      string? weapon = null)
             => (cause.HasValue ? 1 : 0) + (status.HasValue ? 1 : 0) + (flavor.HasValue ? 1 : 0)
                + (ranged.HasValue ? 1 : 0) + (string.IsNullOrEmpty(chassis) ? 0 : 1)
-               + (string.IsNullOrEmpty(ability) ? 0 : 2);
+               + (string.IsNullOrEmpty(ability) ? 0 : 2)
+               + (string.IsNullOrEmpty(weapon) ? 0 : 1);
     }
 }

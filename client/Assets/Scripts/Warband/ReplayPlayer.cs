@@ -343,7 +343,8 @@ public class ReplayPlayer : MonoBehaviour
             {
                 if (!TellMatch.Matches(e, def.eventKind, def.CauseFilter, def.StatusFilter, def.FlavorFilter,
                                        def.RangedFilter, distance, def.ChassisFilter, su?.ChassisId,
-                                       ability: def.AbilityFilter, sourceAbility: srcAbility)) continue;
+                                       ability: def.AbilityFilter, sourceAbility: srcAbility,
+                                       weapon: def.WeaponFilter, sourceWeapon: su?.WeaponName)) continue;
                 if (def.Specificity > bestSpec) { best = def; bestSpec = def.Specificity; }
             }
             if (best == null) return;
