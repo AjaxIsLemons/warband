@@ -66,7 +66,8 @@ var (
 
 func main() {
 	cfg = config{
-		addr:         envOr("WARBAND_ADDR", "127.0.0.1:8090"),
+		// 8092, not 8090: arena's vite preview holds 8090 with --strictPort, so it cannot move.
+		addr:         envOr("WARBAND_ADDR", "127.0.0.1:8092"),
 		baseURL:      strings.TrimRight(envOr("WARBAND_BASE_URL", "https://warband.inhouseboyz.com"), "/"),
 		clientID:     os.Getenv("WARBAND_DISCORD_CLIENT_ID"),
 		clientSecret: os.Getenv("WARBAND_DISCORD_CLIENT_SECRET"),

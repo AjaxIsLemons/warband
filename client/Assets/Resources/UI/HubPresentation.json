@@ -52,6 +52,46 @@
         "staggerMs": 42,
         "staggerCapMs": 210
     },
+    "detailSwap": {
+        "durationMs": 165,
+        "settleMs": 70,
+        "distancePx": 12.0,
+        "scale": 0.9919999837875366,
+        "startOpacity": 0.18000000715255738,
+        "particles": 0,
+        "staggerMs": 0,
+        "staggerCapMs": 0
+    },
+    "shelfExpand": {
+        "durationMs": 180,
+        "settleMs": 70,
+        "distancePx": 28.0,
+        "scale": 0.9900000095367432,
+        "startOpacity": 0.07999999821186066,
+        "particles": 3,
+        "staggerMs": 0,
+        "staggerCapMs": 0
+    },
+    "shelfCollapse": {
+        "durationMs": 150,
+        "settleMs": 50,
+        "distancePx": 22.0,
+        "scale": 0.9900000095367432,
+        "startOpacity": 1.0,
+        "particles": 0,
+        "staggerMs": 0,
+        "staggerCapMs": 0
+    },
+    "shelfFocus": {
+        "durationMs": 120,
+        "settleMs": 80,
+        "distancePx": 3.0,
+        "scale": 1.034999966621399,
+        "startOpacity": 1.0,
+        "particles": 2,
+        "staggerMs": 0,
+        "staggerCapMs": 0
+    },
     "route": {
         "durationMs": 260,
         "settleMs": 90,

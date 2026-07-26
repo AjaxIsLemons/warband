@@ -10,7 +10,7 @@ set -euo pipefail
 
 OWNER=${OWNER:-jake}
 RELEASES_DIR=${RELEASES_DIR:-/srv/warband-releases}
-SITE_PORT=${SITE_PORT:-8090}
+SITE_PORT=${SITE_PORT:-8092}   # 8090 is taken by arena's vite preview (--strictPort)
 HOSTNAME_=${HOSTNAME_:-warband.inhouseboyz.com}
 CADDYFILE=${CADDYFILE:-/etc/caddy/Caddyfile}
 

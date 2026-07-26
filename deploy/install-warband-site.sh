@@ -14,14 +14,24 @@ mkdir -p ~/.config/warband-site ~/.local/bin ~/.config/systemd/user
 if [ ! -f ~/.config/warband-site/env ]; then
 	cat > ~/.config/warband-site/env <<EOF
 # warband-site secrets — chmod 600, never committed or synced.
-# Fill the two Discord values from https://discord.com/developers/applications:
-#   new application "warband" -> OAuth2
-#   Redirect URI MUST be exactly: https://warband.inhouseboyz.com/auth/discord/callback
+#
+# EITHER a new Discord app (recommended) at https://discord.com/developers/applications:
+#   new application "warband" -> OAuth2 -> copy Client ID + Client Secret below.
+#
+# OR reuse the existing Shoota app. That works — a Discord app may hold several redirect URIs —
+# but it does NOT save the portal trip (the redirect URI must still be registered), friends see
+# "Shoota" on the consent screen, and the two sites then share one secret, so rotating it breaks
+# both. To reuse, without the secret passing through an agent's context:
+#   sed -n 's/^SHOOTA_DISCORD_CLIENT_\(ID\|SECRET\)=/WARBAND_DISCORD_CLIENT_\1=/p' ~/.config/shoota-site/env >> ~/.config/warband-site/env
+#   ...then delete the two empty WARBAND_DISCORD_* lines below.
+#
+# EITHER WAY, the Discord app's redirect list must contain EXACTLY:
+#   https://warband.inhouseboyz.com/auth/discord/callback
 # Any signed-in Discord account may download the launcher; there is no allowlist by design.
 WARBAND_DISCORD_CLIENT_ID=
 WARBAND_DISCORD_CLIENT_SECRET=
 WARBAND_COOKIE_SECRET=$(head -c 32 /dev/urandom | base64)
-WARBAND_ADDR=127.0.0.1:8090
+WARBAND_ADDR=127.0.0.1:8092
 WARBAND_BASE_URL=https://warband.inhouseboyz.com
 WARBAND_RELEASES_DIR=/srv/warband-releases
 EOF

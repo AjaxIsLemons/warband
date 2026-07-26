@@ -322,7 +322,7 @@ public sealed class RunShell : MonoBehaviour
             {
                 _run.ChooseSpec(w);
                 UiPolishSignals.Emit(UiPolishSignals.Cue.RankUp,
-                    targetId: "station-warband", tone: UiFeedbackTone.Major,
+                    targetId: "warband-shelf", tone: UiFeedbackTone.Major,
                     receipt: "Specialization engraved.",
                     transaction: UiTransactionKind.RankChoice);
             });
@@ -657,7 +657,7 @@ public sealed class RunShell : MonoBehaviour
                         : "sent to the Armory";
             _feedback = $"{acquiredName} {result} · {spent} Sand spent.";
             UiPolishSignals.Emit(UiPolishSignals.Cue.Purchase,
-                sourceId: sourceId, targetId: TransactionTarget(purchase.Outcome),
+                sourceId: sourceId, targetId: TransactionTarget(purchase),
                 resourceId: "ledger-sand", groupId: "market-offers",
                 amount: -spent, tone: UiFeedbackTone.Sand, receipt: _feedback,
                 transaction: TransactionFor(purchase.Outcome));
@@ -678,7 +678,7 @@ public sealed class RunShell : MonoBehaviour
                 $"Field capacity {beforeCapacity} → {_run.State.FieldSlots} · " +
                 $"{spent} Sand spent.";
             UiPolishSignals.Emit(UiPolishSignals.Cue.Purchase,
-                sourceId: _selectedCardKey, targetId: "station-warband",
+                sourceId: _selectedCardKey, targetId: $"shelf-field:{beforeCapacity}",
                 resourceId: "ledger-sand", amount: -spent, tone: UiFeedbackTone.Sand,
                 receipt: _feedback, transaction: UiTransactionKind.BuyCapacity);
         }
@@ -1739,17 +1739,30 @@ public sealed class RunShell : MonoBehaviour
     private static string AnchorTarget(HallStation station) =>
         "anchor-" + station.ToString().ToLowerInvariant();
 
-    private static string TransactionTarget(PurchaseOutcome outcome) =>
-        StationTarget(outcome switch
+    private string TransactionTarget(PurchaseResult purchase)
+    {
+        if (purchase.Outcome == PurchaseOutcome.Recruit ||
+            purchase.Outcome == PurchaseOutcome.RankUp)
         {
-            PurchaseOutcome.Recruit => HallStation.Warband,
-            PurchaseOutcome.RankUp => HallStation.Warband,
-            PurchaseOutcome.Weapon => HallStation.Armory,
-            PurchaseOutcome.Trinket => HallStation.Armory,
-            PurchaseOutcome.Inscription => HallStation.Hourstone,
-            PurchaseOutcome.Capacity => HallStation.Warband,
-            _ => HallStation.Market,
-        });
+            int fieldIndex = _run.State.Field.FindIndex(hero =>
+                hero.ChassisId == purchase.ContentId);
+            if (fieldIndex >= 0) return $"hero:field:{fieldIndex}";
+
+            int reserveIndex = _run.State.Bench.FindIndex(hero =>
+                hero.ChassisId == purchase.ContentId);
+            if (reserveIndex >= 0) return $"hero:bench:{reserveIndex}";
+            return "warband-shelf";
+        }
+
+        return purchase.Outcome switch
+        {
+            PurchaseOutcome.Weapon => "shelf-armory",
+            PurchaseOutcome.Trinket => "shelf-armory",
+            PurchaseOutcome.Inscription => StationTarget(HallStation.Hourstone),
+            PurchaseOutcome.Capacity => "warband-shelf",
+            _ => StationTarget(HallStation.Market),
+        };
+    }
 
     private void BuildMenu()
     {

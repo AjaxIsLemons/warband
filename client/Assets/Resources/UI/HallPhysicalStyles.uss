@@ -1143,3 +1143,698 @@
     width: 72%;
     min-width: 620px;
 }
+
+/* -------------------------------------------------------------------------
+   Persistent Warband Shelf + typed decision detail.
+   Capacity is a row of physical addresses; the old duplicated station ledger is gone. */
+
+.hub-run-ribbon {
+    height: 64px;
+    min-height: 64px;
+}
+
+.management-resources {
+    min-width: 132px;
+}
+
+.management-resource--sand {
+    min-width: 120px;
+}
+
+.hub-workspace__header {
+    height: 72px;
+    min-height: 72px;
+}
+
+.hub-workspace__heading {
+    width: 270px;
+    min-width: 270px;
+}
+
+.hub-anchor-rail {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    height: 52px;
+    min-height: 52px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-grow: 1;
+}
+
+.hub-workspace__body {
+    min-height: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.hub-collection {
+    width: 40%;
+    min-width: 540px;
+}
+
+.hub-inspector-scrim {
+    width: 60%;
+}
+
+.wb-inspector__overview {
+    min-height: 236px;
+    flex-direction: row;
+    flex-shrink: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(75, 96, 124, 0.44);
+    background-color: rgba(10, 16, 25, 0.98);
+}
+
+.wb-inspector__summary {
+    min-width: 0;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.wb-inspector__identity {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-inspector--hub .wb-inspector__portrait {
+    width: 34%;
+    min-width: 238px;
+    height: 236px;
+    min-height: 236px;
+    flex-shrink: 0;
+    border-right-width: 1px;
+    border-right-color: rgba(74, 96, 126, 0.52);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.wb-inspector--hub .wb-inspector__heading {
+    padding-left: 22px;
+    padding-right: 18px;
+    padding-top: 18px;
+    padding-bottom: 12px;
+}
+
+.wb-inspector--hub .wb-inspector__stats {
+    padding-left: 22px;
+    padding-right: 16px;
+    padding-bottom: 12px;
+}
+
+.wb-inspector__sections {
+    padding-top: 14px;
+    padding-bottom: 2px;
+}
+
+.wb-inspector--hub .wb-inspector__section--comparison,
+.wb-inspector--hub .wb-inspector__section--choices,
+.wb-inspector--hub .wb-inspector__section--capacity {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 12px;
+    background-color: rgba(20, 31, 45, 0.94);
+    border-left-width: 3px;
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-inspector__line-body {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-inspector__section--choices .wb-inspector__choice-preview-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.wb-capacity-detail {
+    flex-direction: row;
+    align-items: center;
+}
+
+.wb-capacity-detail__sockets {
+    min-width: 286px;
+    margin-right: 18px;
+    flex-direction: row;
+}
+
+.wb-capacity-detail__socket {
+    width: 40px;
+    height: 40px;
+    margin-right: 6px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(112, 130, 153);
+    background-color: rgba(8, 13, 21, 0.96);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(69, 88, 113, 0.72);
+    border-right-color: rgba(69, 88, 113, 0.72);
+    border-top-color: rgba(69, 88, 113, 0.72);
+    border-bottom-color: rgba(69, 88, 113, 0.72);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.wb-capacity-detail__socket--active {
+    color: rgb(236, 232, 223);
+    border-left-color: rgb(101, 201, 154);
+    border-right-color: rgb(101, 201, 154);
+    border-top-color: rgb(101, 201, 154);
+    border-bottom-color: rgb(101, 201, 154);
+}
+
+.wb-capacity-detail__socket--new {
+    color: rgb(7, 11, 17);
+    background-color: rgb(217, 164, 58);
+    border-left-color: rgb(246, 211, 127);
+    border-right-color: rgb(246, 211, 127);
+    border-top-color: rgb(246, 211, 127);
+    border-bottom-color: rgb(246, 211, 127);
+}
+
+.warband-shelf {
+    height: 116px;
+    min-height: 116px;
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(6, 10, 16, 0.995);
+    border-top-width: 2px;
+    border-top-color: rgba(90, 119, 154, 0.82);
+}
+
+.warband-shelf__identity {
+    width: 136px;
+    min-width: 136px;
+    height: 92px;
+    margin-right: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    align-items: flex-start;
+    justify-content: center;
+    background-color: rgba(15, 24, 36, 0.98);
+    border-left-width: 2px;
+    border-left-color: rgb(217, 164, 58);
+}
+
+.warband-shelf__identity:hover,
+.warband-shelf__identity:focus,
+.warband-shelf__armory:hover,
+.warband-shelf__armory:focus {
+    background-color: rgba(27, 43, 63, 0.99);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+}
+
+.warband-shelf__eyebrow,
+.warband-shelf__section-label {
+    color: rgb(142, 161, 186);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.warband-shelf__capacity {
+    margin-top: 5px;
+    color: rgb(236, 232, 223);
+    font-size: 20px;
+    -unity-font-style: bold;
+}
+
+.warband-shelf__manage {
+    margin-top: 7px;
+    color: rgb(217, 164, 58);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.warband-shelf__slots {
+    height: 94px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.warband-shelf__divider {
+    width: 1px;
+    height: 76px;
+    margin-left: 10px;
+    margin-right: 12px;
+    background-color: rgba(103, 128, 161, 0.58);
+}
+
+.warband-shelf__reserve {
+    height: 96px;
+    min-width: 190px;
+    justify-content: center;
+}
+
+.warband-shelf__reserve .warband-shelf__section-label {
+    margin-left: 4px;
+    margin-bottom: 3px;
+}
+
+.warband-shelf__armory {
+    width: 170px;
+    min-width: 170px;
+    height: 92px;
+    margin-left: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+    align-items: flex-start;
+    justify-content: center;
+    background-color: rgba(15, 24, 36, 0.98);
+    border-left-width: 1px;
+    border-left-color: rgba(90, 119, 154, 0.72);
+}
+
+.warband-shelf__stored-count {
+    margin-top: 4px;
+    color: rgb(236, 232, 223);
+    font-size: 17px;
+    -unity-font-style: bold;
+}
+
+.warband-shelf__stored-icons {
+    height: 28px;
+    margin-top: 5px;
+    flex-direction: row;
+}
+
+.warband-shelf__stored-icon,
+.warband-shelf__stored-overflow {
+    width: 26px;
+    height: 26px;
+    margin-right: 4px;
+    padding-top: 4px;
+    color: rgb(198, 211, 228);
+    background-color: rgba(7, 12, 19, 0.94);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(86, 109, 139, 0.72);
+    border-right-color: rgba(86, 109, 139, 0.72);
+    border-top-color: rgba(86, 109, 139, 0.72);
+    border-bottom-color: rgba(86, 109, 139, 0.72);
+    -unity-text-align: middle-center;
+}
+
+.party-slot {
+    position: relative;
+    width: 78px;
+    min-width: 78px;
+    height: 88px;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: visible;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(13, 21, 32, 0.98);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(69, 90, 116, 0.90);
+    border-right-color: rgba(69, 90, 116, 0.90);
+    border-top-color: rgba(69, 90, 116, 0.90);
+    border-bottom-color: rgba(69, 90, 116, 0.90);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.party-slot:hover,
+.party-slot:focus,
+.party-slot--focused {
+    background-color: rgba(25, 42, 61, 0.99);
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+    translate: 0 -3px;
+}
+
+.party-slot--reserve {
+    width: 72px;
+    min-width: 72px;
+}
+
+.party-slot--locked {
+    opacity: 0.56;
+    border-left-color: rgba(73, 86, 104, 0.58);
+    border-right-color: rgba(73, 86, 104, 0.58);
+    border-top-color: rgba(73, 86, 104, 0.58);
+    border-bottom-color: rgba(73, 86, 104, 0.58);
+}
+
+.party-slot--empty {
+    background-color: rgba(9, 15, 23, 0.84);
+    border-left-color: rgba(74, 108, 143, 0.72);
+    border-right-color: rgba(74, 108, 143, 0.72);
+    border-top-color: rgba(74, 108, 143, 0.72);
+    border-bottom-color: rgba(74, 108, 143, 0.72);
+}
+
+.party-slot__portrait {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    top: 3px;
+    bottom: 19px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(20, 30, 43, 1);
+    -unity-background-scale-mode: scale-and-crop;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.party-slot__fallback {
+    color: rgb(222, 229, 239);
+    font-size: 22px;
+    -unity-font-style: bold;
+}
+
+.party-slot__rank {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 24px;
+    height: 22px;
+    padding-top: 2px;
+    color: rgb(8, 12, 18);
+    background-color: rgb(217, 164, 58);
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.party-slot__loadout {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    bottom: -2px;
+    height: 25px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.party-slot__equipment {
+    width: 25px;
+    height: 25px;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-top: 3px;
+    color: rgb(236, 232, 223);
+    background-color: rgba(8, 13, 20, 1);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(98, 123, 156, 0.86);
+    border-right-color: rgba(98, 123, 156, 0.86);
+    border-top-color: rgba(98, 123, 156, 0.86);
+    border-bottom-color: rgba(98, 123, 156, 0.86);
+    -unity-text-align: middle-center;
+}
+
+.party-slot__equipment--empty {
+    color: rgb(79, 95, 117);
+    border-left-color: rgba(65, 80, 101, 0.62);
+    border-right-color: rgba(65, 80, 101, 0.62);
+    border-top-color: rgba(65, 80, 101, 0.62);
+    border-bottom-color: rgba(65, 80, 101, 0.62);
+}
+
+.party-slot__empty-mark {
+    color: rgb(116, 142, 174);
+    font-size: 28px;
+}
+
+.party-slot__number {
+    position: absolute;
+    right: 7px;
+    bottom: 5px;
+    color: rgb(93, 110, 132);
+    font-size: 10px;
+}
+
+.loadout-scrim {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 10px;
+    bottom: 10px;
+    align-items: stretch;
+    justify-content: center;
+    background-color: rgba(2, 5, 9, 0.82);
+}
+
+.loadout-table {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(7, 12, 19, 0.998);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(104, 165, 231, 0.72);
+    border-right-color: rgba(104, 165, 231, 0.72);
+    border-top-color: rgba(104, 165, 231, 0.72);
+    border-bottom-color: rgba(104, 165, 231, 0.72);
+}
+
+.loadout-table__header {
+    height: 70px;
+    min-height: 70px;
+    padding-left: 20px;
+    padding-right: 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(13, 21, 32, 1);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(83, 105, 135, 0.58);
+}
+
+.loadout-table__title {
+    color: rgb(236, 232, 223);
+    font-size: 23px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.loadout-table__copy {
+    margin-top: 3px;
+    color: rgb(139, 154, 176);
+    font-size: 14px;
+}
+
+.loadout-table__close {
+    width: 126px;
+    min-height: 46px;
+}
+
+.loadout-table__body {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.loadout-column {
+    min-width: 0;
+    padding: 14px;
+    border-right-width: 1px;
+    border-right-color: rgba(73, 94, 122, 0.48);
+}
+
+.loadout-column--formation { width: 30%; }
+.loadout-column--champion { width: 36%; }
+.loadout-column--armory {
+    width: 34%;
+    border-right-width: 0;
+}
+
+.loadout-column__label {
+    margin-bottom: 9px;
+    color: rgb(146, 169, 199);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.loadout-column__label--reserve {
+    margin-top: 16px;
+}
+
+.loadout-slot-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.party-slot--loadout {
+    width: 104px;
+    min-width: 104px;
+    height: 116px;
+    margin-right: 8px;
+    margin-bottom: 9px;
+}
+
+.party-slot--loadout.party-slot--reserve {
+    width: 104px;
+    min-width: 104px;
+}
+
+.loadout-champion-scroll,
+.loadout-inventory-scroll {
+    min-height: 0;
+    flex-grow: 1;
+}
+
+.loadout-inspector-slot,
+.loadout-inventory {
+    min-width: 100%;
+}
+
+.wb-inspector--loadout {
+    min-width: 100%;
+    background-color: rgba(9, 15, 23, 1);
+}
+
+.wb-inspector--loadout .wb-inspector__overview {
+    min-height: 184px;
+}
+
+.wb-inspector--loadout .wb-inspector__portrait {
+    width: 38%;
+    min-width: 160px;
+    height: 184px;
+    min-height: 184px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.wb-inspector--loadout .wb-inspector__heading {
+    padding: 12px;
+}
+
+.wb-inspector--loadout .wb-inspector__title {
+    font-size: 22px;
+}
+
+.wb-inspector--loadout .wb-inspector__subtitle,
+.wb-inspector--loadout .wb-inspector__line-copy {
+    font-size: 14px;
+}
+
+.wb-inspector--loadout .wb-inspector__stats {
+    padding-left: 12px;
+    padding-right: 8px;
+}
+
+.wb-inspector--loadout .wb-inspector__section {
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+.loadout-action-dock {
+    flex-shrink: 0;
+    background-color: rgba(8, 13, 20, 1);
+    border-top-width: 1px;
+    border-top-color: rgba(79, 101, 130, 0.56);
+}
+
+.loadout-action-dock .wb-inspector__actions {
+    padding: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.loadout-action-dock .btn {
+    min-height: 44px;
+    margin-right: 6px;
+}
+
+.loadout-armory-heading {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.loadout-armory-count {
+    color: rgb(217, 164, 58);
+    font-size: 13px;
+    -unity-font-style: bold;
+}
+
+.loadout-inventory {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.loadout-inventory .wb-card--hub.decision-card--stock {
+    width: 154px;
+    min-width: 154px;
+    height: 204px;
+}
+
+.loadout--open .warband-shelf {
+    border-top-color: rgb(217, 164, 58);
+}
+
+.motion--reduced .party-slot:hover,
+.motion--reduced .party-slot:focus,
+.motion--reduced .party-slot--focused {
+    translate: 0 0;
+}
+
+.layout--compact .party-slot {
+    width: 68px;
+    min-width: 68px;
+}
+
+.layout--compact .warband-shelf__identity {
+    width: 122px;
+    min-width: 122px;
+}
+
+.layout--compact .warband-shelf__armory {
+    width: 148px;
+    min-width: 148px;
+}
+
+.layout--compact .hub-collection {
+    min-width: 470px;
+}
+
+/* Phone support remains compatibility-only while the dedicated composition is deferred. */
+.layout--phone .warband-shelf {
+    display: none;
+}
+
+.layout--phone .loadout-scrim {
+    left: 4px;
+    right: 4px;
+    top: 4px;
+    bottom: 4px;
+}

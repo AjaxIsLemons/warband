@@ -265,6 +265,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private string _lastMarketSelectionKey = "";
     private string _lastDetailKey = "";
     private bool _lastLoadoutOpen;
+    private string _lastLoadoutHeroKey = "";
     private readonly Dictionary<string, VisualElement> _shelfTargets =
         new Dictionary<string, VisualElement>();
 
@@ -726,12 +727,22 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             _loadoutCards.Bind(model.LoadoutInventory, "armory");
             if (!_lastLoadoutOpen)
                 _polish.Reveal(_loadoutTable, _presentation.shelfExpand);
+            else if (model.FocusedHeroKey != _lastLoadoutHeroKey)
+            {
+                string targetId = "loadout-" + model.FocusedHeroKey;
+                if (_shelfTargets.TryGetValue(targetId, out VisualElement focused))
+                    _polish.Reveal(focused, _presentation.shelfFocus);
+                _polish.Reveal(_loadoutInspector.Root, _presentation.detailSwap);
+            }
         }
         else
         {
             _loadoutCards.Bind(EmptyCards, "armory");
+            if (_lastLoadoutOpen)
+                _polish.Reveal(_shelf, _presentation.shelfCollapse);
         }
         _lastLoadoutOpen = model.Expanded;
+        _lastLoadoutHeroKey = model.Expanded ? model.FocusedHeroKey : "";
     }
 
     private Button PartySlot(PartySlotModel model, bool expanded)
