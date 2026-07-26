@@ -36,6 +36,7 @@ namespace Warband.Run
             int fought = act - 1;                // bosses faced before this one
             var snap = new GhostSnapshot
             {
+                ContentVersion = content.ContentVersion,
                 Act = act,
                 WinsAtCapture = Math.Min(bossWins, fought),
                 LossesAtCapture = Math.Max(0, fought - bossWins),

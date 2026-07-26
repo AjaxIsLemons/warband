@@ -264,6 +264,64 @@ namespace Warband.Run.Tests
                 resumed.State.ShopOffers.Select(o => o == null ? "null" : $"{o.Kind}/{o.Id}/{o.Price}"));
         }
 
+        // ---- content provenance (ADR 0008's contentVersion) -------------------------
+
+        [Fact]
+        public void ANewRunIsStampedWithTheContentItWasCreatedUnder()
+        {
+            var cat = new Catalog();
+            var run = new RunController(1, cat, RunHarness.StarterWarband(cat, new RunConfig()));
+            Assert.False(string.IsNullOrEmpty(run.State.ContentVersion));
+            Assert.Equal(cat.ContentVersion, run.State.ContentVersion);
+        }
+
+        [Fact]
+        public void TheContentVersionIsStableAcrossCatalogInstances()
+        {
+            // Two catalogs in one process must agree, or every save refuses to load.
+            Assert.Equal(new Catalog().ContentVersion, new Catalog().ContentVersion);
+        }
+
+        [Fact]
+        public void TheStampSurvivesTheSaveRoundTrip()
+        {
+            var state = MidRun().State;
+            Assert.Equal(state.ContentVersion, RunSave.Read(RunSave.Write(state)).ContentVersion);
+        }
+
+        [Fact]
+        public void ASaveFromRETUNEDContentIsRefusedEvenThoughEveryIdStillResolves()
+        {
+            // THE case this exists for. Every id is valid, so the eager id check passes clean — but
+            // the run's encounters are derived from its seed at FIGHT time, so resuming under
+            // different numbers fights a different army than the save was made against.
+            var state = MidRun().State;
+            state.ContentVersion = "0123456789abcdef";      // as if a number had moved
+            var ex = Assert.Throws<RunSaveException>(
+                () => RunController.Resume(RunSave.Read(RunSave.Write(state)), new Catalog()));
+            Assert.Contains("different content", ex.Message);
+            Assert.Contains("0123456789abcdef", ex.Message);   // names the save's stamp
+        }
+
+        [Fact]
+        public void ASavePredatingContentStampingIsRefusedAndSaysSo()
+        {
+            var state = MidRun().State;
+            state.ContentVersion = "";
+            var ex = Assert.Throws<RunSaveException>(
+                () => RunController.Resume(RunSave.Read(RunSave.Write(state)), new Catalog()));
+            Assert.Contains("unversioned", ex.Message);
+        }
+
+        [Fact]
+        public void AMatchingStampResumesNormally()
+        {
+            // The guard must not be so eager that it blocks the ordinary case.
+            var run = MidRun();
+            var resumed = RunController.Resume(RunSave.Read(RunSave.Write(run.State)), new Catalog());
+            Assert.Equal(run.State.Act, resumed.State.Act);
+        }
+
         // ---- the awkward phases the shell can be quit in ----------------------------
 
         [Fact]

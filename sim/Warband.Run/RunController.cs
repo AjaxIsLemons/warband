@@ -95,12 +95,23 @@ namespace Warband.Run
                 Resolve(() => _content.Node(State.PendingSpec.OptionA), "spec node", State.PendingSpec.OptionA);
                 Resolve(() => _content.Node(State.PendingSpec.OptionB), "spec node", State.PendingSpec.OptionB);
             }
+            // The retune guard. Every id above resolved fine, which is exactly the trap: the same
+            // ids with different numbers would resume happily and then fight a different army than
+            // the save was made against, because encounters derive from the seed at FIGHT time.
+            if (State.ContentVersion != _content.ContentVersion)
+                throw new RunSaveException(
+                    "saved run was made under different content " +
+                    $"(save {Describe(State.ContentVersion)}, this build {_content.ContentVersion}). " +
+                    "Resuming it would fight a different army than it was saved against.");
             if (State.Act > _cfg.Acts)
                 throw new RunSaveException($"save is at act {State.Act} but this build has {_cfg.Acts}");
             if (State.Field.Count > _cfg.MaxFieldSlots)
                 throw new RunSaveException(
                     $"save fields {State.Field.Count} heroes, past this build's cap of {_cfg.MaxFieldSlots}");
         }
+
+        private static string Describe(string version) =>
+            string.IsNullOrEmpty(version) ? "unversioned (predates content stamping)" : version;
 
         private static void Resolve(Func<object> lookup, string what, string id)
         {
@@ -121,6 +132,7 @@ namespace Warband.Run
             State = new RunState
             {
                 Seed = seed,
+                ContentVersion = content.ContentVersion,
                 Gold = _cfg.StartingSand,
                 FieldSlots = _cfg.StartingFieldSlots,
                 UnlockedFieldSlots = _cfg.StartingFieldSlots,

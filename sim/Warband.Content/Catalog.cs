@@ -95,6 +95,77 @@ namespace Warband.Content
             },
         };
 
+        /// <summary>
+        /// The content fingerprint (ADR 0008's `contentVersion`). Computed once per process from the
+        /// ACTUAL content graph rather than a hand-bumped constant — the failure mode being guarded
+        /// against is somebody retuning a number, which is exactly the case a human would forget to
+        /// bump a constant for.
+        ///
+        /// Keys are sorted so the fingerprint does not move when a registry is reordered, but the
+        /// ordered CONTENTS are hashed, so adding, removing or renaming anything does move it.
+        /// Encounters and bosses are included by building them: they are functions of act, so each
+        /// is materialised at every act it can appear in and the resulting bodies are hashed.
+        /// </summary>
+        public string ContentVersion => LazyVersion.Value;
+
+        private static readonly System.Lazy<string> LazyVersion =
+            new System.Lazy<string>(ComputeContentVersion);
+
+        private static string ComputeContentVersion()
+        {
+            var h = new ContentHash();
+            h.Add("warband-content/1");
+
+            foreach (string id in Sorted(Kits.Chassis.Keys)) { h.Add(id); h.AddChassis(Kits.Chassis[id]); }
+            foreach (string id in Sorted(Weapons.All.Keys)) { h.Add(id); h.AddWeapon(Weapons.All[id]); }
+            foreach (string id in Sorted(Trinkets.Keys)) { h.Add(id); h.AddTrinket(Trinkets[id]); }
+            foreach (string id in Sorted(Kits.Nodes.Keys)) { h.Add(id); h.AddNode(Kits.Nodes[id]); }
+            foreach (string id in Sorted(Banners.Keys))
+            {
+                h.Add(id);
+                h.AddTriggers(Banners[id].TeamTriggers);
+                h.Add(Banners[id].Name);
+            }
+
+            // The 1-of-2 spec offers decide which nodes a run can even reach, so a changed offer
+            // table changes outcomes as surely as a changed node.
+            foreach (string key in Sorted(Kits.Offers.Keys))
+            {
+                var (a, b) = Kits.Offers[key];
+                h.Add(key).Add(a).Add(b);
+            }
+            foreach (string id in Sorted(Kits.ForkRanks.Keys))
+                h.Add(id).Add((int)Kits.ForkRanks[id]);
+
+            for (int act = 1; act <= 3; act++)
+            {
+                h.Add("act").Add(act);
+                foreach (var factory in Encounters.NodePool) AddEncounter(h, factory(act));
+                foreach (var factory in Encounters.PoolFor(act)) h.Add("pool").Add(factory(act).Id);
+                AddEncounter(h, Encounters.BossFor(act));
+                h.Add("bossScale").Add(Encounters.BossScalePct(act));
+            }
+            return h.Hex;
+        }
+
+        private static void AddEncounter(ContentHash h, EncounterDef d)
+        {
+            h.Add(d.Id).Add(d.Name).Add(d.RuleName);
+            h.Add(d.Enemies.Count);
+            foreach (var e in d.Enemies)
+            {
+                h.Add(e.RoleId).Add(e.Pos.Q).Add(e.Pos.R);
+                h.AddUnit(e.Def);
+            }
+        }
+
+        private static List<string> Sorted(IEnumerable<string> keys)
+        {
+            var list = new List<string>(keys);
+            list.Sort(System.StringComparer.Ordinal);
+            return list;
+        }
+
         public ChassisDef Chassis(string id) => Kits.Chassis[id];
         public WeaponDef Weapon(string id) => Weapons.All[id];
         public TrinketDef Trinket(string id) => Trinkets[id];

@@ -142,7 +142,10 @@ internal sealed class MarketOfferCard
         SetDisplayed(_artFallback, showVector &&
             (_model.Kind == MarketOfferKind.Recruit ||
              _model.Kind == MarketOfferKind.RankUp));
-        SetDisplayed(_qualifier, !string.IsNullOrEmpty(_model.Qualifier));
+        // Qualifiers such as Crit percentages belong to the selected Detail stage. Keeping the
+        // model value preserves that information for the dossier without adding a second scan
+        // number to compact stock.
+        SetDisplayed(_qualifier, false);
         SetDisplayed(_rule, !_model.Sold && !string.IsNullOrEmpty(_model.ExactRule));
         SetDisplayed(_held, _model.Frozen);
         SetDisplayed(_price, !string.IsNullOrEmpty(_model.Price));
@@ -202,6 +205,15 @@ internal sealed class MarketOfferCard
     {
         if (Root.panel == null || _model.Sold || Root.resolvedStyle.display == DisplayStyle.None)
             return;
+        // Stock profile deliberately removes the entire mechanics/read region. Its layout
+        // contract is enforced by ManagementView against the visible identity + commerce dock;
+        // measuring a hidden rule label here reports intentional progressive disclosure as clip.
+        if (_rule.parent != null &&
+            _rule.parent.resolvedStyle.display == DisplayStyle.None)
+        {
+            _lastLayoutWarning = "";
+            return;
+        }
 
         const float epsilon = 0.75f;
         bool overlap = _rule.worldBound.yMax > _commerce.worldBound.yMin + epsilon;

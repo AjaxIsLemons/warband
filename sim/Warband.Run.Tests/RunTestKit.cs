@@ -15,6 +15,10 @@ namespace Warband.Run.Tests
         public bool WeakBoss = true;             // weak ghost = player wins bosses by default
         public Hex BossPos = Hex.FromRowCol(Battle.BoardRows - 1, 2);   // enemy half, stated directly
 
+        /// <summary>Stubs are one fixed content build; a distinct literal so a stub-built run can
+        /// never be mistaken for a real-catalog one.</summary>
+        public string ContentVersion => "stub-content-v1";
+
         public ChassisDef Chassis(string id) => new ChassisDef
         {
             Name = id,

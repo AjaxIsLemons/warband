@@ -479,6 +479,40 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — CONTENT VERSION STAMP (433 tests). The prerequisite for a server, not the server.**
+  Jake asked whether we have a server and whether we'd want cloud storage for PvP; the answer is no
+  server exists (**zero networking anywhere in the codebase** — the one grep hit was a cylinder named
+  "Hourstone Socket"), homeserv already runs Caddy/Docker/Tailscale and a native Palworld server so
+  hosting is a solved problem, and Shoota has a Unity **LinuxServer** build as precedent. Decision
+  stands: **not today.** One clarification worth keeping — every PvP idea in the vault is
+  *asynchronous* (Echo exhibitions against a stored snapshot, leaderboards, ghost boards), so it is
+  "upload a blob, download a blob", a key-value store behind Caddy, **not netcode**. Real-time PvP
+  would be a different game.
+  **What was actually missing:** ADR 0008 has specified `contentVersion` since 2026-07-22 and it did
+  not exist. `Replay.cs` had a *format* version only. Now `IRunContent.ContentVersion` — a
+  **computed** FNV-1a-64 fingerprint of the whole content graph (`Warband.Sim.ContentHash`), not a
+  hand-bumped constant, because the failure it guards is a retune and that is exactly what a human
+  forgets to bump. Stamped into `RunState` at creation, into `GhostSnapshot` at capture, persisted by
+  `RunSave`, checked by `Resume`. **Why the eager id check was not enough:** ids resolving proves a
+  rename didn't happen, but a run's encounters derive from its seed at FIGHT time, so identical ids
+  with different numbers resume happily and fight a different army than the save was made against.
+  **Replays deliberately NOT stamped** — they store the full event log, so playback is
+  content-independent; bumping the format to v6 would have forced regenerating 10 fixtures for a
+  reason that does not hold. Re-simulation is what content changes break, and that only happens for
+  saves and snapshots.
+  **Tests (26 new):** the algorithm is pinned to an **independently computed** digest, so swapping in
+  `string.GetHashCode()` — which .NET randomizes per process, and would make saves fail after every
+  restart while looking like corruption — fails the suite · a retune moves the fingerprint at **11
+  different depths** including a magnitude buried in a field's pulse inside a trigger · null ≠ empty ·
+  order is significant · a retuned save is refused *while every id still resolves* · an unversioned
+  save says "unversioned" · a matching stamp still resumes normally.
+  Also: `--version` on the sweep tool prints the fingerprint, and dev builds show it on the menu, so
+  "my save refused to load" is diagnosable instead of unfalsifiable. **Cross-machine check:** the
+  `Warband.Content.dll` on homeserv and Windows is byte-identical (MD5 4DBDDE32…), and the hash uses
+  no platform-dependent primitives. **Still unverified:** the on-Windows harness run — the extended
+  `RunSaveCheck` was written and synced but Codex took the Unity lock mid-verification, so the
+  fingerprint has not yet been printed from inside Unity. Run `Warband/Verify Run Save` when the lock
+  frees.
 - **2026-07-26 — RUN SAVE/RESUME (item 7, 412 tests).** Quitting the app no longer destroys the run.
   `Warband.Run.RunSave` converts `RunState` ⇄ text and **does no file IO** (the run layer is pure by
   law, ADR 0008) — the host owns the bytes, which is also what keeps the format headless-testable.

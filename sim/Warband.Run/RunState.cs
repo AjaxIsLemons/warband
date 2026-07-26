@@ -194,6 +194,11 @@ namespace Warband.Run
     /// which is what same-act pool keying matches on (ADR 0002).</summary>
     public sealed class GhostSnapshot
     {
+        /// <summary>Which content build produced this board. A snapshot is the artifact most likely
+        /// to cross builds or machines (a stored Echo, a leaderboard entry), and re-simulating one
+        /// under different content yields a different outcome with no symptom. Stamp it at capture;
+        /// compare before trusting it.</summary>
+        public string ContentVersion = "";
         public int Act;
         public int WinsAtCapture;
         public int LossesAtCapture;
@@ -205,6 +210,15 @@ namespace Warband.Run
     public sealed class RunState
     {
         public ulong Seed;
+        /// <summary>
+        /// The content fingerprint this run was CREATED under (ADR 0008's `contentVersion`). Not a
+        /// gameplay value — provenance. It is here rather than alongside the save file because the
+        /// run genuinely belongs to a content build: its encounters are derived from the seed at
+        /// fight time, so resuming under different content silently changes the army it was saved
+        /// against. Checked by <see cref="RunController.Resume"/>.
+        /// Empty on runs created before this existed, which is treated as "unknown, refuse".
+        /// </summary>
+        public string ContentVersion = "";
         public int Act = 1;                      // 1-based
         public int NodeIndex;                    // 0..NodesPerAct-1; == NodesPerAct means act boss
         public RunPhase Phase = RunPhase.Planning;

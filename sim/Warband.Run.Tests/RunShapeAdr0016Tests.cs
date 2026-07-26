@@ -35,6 +35,7 @@ namespace Warband.Run.Tests
 
             public EncounterBrief BossBrief(int act, Rng rng) => _inner.BossBrief(act, rng);
 
+            public string ContentVersion => _inner.ContentVersion;
             public ChassisDef Chassis(string id) => _inner.Chassis(id);
             public WeaponDef Weapon(string id) => _inner.Weapon(id);
             public TrinketDef Trinket(string id) => _inner.Trinket(id);

@@ -928,6 +928,10 @@
     border-left-color: rgba(104, 165, 231, 0.48);
 }
 
+.hub--detail-empty .hub-collection {
+    width: 100%;
+}
+
 .hub-inspector-pane__top {
     height: 54px;
     min-height: 54px;
@@ -1094,6 +1098,13 @@
 .wb-card--hub.decision-card--stock .wb-card__price {
     color: rgb(238, 188, 85);
     font-size: 18px;
+}
+
+.wb-card--hub.decision-card--stock .wb-card__selection,
+.wb-card--hub.decision-card--target .wb-card__selection {
+    left: 7px;
+    right: auto;
+    top: 7px;
 }
 
 .layout--compact .hub-collection {

@@ -62,6 +62,19 @@ namespace Warband.Run
 
     public interface IRunContent
     {
+        /// <summary>
+        /// A stable fingerprint of every piece of content that can change a fight's outcome
+        /// (ADR 0008's long-promised `contentVersion`). Stamped into a run at creation and checked
+        /// on resume, because a run's encounters are derived from its seed AT FIGHT TIME — so the
+        /// same save resumed on a retuned build fights a different army than it was saved against,
+        /// and no id check can see it (the ids are identical; the numbers moved).
+        ///
+        /// It exists on this interface rather than being read off the catalog directly so the run
+        /// layer keeps knowing nothing about content, and so a future server-side or shared-artifact
+        /// feature has one obvious thing to compare.
+        /// </summary>
+        string ContentVersion { get; }
+
         ChassisDef Chassis(string id);
         WeaponDef Weapon(string id);
         TrinketDef Trinket(string id);

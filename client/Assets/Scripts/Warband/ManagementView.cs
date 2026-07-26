@@ -590,6 +590,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
         _inspector.Bind(model.Inspector);
         BindSelectionTray(model);
+        _root.EnableInClassList("hub--detail-empty", model.Inspector.Empty);
         SetDisplayed(_inspectorActionDock, !model.Inspector.Empty);
         SetDisplayed(_inspectorScrim, !model.HallOverview && !model.Inspector.Empty);
         SetDisplayed(_inspectorPane, true);

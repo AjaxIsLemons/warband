@@ -106,6 +106,22 @@ public static class RunSaveCheck
                     a.Units.Select(u => u.Name + u.MaxHp).SequenceEqual(b.Units.Select(u => u.Name + u.MaxHp)));
             }
 
+            // --- content provenance (ADR 0008's contentVersion) -------------------------
+            // Worth checking on-platform specifically: the fingerprint must be identical to the one
+            // computed on homeserv, or every save made on one and loaded on the other refuses.
+            log.Add($"      CONTENT VERSION = {cat.ContentVersion}");
+            Check("content version is stamped into the run", run.State.ContentVersion == cat.ContentVersion);
+            Check("content version survives the file round trip",
+                RunSave.Read(readBack).ContentVersion == cat.ContentVersion);
+            try
+            {
+                var retuned = RunSave.Read(readBack);
+                retuned.ContentVersion = "0123456789abcdef";
+                RunController.Resume(retuned, cat, cfg);
+                Check("a save from retuned content is refused", false, "it resumed");
+            }
+            catch (RunSaveException) { Check("a save from retuned content is refused", true); }
+
             // --- a save this build cannot read must be refused, not half-loaded ---------
             try
             {

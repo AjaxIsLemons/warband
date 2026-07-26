@@ -1706,6 +1706,16 @@ internal sealed class UiInteractableFeedbackManipulator : Manipulator
 
 internal static class UiPresentationContract
 {
+#if UNITY_EDITOR
+    [UnityEditor.MenuItem("Warband/Verify Decision Cards")]
+    private static void VerifyDecisionCardsMenu()
+    {
+        Validate();
+        Debug.Log("[Decision Cards] semantic facts, card profiles, offer fixtures, and motion " +
+                  "recipes passed.");
+    }
+#endif
+
     public static void Validate()
     {
         HallStationPresentationCatalog.Validate();

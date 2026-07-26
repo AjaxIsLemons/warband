@@ -17,6 +17,20 @@ storage/hosting question stays a deployment detail, not a design fork.
 2. **`RunState` is serializable-by-construction:** plain data, content referenced **by id**
    through an `IRunContent` catalog — state never holds object graphs into content. Save =
    serialized state; replay = (seed, choice log, contentVersion), same law as combat.
+
+   **IMPLEMENTED 2026-07-26 — both halves, and `contentVersion` was the missing one.** Save/resume
+   is `Warband.Run.RunSave` + `RunController.Resume` (roadmap item 7). `contentVersion` had been
+   specified here since 2026-07-22 and never existed: `Replay.cs` carried a *format* version only,
+   so nothing could say which content build produced a save or a snapshot. It is now
+   `IRunContent.ContentVersion` — a **computed** FNV-1a-64 fingerprint of the whole content graph
+   (`Warband.Sim.ContentHash`), not a hand-bumped constant, because the failure it guards is
+   somebody retuning a number, which is exactly what a human forgets to bump a constant for.
+   Stamped into `RunState` at creation and into `GhostSnapshot` at capture; checked on resume.
+   **Why an id check is not enough:** `Resume` already resolves every id eagerly, so a *rename*
+   fails loudly — but a run's encounters are derived from its seed at FIGHT time, so the same ids
+   with different numbers resume happily and then fight a different army than the save was made
+   against. Silent divergence. Same argument applies to any future stored snapshot, which is why
+   this is a prerequisite for the deferred server rather than part of it.
 3. **Stateless randomness:** every run-layer roll uses a fresh PCG32 seeded by
    mix(runSeed, purpose, act, node). No RNG state to persist, no ordering coupling between
    decisions.

@@ -15,6 +15,10 @@ using Warband.Sim;
 if (args.FirstOrDefault() == "--oath") { OathProbe.Run(); return; }
 if (args.FirstOrDefault() == "--enc") { EncounterProbe.Run(); return; }
 if (args.FirstOrDefault() == "--boss") { BossProbe.Run(); return; }
+// The content fingerprint (ADR 0008's contentVersion). Printable so the value computed here can be
+// compared against the one the Unity build computes — if those ever differ, every save made on one
+// machine refuses to load on the other, and the symptom looks like save corruption.
+if (args.FirstOrDefault() == "--version") { Console.WriteLine(new Catalog().ContentVersion); return; }
 
 var cat = new Catalog();
 var report = new StringBuilder();

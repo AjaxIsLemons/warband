@@ -678,12 +678,7 @@
 }
 
 .market-offer-card.decision-card--stock .market-offer-card__selection {
-    right: 7px;
-    top: 7px;
-    min-height: 22px;
-    padding-left: 6px;
-    padding-right: 6px;
-    padding-top: 3px;
+    display: none;
 }
 
 .market-offer-card.decision-card--stock .market-offer-card__selection-label {

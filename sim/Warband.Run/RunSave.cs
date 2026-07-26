@@ -50,6 +50,10 @@ namespace Warband.Run
             b.Append(Header).Append('\n');
 
             Put(b, "seed", s.Seed.ToString(CultureInfo.InvariantCulture));
+            // Provenance, checked by RunController.Resume — see RunState.ContentVersion for why an
+            // id check is not enough. Safe() is deliberately not applied: this is a hex digest, and
+            // if it ever stops being one the reserved-character guard should be extended, not skipped.
+            Put(b, "contentVersion", s.ContentVersion);
             Put(b, "act", s.Act);
             Put(b, "node", s.NodeIndex);
             Put(b, "phase", s.Phase);
@@ -208,6 +212,7 @@ namespace Warband.Run
             var s = new RunState
             {
                 Seed = ULong(kv, "seed"),
+                ContentVersion = Str(kv, "contentVersion"),
                 Act = Int(kv, "act", 1),
                 NodeIndex = Int(kv, "node"),
                 Phase = Enum<RunPhase>(kv, "phase", RunPhase.Planning),

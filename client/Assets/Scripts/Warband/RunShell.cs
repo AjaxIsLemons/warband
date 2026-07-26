@@ -1701,6 +1701,11 @@ public sealed class RunShell : MonoBehaviour
         _model.Menu.Notice = _menuNotice;
         _model.Menu.VersionLine =
             $"First playable · {_cfg.Acts} acts × {_cfg.NodesPerAct + 1} beats · one loss ends the run";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // The content fingerprint, visible only in dev builds. Without it, "my save refused to
+        // load" is unfalsifiable; with it you can compare the message's stamp against the build's.
+        _model.Menu.SeedLabel += $"   ·   CONTENT {_content.ContentVersion}";
+#endif
     }
 
     private void BuildRecruit()
@@ -2384,7 +2389,7 @@ public sealed class RunShell : MonoBehaviour
                 bool rankUp = TryOwnedHero(offer.Id, out _);
                 kind = rankUp ? MarketOfferKind.RankUp : MarketOfferKind.Recruit;
                 classification = rankUp
-                    ? "RANK UP · GUARANTEED GAIN"
+                    ? "RANK UP"
                     : "RECRUIT · " + _presentation.Unit(offer.Id).role.ToUpperInvariant();
                 break;
             case OfferKind.Weapon:
