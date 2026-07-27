@@ -219,6 +219,10 @@
     "min": 0.0,
     "max": 3.0
   },
+  "impact.punchScale": {
+    "min": 0.0,
+    "max": 2.0
+  },
   "impact.tintAmount": {
     "min": 0.0,
     "max": 1.0

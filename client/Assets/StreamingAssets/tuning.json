@@ -36,6 +36,7 @@
     "riseBoost": 0.6,
     "lifeBoost": 0.5,
     "punchBoost": 0.8,
+    "punchScale": 0.5,
     "heavyTint": "#FFF2DBFF",
     "tintAmount": 0.5
   },

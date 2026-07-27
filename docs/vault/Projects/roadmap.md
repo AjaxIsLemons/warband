@@ -26,10 +26,11 @@ endless pressure can push it.**
 **Reordered from the 07-26 line, for one reason: Jake's play passes are the scarcest resource on
 this project, and the previous order spent one on a build with a known, one-number defect in it.**
 
-**1. Item 10 — the impact balloon.** Data-only, one F1 slider (`impact.punchBoost`). Struck units
-inflate ~37% over their neighbours, hiding HP bars and arcs; it reproduces with all VFX hidden.
-**2. Item 11 — Overtime is invisible.** A pitch pillar that renders as literally nothing; a long
-fight currently reads as "units started dying for no reason."
+**1. ~~Item 10 — the impact balloon.~~ BUILT 2026-07-27** — new `impact.punchScale` global dial,
+default 0.5, halving every recoil (the heaviest tell was at +90%, not the recorded 37%). Feel is
+Jake's to judge; the value is one F1 slider away from any other answer.
+**2. Item 11 — Overtime is invisible. ← NEXT.** A pitch pillar that renders as literally nothing; a
+long fight currently reads as "units started dying for no reason."
 **3. JAKE'S VERIFY PASS (item 1).** Then, and only then, Jake watches a fight — in a build where
 the balloon is fixed and the storm is visible, so the pass is worth the time it costs.
 **4. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
@@ -127,16 +128,31 @@ numbers are load-bearing references, so finished items leave a hole rather than 
    seams, not a system.
 
 ### P2 — combat legibility (item 1's actual target), cheap, high suspicion
-10. **The impact `punch` balloon — the cheapest possible test of Jake's top complaint.** —
-    **SPEC'D (data-only). #1 IN THE AGREED ORDER.** Measured 2026-07-25: every unit idles at world
-    scale **0.750**, and 0.10 s after being struck victims sit at **1.026–1.035** — a ~37% inflation
-    that covers neighbouring units, their HP bars, and any arc drawn near them. It **reproduces with
-    every VFX instance hidden**, so it predates the whole spectacle arc: a swing's own tell is
-    competing with the victim ballooning over it.
-    **Exact knobs (checked 2026-07-26):** the balloon is `punchAmount` (per tell row, default 0.25)
-    × `(1 + impact.punchBoost × t)`, `punchBoost` default **0.8** — so `impact.punchBoost` is a single
-    global slider in the F1 cockpit scaling every impact recoil at once. **Try that before touching
-    197 tell rows.** `tuning.json`, hot-reload, no recompile.
+10. **The impact `punch` balloon** — **BUILT 2026-07-27. VERIFY: the number is measured, the FEEL is
+    not — it is part of Jake's pass (item 1).** Every unit idles at world scale **0.750**; 0.10 s
+    after being struck victims sat at **1.026–1.035**, covering neighbouring units, their HP bars,
+    and any arc near them. It **reproduces with every VFX instance hidden**, so it predates the whole
+    spectacle arc: a swing's own tell was competing with the victim ballooning over it.
+    **Confirmed structurally 2026-07-27:** bars, nameplate and status icons parent to `Root` while
+    the punch scales `Body`, so a struck unit never inflates its OWN bars — it grows outward over its
+    NEIGHBOURS'. Adjacent hex centres are 1.992 world units apart.
+    **⚠ The recorded "~37%" understated it.** 29 of 72 tell rows punch, `punchAmount` spans
+    0.18–0.50, and the heaviest row at t=1 reached **+90% — world scale 0.750 → 1.425, near double.**
+    **⚠ `impact.punchBoost` alone could NOT fix this** (the 07-26 note assumed it could). It scales
+    only the magnitude TERM: driving it to 0 leaves each row's flat `punchAmount` (+25% median)
+    untouched *and* destroys the small-vs-big-hit difference `ImpactTune` exists to express.
+    **Shipped instead: `impact.punchScale`** — one global dial over every recoil, base included,
+    default **0.5**, F1-tunable, hot-reload. Four lines (`TuningData`, `ReplayPlayer:765`,
+    `tuning.json`, `tuning.ranges.json`). `PopulateObject` binds by name and the C# default matches
+    the shipped value, so a stale `tuning.json` degrades to the intended punch rather than zeroing it.
+    | | before | after |
+    |---|---|---|
+    | median tell, chip hit | +25.0% | +12.5% |
+    | median tell, big hit | +45.0% | +22.5% |
+    | heaviest tell, big hit | +90.0% | +45.0% |
+    Gate: headless client compile 0 errors, **negative-controlled** (injected error caught in the
+    changed file, clean after revert). **Not watched in motion — nobody can (Play Mode is unreachable
+    from a session).** If 0.5 is wrong, it is one F1 slider, no rebuild.
 11. **Overtime is completely invisible — a pillar renders as nothing.** — **SPEC'D. #2 IN THE AGREED
     ORDER.** `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to
     every unit every tick until someone dies. The pitch calls this a pillar (*"escalating overtime

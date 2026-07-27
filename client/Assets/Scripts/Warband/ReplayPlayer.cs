@@ -762,7 +762,7 @@ public class ReplayPlayer : MonoBehaviour
             if (!string.IsNullOrEmpty(def.sound) || !string.IsNullOrEmpty(def.critSound))
                 _playSfx?.Invoke(e.Crit && !string.IsNullOrEmpty(def.critSound) ? def.critSound : def.sound);
             if (def.flash) { v.FlashColor = e.Crit ? def.critFlashColor : def.flashColor; v.FlashT = 1f; v.FlashDur = def.flashSeconds; }
-            if (def.punch) { v.PunchT = 1f; v.PunchDur = def.punchSeconds; v.PunchAmt = def.punchAmount * (1f + _impact.punchBoost * t); }
+            if (def.punch) { v.PunchT = 1f; v.PunchDur = def.punchSeconds; v.PunchAmt = def.punchAmount * (1f + _impact.punchBoost * t) * _impact.punchScale; }
             // The icon pops at the moment the status LANDS, not when the fold gained it — same law
             // as the flash above, and the same reason the mana bar pulses on its threshold flip.
             // Aux carries the StatusKind (the fold's own decode).

@@ -265,6 +265,13 @@ public class ImpactTune
     [Range(0f, 3f)] public float lifeBoost = 0.5f;   // extra hang time at t=1 (fraction)
     [Range(0f, 3f)] public float punchBoost = 0.8f;  // extra target recoil at t=1 (fraction)
 
+    // One global dial over EVERY impact recoil, base included. punchBoost only scales the magnitude
+    // TERM, so driving it to 0 still leaves each tell's flat punchAmount (0.25 default = +25% body
+    // scale) and costs the small-vs-big-hit difference this class exists to express. The recoil grows
+    // the body outward on a board whose neighbours are ~2 world units apart, so at 1.0 a struck unit
+    // covered its neighbours, their bars, and any arc near them (roadmap item 10). Retune here, live.
+    [Range(0f, 2f)] public float punchScale = 0.5f;
+
     // Hot-white, deliberately NOT gold: crit already owns gold as a categorical signal, so a heavy
     // normal hit must not read as a crit. Magnitude = brightness, crit = hue; a big crit is both.
     public Color heavyTint = new Color(1f, 0.95f, 0.86f);
