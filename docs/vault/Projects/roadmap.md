@@ -35,9 +35,16 @@ than "no clock": storm damage inherited a tell row with `minAmount: 5` while the
 so the first 12 s of overtime drew *nothing*. **One edit-mode capture still owed** (see item 11).
 **3. JAKE'S VERIFY PASS (item 1). ← NEXT, AND IT IS YOURS.** Both cheap feel wins have landed, so
 the pass now judges a build with the balloon halved and the storm visible.
-**4. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
-**5. Then re-decide** from the verify pass. Standing candidates: item 17 (Silence) · item 1c/1d
-(comprehension UI, camera) · item 5a (Inscription engine) · items 12, 13, 15.
+**4. Item 5a — the Inscription engine layer. ← SET BY THE 2026-07-27 ROADMAP REVIEW (Jake).**
+The review measured the build against its own budget and found one large gap: **Inscriptions are at
+5 of 24**, and that is the layer ADR 0016's north star — *compounding builds that feel like they
+break the game* — actually lives in. Everything above it in this list is render and shell. It also
+absorbs **item 17** (Silence), and unlike items 4 and 18 it is **not** blocked behind the balance
+question the content doctrine parks until playtest #1. Target the twelve-family vocabulary proof.
+**5. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
+**6. Then re-decide.** Standing candidates: item 1c/1d (comprehension UI, camera) · item 19
+(measure a human) · items 12, 13, 15's unspent event. Items 4 and 18 are one balance question
+wearing two hats, and the doctrine holds them until playtest #1.
 
 **⚠ SESSION HYGIENE — UNRESOLVED AS OF 2026-07-27.** The tree carries **5031 insertions across 52
 files plus 29 untracked**, including the Workbench overhaul this board marks BUILT + UNITY-VERIFIED.
@@ -57,6 +64,14 @@ nobody has watched the corrected player.** UI has had five passes (Muster readab
 decision cards, persistent Warband Shelf + Loadout Table, shared mechanic presentation, and the
 2026-07-27 Workbench overhaul), all Unity-verified by capture, **none watched in motion**.
 Detail for every one: `roadmap-done-archive.md` + `Daily/2026-07-26`.
+
+**MEASURED, 2026-07-27 review** (`make baseline`, byte-identical to committed — these are current):
+bot run victory **4 / 4 / 7** (stable/fraying/collapsing) · fight win 76% · naive line **2/12 runs
+completed** · **4 of 6 node encounters FREE + FLAT at their own debut act** · all 3 bosses admit 3–4
+answer axes at spread 100 (**the healthiest content in the game — protect it in any balance pass**) ·
+`banneret` still chassis-dead at 13 avg vs berserker 75 · sim health clean (never-swung 0.00%,
+deadtime 1.81%) · **Inscriptions 5 of 24**. The three-act run, the shell, save/resume, the build and
+the launcher are all real; **what is thin is the reason to replay it.**
 
 ---
 
@@ -102,14 +117,21 @@ Detail for every one: `roadmap-done-archive.md` + `Daily/2026-07-26`.
    (`boss-ashfall-battery`, `boss-waning-crown`), so this is one session away.
    → **The "encounters are FREE" finding is now item 18.**
 
-4. **The pressure tier is a fake choice** — **DESIGN.** Stable/Fraying/Collapsing are visible.
-   The 07-23 sweep found victory saturating ~99% at every tier, so **Collapsing strictly dominated at
-   zero risk**. **Re-measured twice on 2026-07-25** (`Projects/sweep-2026-07-25.md`): after ADR 0022,
-   88/92/79 victory at 69/77/82 Sand; after ADR 0023's authored encounters, **35/48/39 victory at
-   40/54/65 Sand — and Fraying now BEATS Stable**, because Sand buys the survival authored encounters
-   demand. That is a real risk curve arriving as a side effect, not a solved item: nothing in either
-   ADR targeted tiers. **Start the DESIGN pass from a fresh `make baseline`, never from the 07-23
-   claim.** ADR 0007's economy is placeholder either way.
+4. **The pressure tier is a fake choice — AND THE PREMISE INVERTED. Re-measured 2026-07-27.** —
+   **DESIGN.** Stable/Fraying/Collapsing are visible. This item has now been true for two OPPOSITE
+   reasons, which is exactly why it must be re-measured before it is designed:
+   | measured | stable | fraying | collapsing | the reading |
+   |---|---|---|---|---|
+   | 2026-07-23 | ~99 | ~99 | ~99 | risk is free — everything wins |
+   | after ADR 0022 | 88 | 92 | 79 | |
+   | after ADR 0023 | 35 | 48 | 39 | Fraying beats Stable |
+   | **2026-07-27 (current)** | **4** | **4** | **7** | **the run is near-unwinnable — and Collapsing STILL wins most** |
+   So the old sentence "victory saturates ~99%, Collapsing strictly dominates at zero risk" is
+   **8× stale and points at the wrong bug.** What survives is the *shape* of the defect: the highest
+   risk tier still posts the best victory rate, so the tier costs nothing. What changed is the floor.
+   **Caveat that must travel with these numbers:** `run.*` is a **default-policy BOT** over 120 runs
+   per tier — it does not choose placement or purchases. It is a floor, not a forecast. See item 19.
+   ADR 0007's economy is placeholder either way. **Always start from a fresh `make baseline`.**
 
 (Item 3 — the Last Oath's unreachable decision — is DONE 2026-07-25. The gap is deliberate: item
 numbers are load-bearing references, so finished items leave a hole rather than renumber.)
@@ -203,13 +225,26 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     `RunPhase.Complete` is terminal; nothing in `RunController` continues past the last act.
     theme.md's candidate name is **Beyond the Hour**. Cheapest honest version: on Complete, offer
     CONTINUE, re-entering act 3's pool at escalating scale until a loss.
-14. **Act identity** — **DONE 2026-07-26.** Acts now draw genuinely different pools; acts 2 and 3 are
-    *disjoint*. Two new encounters, zero new roles. **It did NOT make the pool harder** — that turned
-    out to be a balance problem, not a composition one → **item 18**.
-15. **The Interlude is a non-choice.** — **DESIGN (tiny).** ADR 0019 gives each act one Interlude
-    beat; it reads *"A QUIET STRETCH — No one contests the road. Take the coin and move on"* with one
-    button. The content budget explicitly funds **one event**, and it has not been spent. A single
-    two-or-three-way risk/reward choice would make the beat exist.
+14. **Act identity** — **DONE 2026-07-26 (mechanically), BUT REQUALIFIED 2026-07-27.** Acts draw
+    genuinely different pools and acts 2 and 3 are *disjoint*. Two new encounters, zero new roles.
+    **What it bought is thinner than "done" suggests:** the two encounters authored specifically to
+    give act 3 an identity — **The Slagworks and The Long Procession — both measure FREE + FLAT at
+    act 3**, the act they exist for. So the pools differ by name and composition while posing the
+    same nothing. Do not re-open this as a composition item; it is the same balance wall as **item
+    18**, and the honest status is "disjoint pools, no differentiated difficulty".
+15. **~~The Interlude is a non-choice.~~ STALE — the claim was wrong. Corrected + FIXED 2026-07-27.**
+    The Interlude **is** a real three-way decision and has been since ADR 0019: `BuildInterludeBeat`
+    offers Treasury (certainty) / Armory (equipment) / Hourstone (a run-wide rule), each drawing up
+    to `RewardChoices` distinct offers, and the choice **also unlocks the next field capacity**.
+    Anyone taking the old item at face value would have built a system that already existed.
+    **The real defect was a copy contradiction, and it is now fixed:** the map node still announced
+    *"A QUIET STRETCH — No one contests the road. Take the coin and move on"* with a `TRAVEL ON`
+    button — telling the player to skip the decision the game was about to hand them, one screen
+    later. Now reads AN INTERLUDE / "Take certainty, equipment, or a run-wide rule — and the field
+    slot that comes with it" / `TAKE THE INTERLUDE`.
+    **Still genuinely unspent:** the content budget funds **one EVENT** — a risk/reward beat with a
+    real gamble, distinct from a reward pick. Nothing like that exists. That is the live remnant of
+    this item, and it is DESIGN (tiny).
 16. **Defeat/retry rule — SETTLED 2026-07-26, no work item.** **Jake's call: terminal loss STAYS —
     the mitigation is save/resume (item 7), not a retry currency and not softening the encounters.**
     Recorded rather than deleted so the next session does not re-open it. Do **not** tune act 2's node
@@ -234,10 +269,19 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     (only `BelowHpPct` / `MustHave`), so **"nearest enemy with Mana" is the cheap shape** and a
     highest-Mana selector is the general one. Depends on / lands with item 5a.
 18. **The authored encounters do not actually pose problems — PARKED BY DOCTRINE, not solved.** —
-    **measurement, not a work item until playtest #1.** `--enc` reports **4 of 6 node encounters
-    FREE/FLAT**, contradicting ADR 0023's "all four pose a placement problem at their debut act."
-    Promoted here because it was buried inside a Done entry while directly contradicting item 2's
-    premise. **Root cause, found 2026-07-26 and uncomfortable:** *the gap between the four
+    **measurement, not a work item until playtest #1.** Promoted out of a Done-entry footnote because
+    it directly contradicts item 2's premise. **Re-measured 2026-07-27 — and the shape is worse than
+    "4 of 6": the failures are at the acts each encounter was AUTHORED FOR.**
+    | encounter | debut | at its debut act |
+    |---|---|---|
+    | The Gnawing Hour | 1 | **FREE + FLAT** (and at acts 2 and 3) |
+    | The Long Range | 2 | **FREE + FLAT** (rule fires only 75%) |
+    | The Slagworks | 3 | **FREE + FLAT** |
+    | The Long Procession | 3 | **FREE + FLAT** |
+    | The Ninth Bell | 1 | poses a problem — spread 100, but FLAT at acts 2–3 |
+    | The Drop | 1 | poses a problem — spread 100 at every act |
+    **The bosses are the counter-example and the thing to protect:** all three admit 3–4 answer axes
+    at spread 100. Whatever eventually fixes the node pool must not be allowed to flatten them. **Root cause, found 2026-07-26 and uncomfortable:** *the gap between the four
     answer-axis parties and the weakest legal comp is wider than the band an encounter can sit in* —
     nothing can be made sharp for one without being lethal to the other. Every composition that
     fixed the flatness drove the naive bot line from 3/12 completed runs to **0/12**.
@@ -248,6 +292,17 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     against four. Every probe table now prints hero count; always check it.
     ② the earlier ADR 0023 numbers **could not be bisected** (the whole implementation was
     uncommitted), so **re-measure with `make baseline` before trusting any number here.**
+19. **Every instrument measures a BOT. Nothing measures a human — and nothing plans to.** —
+    **DESIGN (small), found 2026-07-27 during the roadmap review.** `run.*` is a default-policy bot
+    (no placement, no purchase decisions) over 120 runs/tier; the `--enc` "naive line" is a
+    fixed-comp bot at 2/12. **Both are floors, not forecasts** — the whole point of the game is the
+    two levers the bots do not pull. So the honest state is: *we do not know the human win rate, and
+    we have no way to find out.* ADR 0001 says playtests decide and the content doctrine parks
+    balance until playtest #1 — but **nothing on this board captures what playtest #1 yields**, so
+    the decision it is supposed to settle would arrive as anecdote. Cheapest honest version: the run
+    already serialises (item 7) and every fight is re-simulable from (seed, snapshots,
+    contentVersion), so a per-run outcome line appended locally is most of it. Settle **what to
+    record and how it comes back** before friends play, not after.
 
 ### Laws pages (keep their numbers — ADRs and design docs reference them by name)
 5. **PvE-first playable loop** — **LAWS PAGE, not a work item** (dissolved 2026-07-26). ADR 0016
@@ -352,10 +407,16 @@ Bring-up (item 4), render polish (4b) and the PoC shell (4c) are built and verif
 - **`.unity`/`.prefab`/`.asset` edits are guard-hook blocked** — scene work goes through Unity MCP.
 
 ## First-playable content budget (hard cap — ADR 0001 + ADR 0016, scope settled 2026-07-26)
-Current 8 heroes × 2 paths · 11 weapons + 1 trinket · **24 Inscriptions, delivered through the ADR
-0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role grammar,
+Current 8 heroes × 2 paths · 11 weapons + **5 trinkets** · **24 Inscriptions, delivered through the
+ADR 0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role grammar,
 several encounters, three act bosses, one event) · shops + placement · crude post-win endless seam
 that may reuse and scale the slice · programmer art, no sound.
+
+**Measured against the cap, 2026-07-27** (`make baseline`, fingerprint `3dba11673c26e858`):
+8 chassis ✓ · 78 spec nodes · 11 weapons ✓ · **5 trinkets** (this line said "1 trinket" until today —
+ADR 0022 added four and the budget was never updated) · **5 Inscriptions of 24** ← *the one place the
+build is far under its own budget, and it is the layer ADR 0016's identity depends on* ·
+7 enemy unit types · 6 node encounters · 3 act bosses · **1 event still unspent** (see item 15).
 Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE content. Do not expand
 beyond three acts, to a full endless mode, or to a catalog beyond the 24-effect proof before
 playtest #1.
