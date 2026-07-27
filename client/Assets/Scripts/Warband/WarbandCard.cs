@@ -34,6 +34,7 @@ internal sealed class WarbandCard
     private readonly Label _weapon;
     private readonly Label _frozen;
     private readonly Label _price;
+    private readonly HourstoneAmount _currencyPrice;
     private string _key = "";
     private bool _disabled;
     private CardModel _model = new CardModel();
@@ -81,6 +82,9 @@ internal sealed class WarbandCard
         _tags = Required<VisualElement>(Root, "tags");
         _weapon = Required<Label>(Root, "weapon");
         _frozen = Required<Label>(Root, "frozen");
+        var currencyHost = Required<VisualElement>(Root, "currency-price");
+        _currencyPrice = new HourstoneAmount();
+        currencyHost.Add(_currencyPrice);
         _price = Required<Label>(Root, "price");
 
         Root.RegisterCallback<ClickEvent>(OnClick);
@@ -110,19 +114,20 @@ internal sealed class WarbandCard
         _abilityIcon.text = model.AbilityIcon;
         _abilityTrigger.text = model.AbilityTrigger;
         _abilityName.text = model.AbilityName;
-        _abilitySummary.text = model.AbilitySummary;
+        MechanicPresentation.BindInline(_abilitySummary, model.AbilitySummary);
         _ability.tooltip = string.IsNullOrEmpty(model.AbilitySummary)
             ? ""
             : $"{model.AbilityTrigger}: {model.AbilitySummary}";
         _passiveIcon.text = model.PassiveIcon;
         _passiveTrigger.text = model.PassiveTrigger;
         _passiveName.text = model.PassiveName;
-        _passiveSummary.text = model.PassiveSummary;
+        MechanicPresentation.BindInline(_passiveSummary, model.PassiveSummary);
         _passive.tooltip = string.IsNullOrEmpty(model.PassiveSummary)
             ? ""
             : $"{model.PassiveTrigger}: {model.PassiveSummary}";
         _weapon.text = model.Weapon;
         _price.text = model.Price;
+        _currencyPrice.Bind(model.CurrencyCost);
 
         Root.EnableInClassList("wb-card--selected", model.Selected);
         Root.EnableInClassList("wb-card--pinned", model.Pinned);
@@ -144,7 +149,8 @@ internal sealed class WarbandCard
         SetDisplayed(_passive, !string.IsNullOrEmpty(model.PassiveName));
         SetDisplayed(_weapon, !string.IsNullOrEmpty(model.Weapon));
         SetDisplayed(_frozen, model.Frozen);
-        SetDisplayed(_price, !string.IsNullOrEmpty(model.Price));
+        SetDisplayed(_currencyPrice.parent, model.CurrencyCost >= 0);
+        SetDisplayed(_price, model.CurrencyCost < 0 && !string.IsNullOrEmpty(model.Price));
 
         SyncStats(model.Stats);
         SyncTags(model.Tags);
@@ -187,37 +193,9 @@ internal sealed class WarbandCard
     {
         while (_stats.childCount > models.Count) _stats.RemoveAt(_stats.childCount - 1);
         while (_stats.childCount < models.Count)
-        {
-            var chip = new VisualElement();
-            chip.AddToClassList("wb-mini-stat");
-            var icon = new WarbandGlyph { name = "icon" };
-            icon.AddToClassList("wb-mini-stat__icon");
-            var label = new Label { name = "label" };
-            label.AddToClassList("wb-mini-stat__label");
-            var value = new Label { name = "value" };
-            value.AddToClassList("wb-mini-stat__value");
-            chip.Add(icon);
-            chip.Add(label);
-            chip.Add(value);
-            _stats.Add(chip);
-        }
+            _stats.Add(new MechanicStatTile("wb-mini-stat", "wb-mini-stat"));
         for (int i = 0; i < models.Count; i++)
-        {
-            var chip = _stats.ElementAt(i);
-            StatChipModel model = models[i];
-            DecisionFactDefinition definition = DecisionCardPresentation.Fact(model);
-            WarbandGlyph icon =
-                chip.Q<WarbandGlyph>(className: "wb-mini-stat__icon");
-            icon.Set(definition.Glyph);
-            icon.SetColor(definition.Color);
-            chip.Q<Label>("label").text = DecisionCardPresentation.DisplayLabel(model);
-            chip.Q<Label>("value").text = model.Value;
-            chip.tooltip = DecisionCardPresentation.Tooltip(model);
-            DecisionCardPresentation.ApplyFact(chip, model);
-            chip.EnableInClassList("wb-mini-stat--good", models[i].Tone == "good");
-            chip.EnableInClassList("wb-mini-stat--warn", models[i].Tone == "warn");
-            chip.EnableInClassList("wb-mini-stat--bad", models[i].Tone == "bad");
-        }
+            ((MechanicStatTile)_stats.ElementAt(i)).Bind(models[i]);
     }
 
     private static string StatSemantic(string label)

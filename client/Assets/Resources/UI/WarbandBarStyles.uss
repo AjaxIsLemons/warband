@@ -411,6 +411,12 @@
     bottom: 142px;
 }
 
+.shell-has-warband-bar .loadout-scrim {
+    bottom: 10px;
+    padding-bottom: 122px;
+    background-color: rgb(2, 5, 9);
+}
+
 .shell-has-warband-bar .shell-screen .feedback-label {
     bottom: 150px;
 }
@@ -463,6 +469,11 @@
     display: none;
 }
 
+.layout--phone.shell-has-warband-bar .loadout-scrim {
+    bottom: 4px;
+    padding-bottom: 116px;
+}
+
 .layout--phone .warband-hero {
     width: 74px;
     min-width: 74px;
@@ -476,4 +487,234 @@
 
 .motion--reduced .warband-hero {
     transition-duration: 0ms;
+}
+
+/* UI hierarchy slice: the shell defaults to a quiet fielded-party strip. Capacity,
+   reserves, and the Armory return only in Deployment or the full Loadout Table. */
+.warband-shelf {
+    display: none;
+}
+
+.shell-has-warband-bar .hub-safe-frame {
+    bottom: 96px;
+}
+
+.warband-bar--compact {
+    height: 96px;
+    min-height: 96px;
+    justify-content: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(5, 9, 15, 0.975);
+    border-top-color: rgba(217, 164, 58, 0.66);
+}
+
+.warband-bar--compact .warband-bar__scroll {
+    width: 620px;
+    max-width: 62%;
+    height: 82px;
+    min-height: 82px;
+    flex-grow: 0;
+    margin-left: 0;
+    margin-right: 18px;
+}
+
+.warband-bar--compact .warband-bar__strip,
+.warband-bar--compact .warband-bar__slots {
+    height: 80px;
+}
+
+.warband-bar--compact .warband-bar__identity {
+    width: 220px;
+    min-width: 220px;
+    height: 78px;
+    margin-right: 0;
+    padding-left: 18px;
+    padding-right: 18px;
+    align-items: center;
+    justify-content: center;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.68);
+    border-right-color: rgba(217, 164, 58, 0.68);
+    border-top-color: rgba(217, 164, 58, 0.68);
+    border-bottom-color: rgba(217, 164, 58, 0.68);
+}
+
+.warband-bar--compact .warband-bar__eyebrow,
+.warband-bar--compact .warband-bar__capacity {
+    display: none;
+}
+
+.warband-bar--compact .warband-bar__manage {
+    margin-top: 0;
+    color: rgb(222, 226, 233);
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    -unity-text-align: middle-center;
+}
+
+.warband-bar--compact .warband-bar__armory {
+    width: 150px;
+    min-width: 150px;
+    height: 78px;
+    margin-left: 14px;
+}
+
+.warband-bar--compact .warband-hero {
+    width: 184px;
+    min-width: 184px;
+    height: 76px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.warband-bar--compact .warband-hero__portrait {
+    left: 3px;
+    right: auto;
+    top: 3px;
+    bottom: 3px;
+    width: 78px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.warband-bar--compact .warband-hero__rank {
+    left: 6px;
+    top: 6px;
+    width: 22px;
+    height: 22px;
+    padding-top: 2px;
+    font-size: 11px;
+}
+
+.warband-bar--compact .warband-hero__class {
+    left: 88px;
+    right: 6px;
+    top: 12px;
+    bottom: auto;
+    height: 18px;
+    padding-top: 1px;
+    color: rgb(231, 235, 241);
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    -unity-text-align: middle-left;
+}
+
+.warband-bar--compact .warband-hero__specs {
+    left: 65px;
+    right: auto;
+    top: 4px;
+}
+
+.warband-bar--compact .warband-hero__gear {
+    left: 86px;
+    right: 5px;
+    bottom: 7px;
+    height: 28px;
+    justify-content: flex-start;
+}
+
+.warband-bar--compact .warband-gear {
+    width: 31px;
+    min-width: 31px;
+    height: 28px;
+    margin-left: 2px;
+    margin-right: 3px;
+}
+
+.warband-bar--compact .warband-hero--selected {
+    background-color: rgba(42, 32, 18, 0.98);
+    border-left-color: rgb(217, 164, 58);
+    border-right-color: rgb(217, 164, 58);
+    border-top-color: rgb(217, 164, 58);
+    border-bottom-color: rgb(217, 164, 58);
+}
+
+.warband-bar--compact .warband-hero:focus {
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+}
+
+.layout--compact .warband-bar--compact .warband-bar__scroll {
+    width: 530px;
+    max-width: 58%;
+}
+
+.layout--compact .warband-bar--compact .warband-bar__identity {
+    width: 196px;
+    min-width: 196px;
+}
+
+.layout--compact .warband-bar--compact .warband-hero {
+    width: 164px;
+    min-width: 164px;
+}
+
+.layout--phone.shell-has-warband-bar .hub-safe-frame {
+    bottom: 88px;
+}
+
+.layout--phone .warband-bar--compact {
+    height: 88px;
+    min-height: 88px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.layout--phone .warband-bar--compact .warband-bar__scroll {
+    width: auto;
+    max-width: none;
+    height: 76px;
+    min-height: 76px;
+    flex-grow: 1;
+    margin-right: 7px;
+}
+
+.layout--phone .warband-bar--compact .warband-bar__strip,
+.layout--phone .warband-bar--compact .warband-bar__slots {
+    height: 74px;
+}
+
+.layout--phone .warband-bar--compact .warband-bar__identity {
+    width: 132px;
+    min-width: 132px;
+    height: 70px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.layout--phone .warband-bar--compact .warband-bar__manage {
+    font-size: 10px;
+}
+
+.layout--phone .warband-bar--compact .warband-hero {
+    width: 142px;
+    min-width: 142px;
+    height: 70px;
+    min-height: 70px;
+}
+
+.layout--phone .warband-bar--compact .warband-hero__portrait {
+    width: 66px;
+}
+
+.layout--phone .warband-bar--compact .warband-hero__class {
+    left: 75px;
+    font-size: 9px;
+}
+
+.layout--phone .warband-bar--compact .warband-hero__gear {
+    left: 73px;
 }

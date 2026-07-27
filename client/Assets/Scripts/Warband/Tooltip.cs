@@ -28,8 +28,9 @@ public class Tooltip : MonoBehaviour
 
     private UIDocument _doc;
     private ReplayPlayer _player;
-    private VisualElement _card, _chip, _statusBox;
-    private Label _name, _chipLabel, _hp, _shield, _mana;
+    private VisualElement _card, _chip, _statusBox, _stats;
+    private Label _name, _chipLabel;
+    private MechanicStatTile _hp, _shield, _mana;
 
     private void OnEnable()
     {
@@ -51,12 +52,14 @@ public class Tooltip : MonoBehaviour
         var root = _doc.rootVisualElement;
         root.Clear();
         root.pickingMode = PickingMode.Ignore;
+        var mechanics = Resources.Load<StyleSheet>("UI/MechanicPresentationStyles");
+        if (mechanics != null) root.styleSheets.Add(mechanics);
 
         _card = new VisualElement();
         _card.pickingMode = PickingMode.Ignore;
         var s = _card.style;
         s.position = Position.Absolute;
-        s.minWidth = 250;
+        s.minWidth = 330;
         s.paddingLeft = s.paddingRight = 13; s.paddingTop = s.paddingBottom = 11;
         s.backgroundColor = PanelBg;
         s.color = TextCol;
@@ -84,9 +87,15 @@ public class Tooltip : MonoBehaviour
         header.Add(_name); header.Add(_chip);
         _card.Add(header);
 
-        _hp = StatLine(); _card.Add(_hp);
-        _shield = StatLine(); _card.Add(_shield);
-        _mana = StatLine(); _card.Add(_mana);
+        _stats = new VisualElement();
+        _stats.AddToClassList("combat-tooltip-stats");
+        _hp = new MechanicStatTile("combat-tooltip-stat", "combat-tooltip-stat");
+        _shield = new MechanicStatTile("combat-tooltip-stat", "combat-tooltip-stat");
+        _mana = new MechanicStatTile("combat-tooltip-stat", "combat-tooltip-stat");
+        _stats.Add(_hp);
+        _stats.Add(_shield);
+        _stats.Add(_mana);
+        _card.Add(_stats);
         _statusBox = new VisualElement();
         _statusBox.style.marginTop = 2;
         _card.Add(_statusBox);
@@ -94,13 +103,6 @@ public class Tooltip : MonoBehaviour
         root.Add(_card);
         _card.Query<VisualElement>().ForEach(element =>
             element.pickingMode = PickingMode.Ignore);
-    }
-
-    private static Label StatLine()
-    {
-        var l = new Label("");
-        l.style.fontSize = 15; l.style.marginTop = 3;
-        return l;
     }
 
     private void Update()
@@ -130,20 +132,26 @@ public class Tooltip : MonoBehaviour
         _chipLabel.text = blue ? "BLUE" : "RED";
         _chip.style.backgroundColor = blue ? TeamBlue : TeamRed;
 
-        _hp.text = $"HP  {u.Hp} / {u.MaxHp}";
+        _hp.Bind(new StatChipModel("HEALTH", $"{u.Hp} / {u.MaxHp}",
+            u.Hp * 3 <= u.MaxHp ? "bad" : "", PresentationFactId.Hp));
         bool hasShield = u.Shield > 0;
         _shield.style.display = hasShield ? DisplayStyle.Flex : DisplayStyle.None;
-        if (hasShield) _shield.text = $"Shield  {u.Shield}";
+        if (hasShield)
+            _shield.Bind(new StatChipModel("PROTECTION", u.Shield.ToString(), "good",
+                PresentationFactId.Protection));
         bool caster = u.ManaMax > 0;
         _mana.style.display = caster ? DisplayStyle.Flex : DisplayStyle.None;
-        if (caster) _mana.text = $"Mana  {u.Mana} / {u.ManaMax}";
+        if (caster)
+            _mana.Bind(new StatChipModel("MANA", $"{u.Mana} / {u.ManaMax}", "",
+                PresentationFactId.ManaThreshold));
 
         _statusBox.Clear();
         foreach (var st in u.Statuses)
         {
-            var l = new Label($"{st.Kind} ×{st.Mag}");
+            var l = new Label();
             l.pickingMode = PickingMode.Ignore;
             l.style.fontSize = 13; l.style.color = Muted;
+            MechanicPresentation.BindInline(l, $"{st.Kind} ×{st.Mag}");
             _statusBox.Add(l);
         }
     }

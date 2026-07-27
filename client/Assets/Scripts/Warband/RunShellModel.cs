@@ -146,10 +146,12 @@ internal enum PresentationFactId
     Unknown,
     Hp,
     BasicPower,
+    Restoration,
     Reach,
     Cadence,
     ManaThreshold,
     ManaPerSwing,
+    Protection,
     CritChance,
     Cleave,
     Rank,
@@ -199,6 +201,7 @@ internal enum UiGlyphId
     Haste,
     Check,
     Lock,
+    Hourstone,
 }
 
 internal enum MusterFactKind
@@ -316,6 +319,8 @@ internal sealed class MarketOfferCardModel
     public string ExactRule = "";
     public string Qualifier = "";        // e.g. optional crit, kept out of the metric grid
     public string Price = "";
+    public int CurrencyCost = -1;
+    public int CurrencyBalance = -1;
     public string EconomyState = "";
     public bool Selected;
     public bool Affordable = true;
@@ -344,6 +349,7 @@ internal sealed class CardModel
     public string Accent = "";
     public string Rank = "";
     public string Price = "";
+    public int CurrencyCost = -1;
     public string Weapon = "";
     public string AbilityIcon = "";
     public string AbilityTrigger = "";
@@ -392,6 +398,9 @@ internal sealed class InspectorActionModel
 {
     public HallActionId Id;
     public string Label = "";
+    public int CurrencyCost = -1;
+    public int CurrencyBalance = -1;
+    public bool CurrencyGain;
     public bool Primary;
     public bool Enabled = true;
     public string DisabledReason = "";
@@ -459,6 +468,8 @@ internal sealed class InspectorModel
     public string WeaponName = "";
     public string WeaponSummary = "";
     public string Price = "";
+    public int CurrencyCost = -1;
+    public int CurrencyBalance = -1;
     public List<StatChipModel> Stats = new List<StatChipModel>();
     public List<string> Tags = new List<string>();
     public List<string> KeywordNotes = new List<string>();
@@ -599,6 +610,7 @@ internal sealed class WarbandHeroModel
 internal sealed class WarbandBarModel
 {
     public WarbandBarMode Mode;
+    public bool Compact;
     public int FieldCount;
     public int FieldCapacity;
     public int MaxFieldCapacity;
@@ -643,6 +655,8 @@ internal sealed class PlanningModel
     public PlanningTab ActiveTab;
     public bool CanReroll;
     public string RerollLabel = "";
+    public int RerollCost = -1;
+    public int CurrencyBalance;
     public bool CanCommit;
     public string CommitLabel = "";
     public bool ShowRisk;
@@ -677,6 +691,7 @@ internal sealed class HallStationModel
     public string Eyebrow = "";
     public string Name = "";
     public string Status = "";
+    public string Action = "";
     public string Sigil = "";
     public bool Attention;
     public bool Enabled = true;

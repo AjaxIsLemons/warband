@@ -16,7 +16,10 @@ internal sealed class InspectorPanel
     private readonly Label _eyebrow;
     private readonly Label _title;
     private readonly Label _subtitle;
+    private readonly VisualElement _economy;
     private readonly Label _price;
+    private readonly HourstoneAmount _currencyPrice;
+    private readonly HourstoneBalanceComparison _balance;
     private readonly VisualElement _stats;
     private readonly VisualElement _sections;
     private readonly VisualElement _tags;
@@ -46,7 +49,12 @@ internal sealed class InspectorPanel
         _eyebrow = Required<Label>(Root, "eyebrow");
         _title = Required<Label>(Root, "title");
         _subtitle = Required<Label>(Root, "subtitle");
+        _economy = Required<VisualElement>(Root, "economy");
         _price = Required<Label>(Root, "price");
+        _currencyPrice = new HourstoneAmount(0, "wb-inspector__currency-price");
+        _balance = new HourstoneBalanceComparison();
+        _economy.Add(_currencyPrice);
+        _economy.Add(_balance);
         _stats = Required<VisualElement>(Root, "stats");
         _sections = Required<VisualElement>(Root, "sections");
         _tags = Required<VisualElement>(Root, "tags");
@@ -70,6 +78,10 @@ internal sealed class InspectorPanel
         _title.text = model.Title;
         _subtitle.text = model.Subtitle;
         _price.text = model.Price;
+        _currencyPrice.Bind(model.CurrencyCost,
+            model.CurrencyBalance < 0 || model.CurrencyBalance >= model.CurrencyCost);
+        if (model.CurrencyCost >= 0)
+            _balance.Bind(model.CurrencyBalance, model.CurrencyCost);
         _portraitFallback.text = model.PortraitFallback;
         WarbandCard.SetAccent(Root, model.Accent);
 
@@ -80,30 +92,18 @@ internal sealed class InspectorPanel
             ? new StyleBackground(StyleKeyword.None)
             : new StyleBackground(Background.FromTexture2D(texture));
         SetDisplayed(_portraitFallback, texture == null);
-        SetDisplayed(_price, !string.IsNullOrEmpty(model.Price));
+        SetDisplayed(_price, model.CurrencyCost < 0 && !string.IsNullOrEmpty(model.Price));
+        SetDisplayed(_currencyPrice, model.CurrencyCost >= 0);
+        SetDisplayed(_balance, model.CurrencyCost >= 0 && model.CurrencyBalance >= 0);
+        SetDisplayed(_economy, model.CurrencyCost >= 0 || !string.IsNullOrEmpty(model.Price));
         BindSections(model);
 
         _stats.Clear();
         foreach (var stat in model.Stats)
         {
-            var chip = new VisualElement();
-            chip.AddToClassList("wb-inspector-stat");
-            DecisionFactDefinition definition = DecisionCardPresentation.Fact(stat);
-            DecisionCardPresentation.ApplyFact(chip, stat);
-            chip.tooltip = DecisionCardPresentation.Tooltip(stat);
-            var icon = new WarbandGlyph(definition.Glyph);
-            icon.SetColor(definition.Color);
-            icon.AddToClassList("wb-inspector-stat__icon");
-            var label = new Label(DecisionCardPresentation.DisplayLabel(stat));
-            label.AddToClassList("wb-inspector-stat__label");
-            var value = new Label(stat.Value);
-            value.AddToClassList("wb-inspector-stat__value");
-            chip.EnableInClassList("wb-inspector-stat--good", stat.Tone == "good");
-            chip.EnableInClassList("wb-inspector-stat--warn", stat.Tone == "warn");
-            chip.EnableInClassList("wb-inspector-stat--bad", stat.Tone == "bad");
-            chip.Add(icon);
-            chip.Add(label);
-            chip.Add(value);
+            var chip = new MechanicStatTile(
+                "wb-inspector-stat", "wb-inspector-stat");
+            chip.Bind(stat);
             _stats.Add(chip);
         }
 
@@ -116,8 +116,9 @@ internal sealed class InspectorPanel
         }
         foreach (var note in model.KeywordNotes)
         {
-            var label = new Label(note);
+            var label = new Label();
             label.AddToClassList("wb-keyword-note");
+            MechanicPresentation.BindInline(label, note);
             _tags.Add(label);
         }
         SetDisplayed(_tags, model.Tags.Count > 0 || model.KeywordNotes.Count > 0);
@@ -126,11 +127,16 @@ internal sealed class InspectorPanel
         foreach (var action in model.Actions)
         {
             HallActionId id = action.Id;
-            var button = new Button(() => _onAction?.Invoke(id)) { text = action.Label };
+            var button = new Button(() => _onAction?.Invoke(id));
             button.AddToClassList("btn");
             button.AddToClassList(action.Primary ? "btn--primary" : "btn--ghost");
+            if (action.CurrencyCost >= 0)
+                MechanicPresentation.BindCurrencyButton(
+                    button, action.Label, action.CurrencyCost, action.CurrencyGain);
+            else
+                button.text = action.Label;
             button.SetEnabled(action.Enabled);
-            button.tooltip = action.Enabled ? "" : action.DisabledReason;
+            if (!action.Enabled) button.tooltip = action.DisabledReason;
             _actions.Add(button);
         }
     }
@@ -182,8 +188,9 @@ internal sealed class InspectorPanel
         copy.AddToClassList("wb-inspector__line-body");
         var title = new Label(section.Name);
         title.AddToClassList("wb-inspector__line-title");
-        var summary = new Label(section.Summary);
+        var summary = new Label();
         summary.AddToClassList("wb-inspector__line-copy");
+        MechanicPresentation.BindInline(summary, section.Summary);
         copy.Add(title);
         copy.Add(summary);
         line.Add(icon);
@@ -199,8 +206,9 @@ internal sealed class InspectorPanel
         change.AddToClassList("wb-choice-preview__change");
         var name = new Label(choice.Name);
         name.AddToClassList("wb-choice-preview__name");
-        var rule = new Label(choice.Rule);
+        var rule = new Label();
         rule.AddToClassList("wb-choice-preview__rule");
+        MechanicPresentation.BindInline(rule, choice.Rule);
         option.Add(change);
         option.Add(name);
         option.Add(rule);
@@ -230,8 +238,9 @@ internal sealed class InspectorPanel
         var copy = new VisualElement();
         var title = new Label(section.Name);
         title.AddToClassList("wb-inspector__line-title");
-        var summary = new Label(section.Summary);
+        var summary = new Label();
         summary.AddToClassList("wb-inspector__line-copy");
+        MechanicPresentation.BindInline(summary, section.Summary);
         copy.Add(title);
         copy.Add(summary);
         root.Add(sockets);
@@ -287,11 +296,17 @@ internal sealed class InspectorPanel
     {
         var row = new VisualElement();
         row.AddToClassList("wb-comparison");
-        DecisionCardPresentation.ApplyFact(row,
-            DecisionCardPresentation.FactId(comparison.Label));
+        PresentationFactId id = DecisionCardPresentation.FactId(comparison.Label);
+        DecisionCardPresentation.ApplyFact(row, id);
+        DecisionFactDefinition definition = DecisionCardPresentation.Fact(id);
         row.EnableInClassList("wb-comparison--good", comparison.Tone == "good");
         row.EnableInClassList("wb-comparison--bad", comparison.Tone == "bad");
-        var label = new Label(comparison.Label);
+        var icon = new WarbandGlyph(definition.Glyph);
+        icon.SetColor(definition.Color);
+        icon.AddToClassList("wb-comparison__icon");
+        var label = new Label(definition.Label.Length > 0
+            ? definition.Label
+            : comparison.Label);
         label.AddToClassList("wb-comparison__label");
         var before = new Label(comparison.Before);
         before.AddToClassList("wb-comparison__before");
@@ -299,6 +314,7 @@ internal sealed class InspectorPanel
         arrow.AddToClassList("wb-comparison__arrow");
         var after = new Label(comparison.After);
         after.AddToClassList("wb-comparison__after");
+        row.Add(icon);
         row.Add(label);
         row.Add(before);
         row.Add(arrow);

@@ -126,14 +126,14 @@ public static class EncounterProbe
             report.AppendLine();
             report.AppendLine($"Debuts in act {row.DebutAct} — {row.Bodies}.");
             report.AppendLine();
-            report.AppendLine("| act | " + string.Join(" | ", ProbeParties.Axes.Select(a => a.Axis)) +
+            report.AppendLine("| act | heroes | " + string.Join(" | ", ProbeParties.Axes.Select(a => a.Axis)) +
                               " | axes | rule |");
-            report.AppendLine("|---|" + string.Concat(ProbeParties.Axes.Select(_ => "---|")) + "---|---|");
+            report.AppendLine("|---|---|" + string.Concat(ProbeParties.Axes.Select(_ => "---|")) + "---|---|");
             for (int act = 1; act <= 3; act++)
             {
                 var axes = row.ByAct[act - 1];
                 var (passing, _, _, _) = ProbeParties.Summarise(axes);
-                report.AppendLine($"| {act} | " +
+                report.AppendLine($"| {act} | {ProbeParties.SizeAt(act)} | " +
                     string.Join(" | ", axes.Select(a => $"{a.BestWin:F0} ({a.Spread:F0})")) +
                     $" | {passing.Count}/{axes.Count} | {axes.Average(a => a.RuleFiredPct):F0}% |");
             }
@@ -232,7 +232,9 @@ public static class EncounterProbe
         "ninth-bell" => result.Events.Any(e => e.Kind == EventKind.Cast && enemyIds.Contains(e.Source)),
         // The ambush is real if the stalkers actually leapt.
         "the-drop" => result.Events.Any(e => e.Kind == EventKind.Leap && enemyIds.Contains(e.Source)),
-        // The swarm has no rule to fire — it is honest about that.
+        // The procession is real if the death-fed ritual actually completed a cast.
+        "long-procession" => result.Events.Any(e => e.Kind == EventKind.Cast && enemyIds.Contains(e.Source)),
+        // The swarm and the lane have no rule to fire — they are honest about that.
         _ => true,
     };
 }

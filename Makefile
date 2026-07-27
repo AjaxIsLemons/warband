@@ -2,7 +2,7 @@
 # The sim is authored + tested here; the Unity client is driven over the remote-dev
 # pipeline (Syncthing + official Unity MCP relay over SSH). See CLAUDE.md + docs/vault/.
 
-.PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage \
+.PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage baseline enc boss oath \
         content-version ship ship-preflight release-status launcher-release site-deploy
 
 WIN_SSH       ?= jwjwi@192.168.1.102
@@ -34,6 +34,15 @@ scenarios: ## Generate the data-driven scenario replay set (scenarios.json → r
 
 coverage: ## Event-signature coverage of one replay: make coverage F=client/Assets/StreamingAssets/replays/castfest.bytes
 	@dotnet run --project sim/Warband.Viewer -c Release -- --coverage $(F)
+
+baseline: ## Regenerate the committed balance baseline — then read `git diff` to see what your change did
+	@dotnet run --project sim/Warband.Sweep -c Release -- --baseline docs/vault/Projects/balance-baseline.md
+
+enc: ## Encounter probe: 4 answer axes x 6 formations over the authored node pool (markdown on stdout)
+	@dotnet run --project sim/Warband.Sweep -c Release -- --enc
+
+boss: ## Boss probe: how many kinds of strength can pass each act boss (markdown on stdout)
+	@dotnet run --project sim/Warband.Sweep -c Release -- --boss
 
 oath: ## The Last Oath what-if probe: does the Bond pose a decision? (markdown on stdout)
 	@dotnet run --project sim/Warband.Sweep -c Release -- --oath

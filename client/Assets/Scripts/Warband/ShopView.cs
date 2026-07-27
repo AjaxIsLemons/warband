@@ -233,9 +233,9 @@ internal sealed class ShopView : IRunScreenView
         _specRank.text = spec.RankLabel;
         _specHero.text = spec.HeroName;
         _optionAName.text = spec.OptionAName;
-        _optionAText.text = spec.OptionAText;
+        MechanicPresentation.BindInline(_optionAText, spec.OptionAText);
         _optionBName.text = spec.OptionBName;
-        _optionBText.text = spec.OptionBText;
+        MechanicPresentation.BindInline(_optionBText, spec.OptionBText);
     }
 
     private void RebuildOffers(List<ShopOfferModel> offers)
@@ -405,13 +405,8 @@ internal sealed class ShopView : IRunScreenView
 
     private static VisualElement BuildStatChip(StatChipModel stat)
     {
-        var chip = new VisualElement();
-        chip.AddToClassList("stat-chip");
-        chip.EnableInClassList("stat-chip--good", stat.Tone == "good");
-        chip.EnableInClassList("stat-chip--bad", stat.Tone == "bad");
-        chip.EnableInClassList("stat-chip--warn", stat.Tone == "warn");
-        chip.Add(MakeLabel("stat-chip__label", stat.Label));
-        chip.Add(MakeLabel("stat-chip__value", stat.Value));
+        var chip = new MechanicStatTile("stat-chip", "stat-chip");
+        chip.Bind(stat);
         return chip;
     }
 

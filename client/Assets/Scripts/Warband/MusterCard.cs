@@ -129,7 +129,7 @@ internal sealed class MusterCard
             Name.text = model.Name;
             KeywordIcon.Set(model.KeywordIcon);
             KeywordText.text = model.Keyword.ToUpperInvariant();
-            Context.text = model.Context;
+            MechanicPresentation.BindInline(Context, model.Context);
             CostValue.text = model.ManaCost >= 0 ? model.ManaCost.ToString() : "";
             Root.tooltip = model.Name + " · " + model.ExactRule +
                 (string.IsNullOrWhiteSpace(model.AdvancedRule)
@@ -487,11 +487,11 @@ internal sealed class MusterCard
             _lensEyebrow.text = "STARTING KIT";
             _lensTitle.text = _model.Name;
             _lensContext.text = _model.Role.ToUpperInvariant() + " · EXACT RULES";
-            _lensBody.text =
+            MechanicPresentation.BindInline(_lensBody,
                 $"{BasicScanLine()}\n\n" +
                 $"{_model.Signature.Name.ToUpperInvariant()} · " +
                 $"{SignatureCostLine(_model.Signature)}{_model.Signature.ExactRule}\n\n" +
-                $"{_model.Passive.Name.ToUpperInvariant()} · {_model.Passive.ExactRule}";
+                $"{_model.Passive.Name.ToUpperInvariant()} · {_model.Passive.ExactRule}");
             AddKeyword(_model.Signature.Keyword, _model.Signature.KeywordIcon);
             AddKeyword(_model.Passive.Keyword, _model.Passive.KeywordIcon);
             return;
@@ -507,7 +507,7 @@ internal sealed class MusterCard
         _lensEyebrow.text = "COMBAT STAT";
         _lensTitle.text = fact.TooltipTitle;
         _lensContext.text = fact.AccessibleLabel.ToUpperInvariant();
-        _lensBody.text = fact.TooltipBody;
+        MechanicPresentation.BindInline(_lensBody, fact.TooltipBody);
     }
 
     private void PopulateRuleLens(MusterRuleModel rule)
@@ -519,10 +519,10 @@ internal sealed class MusterCard
             : rule.Keyword.ToUpperInvariant() + " · " + rule.Context;
         if (rule.Kind == MusterRuleKind.Signature && rule.ManaCost >= 0)
             _lensContext.text = $"{rule.ManaCost} MANA · {rule.Keyword.ToUpperInvariant()}";
-        _lensBody.text = rule.ExactRule +
+        MechanicPresentation.BindInline(_lensBody, rule.ExactRule +
             (string.IsNullOrWhiteSpace(rule.AdvancedRule)
                 ? ""
-                : "\n\nADVANCED · " + rule.AdvancedRule);
+                : "\n\nADVANCED · " + rule.AdvancedRule));
         AddKeyword(rule.Keyword, rule.KeywordIcon);
         foreach (string note in rule.KeywordNotes) AddKeyword(note, UiGlyphId.Unknown);
     }

@@ -171,26 +171,11 @@ internal sealed class RunOverView : IRunScreenView
             row.RemoveAt(row.childCount - 1);
 
         while (row.childCount < chips.Count)
-        {
-            var chip = new VisualElement();
-            chip.AddToClassList("stat-chip");
-            var label = new Label();
-            label.AddToClassList("stat-chip__label");
-            chip.Add(label);
-            var value = new Label();
-            value.AddToClassList("stat-chip__value");
-            chip.Add(value);
-            row.Add(chip);
-        }
+            row.Add(new MechanicStatTile("stat-chip", "stat-chip"));
 
         for (int i = 0; i < chips.Count; i++)
         {
-            VisualElement chip = row.ElementAt(i);
-            ((Label)chip.ElementAt(0)).text = chips[i].Label;
-            ((Label)chip.ElementAt(1)).text = chips[i].Value;
-            chip.EnableInClassList("stat-chip--good", chips[i].Tone == "good");
-            chip.EnableInClassList("stat-chip--bad", chips[i].Tone == "bad");
-            chip.EnableInClassList("stat-chip--warn", chips[i].Tone == "warn");
+            ((MechanicStatTile)row.ElementAt(i)).Bind(chips[i]);
         }
     }
 

@@ -183,6 +183,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly Label _stationEyebrow;
     private readonly Label _overviewCopy;
     private readonly Label _recommendation;
+    private readonly Label _breachAction;
     private readonly Label _tabNote;
     private readonly Label _feedback;
     private readonly Label _empty;
@@ -297,6 +298,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _stationEyebrow = Required<Label>(_root, "station-eyebrow");
         _overviewCopy = Required<Label>(_root, "overview-copy");
         _recommendation = Required<Label>(_root, "recommendation");
+        _breachAction = Required<Label>(_root, "breach-action");
         _tabNote = Required<Label>(_root, "tab-note");
         _feedback = Required<Label>(_root, "feedback");
         _empty = Required<Label>(_root, "empty");
@@ -535,12 +537,15 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             Required<Label>(_root, prefix + "-eyebrow").text = station.Eyebrow;
             Required<Label>(_root, prefix + "-name").text = station.Name;
             Required<Label>(_root, prefix + "-status").text = station.Status;
+            if (station.Station == HallStation.Breach)
+                _breachAction.text = station.Action;
             button.SetEnabled(station.Enabled);
             button.EnableInClassList("hub-station--attention", station.Attention);
             button.EnableInClassList("hub-station--recommended",
                 station.Station == recommended);
             var attention = Required<Label>(_root, prefix + "-attention");
-            attention.style.display = station.Attention || station.Station == recommended
+            attention.style.display = station.Station != HallStation.Breach &&
+                                      (station.Attention || station.Station == recommended)
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
             attention.text = station.Station == recommended ? "NEXT" : "NEW";
@@ -633,7 +638,11 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         SetDisplayed(_secondaryLabel, secondary.Count > 0);
         BindMarketPage(model);
 
-        _secondary.text = model.RerollLabel;
+        if (model.RerollCost >= 0)
+            MechanicPresentation.BindCurrencyButton(
+                _secondary, model.RerollLabel, model.RerollCost);
+        else
+            _secondary.text = model.RerollLabel;
         _secondary.SetEnabled(model.CanReroll);
         SetDisplayed(_secondary, model.ActiveStation == HallStation.Market);
         _continue.text = model.CommitLabel;
@@ -928,8 +937,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         if (model.ActiveStation == HallStation.Market)
         {
             CardModel selected = FindSelected(model.Market);
-            if (selected != null && !string.IsNullOrEmpty(selected.Price))
-                return selected.Title + "  ·  " + selected.Price;
+            if (selected != null)
+                return selected.Title + " selected for inspection";
             return $"{model.Market.Count} offer{(model.Market.Count == 1 ? "" : "s")} visible";
         }
         if (model.ActiveStation == HallStation.Armory)
@@ -990,7 +999,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
                         model.SpecChoice.OptionAName + "|" + model.SpecChoice.OptionBName;
             _choiceEyebrow.text = model.SpecChoice.RankLabel + " AWAKENING";
             _choiceTitle.text = model.SpecChoice.HeroName;
-            _choiceCopy.text = "Choose one path before making another management decision.";
+            MechanicPresentation.BindInline(_choiceCopy,
+                "Choose one path before making another management decision.");
             reveals.Add(AddChoice(model.SpecChoice.OptionAName, model.SpecChoice.OptionAText,
                 () => _actions.ChooseSpec?.Invoke(0), model.SpecChoice.OptionAChange,
                 model.SpecChoice.OptionAComparisons));
@@ -1006,7 +1016,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             _choiceTitle.text = model.BeatKind == PlanningBeat.BossReward
                 ? "Bind one Inscription"
                 : "Choose what this quiet Hour leaves behind";
-            _choiceCopy.text = model.Brief;
+            MechanicPresentation.BindInline(_choiceCopy, model.Brief);
             foreach (var choice in model.Interlude)
             {
                 int path = choice.Path;
@@ -1042,8 +1052,9 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         }
         var name = new Label(title);
         name.AddToClassList("management-choice__title");
-        var rule = new Label(copy);
+        var rule = new Label();
         rule.AddToClassList("management-choice__copy");
+        MechanicPresentation.BindInline(rule, copy);
         button.Add(name);
         button.Add(rule);
         if (comparisons != null)
@@ -1051,12 +1062,21 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             {
                 var row = new VisualElement();
                 row.AddToClassList("management-choice__delta");
-                DecisionCardPresentation.ApplyFact(row,
-                    DecisionCardPresentation.FactId(comparison.Label));
-                var label = new Label(comparison.Label);
+                PresentationFactId id =
+                    DecisionCardPresentation.FactId(comparison.Label);
+                DecisionFactDefinition definition =
+                    DecisionCardPresentation.Fact(id);
+                DecisionCardPresentation.ApplyFact(row, id);
+                var icon = new WarbandGlyph(definition.Glyph);
+                icon.SetColor(definition.Color);
+                icon.AddToClassList("management-choice__delta-icon");
+                var label = new Label(definition.Label.Length > 0
+                    ? definition.Label
+                    : comparison.Label);
                 label.AddToClassList("management-choice__delta-label");
                 var value = new Label(comparison.Before + "  →  " + comparison.After);
                 value.AddToClassList("management-choice__delta-value");
+                row.Add(icon);
                 row.Add(label);
                 row.Add(value);
                 button.Add(row);
@@ -1209,9 +1229,13 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             VisualElement commerce = card.Q<VisualElement>("commerce");
             VisualElement qualifier = card.Q<VisualElement>("qualifier");
             Label title = card.Q<Label>("title");
-            Label price = card.Q<Label>("price");
+            VisualElement price =
+                card.Q<VisualElement>(className: "currency-amount");
+            Label priceValue =
+                price?.Q<Label>(className: "currency-amount__value");
             if (main == null || read == null || commerce == null ||
-                qualifier == null || title == null || price == null)
+                qualifier == null || title == null || price == null ||
+                priceValue == null)
                 return false;
 
             // Stock cards are intentionally recognition + price only. Exact rules, metrics, and
@@ -1225,7 +1249,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             if (commerce.worldBound.yMax > card.worldBound.yMax + 0.75f)
                 return false;
             if (title.resolvedStyle.fontSize < 17.5f ||
-                price.resolvedStyle.fontSize < 18f)
+                priceValue.resolvedStyle.fontSize < 18f)
                 return false;
             if (title.worldBound.xMin < card.worldBound.xMin - 0.75f ||
                 title.worldBound.xMax > card.worldBound.xMax + 0.75f)

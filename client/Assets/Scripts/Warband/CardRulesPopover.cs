@@ -56,27 +56,29 @@ internal sealed class CardRulesPopover
         if (model == null || anchor == null) return;
         _eyebrow.text = "RULES AT A GLANCE";
         _title.text = model.Title;
-        _weapon.text = string.IsNullOrEmpty(model.WeaponSummary)
-            ? model.Weapon
-            : $"BASIC ATTACK · {model.WeaponSummary}";
+        MechanicPresentation.BindInline(_weapon,
+            string.IsNullOrEmpty(model.WeaponSummary)
+                ? model.Weapon
+                : $"BASIC ATTACK · {model.WeaponSummary}");
         SetDisplayed(_weapon, !string.IsNullOrEmpty(_weapon.text));
 
         _signatureTrigger.text = string.IsNullOrEmpty(model.AbilityTrigger)
             ? "SIGNATURE"
             : model.AbilityTrigger;
         _signatureName.text = model.AbilityName;
-        _signatureRule.text = model.AbilitySummary;
+        MechanicPresentation.BindInline(_signatureRule, model.AbilitySummary);
         _passiveTrigger.text = string.IsNullOrEmpty(model.PassiveTrigger)
             ? "PASSIVE"
             : model.PassiveTrigger;
         _passiveName.text = model.PassiveName;
-        _passiveRule.text = model.PassiveSummary;
+        MechanicPresentation.BindInline(_passiveRule, model.PassiveSummary);
 
         _keywords.Clear();
         foreach (var note in model.KeywordNotes)
         {
-            var label = new Label(note);
+            var label = new Label();
             label.AddToClassList("rules-popover__keyword");
+            MechanicPresentation.BindInline(label, note);
             label.pickingMode = PickingMode.Ignore;
             _keywords.Add(label);
         }

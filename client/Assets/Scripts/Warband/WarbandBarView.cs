@@ -31,6 +31,7 @@ internal sealed class WarbandBarView : IDisposable
         public readonly VisualElement Trinket = new VisualElement();
         public readonly Label TrinketIcon = new Label();
         public WarbandHeroModel Model = new WarbandHeroModel();
+        public string SpecSignature = "";
 
         public HeroTile()
         {
@@ -78,6 +79,7 @@ internal sealed class WarbandBarView : IDisposable
     private readonly VisualElement _shellRoot;
     private readonly VisualElement _root;
     private readonly Button _manage;
+    private readonly Label _manageLabel;
     private readonly Label _capacity;
     private readonly ScrollView _scroll;
     private readonly VisualElement _field;
@@ -124,11 +126,11 @@ internal sealed class WarbandBarView : IDisposable
         title.AddToClassList("warband-bar__eyebrow");
         _capacity = new Label();
         _capacity.AddToClassList("warband-bar__capacity");
-        var manageLabel = new Label("MANAGE  ⌃");
-        manageLabel.AddToClassList("warband-bar__manage");
+        _manageLabel = new Label("MANAGE WARBAND");
+        _manageLabel.AddToClassList("warband-bar__manage");
         _manage.Add(title);
         _manage.Add(_capacity);
-        _manage.Add(manageLabel);
+        _manage.Add(_manageLabel);
         _root.Add(_manage);
 
         _scroll = new ScrollView(ScrollViewMode.Horizontal);
@@ -197,12 +199,24 @@ internal sealed class WarbandBarView : IDisposable
         }
 
         _root.EnableInClassList("warband-bar--editable", _model.CanEdit);
+        _root.EnableInClassList("warband-bar--compact", _model.Compact);
         _root.EnableInClassList("warband-bar--deployment",
             _model.Mode == WarbandBarMode.DeploymentSelect);
         _root.EnableInClassList("warband-bar--readonly", !_model.CanEdit);
+        if (_model.Compact)
+        {
+            _root.Insert(0, _scroll);
+            _root.Insert(1, _manage);
+        }
+        else
+        {
+            _root.Insert(0, _manage);
+            _root.Insert(1, _scroll);
+        }
         _capacity.text = $"FIELD  {_model.FieldCount} / {_model.FieldCapacity}";
         _reserveCount.text = $"RESERVE  {_model.ReserveCount} / {_model.ReserveCapacity}";
         _armoryCount.text = _model.StoredItems == 1 ? "1 STORED" : $"{_model.StoredItems} STORED";
+        _manageLabel.text = _model.CanManage ? "MANAGE WARBAND" : "WAR BAND";
         _manage.SetEnabled(_model.CanManage);
 
         string signature = LayoutSignature(_model);
@@ -216,6 +230,8 @@ internal sealed class WarbandBarView : IDisposable
         _selectedKind = -1;
         foreach (WarbandHeroModel hero in _model.Field) UpdateTile(hero);
         foreach (WarbandHeroModel hero in _model.Reserve) UpdateTile(hero);
+        SetDisplayed(_reserveGroup, !_model.Compact && _model.Reserve.Count > 0);
+        SetDisplayed(_armory, !_model.Compact || HasSelectedEquipment());
         _armory.SetEnabled(_model.CanManage || HasSelectedEquipment());
         _armory.EnableInClassList("warband-bar__armory--drop-target",
             _model.CanEdit && HasSelectedEquipment());
@@ -232,7 +248,7 @@ internal sealed class WarbandBarView : IDisposable
             AddTile(hero, _field);
         foreach (WarbandHeroModel hero in _model.Reserve)
             AddTile(hero, _reserve);
-        SetDisplayed(_reserveGroup, _model.Reserve.Count > 0);
+        SetDisplayed(_reserveGroup, !_model.Compact && _model.Reserve.Count > 0);
     }
 
     private void AddTile(WarbandHeroModel model, VisualElement parent)
@@ -311,21 +327,26 @@ internal sealed class WarbandBarView : IDisposable
             : new StyleBackground(Background.FromTexture2D(portrait));
         SetDisplayed(tile.Fallback, portrait == null);
 
-        tile.Specs.Clear();
-        foreach (WarbandSpecBadgeModel spec in model.Specs)
+        string specSignature = SpecSignature(model.Specs);
+        if (!string.Equals(tile.SpecSignature, specSignature, StringComparison.Ordinal))
         {
-            var badge = new Label(spec.Icon);
-            badge.AddToClassList("warband-spec");
-            badge.AddToClassList("accent--" + spec.Accent);
-            badge.focusable = true;
-            badge.tabIndex = 0;
-            AttachTooltip(badge, () => new TooltipCopy
+            tile.Specs.Clear();
+            foreach (WarbandSpecBadgeModel spec in model.Specs)
             {
-                Eyebrow = $"RANK {spec.Rank} SPECIALIZATION",
-                Title = spec.Name,
-                Body = spec.Rule,
-            });
-            tile.Specs.Add(badge);
+                var badge = new Label(spec.Icon);
+                badge.AddToClassList("warband-spec");
+                badge.AddToClassList("accent--" + spec.Accent);
+                badge.focusable = true;
+                badge.tabIndex = 0;
+                AttachTooltip(badge, () => new TooltipCopy
+                {
+                    Eyebrow = $"RANK {spec.Rank} SPECIALIZATION",
+                    Title = spec.Name,
+                    Body = spec.Rule,
+                });
+                tile.Specs.Add(badge);
+            }
+            tile.SpecSignature = specSignature;
         }
 
         UpdateGear(tile.Weapon, tile.WeaponIcon, tile.WeaponTier, model.Weapon);
@@ -381,6 +402,7 @@ internal sealed class WarbandBarView : IDisposable
         {
             _dragging = true;
             _tooltip.Hide();
+            if (_model.Compact) SetDisplayed(_armory, true);
             SetDropHighlights(true);
         }
         if (_dragging)
@@ -473,6 +495,7 @@ internal sealed class WarbandBarView : IDisposable
         _dragging = false;
         SetDisplayed(_dragGhost, false);
         SetDropHighlights(false);
+        if (_model.Compact && !HasSelectedEquipment()) SetDisplayed(_armory, false);
     }
 
     private void UseArmory()
@@ -550,9 +573,21 @@ internal sealed class WarbandBarView : IDisposable
     private static string LayoutSignature(WarbandBarModel model)
     {
         var text = new StringBuilder();
+        text.Append(model.Compact ? "compact|" : "expanded|");
         AppendLayout(text, model.Field);
         text.Append('/');
         AppendLayout(text, model.Reserve);
+        return text.ToString();
+    }
+
+    private static string SpecSignature(IReadOnlyList<WarbandSpecBadgeModel> specs)
+    {
+        var text = new StringBuilder();
+        foreach (WarbandSpecBadgeModel spec in specs)
+            text.Append(spec.Rank).Append(':')
+                .Append(spec.Icon).Append(':')
+                .Append(spec.Name).Append(':')
+                .Append(spec.Accent).Append('|');
         return text.ToString();
     }
 
@@ -614,7 +649,7 @@ internal sealed class RuntimeWarbandTooltip : IDisposable
         if (copy == null || anchor == null) return;
         _eyebrow.text = copy.Eyebrow;
         _title.text = copy.Title;
-        _body.text = copy.Body;
+        MechanicPresentation.BindInline(_body, copy.Body);
         _root.style.display = DisplayStyle.Flex;
         _root.schedule.Execute(() => Position(anchor));
     }

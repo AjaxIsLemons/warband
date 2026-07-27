@@ -77,10 +77,25 @@ public static class ProbeParties
     };
 
     /// <summary>
-    /// Party size follows the run's own capacity curve (ADR 0019 / RunConfig: 3 field slots at the
-    /// start). Measuring an act-1 fight against a four-hero warband describes a game nobody plays:
-    /// the player meets act 1 with the three they drafted.
+    /// Party size follows the run's own capacity curve. Measuring an act-1 fight against a
+    /// four-hero warband describes a game nobody plays: the player meets act 1 with the three they
+    /// drafted.
+    ///
+    /// **This is the single most powerful difficulty dial in the game, and it is not a stat.**
+    /// Measured 2026-07-26: The Long Range at act 2 admits 3 answers with a spread of 100 against
+    /// three heroes and is FREE from every formation against four. One extra body deleted the
+    /// sharpest encounter in the pool. Anything read off this probe is conditional on this number,
+    /// which is why the report prints it in every table.
+    ///
+    /// **Known conservatism.** `RunController` unlocks `3 + act` slots (capped at 6) after each
+    /// act's Interlude, so a player who takes every offer fields up to 4/5/6, and only the
+    /// pre-Interlude part of an act matches `act + 2`. This models the player who is one offer
+    /// behind, and it is additionally capped at 4 by the size of the authored axis parties. Widening
+    /// the axes to 6 heroes would move every act-2/3 number again, so it is a deliberate later
+    /// decision, not an oversight.
     /// </summary>
+    public static int SizeAt(int act) => Math.Min(act + 2, Axes[0].Party.Length);
+
     public static int Size(int act, (string Chassis, string Node)[] party, Hex[] slots) =>
         Math.Min(Math.Min(act + 2, party.Length), slots.Length);
 
@@ -132,10 +147,12 @@ public static class ProbeParties
     /// <summary>Run one axis against every formation and reduce to best/worst/spread.</summary>
     public static AxisResult Across(string axis, Func<Hex[], Outcome> measure)
     {
+        // OrderByDescending is a documented STABLE sort, which is the tie-break: equal formations
+        // stay in declaration order, so a fight everything wins reports `default` as its best
+        // rather than whichever name happens to sort first.
         var rows = Formations
             .Select(f => (f.Name, Result: measure(f.Slots)))
             .OrderByDescending(r => r.Result.WinPct)
-            .ThenBy(r => r.Name, StringComparer.Ordinal)   // deterministic ties
             .ToList();
         return new AxisResult(
             axis, rows.First().Name, rows.First().Result.WinPct,

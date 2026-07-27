@@ -33,6 +33,7 @@
         <ui:VisualElement class="wb-card__footer">
             <ui:Label name="weapon" class="wb-card__weapon" />
             <ui:Label name="frozen" text="❄ HELD" class="wb-card__frozen" />
+            <ui:VisualElement name="currency-price" class="wb-card__currency-price" />
             <ui:Label name="price" class="wb-card__price" />
         </ui:VisualElement>
         <ui:VisualElement name="selection" class="wb-card__selection">

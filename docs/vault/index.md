@@ -124,6 +124,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
   rules that bend the shared model, and the encounter-brief contract.
 
 ## Projects
+- [Projects/balance-baseline.md](Projects/balance-baseline.md) — **committed golden numbers** for every
+  authoring instrument (encounters × 4 answer axes, bosses, hero builds, run EV, sim health).
+  Regenerate with `make baseline`; the A/B is `git diff`. Not an assertion — it exists so a change's
+  effect on the game is visible instead of reconstructed.
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
   open questions, done log. Sessions plan from here (CLAUDE.md Planning SOP).
 - [Projects/boss-probe-2026-07-26.md](Projects/boss-probe-2026-07-26.md) — `--boss` output at ship:

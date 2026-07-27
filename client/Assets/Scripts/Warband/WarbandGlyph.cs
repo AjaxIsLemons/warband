@@ -202,6 +202,24 @@ internal sealed class WarbandGlyph : VisualElement
                     c + new Vector2(r * 0.48f, -r * 0.66f),
                     c + new Vector2(r * 0.48f, -r * 0.08f));
                 break;
+            case UiGlyphId.Hourstone:
+                Line(painter, c + new Vector2(-r * 0.74f, -r),
+                    c + new Vector2(r * 0.74f, -r));
+                Line(painter, c + new Vector2(-r * 0.74f, r),
+                    c + new Vector2(r * 0.74f, r));
+                Path(painter,
+                    c + new Vector2(-r * 0.58f, -r * 0.82f),
+                    c + new Vector2(-r * 0.42f, -r * 0.28f),
+                    c,
+                    c + new Vector2(r * 0.42f, -r * 0.28f),
+                    c + new Vector2(r * 0.58f, -r * 0.82f));
+                Path(painter,
+                    c + new Vector2(-r * 0.58f, r * 0.82f),
+                    c + new Vector2(-r * 0.42f, r * 0.28f),
+                    c,
+                    c + new Vector2(r * 0.42f, r * 0.28f),
+                    c + new Vector2(r * 0.58f, r * 0.82f));
+                break;
             default:
                 Diamond(painter, c, r * 0.70f);
                 break;

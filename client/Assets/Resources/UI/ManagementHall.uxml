@@ -35,6 +35,7 @@
                             <ui:Label name="breach-name" class="hub-station__name" />
                             <ui:Label name="breach-status" class="hub-station__status" />
                         </ui:VisualElement>
+                        <ui:Label name="breach-action" class="hub-station__action" />
                         <ui:Label name="breach-attention" text="READY" class="hub-station__attention" />
                     </ui:Button>
 

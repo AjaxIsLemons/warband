@@ -79,6 +79,16 @@ live-tunable in F1. Live checks passed 40/60 Market containment, all 6+2 Shelf a
 30/36/34 Loadout bounds, Market selection restoration, weapon/Inscription no-Basic-Attack grammar,
 and the zero-inventory Armory empty state at 2542×1304. Dedicated mobile composition remains
 deferred by Jake.
+**Shared mechanic presentation system built and Unity-verified 2026-07-26:** durability, offense,
+restoration, space, time, mana, and protection now have one stable code-native glyph, colour,
+tinted surface, and inline-text treatment. Shared stat tiles and rule formatting are used by
+Market stock/detail, rank choices, cards, inspectors, tooltips, deployment/results, and live
+combat. Prices now use the Hourstone emblem plus a number; `SHORT N` / `NEED N` commerce labels
+are gone. A selected offer owns affordability: the action disables and the dossier shows
+balance − cost = after. Live checks passed five typed Market prices, selected-offer affordability,
+next-frame Market layout, combat inspector semantics, and a clean Unity console; all 446
+sim/run tests pass. Captures: `client/McpCaptures/ui-semantic-market-selected.png` and
+`client/McpCaptures/ui-semantic-combat-inspector.png`.
 
 1. **FEEL & READABILITY — the fight does not read** — **VERIFY (was DESIGN → BUILD). THE TOP ITEM,
    AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**
@@ -347,8 +357,11 @@ cannot happen without them, and each is the kind of work that is discovered too 
     CONTINUE, which re-enters act 3's pool at escalating scale until a loss.
 
 **P4 — content identity.**
-14. **Act identity is thin; acts 2 and 3 are the same game at bigger numbers.** — **SPEC'D
-    (was DESIGN; unblocked by Jake's 2026-07-26 three-act budget decision).**
+14. **Act identity is thin; acts 2 and 3 are the same game at bigger numbers.** — **DONE
+    2026-07-26** (see Done). Acts now draw genuinely different pools and acts 2 and 3 are
+    *disjoint*; two new encounters, zero new roles. What it did NOT do is make the pool harder —
+    that turned out to be a balance problem, not a composition one. Original entry below.
+    ~~**SPEC'D (was DESIGN; unblocked by Jake's 2026-07-26 three-act budget decision).**~~
     `Encounters.PoolFor` differs between act 1 and act 2+ by exactly one encounter, and acts 2 and
     3 draw an **identical** pool. theme.md says acts are eras and pve-encounters says *"an act's
     pool is its identity"*; neither is true yet. The per-act bosses are the first real
@@ -534,6 +547,96 @@ Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cos
 revisit) · per-rank stat scaling.
 
 ## Done
+- **2026-07-26 — ACT-SCOPED ENCOUNTER POOLS (closes item 14).** Acts 2 and 3 drew an identical pool,
+  so a three-act run was one act played three times at rising numbers — while ADR 0024 gave each act
+  a different boss, and pve-encounters.md's law above it is **"the boss rules the act"**: node fights
+  exist to introduce, combine and stress the pieces its boss recombines. A shared pool cannot do
+  that for three different exams. Pools are now built backwards from each boss:
+
+  | act | boss | its exam | what the act introduces |
+  |---|---|---|---|
+  | 1 | The Last Oath | which threat you leave enraged | Gnawing Hour · Ninth Bell · The Drop |
+  | 2 | The Ashfall Battery | reach the gun behind the wall | **The Long Range** (kill order past a ward) |
+  | 3 | The Waning Crown | your own kills ring the bell | **The Long Procession** · **The Slagworks** |
+
+  **Acts 2 and 3 are now disjoint** — the named defect gone at the root. Act 1 deliberately owns no
+  unique encounter: its job is to teach pieces the later acts recombine. **Two new encounters, ZERO
+  new roles** (ADR 0023's cap holds): *The Slagworks* — two Colossi hold the lane and the gunners are
+  already past your front line, deliberately ruleless, the Battery's geometry without its clock;
+  *The Long Procession* — a death-fed Scribe whose ritual advances on every death in its court, the
+  Crown's exact trap at survivable scale. **Until now the run's final boss was the FIRST time a
+  player ever met the idea that their own kills can be the losing line** — a knowledge check, not an
+  exam. `Scribe(deathFed:)` follows the existing `Colossus(warded:)` pattern: same body, one
+  encounter-level rule, no new role. **446 tests green**; baseline, replay, scenarios and DLLs
+  regenerated; content fingerprint `f1f4a7e9b5cd527b` → `3dba11673c26e858`.
+  ⚠ **The build law earned its keep, and the answer was uncomfortable.** It says measure before
+  committing — and the first assignment measured FREE/FLAT for both new encounters. Every
+  composition that fixed that (a third wall in the Slagworks · a nine-body Procession court · act 2
+  drawing only wall fights) drove the naive line from 3/12 completed runs to **0/12** and tripped
+  `FullRunsCompleteOnRealContent`. **The gap between the four answer-axis parties and the weakest
+  legal comp is currently wider than the band an encounter can sit in** — nothing can be made sharp
+  for one without being lethal to the other. That is a BALANCE finding, not a composition one, and
+  the doctrine parks it until playtest #1. The shipped compositions are therefore sized to sit beside
+  the existing pool rather than to beat a metric, and 4 of 6 encounters still measure FREE/FLAT.
+  Cost, straight off the baseline: naive line **3/12 → 2/12** (act 2 node 0 is the pinch, 2 → 4
+  deaths), run EV `fraying` victory 8% → 4%. Sim health unchanged-to-better (never-swung 0.27% → 0.00%).
+- **2026-07-26 — PERSISTENT WARBAND BAR + ATOMIC LOADOUT TRANSFERS.** One shell-owned retained
+  instrument now carries the warband through Hall, Wager, Deployment, and the frozen fight result:
+  class portrait, rank, specialization-choice badges, weapon + temper, trinket, field/reserve state,
+  capacity, and stored-equipment count. It is editable only in Planning Hall, read-only at Wager and
+  result, becomes Deployment's sole friendly roster, and is deliberately hidden during live combat
+  (no mid-fight substitution rule was invented). The old Hall shelf and Deployment rail no longer
+  build duplicate visible controls. Hero identities are stable run-scoped IDs, saved and
+  deterministically migrated for legacy saves. Weapon/trinket drops are atomic: occupied→occupied
+  swaps preserve item identity/tier/investment, occupied→empty moves, explicit weapon→starter
+  restores the source's own starter, and Armory drops unequip. Pointer-capture drag has legal target
+  highlights and a ghost; click/keyboard selection is the equivalent accessible path; runtime
+  hover/focus tooltips cover heroes, gear, and specialization badges. The Loadout Table now reserves
+  the bar's safe area so its action dock stays reachable. **Gates:** 249 sim + 195 run tests green;
+  Unity compiled with zero warnings/errors; one retained bar instance survived Hall→Wager→Deploy,
+  hid in active Fight, restored read-only at result, used zero native tooltips, and the Wager Manage
+  route returned to the focused Hall loadout. Game View captures checked Hall, Wager, Deployment,
+  compatibility phone layout, result, and the expanded Loadout Table.
+- **2026-07-26 — UI PROPOSAL SLICE 1: HALL HIERARCHY + COMPACT WARBAND BAR.** The Hall overview
+  now follows the approved mockup's information order: one dominant Breach decision with a
+  state-aware action, subordinate Market and Armory plaques, and the Hourstone as the lower visual
+  anchor. Overview-only lore, duplicate recommendation chrome, the legacy warband shelf, and the
+  extra `NEXT` attention pill no longer compete with that decision. Outside Deployment, the
+  persistent bar is a 96 px command strip containing only the current field heroes plus a single
+  Manage action; each card keeps class, rank, specialization history, weapon, and trinket visible.
+  Deployment deliberately expands the same retained bar back to all eight field/reserve addresses.
+  The Loadout Table temporarily replaces the compact bar instead of stacking two equipment
+  surfaces. **Gates:** 249 sim + 197 run tests green; clean UXML and whitespace checks; Unity
+  refresh/compile with zero warnings or errors; Play Mode proved three compact Hall cards, the
+  Loadout replacement contract, and eight non-compact Deployment addresses. Visual proof:
+  `client/McpCaptures/ui-proposal-slice1-hall-final-live.png`.
+- **2026-07-26 — BALANCE INSTRUMENTS: 4-axis `--enc` + a committed baseline.** Jake: *"both enemy
+  unit comps and balance tuning for our numbers — do we have a good strategy for that?"* Audit said:
+  four good probes, one blind spot and one missing loop. **`--enc` measured every node encounter
+  against ONE party** while `--boss` used four, so half the encounter report was conditional on a
+  warband the author never chose. Formations, answer axes and the party-size curve now live in
+  `ProbeParties` and BOTH probes read them (the `Encounters.Scale` discipline, applied to the player
+  side); `--boss` output is byte-identical past its header, so the refactor is provably
+  behaviour-preserving. **`make baseline`** writes `Projects/balance-baseline.md` — 104 metrics, one
+  per line, dotted keys — so **the A/B is `git diff`** instead of a hand-built worktree. It asserts
+  nothing and fails nothing; numbers are meant to move, and it exists so a session can see the
+  movement. Byte-stable across regenerations. Also `make enc` / `make boss`.
+  ⚠ **Findings the wider net turned up — measurements, NOT a licence to tune** (doctrine holds:
+  instruments now, tuning after Jake's playtest — his call, 2026-07-26):
+  ① **Party size is the strongest difficulty dial in the game, and it is not a stat.** The Long
+  Range at act 2 admits 3 answers with spread 100 against three heroes and is **FREE from every
+  formation against four**. One extra body deleted the encounter the vault calls "the sharpest in
+  the pool" — that characterisation was an artifact of measuring act 2 with an act-1-sized party.
+  Every probe table now prints the hero count.
+  ② **The node pool is nearly free for a competent party** — of 48 encounter×act×axis cells, all but
+  four sit at win=100. Placement spread, not win%, is the only thing still separating them.
+  ③ **`banneret` is CHASSIS-DEAD** (avg 13%, best build 18%) and four node pairs are lopsided by
+  ≥25 (shade.reaper vs phantom Δ-52, sniper.onebreath Δ-47, bulwark.juggernaut vs warden Δ-46,
+  phalanx.pikewall Δ+30). Pre-existing; now recorded rather than re-discovered.
+  ④ **The Long Range's ward never comes off for the `control` axis** (rule fired 0% at acts 2-3):
+  control kills the warded Colossus straight through 50% DR, so the encounter's disclosed answer
+  never happens even though control wins. An encounter whose rule does not fire is decoration.
+  ⑤ **`reach` cannot clear the act-1 boss at all** (0% from every formation; 33% at act 3).
 - **2026-07-26 — ROUTING + THE ENGAGEMENT LAW (ADR 0025).** Jake's bug report — "units sit behind
   others in line"; "jump units get stuck between two enemy units doing nothing". Both real, both
   reproduced headlessly, both worse than reported: a flank body logged **0 swings in 1200 ticks**,

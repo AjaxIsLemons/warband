@@ -102,6 +102,56 @@ namespace Warband.Run.Tests
             Assert.Contains(Encounters.PoolFor(2).Select(f => f(2).Id), id => id == "the-long-range");
         }
 
+        /// <summary>
+        /// Roadmap item 14: acts 2 and 3 used to draw an IDENTICAL pool, so a three-act run was one
+        /// act played three times at rising numbers.
+        ///
+        /// The law is NOT "every act owns a unique encounter" — act 1 deliberately owns none. Its
+        /// job is to teach pieces cleanly that later acts recombine (pve-encounters.md), so all
+        /// three of its encounters recurring later is the through-line working. What must hold is
+        /// that the run keeps introducing problems and that the two acts item 14 names stop being
+        /// the same fight.
+        /// </summary>
+        [Fact]
+        public void ActsDrawDifferentPoolsAndKeepIntroducingProblems()
+        {
+            var pools = Enumerable.Range(1, 3)
+                .Select(a => Encounters.PoolFor(a).Select(f => f(a).Id).ToList())
+                .ToList();
+
+            foreach (var pool in pools)
+                Assert.Equal(pool.Count, pool.Distinct().Count());   // no act repeats itself
+
+            // The literal defect: acts 2 and 3 drawing the same pool. They are now disjoint.
+            for (int a = 0; a < 3; a++)
+                for (int b = a + 1; b < 3; b++)
+                    Assert.False(pools[a].ToHashSet().SetEquals(pools[b]),
+                        $"acts {a + 1} and {b + 1} draw an identical pool");
+            Assert.True(pools[1].Intersect(pools[2]).Count() <= 1,
+                "acts 2 and 3 overlap by more than one encounter — the item-14 defect in miniature");
+
+            // Every act after the first must bring a problem the player has not met yet, or it is
+            // the previous act with a bigger multiplier.
+            var seen = pools[0].ToHashSet();
+            for (int a = 1; a < 3; a++)
+            {
+                Assert.True(pools[a].Any(id => !seen.Contains(id)),
+                    $"act {a + 1} introduces nothing new — every encounter was already met earlier");
+                seen.UnionWith(pools[a]);
+            }
+        }
+
+        /// <summary>Every act's pool must be big enough to fill its node fights without forcing a
+        /// repeat: an act with fewer encounters than beats is an act you see twice.</summary>
+        [Fact]
+        public void EveryActPoolCoversItsNodeFights()
+        {
+            int nodeFights = new RunConfig().NodesPerAct - 1;   // one beat is the Interlude
+            for (int act = 1; act <= 3; act++)
+                Assert.True(Encounters.PoolFor(act).Length >= nodeFights,
+                    $"act {act} has {Encounters.PoolFor(act).Length} encounters for {nodeFights} fights");
+        }
+
         /// <summary>Composition is the act's primary difficulty lever (ADR 0016), so a later act
         /// must field a genuinely different problem, not the same one with bigger numbers.</summary>
         [Fact]

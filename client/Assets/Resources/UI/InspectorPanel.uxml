@@ -13,7 +13,9 @@
                             <ui:Label name="title" class="wb-inspector__title" />
                             <ui:Label name="subtitle" class="wb-inspector__subtitle" />
                         </ui:VisualElement>
-                        <ui:Label name="price" class="wb-inspector__price" />
+                        <ui:VisualElement name="economy" class="wb-inspector__economy">
+                            <ui:Label name="price" class="wb-inspector__price" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="stats" class="wb-inspector__stats" />
                 </ui:VisualElement>

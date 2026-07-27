@@ -133,7 +133,7 @@ internal sealed class DeployView : IRunScreenView
             l.text = line;
             _enemyList.Add(l);
         }
-        _enemyRule.text = d.EncounterRule ?? "";
+        MechanicPresentation.BindInline(_enemyRule, d.EncounterRule ?? "");
         SetDisplayed(_enemyRule, !string.IsNullOrWhiteSpace(d.EncounterRule));
     }
 
@@ -191,15 +191,8 @@ internal sealed class DeployView : IRunScreenView
 
     private static VisualElement MakeChip(StatChipModel s)
     {
-        var chip = new VisualElement();
-        chip.AddToClassList("stat-chip");
-        if (!string.IsNullOrEmpty(s.Tone)) chip.AddToClassList("stat-chip--" + s.Tone);
-        var label = MakeLabel("stat-chip__label");
-        label.text = s.Label;
-        var value = MakeLabel("stat-chip__value");
-        value.text = s.Value;
-        chip.Add(label);
-        chip.Add(value);
+        var chip = new MechanicStatTile("stat-chip", "stat-chip");
+        chip.Bind(s);
         return chip;
     }
 

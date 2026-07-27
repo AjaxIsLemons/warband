@@ -100,18 +100,41 @@ namespace Warband.Content
         /// This is the role that needed the sim to bend: on the global hit-fed rate a channeller
         /// fires the instant it is focused, which inverts the problem — punishing the answer.
         /// </summary>
-        public static UnitDef Scribe() => new UnitDef
+        /// <param name="deathFed">
+        /// The Long Procession's variant (act 3): the ritual also advances on every death in its
+        /// court, INCLUDING the ones the player causes. Same body, one encounter-level rule — the
+        /// <see cref="Colossus"/>/`warded` pattern — so this costs no new role (ADR 0023 caps the
+        /// grammar at five). It exists because act 3's boss turns exactly this rule into the run's
+        /// final exam, and pve-encounters.md requires the act to TEACH what its boss examines: on
+        /// the old pool the Waning Crown was the first and only time a player ever met the idea
+        /// that killing things can be the losing line.
+        /// </param>
+        public static UnitDef Scribe(bool deathFed = false)
         {
-            Name = "Hour-Scribe", ChassisId = "pyromancer", WeaponName = "Ashwood Staff",
-            MaxHp = 120, Attack = 0, AttackInterval = 20, Range = 1,
-            MoveInterval = 7,
-            ManaMax = 10,                           // 1 trickle/second → the ritual lands at ~10s
-            ManaPerHitTaken = 0,                    // time advances the ritual. Nothing else does.
-            // THE RITUAL: everything you brought takes the hit, wherever it stands.
-            Signature = { Dmg(Enemies(99), 38), Status(StatusKind.Slow, 200, Enemies(99), ticks: 30) },
-            // It stands where it was placed and channels — a fixed site, not a chaser.
-            Triggers = { AtStart(Status(StatusKind.Root, 0, Self)) },
-        };
+            var def = new UnitDef
+            {
+                Name = deathFed ? "Procession-Scribe" : "Hour-Scribe",
+                ChassisId = "pyromancer", WeaponName = "Ashwood Staff",
+                MaxHp = 120, Attack = 0, AttackInterval = 20, Range = 1,
+                MoveInterval = 7,
+                // 1 trickle/second → the plain ritual lands at ~10s. The death-fed variant starts
+                // slower on time alone, because its court is meant to be the clock the player winds.
+                ManaMax = deathFed ? 16 : 10,
+                ManaPerHitTaken = 0,                // time advances the ritual. Nothing else does.
+                // THE RITUAL: everything you brought takes the hit, wherever it stands.
+                Signature = { Dmg(Enemies(99), 38), Status(StatusKind.Slow, 200, Enemies(99), ticks: 30) },
+                // It stands where it was placed and channels — a fixed site, not a chaser.
+                Triggers = { AtStart(Status(StatusKind.Root, 0, Self)) },
+            };
+            if (deathFed)
+            {
+                // Same shape as the Crown's bell and the Oath's Bond — On(Death, ally). Proven
+                // grammar, and the player meets it here first at a survivable scale.
+                def.Triggers.Add(On(EventKind.Death, W(TgtAlly()), Mana(Self, 4)));
+                def.Traits.Add("Death-fed");
+            }
+            return def;
+        }
 
         /// <summary>
         /// Gloamstalker — it opens the fight already behind you. Ambush lifted straight from the
@@ -134,7 +157,7 @@ namespace Warband.Content
                 [Swarm] = Hourling,
                 [Anchor] = () => Colossus(),
                 [Artillery] = Gunner,
-                [Ritualist] = Scribe,
+                [Ritualist] = () => Scribe(),
                 [Diver] = Stalker,
             };
 
@@ -248,6 +271,10 @@ namespace Warband.Content
                 ["Ashfall Bombard"] =
                     "Rooted, and never attacks. Its clock runs on time alone; at full it shells your "
                     + "FARTHEST unit and leaves burning ground around the crater.",
+                ["Procession-Scribe"] =
+                    "Rooted, and never attacks. Its ritual advances on time AND on every death among "
+                    + "its court — including the ones you cause; at full it damages and Slows your "
+                    + "entire warband.",
                 ["The Waning Crown"] =
                     "Rooted, and never attacks. Its bell advances on time AND on every death in its "
                     + "court; at full it damages and Slows your entire warband.",

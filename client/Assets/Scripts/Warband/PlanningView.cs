@@ -157,7 +157,7 @@ internal sealed class PlanningView : IRunScreenView
         _capacity.text = model.Capacity;
         _heading.text = model.Heading;
         _brief.text = model.Brief;
-        _rule.text = model.Rule;
+        MechanicPresentation.BindInline(_rule, model.Rule);
         SetDisplayed(_ruleBox, !string.IsNullOrEmpty(model.Rule));
         _feedback.text = model.Feedback;
         _feedback.EnableInClassList("feedback-label--error", model.FeedbackIsError);

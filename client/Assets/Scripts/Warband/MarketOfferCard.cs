@@ -33,7 +33,7 @@ internal sealed class MarketOfferCard
     private readonly VisualElement _commerce;
     private readonly Label _held;
     private readonly Label _economyState;
-    private readonly Label _price;
+    private readonly HourstoneAmount _price;
     private readonly MarketOfferArtwork _artwork;
 
     private MarketOfferCardModel _model = new MarketOfferCardModel();
@@ -80,7 +80,10 @@ internal sealed class MarketOfferCard
         _commerce = Required<VisualElement>(Root, "commerce");
         _held = Required<Label>(Root, "held");
         _economyState = Required<Label>(Root, "economy-state");
-        _price = Required<Label>(Root, "price");
+        Label legacyPrice = Required<Label>(Root, "price");
+        legacyPrice.RemoveFromHierarchy();
+        _price = new HourstoneAmount(0, "market-offer-card__price");
+        _commerce.Add(_price);
 
         _artwork = new MarketOfferArtwork();
         _artVectorHost.Add(_artwork);
@@ -106,7 +109,10 @@ internal sealed class MarketOfferCard
         Root.SetEnabled(_selectable);
         Root.tooltip = _model.Sold
             ? "This offer has already been purchased."
-            : $"{_model.Classification}. Select to inspect. {_model.Price}.";
+            : _model.CurrencyCost >= 0
+                ? $"{_model.Classification}. Select to inspect. Cost " +
+                  $"{_model.CurrencyCost}; balance {_model.CurrencyBalance}."
+                : $"{_model.Classification}. Select to inspect.";
 
         _classification.text = _model.Classification;
         _title.text = _model.Sold ? "SOLD" : _model.Title;
@@ -114,10 +120,10 @@ internal sealed class MarketOfferCard
         _qualifier.text = _model.Qualifier;
         _ruleLabel.text = _model.RuleLabel;
         _ruleName.text = _model.RuleName;
-        _ruleCopy.text = _model.ExactRule;
+        MechanicPresentation.BindInline(_ruleCopy, _model.ExactRule);
         _held.text = _model.Frozen ? "HELD" : "";
         _economyState.text = _model.EconomyState;
-        _price.text = _model.Price;
+        _price.Bind(_model.CurrencyCost);
 
         string kind = KindName(_model.Kind);
         foreach (string value in KindClasses)
@@ -125,8 +131,7 @@ internal sealed class MarketOfferCard
         Root.EnableInClassList("market-offer-card--selected", _model.Selected);
         Root.EnableInClassList("market-offer-card--affordable",
             _model.Affordable && !_model.Sold);
-        Root.EnableInClassList("market-offer-card--unaffordable",
-            !_model.Affordable && !_model.Sold);
+        Root.EnableInClassList("market-offer-card--unaffordable", false);
         Root.EnableInClassList("market-offer-card--frozen", _model.Frozen);
         Root.EnableInClassList("market-offer-card--sold", _model.Sold);
         WarbandCard.SetAccent(Root, _model.Accent);
@@ -148,7 +153,7 @@ internal sealed class MarketOfferCard
         SetDisplayed(_qualifier, false);
         SetDisplayed(_rule, !_model.Sold && !string.IsNullOrEmpty(_model.ExactRule));
         SetDisplayed(_held, _model.Frozen);
-        SetDisplayed(_price, !string.IsNullOrEmpty(_model.Price));
+        SetDisplayed(_price, _model.CurrencyCost >= 0);
         _artwork.SetKind(_model.Kind);
 
         SyncMetrics(_model.Metrics);
@@ -160,30 +165,13 @@ internal sealed class MarketOfferCard
         int count = Mathf.Min(4, models?.Count ?? 0);
         while (_metrics.childCount > count) _metrics.RemoveAt(_metrics.childCount - 1);
         while (_metrics.childCount < count)
-        {
-            var metric = new VisualElement();
-            metric.AddToClassList("market-offer-metric");
-            var label = new Label();
-            label.AddToClassList("market-offer-metric__label");
-            var value = new Label();
-            value.AddToClassList("market-offer-metric__value");
-            metric.Add(label);
-            metric.Add(value);
-            _metrics.Add(metric);
-        }
+            _metrics.Add(new MechanicStatTile(
+                "market-offer-metric", "market-offer-metric"));
 
         for (int i = 0; i < count; i++)
         {
             StatChipModel model = models[i];
-            VisualElement metric = _metrics.ElementAt(i);
-            ((Label)metric.ElementAt(0)).text =
-                DecisionCardPresentation.DisplayLabel(model);
-            ((Label)metric.ElementAt(1)).text = model.Value;
-            metric.EnableInClassList("market-offer-metric--good", model.Tone == "good");
-            metric.EnableInClassList("market-offer-metric--warn", model.Tone == "warn");
-            metric.EnableInClassList("market-offer-metric--bad", model.Tone == "bad");
-            metric.tooltip = DecisionCardPresentation.Tooltip(model);
-            DecisionCardPresentation.ApplyFact(metric, model);
+            ((MechanicStatTile)_metrics.ElementAt(i)).Bind(model);
         }
         SetDisplayed(_metrics, count > 0);
     }
@@ -478,8 +466,8 @@ internal static class MarketOfferPresentationContract
             $"'{model.Title}' needs a mechanical rule label.");
         Require(!string.IsNullOrWhiteSpace(model.ExactRule),
             $"'{model.Title}' needs one exact rule.");
-        Require(!string.IsNullOrWhiteSpace(model.Price),
-            $"'{model.Title}' needs a protected commerce price.");
+        Require(model.CurrencyCost >= 0 || !string.IsNullOrWhiteSpace(model.Price),
+            $"'{model.Title}' needs a protected commerce state or typed currency price.");
         Require(model.Detail != null && model.Detail.Key == model.Key,
             $"'{model.Title}' must reference its matching dossier card.");
         Require(model.ExactRule == model.Detail.AbilitySummary ||
@@ -535,8 +523,9 @@ internal static class MarketOfferPresentationContract
                 RuleLabel = kind == MarketOfferKind.Inscription ? "WARBAND RULE" : "ACTIVE",
                 RuleName = "Contract Fixture",
                 ExactRule = exactRule,
-                Price = "9 SAND",
-                EconomyState = i % 2 == 0 ? "AVAILABLE" : "NEED 2",
+                CurrencyCost = 9,
+                CurrencyBalance = i % 2 == 0 ? 12 : 7,
+                EconomyState = "",
                 Affordable = i % 2 == 0,
                 Frozen = i == 1,
                 Selected = i == 2,

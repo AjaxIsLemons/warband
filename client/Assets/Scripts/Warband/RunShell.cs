@@ -1386,7 +1386,7 @@ public sealed class RunShell : MonoBehaviour
                  { "UI/SkirmishStyles", "UI/RunShellStyles", "UI/PlanningWorkspaceStyles",
                    "UI/RunFlowStyles", "UI/HubStyles", "UI/LastHourTokens",
                    "UI/HallPhysicalStyles", "UI/MarketOfferCardStyles",
-                   "UI/WarbandBarStyles" })
+                   "UI/WarbandBarStyles", "UI/MechanicPresentationStyles" })
         {
             var uss = Resources.Load<StyleSheet>(sheet);
             if (uss != null) _root.styleSheets.Add(uss);
@@ -1793,13 +1793,14 @@ public sealed class RunShell : MonoBehaviour
 
         bar.Mode = _model.Screen switch
         {
-            RunScreen.Management => WarbandBarMode.HallEditable,
+            RunScreen.Management when !_loadoutOpen => WarbandBarMode.HallEditable,
             RunScreen.Wager => WarbandBarMode.WagerReadOnly,
             RunScreen.Deploy => WarbandBarMode.DeploymentSelect,
             RunScreen.Fight when _resultGateOpen => WarbandBarMode.ResultReadOnly,
             _ => WarbandBarMode.Hidden,
         };
         if (bar.Mode == WarbandBarMode.Hidden) return bar;
+        bar.Compact = bar.Mode != WarbandBarMode.DeploymentSelect;
 
         RunState state = _run.State;
         bar.FieldCount = state.Field.Count;
@@ -1834,7 +1835,8 @@ public sealed class RunShell : MonoBehaviour
             bar.ArmedInventoryKind = (int)selected.Kind;
         }
 
-        for (int i = 0; i < _cfg.MaxFieldSlots; i++)
+        int visibleFieldSlots = bar.Compact ? state.Field.Count : _cfg.MaxFieldSlots;
+        for (int i = 0; i < visibleFieldSlots; i++)
         {
             if (i < state.Field.Count)
                 bar.Field.Add(BuildWarbandHero(state.Field[i], i, reserve: false, bar));
@@ -1846,7 +1848,8 @@ public sealed class RunShell : MonoBehaviour
                     Locked = i >= state.FieldSlots,
                 });
         }
-        for (int i = 0; i < _cfg.BenchSlots; i++)
+        int visibleReserveSlots = bar.Compact ? 0 : _cfg.BenchSlots;
+        for (int i = 0; i < visibleReserveSlots; i++)
         {
             if (i < state.Bench.Count)
                 bar.Reserve.Add(BuildWarbandHero(state.Bench[i], i, reserve: true, bar));
@@ -2202,7 +2205,9 @@ public sealed class RunShell : MonoBehaviour
         p.ForcePhoneLayout = _debugPhoneLayout;
         p.Feedback = _feedback;
         p.FeedbackIsError = _feedbackIsError;
-        p.RerollLabel = $"REROLL · {_cfg.RerollCost} SAND";
+        p.RerollLabel = "REROLL";
+        p.RerollCost = _cfg.RerollCost;
+        p.CurrencyBalance = s.Sand;
         p.CanReroll = s.Phase == RunPhase.Planning &&
                       s.PendingSpec == null &&
                       s.Sand >= _cfg.RerollCost;
@@ -2246,7 +2251,7 @@ public sealed class RunShell : MonoBehaviour
 
         p.SlotOfferOpen = _run.SlotOfferOpen;
         p.SlotOfferText = p.SlotOfferOpen
-            ? $"A field place is unlocked: buy capacity {s.FieldSlots + 1} for {_run.SlotOfferCost} Sand."
+            ? $"A field place is unlocked: capacity {s.FieldSlots + 1} is now available."
             : "";
         p.SlotAffordable = p.SlotOfferOpen && s.Sand >= _run.SlotOfferCost;
 
@@ -2409,11 +2414,17 @@ public sealed class RunShell : MonoBehaviour
             if (offer != null) liveOffers++;
 
         string breachStatus;
+        string breachAction;
         if (s.Phase == RunPhase.Reward) breachStatus = "Claim the boss reward first";
         else if (s.PendingSpec != null) breachStatus = "Choose a specialization first";
         else if (_run.CurrentNodeKind == NodeKind.Boss) breachStatus = "The act boss waits";
         else if (_run.CurrentNodeKind == NodeKind.Event) breachStatus = "An Interlude lies ahead";
         else breachStatus = "Set the next wager";
+        if (s.Phase == RunPhase.Reward) breachAction = "CLAIM REWARD";
+        else if (s.PendingSpec != null) breachAction = "CHOOSE SPECIALIZATION";
+        else if (_run.CurrentNodeKind == NodeKind.Boss) breachAction = "PREPARE FOR BOSS";
+        else if (_run.CurrentNodeKind == NodeKind.Event) breachAction = "ENTER INTERLUDE";
+        else breachAction = "SET WAGER";
 
         return new List<HallStationModel>
         {
@@ -2423,6 +2434,7 @@ public sealed class RunShell : MonoBehaviour
                 Eyebrow = "NEXT BEAT",
                 Name = "BREACH",
                 Status = breachStatus,
+                Action = breachAction,
                 Sigil = "⚔",
                 Attention = _recommendedStation == HallStation.Breach,
                 Enabled = s.Phase == RunPhase.Planning && s.PendingSpec == null,
@@ -2867,7 +2879,7 @@ public sealed class RunShell : MonoBehaviour
                 break;
         }
         card.ContentId = offer.Id;
-        card.Price = $"{offer.Price} SAND";
+        card.CurrencyCost = offer.Price;
         card.Frozen = offer.Frozen;
         // Affordability disables BUY, never inspection. The Market card remains selectable so
         // the player can learn why an offer is worth saving for.
@@ -2990,8 +3002,9 @@ public sealed class RunShell : MonoBehaviour
             RuleName = showMastery ? detail.PassiveName : detail.AbilityName,
             ExactRule = showMastery ? detail.PassiveSummary : detail.AbilitySummary,
             Qualifier = qualifier,
-            Price = $"{offer.Price} SAND",
-            EconomyState = shortfall == 0 ? "AVAILABLE" : "SHORT",
+            CurrencyCost = offer.Price,
+            CurrencyBalance = _run.State.Sand,
+            EconomyState = "",
             Selected = detail.Selected,
             Affordable = shortfall == 0,
             Frozen = offer.Frozen,
@@ -3208,7 +3221,7 @@ public sealed class RunShell : MonoBehaviour
             PortraitFallback = "+",
             RoleIcon = "+",
             Accent = "mending",
-            Price = $"{_run.SlotOfferCost} SAND",
+            CurrencyCost = _run.SlotOfferCost,
             AbilityIcon = "⬡",
             AbilityTrigger = "MANAGEMENT · PERMANENT",
             AbilityName = "EXPAND THE MUSTER",
@@ -3242,8 +3255,9 @@ public sealed class RunShell : MonoBehaviour
             RuleLabel = detail.AbilityTrigger,
             RuleName = detail.AbilityName,
             ExactRule = detail.AbilitySummary,
-            Price = $"{_run.SlotOfferCost} SAND",
-            EconomyState = shortfall == 0 ? "AVAILABLE" : "SHORT",
+            CurrencyCost = _run.SlotOfferCost,
+            CurrencyBalance = _run.State.Sand,
+            EconomyState = "",
             Selected = detail.Selected,
             Affordable = shortfall == 0,
             Metrics = new List<StatChipModel>
@@ -3334,6 +3348,8 @@ public sealed class RunShell : MonoBehaviour
                 ? card.AbilitySummary
                 : card.InspectorAbilitySummary,
             Price = card.Price,
+            CurrencyCost = card.CurrencyCost,
+            CurrencyBalance = card.CurrencyCost >= 0 ? _run.State.Sand : -1,
             Stats = new List<StatChipModel>(card.Stats),
             Tags = new List<string>(card.Tags),
             KeywordNotes = new List<string>(card.KeywordNotes),
@@ -3369,12 +3385,14 @@ public sealed class RunShell : MonoBehaviour
                 inspector.Actions.Add(new InspectorActionModel
                 {
                     Id = HallActionId.Buy,
-                    Label = _run.State.Sand >= offer.Price ? $"BUY · {offer.Price} SAND" : $"NEED {offer.Price} SAND",
+                    Label = "BUY",
+                    CurrencyCost = offer.Price,
+                    CurrencyBalance = _run.State.Sand,
                     Primary = true,
                     Enabled = _run.State.Sand >= offer.Price,
                     DisabledReason = _run.State.Sand >= offer.Price
                         ? ""
-                        : $"{offer.Price - _run.State.Sand} more Sand required.",
+                        : $"Balance {_run.State.Sand}; cost {offer.Price}.",
                 });
                 inspector.Actions.Add(new InspectorActionModel
                 {
@@ -3403,12 +3421,14 @@ public sealed class RunShell : MonoBehaviour
             inspector.Actions.Add(new InspectorActionModel
             {
                 Id = HallActionId.BuySlot,
-                Label = $"UNLOCK · {_run.SlotOfferCost} SAND",
+                Label = "UNLOCK FIELD",
+                CurrencyCost = _run.SlotOfferCost,
+                CurrencyBalance = _run.State.Sand,
                 Primary = true,
                 Enabled = _run.State.Sand >= _run.SlotOfferCost,
                 DisabledReason = _run.State.Sand >= _run.SlotOfferCost
                     ? ""
-                    : $"{_run.SlotOfferCost - _run.State.Sand} more Sand required.",
+                    : $"Balance {_run.State.Sand}; cost {_run.SlotOfferCost}.",
             });
         }
         else if (TryHeroAddress(card.Key, out var inBench, out var heroIndex))
@@ -3443,12 +3463,14 @@ public sealed class RunShell : MonoBehaviour
                 Id = HallActionId.Reforge,
                 Label = canTemper
                     ? $"FORGE · {hero.WeaponTier.ToString().ToUpperInvariant()} → " +
-                      $"{(hero.WeaponTier + 1).ToString().ToUpperInvariant()} · {forgeCost} SAND"
+                      $"{(hero.WeaponTier + 1).ToString().ToUpperInvariant()}"
                     : $"FORGE CEILING · {ceiling.ToString().ToUpperInvariant()}",
+                CurrencyCost = canTemper ? forgeCost : -1,
+                CurrencyBalance = canTemper ? _run.State.Sand : -1,
                 Enabled = canAffordForge,
                 DisabledReason = !canTemper
                     ? $"Act {_run.State.Act} forge ceiling is {ceiling}."
-                    : $"{forgeCost - _run.State.Sand} more Sand required.",
+                    : $"Balance {_run.State.Sand}; cost {forgeCost}.",
             });
 
             bool canMove = inBench
@@ -3467,7 +3489,11 @@ public sealed class RunShell : MonoBehaviour
                 Id = HallActionId.SellHero,
                 Label = hero.GoldSpent == 0
                     ? "DISMISS · NO REFUND"
-                    : $"DISMISS · {hero.GoldSpent * _cfg.SellPct / 100} SAND",
+                    : "DISMISS · REFUND",
+                CurrencyCost = hero.GoldSpent == 0
+                    ? -1
+                    : hero.GoldSpent * _cfg.SellPct / 100,
+                CurrencyGain = hero.GoldSpent > 0,
             });
         }
         else if (TrySimpleIndex(card.Key, "item", out var itemIndex))
@@ -3476,7 +3502,9 @@ public sealed class RunShell : MonoBehaviour
             inspector.Actions.Add(new InspectorActionModel
             {
                 Id = HallActionId.SellItem,
-                Label = $"SELL · {item.SandInvested * _cfg.SellPct / 100} SAND",
+                Label = "SELL · REFUND",
+                CurrencyCost = item.SandInvested * _cfg.SellPct / 100,
+                CurrencyGain = true,
             });
         }
         BuildInspectorSections(inspector);
@@ -4029,15 +4057,25 @@ public sealed class RunShell : MonoBehaviour
         var stats = new List<StatChipModel>
         {
             new StatChipModel("HP", $"{unit.Hp} / {unit.MaxHp}",
-                unit.Hp * 3 <= unit.MaxHp ? "bad" : ""),
+                unit.Hp * 3 <= unit.MaxHp ? "bad" : "",
+                PresentationFactId.Hp),
             new StatChipModel(unit.HealAutos ? "HEAL" : "ATK", unit.Attack.ToString(),
-                unit.HealAutos ? "good" : ""),
-            new StatChipModel("REACH", unit.Range.ToString(), unit.Range >= 3 ? "good" : ""),
-            new StatChipModel("SPEED", $"{unit.AttackInterval / 10f:0.0}s"),
+                unit.HealAutos ? "good" : "",
+                unit.HealAutos ? PresentationFactId.Restoration : PresentationFactId.BasicPower),
+            new StatChipModel("REACH", unit.Range.ToString(), unit.Range >= 3 ? "good" : "",
+                PresentationFactId.Reach),
+            new StatChipModel("SPEED", $"{unit.AttackInterval / 10f:0.0}s", "",
+                PresentationFactId.Cadence),
         };
-        if (unit.Shield > 0) stats.Add(new StatChipModel("SHIELD", unit.Shield.ToString(), "good"));
-        if (unit.ManaMax > 0) stats.Add(new StatChipModel("MANA", $"{unit.Mana} / {unit.ManaMax}"));
-        if (unit.CritChance > 0) stats.Add(new StatChipModel("CRIT", $"{unit.CritChance}%", "warn"));
+        if (unit.Shield > 0)
+            stats.Add(new StatChipModel("SHIELD", unit.Shield.ToString(), "good",
+                PresentationFactId.Protection));
+        if (unit.ManaMax > 0)
+            stats.Add(new StatChipModel("MANA", $"{unit.Mana} / {unit.ManaMax}", "",
+                PresentationFactId.ManaThreshold));
+        if (unit.CritChance > 0)
+            stats.Add(new StatChipModel("CRIT", $"{unit.CritChance}%", "warn",
+                PresentationFactId.CritChance));
 
         var notes = presentation.keywords == null
             ? new List<string>()

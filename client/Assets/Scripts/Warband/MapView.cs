@@ -203,7 +203,7 @@ internal sealed class MapView : IRunScreenView
             _enemyList.Add(card);
         }
 
-        _encounterRule.text = map.EncounterRule;
+        MechanicPresentation.BindInline(_encounterRule, map.EncounterRule);
         SetDisplayed(_encounterRule, !string.IsNullOrEmpty(map.EncounterRule));
     }
 
@@ -245,13 +245,8 @@ internal sealed class MapView : IRunScreenView
 
     private static VisualElement BuildStatChip(StatChipModel stat)
     {
-        var chip = new VisualElement();
-        chip.AddToClassList("stat-chip");
-        chip.EnableInClassList("stat-chip--good", stat.Tone == "good");
-        chip.EnableInClassList("stat-chip--bad", stat.Tone == "bad");
-        chip.EnableInClassList("stat-chip--warn", stat.Tone == "warn");
-        chip.Add(MakeLabel("stat-chip__label", stat.Label));
-        chip.Add(MakeLabel("stat-chip__value", stat.Value));
+        var chip = new MechanicStatTile("stat-chip", "stat-chip");
+        chip.Bind(stat);
         return chip;
     }
 

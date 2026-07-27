@@ -1,0 +1,335 @@
+/* Shared mechanic grammar.
+   Every surface uses the same seven families: icon, color, tint, and inline text color all come
+   from MechanicPresentation.cs. Screen styles may change density, never semantic identity. */
+
+.mechanic-surface {
+    border-top-width: 2px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.mechanic--neutral {
+    background-color: rgba(22, 31, 44, 0.94);
+    border-top-color: rgba(130, 151, 179, 0.72);
+}
+
+.mechanic--durability {
+    background-color: rgba(55, 25, 30, 0.94);
+    border-top-color: rgb(232, 111, 116);
+}
+
+.mechanic--offense {
+    background-color: rgba(56, 34, 22, 0.94);
+    border-top-color: rgb(239, 151, 78);
+}
+
+.mechanic--restoration {
+    background-color: rgba(20, 49, 39, 0.94);
+    border-top-color: rgb(101, 211, 154);
+}
+
+.mechanic--space {
+    background-color: rgba(20, 40, 59, 0.94);
+    border-top-color: rgb(104, 174, 238);
+}
+
+.mechanic--time {
+    background-color: rgba(39, 29, 58, 0.94);
+    border-top-color: rgb(181, 139, 235);
+}
+
+.mechanic--mana {
+    background-color: rgba(16, 48, 53, 0.94);
+    border-top-color: rgb(83, 211, 213);
+}
+
+.mechanic--protection {
+    background-color: rgba(16, 43, 52, 0.94);
+    border-top-color: rgb(91, 190, 203);
+}
+
+.mechanic--currency {
+    background-color: rgba(55, 40, 16, 0.94);
+    border-top-color: rgb(228, 177, 64);
+}
+
+.mechanic-stat-tile {
+    position: relative;
+    min-width: 72px;
+    min-height: 52px;
+    justify-content: center;
+    padding-left: 25px;
+    padding-right: 7px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.mechanic-stat-tile__icon {
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+}
+
+.mechanic-stat-tile__label {
+    color: rgb(157, 176, 201);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 0.65px;
+    white-space: nowrap;
+}
+
+.mechanic-stat-tile__value {
+    margin-top: 2px;
+    color: rgb(239, 244, 250);
+    font-size: 16px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.mechanic--durability .mechanic-stat-tile__label,
+.mechanic--durability .mechanic-stat-tile__value { color: rgb(244, 151, 154); }
+.mechanic--offense .mechanic-stat-tile__label,
+.mechanic--offense .mechanic-stat-tile__value { color: rgb(248, 179, 118); }
+.mechanic--restoration .mechanic-stat-tile__label,
+.mechanic--restoration .mechanic-stat-tile__value { color: rgb(133, 229, 181); }
+.mechanic--space .mechanic-stat-tile__label,
+.mechanic--space .mechanic-stat-tile__value { color: rgb(142, 199, 246); }
+.mechanic--time .mechanic-stat-tile__label,
+.mechanic--time .mechanic-stat-tile__value { color: rgb(206, 174, 245); }
+.mechanic--mana .mechanic-stat-tile__label,
+.mechanic--mana .mechanic-stat-tile__value { color: rgb(125, 230, 230); }
+.mechanic--protection .mechanic-stat-tile__label,
+.mechanic--protection .mechanic-stat-tile__value { color: rgb(135, 219, 229); }
+
+.mechanic-stat-tile--good .mechanic-stat-tile__value { color: rgb(135, 229, 181); }
+.mechanic-stat-tile--warn .mechanic-stat-tile__value { color: rgb(245, 202, 111); }
+.mechanic-stat-tile--bad .mechanic-stat-tile__value { color: rgb(235, 126, 126); }
+
+/* Market scan metrics now use the exact same icon/tint grammar as every other stat tile. */
+.market-offer-metric {
+    padding-left: 25px;
+    align-items: flex-start;
+}
+
+.market-offer-metric__icon {
+    left: 7px;
+    top: 9px;
+}
+
+.market-offer-metric__label,
+.market-offer-metric__value {
+    -unity-text-align: middle-left;
+}
+
+/* Rank choice and comparison rows are semantic surfaces, not generic gray dividers. */
+.management-choice__delta,
+.wb-comparison {
+    position: relative;
+    min-height: 38px;
+    margin-top: 5px;
+    padding-left: 38px;
+    padding-right: 9px;
+    border-top-width: 2px;
+}
+
+.management-choice__delta-icon,
+.wb-comparison__icon {
+    position: absolute;
+    left: 10px;
+    top: 9px;
+    width: 17px;
+    height: 17px;
+}
+
+.management-choice__delta-label,
+.wb-comparison__label {
+    color: rgb(171, 190, 215);
+}
+
+/* Hourstone currency is always emblem + number. */
+.currency-amount {
+    min-height: 28px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-left: 7px;
+    padding-right: 8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-top-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.currency-amount__icon {
+    width: 19px;
+    height: 19px;
+    margin-right: 6px;
+}
+
+.currency-amount__value {
+    color: rgb(236, 187, 75);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.currency-amount--unaffordable .currency-amount__value {
+    color: rgb(235, 126, 126);
+}
+
+.currency-action {
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.currency-action__label {
+    color: rgb(239, 244, 250);
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.currency-action__amount {
+    margin-left: 9px;
+}
+
+.currency-action__amount .currency-amount__value {
+    color: rgb(236, 187, 75);
+    font-size: 13px;
+}
+
+.currency-action__amount .currency-amount__icon {
+    width: 16px;
+    height: 16px;
+}
+
+.market-offer-card__price {
+    min-width: 70px;
+    margin-left: 8px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.market-offer-card__price .currency-amount__icon {
+    width: 21px;
+    height: 21px;
+}
+
+.market-offer-card__price .currency-amount__value {
+    font-size: 20px;
+}
+
+.wb-card__currency-price {
+    margin-left: auto;
+}
+
+.wb-inspector__economy {
+    min-width: 206px;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.wb-inspector__currency-price {
+    min-height: 34px;
+}
+
+.currency-balance {
+    min-height: 34px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+    background-color: rgba(22, 31, 44, 0.92);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(94, 118, 150, 0.58);
+    border-right-color: rgba(94, 118, 150, 0.58);
+    border-top-color: rgba(94, 118, 150, 0.58);
+    border-bottom-color: rgba(94, 118, 150, 0.58);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.currency-balance__label,
+.currency-balance__after-label {
+    color: rgb(143, 162, 188);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
+.currency-balance__after-label { margin-left: 5px; }
+
+.currency-balance__operator {
+    margin-left: 3px;
+    margin-right: 3px;
+    color: rgb(117, 138, 166);
+    font-size: 12px;
+}
+
+.currency-balance__amount {
+    min-height: 24px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.currency-balance__amount .currency-amount__icon {
+    width: 13px;
+    height: 13px;
+    margin-right: 3px;
+}
+
+.currency-balance__amount .currency-amount__value {
+    font-size: 13px;
+}
+
+.currency-balance--unaffordable {
+    border-left-color: rgba(218, 90, 90, 0.78);
+    border-right-color: rgba(218, 90, 90, 0.78);
+    border-top-color: rgba(218, 90, 90, 0.78);
+    border-bottom-color: rgba(218, 90, 90, 0.78);
+}
+
+/* Live combat tooltip uses the same family tiles despite living in its own UIDocument. */
+.combat-tooltip-stats {
+    flex-direction: row;
+    margin-top: 5px;
+}
+
+.combat-tooltip-stat {
+    min-width: 78px;
+    min-height: 52px;
+    margin-right: 5px;
+}
+
+.combat-tooltip-stat__label { font-size: 9px; }
+.combat-tooltip-stat__value { font-size: 14px; }
+
+.layout--phone .mechanic-stat-tile {
+    min-width: 62px;
+    padding-left: 22px;
+}
+
+.layout--phone .mechanic-stat-tile__icon {
+    left: 6px;
+    width: 13px;
+    height: 13px;
+}
+
+.layout--phone .currency-balance__after-label,
+.layout--phone .currency-balance__label {
+    display: none;
+}

@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Warband.Sim;
@@ -264,6 +266,76 @@ public static class RenderShots
         return outPath;
     }
 
+    /// <summary>
+    /// Bring the Windows Editor and Game View forward before a synchronous verification capture.
+    /// ScreenCapture requires a live end-of-frame, which unattended remote editors do not always
+    /// provide; this keeps a deterministic fallback without reaching through remote desktop pixels.
+    /// </summary>
+    public static bool McpFocusEditor()
+    {
+        bool focused = true;
+#if UNITY_EDITOR_WIN
+        IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+        IntPtr foreground = GetForegroundWindow();
+        uint foregroundThread = GetWindowThreadProcessId(foreground, out _);
+        uint editorThread = GetCurrentThreadId();
+        bool attached = foregroundThread != 0 && foregroundThread != editorThread &&
+                        AttachThreadInput(editorThread, foregroundThread, true);
+        if (handle != IntPtr.Zero)
+        {
+            ShowWindow(handle, 9);
+            BringWindowToTop(handle);
+            SetFocus(handle);
+        }
+        focused = handle != IntPtr.Zero && SetForegroundWindow(handle);
+        if (attached) AttachThreadInput(editorThread, foregroundThread, false);
+#endif
+        var gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
+        var gameView = gameViewType == null
+            ? null
+            : EditorWindow.GetWindow(gameViewType, false, "Game");
+        gameView?.Focus();
+        gameView?.Repaint();
+        EditorApplication.QueuePlayerLoopUpdate();
+        return focused;
+    }
+
+    /// <summary>
+    /// Capture the visible Game View editor window synchronously. Call McpFocusEditor immediately
+    /// beforehand and allow the OS compositor to present the window before pixels are read.
+    /// </summary>
+    public static string McpCaptureGameViewWindow(string label)
+    {
+        var gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
+        var gameView = gameViewType == null
+            ? null
+            : EditorWindow.GetWindow(gameViewType, false, "Game");
+        if (gameView == null)
+        {
+            Debug.LogError("[WarbandMCP] no Game View window");
+            return "";
+        }
+
+        Rect rect = gameView.position;
+        int width = Mathf.Max(1, Mathf.RoundToInt(rect.width));
+        int height = Mathf.Max(1, Mathf.RoundToInt(rect.height));
+        Color[] pixels =
+            InternalEditorUtility.ReadScreenPixel(new Vector2(rect.x, rect.y), width, height);
+        var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        string safe = string.IsNullOrWhiteSpace(label) ? "capture" : label;
+        foreach (char c in Path.GetInvalidFileNameChars()) safe = safe.Replace(c, '_');
+        string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../McpCaptures"));
+        Directory.CreateDirectory(outDir);
+        string outPath = Path.Combine(outDir, safe + ".png");
+        File.WriteAllBytes(outPath, texture.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(texture);
+        Debug.Log($"[WarbandMCP] wrote synchronous Game View capture: {outPath}");
+        return outPath;
+    }
+
     private static void QueueGameViewFrame()
     {
         RepaintGameViewOnce();
@@ -307,6 +379,32 @@ public static class RenderShots
             UnityEngine.Object.DestroyImmediate(rt);
         }
     }
+
+#if UNITY_EDITOR_WIN
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr handle, int command);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr handle, out uint processId);
+
+    [DllImport("user32.dll")]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
+
+    [DllImport("user32.dll")]
+    private static extern bool BringWindowToTop(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SetFocus(IntPtr handle);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+#endif
 }
 
 /// <summary>Ephemeral Play Mode writer used by RenderShots.McpCaptureGameView.</summary>

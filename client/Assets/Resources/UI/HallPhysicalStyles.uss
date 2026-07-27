@@ -1882,3 +1882,283 @@
     top: 4px;
     bottom: 4px;
 }
+
+/* UI proposal slice: one dominant next-beat decision over the physical Table.
+   The persistent shell bar owns Warband management, so the old station and helper
+   callouts no longer compete with the route the player is here to take. */
+.hub-overview {
+    padding-left: 22px;
+    padding-right: 22px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.hub-overview__heading,
+.hub-recommendation,
+.hub-station--warband {
+    display: none;
+}
+
+.hub-table__ring,
+.hub-table__axis,
+.hub-table__grain {
+    opacity: 0.08;
+}
+
+.hub-station--breach {
+    left: 50%;
+    top: 28px;
+    width: 560px;
+    min-height: 190px;
+    margin-left: -280px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 22px;
+    padding-bottom: 84px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(7, 11, 17, 0.96);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.78);
+    border-right-color: rgba(217, 164, 58, 0.78);
+    border-top-color: rgba(217, 164, 58, 0.78);
+    border-bottom-color: rgba(217, 164, 58, 0.78);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.hub-station--breach:hover,
+.hub-station--breach:focus {
+    background-color: rgba(17, 23, 32, 0.985);
+    border-left-color: rgb(239, 190, 87);
+    border-right-color: rgb(239, 190, 87);
+    border-top-color: rgb(239, 190, 87);
+    border-bottom-color: rgb(239, 190, 87);
+}
+
+.hub-station--breach .hub-station__sigil-vector {
+    width: 70px;
+    min-width: 70px;
+    height: 70px;
+    margin-right: 22px;
+}
+
+.hub-station--breach .hub-station__eyebrow {
+    color: rgb(217, 164, 58);
+    font-size: 12px;
+    letter-spacing: 2.4px;
+}
+
+.hub-station--breach .hub-station__name {
+    margin-top: 3px;
+    font-size: 34px;
+    letter-spacing: 4px;
+}
+
+.hub-station--breach .hub-station__status {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.hub-station--breach .hub-station__attention {
+    display: none;
+}
+
+.hub-station__action {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    bottom: 18px;
+    height: 54px;
+    padding-top: 15px;
+    color: rgb(21, 16, 10);
+    background-color: rgb(217, 164, 58);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(246, 211, 127);
+    border-right-color: rgb(246, 211, 127);
+    border-top-color: rgb(246, 211, 127);
+    border-bottom-color: rgb(246, 211, 127);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    letter-spacing: 1.8px;
+    -unity-text-align: middle-center;
+}
+
+.hub-station--breach:disabled .hub-station__action {
+    color: rgb(132, 136, 143);
+    background-color: rgb(38, 43, 51);
+    border-left-color: rgba(105, 117, 133, 0.62);
+    border-right-color: rgba(105, 117, 133, 0.62);
+    border-top-color: rgba(105, 117, 133, 0.62);
+    border-bottom-color: rgba(105, 117, 133, 0.62);
+}
+
+.hub-station--market,
+.hub-station--armory {
+    top: 58%;
+    width: 248px;
+    min-height: 82px;
+    margin-top: -41px;
+    background-color: rgba(7, 12, 19, 0.88);
+}
+
+.hub-station--market {
+    left: 9%;
+}
+
+.hub-station--armory {
+    right: 9%;
+}
+
+.hub-station--hourstone {
+    left: 50%;
+    top: auto;
+    bottom: 24px;
+    width: 238px;
+    min-height: 78px;
+    margin-left: -119px;
+    margin-top: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    flex-direction: row;
+    justify-content: center;
+    background-color: rgba(12, 15, 20, 0.88);
+}
+
+.hub-station--hourstone .hub-station__sigil-vector {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+.hub-station--hourstone .hub-station__copy {
+    align-items: flex-start;
+    flex-grow: 0;
+}
+
+.hub-station--hourstone .hub-station__name {
+    font-size: 18px;
+}
+
+.layout--compact .hub-station--breach {
+    width: 500px;
+    min-height: 174px;
+    margin-left: -250px;
+}
+
+.layout--compact .hub-station--market {
+    left: 4%;
+}
+
+.layout--compact .hub-station--armory {
+    right: 4%;
+}
+
+.layout--short .hub-station--breach {
+    top: 14px;
+    min-height: 154px;
+    padding-top: 16px;
+    padding-bottom: 68px;
+}
+
+.layout--short .hub-station__action {
+    bottom: 12px;
+    height: 44px;
+    padding-top: 11px;
+    font-size: 16px;
+}
+
+.layout--short .hub-station--market,
+.layout--short .hub-station--armory {
+    top: 61%;
+}
+
+.layout--short .hub-station--hourstone {
+    bottom: 10px;
+}
+
+.layout--phone .hub-overview {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.layout--phone .hub-station--breach {
+    top: 8px;
+    width: 380px;
+    min-height: 132px;
+    margin-left: -190px;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 12px;
+    padding-bottom: 54px;
+}
+
+.layout--phone .hub-station--breach .hub-station__sigil-vector {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    margin-right: 12px;
+}
+
+.layout--phone .hub-station--breach .hub-station__eyebrow {
+    display: flex;
+    font-size: 9px;
+}
+
+.layout--phone .hub-station--breach .hub-station__name {
+    font-size: 23px;
+}
+
+.layout--phone .hub-station--breach .hub-station__status {
+    font-size: 11px;
+}
+
+.layout--phone .hub-station__action {
+    left: 18px;
+    right: 18px;
+    bottom: 9px;
+    height: 36px;
+    padding-top: 8px;
+    font-size: 13px;
+}
+
+.layout--phone .hub-station--market,
+.layout--phone .hub-station--armory {
+    top: 61%;
+    width: 174px;
+    min-height: 60px;
+    margin-top: -30px;
+}
+
+.layout--phone .hub-station--market {
+    left: 8px;
+}
+
+.layout--phone .hub-station--armory {
+    right: 8px;
+}
+
+.layout--phone .hub-station--hourstone {
+    bottom: 8px;
+    width: 168px;
+    min-height: 58px;
+    margin-left: -84px;
+}

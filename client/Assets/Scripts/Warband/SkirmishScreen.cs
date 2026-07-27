@@ -229,6 +229,8 @@ internal sealed class SkirmishScreen : IDisposable
         documentRoot.style.flexGrow = 1;
         tree.CloneTree(documentRoot);
         documentRoot.styleSheets.Add(styles);
+        var mechanics = Resources.Load<StyleSheet>("UI/MechanicPresentationStyles");
+        if (mechanics != null) documentRoot.styleSheets.Add(mechanics);
 
         _root = Required<VisualElement>(documentRoot, "skirmish-root");
         _boardSurface = Required<VisualElement>(_root, "board-hit-surface");
@@ -285,7 +287,7 @@ internal sealed class SkirmishScreen : IDisposable
         _step.text = model.Step;
         _title.text = model.EncounterName;
         _pressure.text = model.Pressure;
-        _rule.text = model.Rule;
+        MechanicPresentation.BindInline(_rule, model.Rule);
         _instruction.text = model.Instruction;
         _primary.text = model.PrimaryText;
         _primary.SetEnabled(model.PrimaryEnabled);
@@ -389,25 +391,20 @@ internal sealed class SkirmishScreen : IDisposable
         _statList.Clear();
         foreach (var stat in model.Stats)
         {
-            var chip = new VisualElement();
-            chip.AddToClassList("stat-chip");
-            var name = new Label(stat.Name);
-            name.AddToClassList("stat-name");
-            chip.Add(name);
-            var value = new Label(stat.Value);
-            value.AddToClassList("stat-value");
-            chip.Add(value);
+            var chip = new MechanicStatTile("stat-chip");
+            chip.Bind(new StatChipModel(stat.Name, stat.Value, "",
+                DecisionCardPresentation.FactId(stat.Name)));
             _statList.Add(chip);
         }
 
         _passiveName.text = $"PASSIVE  •  {model.PassiveName}";
-        _passiveText.text = model.PassiveText;
+        MechanicPresentation.BindInline(_passiveText, model.PassiveText);
         _signatureName.text = $"SIGNATURE  •  {model.SignatureName}";
-        _signatureText.text = model.SignatureText;
+        MechanicPresentation.BindInline(_signatureText, model.SignatureText);
         _masteryName.text = model.MasteryActive
             ? $"WEAPON MASTERY  •  {model.MasteryName}"
             : $"MASTERY INACTIVE  •  {model.MasteryName}";
-        _masteryText.text = model.MasteryText;
+        MechanicPresentation.BindInline(_masteryText, model.MasteryText);
         _masteryCard.EnableInClassList("mastery-card--inactive", !model.MasteryActive);
 
         _weaponList.Clear();
@@ -424,12 +421,14 @@ internal sealed class SkirmishScreen : IDisposable
             title.AddToClassList("weapon-title");
             button.Add(title);
 
-            var summary = new Label(weapon.Summary);
+            var summary = new Label();
             summary.AddToClassList("weapon-summary");
+            MechanicPresentation.BindInline(summary, weapon.Summary);
             button.Add(summary);
 
-            var trait = new Label(weapon.Trait);
+            var trait = new Label();
             trait.AddToClassList("weapon-trait");
+            MechanicPresentation.BindInline(trait, weapon.Trait);
             button.Add(trait);
             _weaponList.Add(button);
         }

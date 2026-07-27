@@ -62,32 +62,75 @@ namespace Warband.Content
         public const int BondHaste = 1000;
 
         /// <summary>
-        /// The authored node-fight pool (roadmap item 2). Four encounters, each built from
-        /// <see cref="Enemies"/> roles and each posing a DIFFERENT problem — that is the whole
-        /// point, since every normal fight used to be random hero kits with a stat multiplier and
-        /// deployment therefore never mattered.
+        /// Every authored node encounter (roadmap item 2). Each is built from <see cref="Enemies"/>
+        /// roles and each poses a DIFFERENT problem — that is the whole point, since every normal
+        /// fight used to be random hero kits with a stat multiplier and deployment therefore never
+        /// mattered. This list is the CATALOGUE, not a pool: what an act may draw is
+        /// <see cref="PoolFor"/>.
         ///
         /// Ordered, never shuffled in place: selection is by salted rng in the catalog, so the
         /// preview and the spawn resolve to the same encounter (RunController.PreviewEnemies).
         /// </summary>
         public static readonly System.Func<int, EncounterDef>[] NodePool =
         {
-            GnawingHour, TheLongRange, NinthBell, TheDrop,
+            GnawingHour, TheLongRange, NinthBell, TheDrop, Slagworks, LongProcession,
         };
 
         /// <summary>
-        /// The pool an act may draw from. The Long Range is act 2+ ON PURPOSE: measured against a
-        /// rank-C opening warband it is unwinnable from every formation (probe: 0% × 6), and
-        /// measured from act 2 it is the sharpest encounter in the pool (spread 100). That is an
-        /// act-placement fact, not a number to flatten — softening it until three recruits can beat
-        /// it would delete the problem it exists to pose.
+        /// The pool an act may draw from — act-scoped since 2026-07-26 (roadmap item 14).
         ///
-        /// This is also the seam where acts stop being numbers and start being eras
-        /// (`theme.md`): an act's pool is its identity.
+        /// Acts 2 and 3 used to draw an IDENTICAL pool, so a three-act run was one act played three
+        /// times at rising numbers, and theme.md's "acts are eras" plus pve-encounters.md's "an
+        /// act's pool is its identity" were both simply untrue in the build. Worse, ADR 0024 gave
+        /// each act a different boss while the law above it says **the boss rules the act** —
+        /// normal encounters exist to introduce, combine and stress the pieces its boss recombines.
+        /// A shared pool cannot do that for three different exams.
+        ///
+        /// So each pool is now built backwards from its boss:
+        ///
+        /// | act | boss | its exam | what the act introduces |
+        /// |---|---|---|---|
+        /// | 1 | The Last Oath | which threat you leave enraged | Gnawing Hour (target economy) · Ninth Bell (a clock) · The Drop (placement) |
+        /// | 2 | The Ashfall Battery | reach the gun behind the wall | The Long Range — kill order past a ward |
+        /// | 3 | The Waning Crown | your own kills ring the bell | Long Procession (your kills wind a clock) · Slagworks (the lane) |
+        ///
+        /// **Acts 2 and 3 are now disjoint** — the defect this item names, gone at the root rather
+        /// than softened. Act 1 deliberately owns no encounter of its own: its job is to teach
+        /// pieces cleanly that the later acts recombine, so all three of its fights recurring later
+        /// is the through-line working. The Ninth Bell in particular teaches a clock in act 1 and
+        /// act 3's boss IS a clock.
+        ///
+        /// **Act 1 is deliberately untouched.** It is already where the naive bot line dies most
+        /// (4/12 runs at act 1 node 0), so this item's job was to differentiate 2 from 3, not to
+        /// make the opening harder.
+        ///
+        /// **What this does NOT do is make the pool harder**, and that was tried. Every composition
+        /// that made a new encounter measure non-flat against the four answer axes (a third wall in
+        /// the Slagworks; a nine-body Procession court; act 2 drawing only wall fights) also drove
+        /// the naive line from 3/12 completed runs to 0/12 and tripped `FullRunsCompleteOnRealContent`.
+        /// The gap between a competent party and the weakest legal comp is currently wider than the
+        /// band an encounter can sit in. That is a balance finding, not a composition one, and the
+        /// content doctrine parks it until playtest #1 — so these compositions are sized to sit
+        /// beside the existing pool rather than to beat a metric.
+        ///
+        /// The Long Range stays out of act 1 ON PURPOSE: measured against a rank-C opening warband
+        /// only 2 of 4 answer axes clear it at all. That is an act-placement fact, not a number to
+        /// flatten — softening it until three recruits can beat it would delete the problem it
+        /// exists to pose.
         /// </summary>
-        public static System.Func<int, EncounterDef>[] PoolFor(int act) => act <= 1
-            ? new System.Func<int, EncounterDef>[] { GnawingHour, NinthBell, TheDrop }
-            : NodePool;
+        public static System.Func<int, EncounterDef>[] PoolFor(int act) => act switch
+        {
+            <= 1 => new System.Func<int, EncounterDef>[] { GnawingHour, NinthBell, TheDrop },
+            // Four, not three. Act 2 is the wall act, and a three-deep pool of which two draws were
+            // 340-HP Colossi meant many runs met two wall fights back to back: the naive line went
+            // 3/12 completed runs to 0/12 and `ContentTests` correctly called the content
+            // unwinnable. The Gnawing Hour returns as the clean-teach breather the through-line law
+            // asks for ("early encounters teach one piece cleanly"), and act 2's identity still
+            // comes from the two problems only it poses.
+            2 => new System.Func<int, EncounterDef>[] { TheLongRange, TheDrop, GnawingHour },
+            // Act 3 and every endless act past it (ADR 0016) keep facing the Crown's pool.
+            _ => new System.Func<int, EncounterDef>[] { LongProcession, NinthBell, Slagworks },
+        };
 
         public static EncounterDef Select(int act, Rng rng)
         {
@@ -236,6 +279,75 @@ namespace Warband.Content
             def.Enemies.Add(Place(Enemies.Stalker(), 6, 4, Enemies.Diver));
             if (knives >= 3) def.Enemies.Add(Place(Enemies.Stalker(), 5, 2, Enemies.Diver));
             def.Enemies.Add(Place(Enemies.Gunner(), 7, 2, Enemies.Artillery));
+            return def;
+        }
+
+        /// <summary>
+        /// TWO WALLS — the Ashfall Battery's geometry with its clock removed. Two Colossi hold the
+        /// lane and the guns behind them are already shooting your back rank, so a front line does
+        /// not protect anything and the answer is reach or go around. Deliberately RULELESS (the
+        /// Gnawing Hour's precedent): the shape is the problem, and act 2's boss supplies the clock.
+        ///
+        /// Distinct from The Long Range on purpose — that one is a kill-ORDER problem (the ward
+        /// makes the big body the wrong target); this is a GEOMETRY problem with no correct order.
+        /// </summary>
+        public static EncounterDef Slagworks(int act)
+        {
+            // The act lever is the LANE, not the numbers: the third wall closes the gap the player
+            // learned to walk through, and it lands in act 3 where this encounter is the carried-
+            // forward STRESS slot (3 of 4 axes, control cannot solve it, reach swings 83 points).
+            //
+            // It was briefly moved to act 2 to chase a non-flat number there, and that is exactly
+            // the tune-to-the-metric trap: it made act 2's whole pool maximal — three wall/reach
+            // problems with no breather — and the naive line went from 3/12 completed runs to 0/12.
+            // Two walls at act 2 measures free for the four answer axes, which is the pool-wide
+            // condition (44 of 48 cells sit at win=100), not something this encounter should be
+            // distorted to fix on its own.
+            var def = new EncounterDef
+            {
+                Id = "slagworks",
+                Name = "The Slagworks",
+                Pressure = "Two walls, and the guns are already past your front line.",
+                RuleName = "LANE",
+                RuleText = "No encounter rule. Two Ashen Colossi hold the lane; Sanddrift Gunners "
+                         + "behind them acquire your FARTHEST unit and give ground to keep their "
+                         + "distance. Standing behind your own wall does not help.",
+            };
+            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 1, Enemies.Anchor, "WALL"));
+            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 4, Enemies.Anchor, "WALL"));
+            def.Enemies.Add(Place(Enemies.Gunner(), 7, 0, Enemies.Artillery));
+            def.Enemies.Add(Place(Enemies.Gunner(), 7, 5, Enemies.Artillery));
+            return def;
+        }
+
+        /// <summary>
+        /// PROCESSION — the Waning Crown's lesson, taught at a survivable scale. The Scribe's ritual
+        /// advances on every death in its court, so clearing the escorts is both the obvious answer
+        /// and the thing that fires the ritual sooner. This is the encounter act 3 was missing: on
+        /// the old pool, the run's final boss was the FIRST time a player ever met the idea that
+        /// their own kills can be the losing line, which is a knowledge check, not an exam.
+        /// </summary>
+        public static EncounterDef LongProcession(int act)
+        {
+            // The court is the clock, so the COURT is the act lever: every body is both a threat
+            // and 4 more mana the moment you answer it. Six measured FREE and flat at act 3
+            // (`--enc`, 2026-07-26) — the ritual fired but never mattered.
+            int court = act <= 2 ? 4 : 6;
+            var slots = new[] { (5, 0), (5, 4), (6, 1), (6, 3), (4, 2), (6, 5) };
+            var def = new EncounterDef
+            {
+                Id = "long-procession",
+                Name = "The Long Procession",
+                Pressure = "Its court is the clock. Every one you kill winds it further.",
+                RuleName = "PROCESSION",
+                RuleText = $"The Procession-Scribe never attacks. Its ritual advances on time AND on "
+                         + $"every death among its {court} Hourlings — including the ones you cause. "
+                         + "At full mana it damages and Slows your ENTIRE warband. Silence stops the "
+                         + "ritual completely; Stun holds it.",
+            };
+            for (int i = 0; i < court; i++)
+                def.Enemies.Add(Place(Enemies.Hourling(), slots[i].Item1, slots[i].Item2, Enemies.Swarm));
+            def.Enemies.Add(Place(Enemies.Scribe(deathFed: true), 7, 2, Enemies.Ritualist, "DEATH-FED RITUAL"));
             return def;
         }
 
