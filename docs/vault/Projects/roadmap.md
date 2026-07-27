@@ -4,976 +4,388 @@
 multiple competing lists is how projects rot.) Sessions plan from here; see CLAUDE.md
 "Planning SOP". Keep it honest: the board must match reality better than memory.
 
-**Groomed 2026-07-24.** This board had grown into an archive (568 lines; one item was 215 of
-them), which is exactly how a board stops being usable. Build logs now live in `Daily/` —
-this file carries **state, priority, laws, and the gotchas that would bite someone.** If you
-want the blow-by-blow of how something was built, read the daily note for that date.
+**HARD-CUT GROOMED 2026-07-27.** The board had re-grown to **1145 lines with 558 of them in Done**
+and item 1 alone at 175 — the exact archive failure the 07-24 grooming fixed. Full Done detail and
+item 1's build history now live in **`Projects/roadmap-done-archive.md`** (nothing deleted);
+blow-by-blow logs live in `Daily/<date>.md`. **This file carries state, priority, laws, and the
+gotchas that would bite someone.** If a Done entry grows past two lines, it belongs in the archive.
 
 ## Stages
 - **DESIGN** — needs a design conversation with Jake before building. Don't build; propose.
 - **SPEC'D** — designed (ADR/doc exists), ready to implement autonomously.
 - **BUILD** — implementation in progress; note what's left. Finish before starting new work.
 - **VERIFY** — built, needs verification/tests/polish before calling done.
-- **DONE** — move to the Done section with a date.
+- **DONE** — move to the Done section with a date, **one line**, detail to the archive.
 
 ## Now / Next (ordered — top unblocked item is "what's next")
 🎯 **GOAL (Jake, 2026-07-23): a playable PvE PoC.** **North star (ADR 0016): the fun is
 breaking the game with a compounding warband, then seeing how far asymmetrical PvE and
 endless pressure can push it.**
 
-### ⇒ AGREED ORDER (Jake, 2026-07-26). Item numbers never change; this line does.
-**0. JAKE'S VERIFY PASS on item 1 — STARTED 2026-07-26.** The first standalone fight exposed a
-build-only blocker before combat feel could be judged: board floor + HP/Mana bars were pink, and the
-generated audio was bad and much too long. URP Unlit stripping explained the effect exceptions, but
-build `0.1.260726.1658` disproved it as the whole pink-surface cause. The remaining bug was Unity
-UUM-136536: player-created primitives begin on `InternalErrorShader`, which our cache cloned.
-Build `0.1.260726.1706` explicitly replaces that material with registered URP Lit and mutes both
-combat and Hall/UI audio by default. **Rewatch one fight in this corrected build before choosing
-more work.** This remains the top of the board and requires Jake.
-**1. Items ~~7~~ → ~~8~~ → 9** (~~save/resume~~ · ~~standalone build + launcher~~ both **BUILT
-2026-07-26** · an options screen) — the invisible blockers on item 6. **Item 9 is next.** Item 8 did
-confirm item 7 on the real platform: `persistentDataPath` resolves, the save round-trips through
-Windows text IO, and the content fingerprint is identical on both machines.
-**2. Then re-decide** from the verify pass. Standing candidates, in Jake's stated preference order
-if nothing changes: cheap feel wins (10, 11) · Inscription engine (5a) · act identity (14).
-Items 4, 12, 13, 15 are live but unranked. Item 16 is settled — see it. Item 5 is a laws page.
+### ⇒ AGREED ORDER (Jake, 2026-07-27). Item numbers never change; this line does.
+**Reordered from the 07-26 line, for one reason: Jake's play passes are the scarcest resource on
+this project, and the previous order spent one on a build with a known, one-number defect in it.**
 
-**STATE, 2026-07-26 (honest):** the first-playable run shape and between-fight UX are
-walkable end to end: Menu → five-card Draft → full-screen Management Hall → stakes-first Wager
-→ formation-reveal Deployment → Fight/replay → blocking result report → spatial Hourstone Table
-→ Victory/Defeat. Three acts × five
-beats, Sand economy, Interludes, boss rewards, and terminal loss are implemented. **392 tests
-green.** The workspace has data-first cards/inspector, portraits, explicit economic actions,
-responsive landscape phone/tablet compositions, safe-area rules, reduced motion, and timing
-polish. The old Management drawer has been replaced by stable Market/Warband/Armory/Hourstone
-geography and bespoke workspaces; the Armory previews exact equipment deltas. **Combat viewing still does not read well enough.** Authored
-encounters landed 2026-07-25 (ADR 0023) and per-act bosses + full encounter disclosure landed
-2026-07-26 (ADR 0024) — deployment has real problems to answer and every fight now states its rule.
-**The first standalone combat pass started 2026-07-26, but a build-only shader failure made it an
-invalid read of the combat work.** The corrected build is ready for the real pass; that remains the
-single biggest blocker on the board (see item 1).
-**Opening Muster readability pass built 2026-07-26:** its universal cards were replaced by a
-dedicated three-fact / two-rule scan grammar with code-native semantic glyphs, in-portrait exact
-mechanics, ordered party sockets, semantic select/deselect feedback, cancellable reveal/lens
-timers, F1 tuning, and F2 previews. Desktop resolved-layout verification now passes; mobile is
-deliberately deferred.
-**Unified decision-card pass built + Unity-verified 2026-07-26:** Feature / Stock / Detail /
-Target profiles now share one typed fact registry, code-native glyph and semantic-colour language,
-plain-language tooltips, and tunable selection/detail-swap motion. Muster shows flat Signature Mana
-cost while attacks-to-ready lives in advanced help. The Hall is a 38/62 browse-and-decide stage:
-compact stock/targets show identity and price only, while one persistent selected-card dossier owns
-exact stats, rules, comparisons, and actions. Market, Warband, Armory, and Hourstone selection is
-station-scoped; empty stations expand instead of inheriting a stale hero dossier. Live gates passed
-Muster containment, Market footer/title/split bounds, repeated station rebinds, compact target
-containment, empty Hourstone, and return-to-Market flow. Mobile-specific composition remains
-deferred.
-**Persistent Warband Shelf + Loadout Table built and Unity-verified 2026-07-26:** every Hall
-station now keeps the six-address field cap, two reserves, ranks, portraits, and equipment sockets
-visible in one bottom rail. Sand appears once in the run ribbon; duplicate FIELD/ledger readouts are
-gone. Expanding the Shelf replaces the station body with one 30/36/34 formation/champion/Armory
-instrument while preserving Market selection and scroll state. Selected detail is typed by decision
-kind: champions get Basic/Signature/Passive, weapons get Weapon Profile/Mastery, trinkets get their
-equipped rule, Inscriptions get a Run-Wide Law, and capacity gets six explicit sockets. Recruit/rank,
-gear, and capacity receipts now land on the affected Shelf target. Expand/collapse/focus recipes are
-live-tunable in F1. Live checks passed 40/60 Market containment, all 6+2 Shelf addresses, exact
-30/36/34 Loadout bounds, Market selection restoration, weapon/Inscription no-Basic-Attack grammar,
-and the zero-inventory Armory empty state at 2542×1304. Dedicated mobile composition remains
-deferred by Jake.
-**Shared mechanic presentation system built and Unity-verified 2026-07-26:** durability, offense,
-restoration, space, time, mana, and protection now have one stable code-native glyph, colour,
-tinted surface, and inline-text treatment. Shared stat tiles and rule formatting are used by
-Market stock/detail, rank choices, cards, inspectors, tooltips, deployment/results, and live
-combat. Prices now use the Hourstone emblem plus a number; `SHORT N` / `NEED N` commerce labels
-are gone. A selected offer owns affordability: the action disables and the dossier shows
-balance − cost = after. Live checks passed five typed Market prices, selected-offer affordability,
-next-frame Market layout, combat inspector semantics, and a clean Unity console; all 446
-sim/run tests pass. Captures: `client/McpCaptures/ui-semantic-market-selected.png` and
-`client/McpCaptures/ui-semantic-combat-inspector.png`.
+**1. Item 10 — the impact balloon.** Data-only, one F1 slider (`impact.punchBoost`). Struck units
+inflate ~37% over their neighbours, hiding HP bars and arcs; it reproduces with all VFX hidden.
+**2. Item 11 — Overtime is invisible.** A pitch pillar that renders as literally nothing; a long
+fight currently reads as "units started dying for no reason."
+**3. JAKE'S VERIFY PASS (item 1).** Then, and only then, Jake watches a fight — in a build where
+the balloon is fixed and the storm is visible, so the pass is worth the time it costs.
+**4. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
+**5. Then re-decide** from the verify pass. Standing candidates: item 17 (Silence) · item 1c/1d
+(comprehension UI, camera) · item 5a (Inscription engine) · items 12, 13, 15.
 
-1. **FEEL & READABILITY — the fight does not read** — **VERIFY (was DESIGN → BUILD). THE TOP ITEM,
-   AND IT IS BLOCKED ON JAKE, NOT ON BUILDING.**
-   **The four live threads, so nobody has to read 90 lines to find them:**
-   **1a — combat spectacle P0–P6** (casts, fields, status icons, deaths, dress): BUILT, machine-gated
-   green. The first standalone pass was obscured by stripped URP shaders; **the corrected build has
-   not been seen in motion.** Needs one play pass; the specific knobs to judge are listed at
-   the end of the arc paragraph below. **1b — Hall polish:** BUILT + Unity-verified; four named
-   polish slices open (Bind choreography · Rule Preview diagrams · real-device safe-area/haptics ·
-   audio/motion feel). **1c — fight-legibility Phase 4 client UI:** HALF built — the damage-share +
-   died-to readout shipped (`40eb076`), but `BattleForecast` exists in the sim and is referenced by
-   **zero** client code, so the win-probability half has no home. **1d — camera/framing pass:**
-   unbuilt, and taste-gated on Jake.
-   **Nothing here needs a design conversation any more.** It needs Jake to watch a corrected fight.
-   **Jake, 2026-07-24, after playing it:** *"playing it now still does not feel great for a
-   lot of reasons (UI is not great, sim viewing has some issues and is not quite clear what's
-   happening)."* Take this at face value: **item 4b's entire render arc — signature-matched
-   tells, directed tells, unit identity, kill feed, fight story — was aimed at exactly this
-   target and has not hit it.** Adding more tells is therefore NOT obviously the fix; the next
-   move is to find out *why* it does not read before building more of the same.
-   **Do not start by building.** Watch a fight with Jake, or capture one and go through it
-   beat by beat, and separate the three candidates:
-   ① **Presentation** — too much at once, no pacing, no emphasis. ② **Legibility of state** — you
-   cannot tell what a unit IS mid-fight, what statuses are on it, or why it did what it did.
-   ③ **UI quality** — the shell screens are functional-but-plain; density, hierarchy and typography
-   were never passed over. Likely all three, in different measure.
-   **STATUS 2026-07-26: all three have now been built against. The first player pass found build
-   integrity failures before it could judge them; the corrected player has not been watched.** The
-   "name which before building" instruction above was overtaken by events — three sessions built
-   answers to all three candidates. So this item is no longer DESIGN or BUILD, it is **VERIFY, and
-   the only person who can advance it is Jake** (see the four threads below). (Superseded detail:
-   the beat sequencer and hit-stop, described below as "still unbuilt" in the 07-24 wording, landed
-   in `a1fcf8b` the next day. They have never been seen in motion.)
-   **Candidate ③ now has its third real pass:** ADRs 0020–0021 replace the over-dense board-first
-   workspace with distinct Management / Wager / Deployment / Combat states, exact card grammar,
-   a result gate that preserves the fight receipt, a spatial Hourstone Table, bespoke station
-   workspaces, landscape mobile compositions, runtime hover/focus/tap disclosure, and large
-   management/combat inspectors. Treat
-   between-fight UX as VERIFY/polish from play, not as the same untouched problem.
-   **First cause named and fixed, 2026-07-24 — movement (ADR 0018).** Jake: *"everyone
-   teleports instantly."* It was structural: a move was decided and applied in the same tick,
-   so `MoveInterval` was a cooldown between teleports and no client easing could honestly
-   smooth it. Movement is now a **committed step** — depart, travel, arrive — and the renderer
-   interpolates across the sim's own window. **That is one item off candidate ①; the rest of
-   ① (pacing, emphasis, hit-stop, the decoupled clock) is still unbuilt, and ② remains
-   untouched.**
-   **Second cause of the SAME complaint, named and fixed 2026-07-26 — the opening (render-only).**
-   Jake, on the corrected build: *"the start of combat is really jarring — once you press start it
-   seems like every unit teleports somewhere; we need normal traversal."* ADR 0018 fixed *walking*;
-   this was **leaping**. Tick 0 is the busiest tick of a fight — both lines step off and every
-   AtStart trigger resolves — and among those triggers is Ambush (Shade passive) / the Diver role
-   (Gloamstalker), an authored cross-board Leap. Headless probe: **24% of run fights open with 1–2
-   instant leaps averaging 5.1 hexes** on a board whose longest traversal is 9. Three render defects
-   stacked, no sim change: (a) the Arc tell's air-time was a flat `motionSeconds`, so a 5-hex dive
-   and a 1-hex hop both took 0.34 s — the arc's HEIGHT already scaled with the jump but its DURATION
-   did not; (b) it fired on the first frame of playback, with nothing before it to read it against;
-   (c) between dispatch and the tell's beat-stagger/windup the body rendered on its LANDING hex,
-   then snapped back to take off — a second teleport inside the first. Fixed with
-   `TellDef.motionPerHexSeconds`/`motionMaxSeconds` (air-time scales with span, 0.34 s → 0.74 s for
-   a 5-hex dive), a tuning-owned `playback.openingHoldSeconds` (0.7 s of stillness on the deployed
-   formation, folded to tick −1 so the hold shows what the player deployed), and seating the arc's
-   offset at the take-off on dispatch. **Verified in the editor**: A/B at 0.45 s shows the Shade
-   grounded on the landing hex before vs airborne (y=2.39) mid-board after; play-mode frame
-   stepping shows the hold gate, its release, and no landing-hex pop. The Ambush/Diver MECHANIC is
-   untouched — Jake's call, 2026-07-26, over deleting the tick-0 leap.
-   **Researched plan ready, 2026-07-25 (overnight session) → `Design/fight-legibility.md`.**
-   Render-layer inventory + genre research (TFT/Underlords/HSBG/SAP/Mechabellum/BB/LTD2) +
-   asset-pipeline survey, synthesized into five phases: 0 repair (post stack regressed —
-   DoF/saturation knobs dead, MSAA off, scenes untracked; silhouettes key on Name not
-   ChassisId) · 1 legibility grammar, no art (cast sentence, beats/clock/hit-stop, 23/27
-   silent statuses + 12/20 silent event kinds filled, byChassis cast tells) · 2 real units
-   (KayKit shared-rig route, $0 validate/$150 commit; AI-gen rejected for roster) · 3
-   per-ability VFX (packs + Shader Graph telegraphs, vfxId on TellDef) · 4 comprehension
-   (damage chart, first-party win-prob re-sim).
-   **Jake approved 2026-07-25 ("sold on everything but kaykit — find free/cheaper") → BUILD.**
-   **Built same session:** Phase 0 repair (acddbf0) · Phase 1 core — byChassis casts,
-   ChassisId silhouettes, beat sequencer + hit-stop, mana-ready flip, segmented ally/enemy
-   bars, status tints, registry fills (f788491, a1fcf8b) · Phase 4 sim — FightSummary +
-   BattleForecast, 299 tests (113a2de) · end-fight readout with damage shares + died-to
-   story (40eb076) · **Phase 2 slice: KayKit FREE-tier minis render on the board** — model
-   route settled at $0 (same shared rig + 173 CC0 clips as the declined $150 bundle),
-   chassis-mapped bodies + handslot kitbash props + Idle↔Walk controller, primitive fallback
-   intact (82b7a6b). **Rounds 2-3 same day:** Attack/Cast crossfades + 9 SFX stings + grim
-   atlas recolor + bridge portraits (b3898e8) · Jake's three play-note rounds fixed — text
-   sharpness, board-spacing tuning, battle-speed persistence, DoF off (transparent-text
-   depth), T-pose/lock-in teleport (through 9b4f861).
-   **NEXT ARC — combat spectacle (Jake, 2026-07-25 evening: "go big — the reward for
-   playing IS the combat"): BUILD, P0-P4 LANDED same evening.** Scope: core systems +
-   proposals 1/2/3/4/5/9; 6/7/10 shelved next wave; 8 (Overtime) its own later slice; full
-   asset batch approved. Commits: P0 sim f2ea2f4 (Burn fold bug fixed w/ guardrail, 313
-   tests, durations on wire, AbilityIdentity, replay v5) · P1 FX foundation 3c7ab1a
-   (VfxLibrary + 6 hand-HLSL shaders + TellDef vfx bindings + ProbeShots harness) · P2
-   fields 4841f59 (FieldView: edge rings, scrolling floors, pulses, expiry) · P3 icons
-   6590382 (icon rows: glyphs, stacks, countdown rings) · P4 casts 14d3d4b+d205c6a (26
-   byAbility rows, era sigils, rationed announce) · P5 death pipeline 6fd1a06 (slump /
-   ember dissolve / ash-death graves) · P6 dress f074a1c + assets d18399c (rider echoes,
-   Deathless dress, fight-ender slow-mo, camera law, 8 era risers). **ARC BUILT END TO END
-   — nine commits, every phase gated: headless compile + event-derived probes + contact
-   sheet ×2 → 28/28 byte-identical. Stage → VERIFY: needs Jake's live play pass**
-   (fight-ender/camera feel, riser mix + announce density in motion, F1 knobs: field
-   brightness / icon size / wall tint / cleric sigil, HP-bar snap vs T3 windups → bar
-   tween if wrong; Heal carries no Cause so Boon pulses stay dormant — one-line sim change
-   when wanted). Detail: Daily/2026-07-25.
-   **S5 byWeapon + per-weapon attack language landed 2026-07-25 (317 tests).** Autos could only
-   key on chassis, so combat-spectacle §6's per-weapon table was direction with no data path.
-   `TellMatch` now filters on the fold's `WeaponName` (+1, a PEER of chassis — a byWeapon row
-   TIES a byChassis one); 11 weapon classes authored with 11 new recipes, plus 2 chassis-lane
-   staff overrides proving the compose path. **Gotcha worth keeping:** a weapon row needs
-   `byCause: Attack` too, or it ties the `byRanged` fallback at 1 and silently loses on registry
-   order — and the gate is honest anyway, since Counter/rider swings are also `EventKind.Attack`.
-   One new fixture (`weaponry`) covers the three shop-only classes; contact sheet 32/32
-   byte-identical ×2. **Found while probing, NOT fixed:** the target-side impact `punch` balloons
-   struck units from scale 0.750 → ~1.03 (+37%), hiding neighbours, HP bars and any arc near them
-   — reproduces with all VFX hidden, predates this work, and is a live candidate for Jake's
-   "not quite clear what's happening". Detail: `Design/authoring-combat-fx.md`.
-   `Design/combat-spectacle.md` (direction: palette law + intensity tiers, cast grammar +
-   era sigils, per-signature specs, field/status/attack language, ranked go-big proposals,
-   asset manifest) + `Design/fx-runtime.md` (engine: VfxLibrary recipes, Director-stepped
-   particles, hand-HLSL shaders, ground substrate, status icon row, death linger, phases
-   P0-P6). **Inventory found a real shipped bug: the playback fold diverges from sim truth
-   at the first Burn tick** (fold Burn magnitude frozen, icon never clears; affects
-   castfest/statusstorm/glyphwar/skirmish fixtures) — fix is P0 regardless of the rest.
-   Also: `Cause.Trigger` (2nd-most-common damage cause) has no tell · status durations need
-   StatusApplied.Aux2 + replay v5 · ability identity derivable with ZERO sim change (last
-   SignatureOverride trait wins; resolver belongs in Warband.Content).
-   **Still open from earlier rounds:** Phase 4 client UI (damage chart/forecast) ·
-   camera/framing pass · live play-mode eyeball of beats/hit-stop + minis in motion.
-   **Management Hall polish, 2026-07-25 → `Design/hall-polish.md` (BUILD/VERIFY).**
-   Jake approved the obsidian Tower instrument / living Sand direction and asked for the deep
-   reusable system. Foundation now built and Unity-verified: hybrid 2.5D Table/Hall environment ·
-   accepted authored iron + living-Sand materials with procedural rejection fallbacks ·
-   pooled authored UI sound families + Hall ambience and Android/iOS haptic sink ·
-   shared theme tokens + dark scrollers ·
-   five code-native vector station sigils · payload-bearing semantic feedback · interruption-safe
-   reveal/preview/press/select/attention/route/commit/error recipes · identity-aware staggered
-   card/choice reveals · one bounded Painter2D pulse/arc/Sand plane · reduced-motion substitutes ·
-   purchase/reroll receipts · result count-ups/death-cause reveals · pinned inspector command dock ·
-   F1 UI FX/environment/audio/haptic live tuning + F2 Flow Lab previews. A 38-deliverable
-   concept/material/FX/mesh/audio batch was generated and curated; rejected tile-heavy surfaces
-   and 1.5M-triangle mesh candidates are quarantined, not shipped. Clean compile/console;
-   contracts, route spam, forced phone, and reduced motion passed.
-   Second-pass station UX is now built and in VERIFY: compact 60–64 px run ribbon · physical
-   overview nameplates · data-first station presentation catalog · short pre-handoff route lock ·
-   centered five-offer Market rail · pinned exact action tray · optional blocking dossier · typed
-   actions with disabled reasons · Armory item→champion pinning and comparison · distinct
-   Warband/Hourstone geometry · one-scroll ownership · landscape-phone composition and portrait
-   rotate interstitial. Full-size overview/Market/Armory/Warband/phone captures are clean after
-   removing inline card-detail overflow.
-   Market offer-card redesign is built and Unity-verified: a dedicated typed scan model/component
-   replaces the universal Hall card · recruit/weapon/trinket/Inscription/capacity/sold states share
-   one exact-rule grammar · four-metric comparison budget + protected commerce dock · inspectable
-   unaffordable stock · held/reroll persistence · responsive selection-follow rail · 16 px rule
-   copy and 56 px phone actions. Desktop/forced-phone capture contracts now measure actual rule
-   containment as well as footer overlap; the longest authored Fire Glyph rule fits in both.
-   Rank/item/forge follow-through is built: typed four-fact profiles · dedicated Rank Up cards with
-   guaranteed gains + exact 1-of-2 ADD/SWAP/DEEPEN previews · weapon Mana-per-hit, temper, audience,
-   and mastery facts · exact trinket/Inscription rules · stable item identity and invested-Sand
-   accounting through equip/resale · explicit act-capped Worn→Honed→Relic forge actions · semantic
-   Recruit/Rank/Gear/Bind/Capacity/Equip/Forge feedback recipes exposed in F1 and F2. Mechanical
-   copy now comes from one headless grammar over the actual content primitives and fails closed on
-   unsupported rules.
-   **Open polish slices:** final Bind choreography · Rule Preview diagrams · real-device
-   safe-area/finger/haptic pass · live audio/motion feel tune.
-2. **Authored PvE content** — **BUILT 2026-07-25 (ADR 0023); BOSS + DISCLOSURE UI REMAIN.**
-   Normal fights are no longer random kits-as-monsters. Five authored enemy roles (Swarm/Anchor/
-   Artillery/Ritualist/Diver) compose four node encounters — Gnawing Hour (SWARM), The Long Range
-   (WARD, act 2+), The Ninth Bell (RITUAL), The Drop (AMBUSH) — each posing a different placement
-   problem, each disclosing its rule. **Composition is the act lever, stats are secondary**; an
-   act's pool is its identity. Measured with the new `--enc` probe: all four pose a placement
-   problem at their debut act (spread 100 for Long Range and The Drop). Laws in
-   `Design/pve-encounters.md`; decisions in ADR 0023.
-   **What remains:** ~~① act bosses~~ **BUILT 2026-07-26 (ADR 0024) — see Done** · ~~② client
-   disclosure~~ **BUILT 2026-07-26 (ADR 0024) — see Done** · ③ bespoke enemy art + per-role tells
-   (roles borrow hero silhouettes as render keys; enemy CARDS no longer borrow hero names/portraits,
-   but the board silhouettes still do) · ④ risk-tier mutation of authored encounters (tiers only
-   scale stats today) · ⑤ **still not watched in Unity** — two boss render fixtures now exist
-   (`boss-ashfall-battery`, `boss-waning-crown`) so this is one session away.
-   **Open follow-on, NOT chased:** `--enc` now reports Gnawing Hour / Ninth Bell / The Drop as
-   **FREE at their debut act** (spread 0, every formation wins), which contradicts the ADR 0023
-   line below claiming all four pose a placement problem. It could not be bisected: the entire
-   ADR 0022/0023 implementation was uncommitted, so **no git baseline existed to compare against**
-   (see the Done entry). Re-measure before trusting either number.
+**⚠ SESSION HYGIENE — UNRESOLVED AS OF 2026-07-27.** The tree carries **5031 insertions across 52
+files plus 29 untracked**, including the Workbench overhaul this board marks BUILT + UNITY-VERIFIED.
+This is the **second** occurrence; the 07-26 entry flagged 178 uncommitted files, and that is exactly
+why the `--enc` drift could not be bisected. **Do not assume this is yours** — Jake runs Claude and
+Codex in parallel (CLAUDE.md), so another session may be live in these files. Agree ownership before
+committing. `make test` is green at **460 (249 sim + 211 run), verified 2026-07-27**.
 
-4. **The pressure tier is a fake choice** — **DESIGN.** Stable/Fraying/Collapsing are visible,
-   but the sweep found victory saturates ~99% at every tier, so **Collapsing strictly dominates
-   at zero risk**. Either
-   make risk mean something or delete tiers. ADR 0007 economy is placeholder either way.
-   **Re-measured twice on 2026-07-25** (`Projects/sweep-2026-07-25.md`). After ADR 0022: 88/92/79
-   victory at 69/77/82 Sand. After ADR 0023's authored encounters: **35/48/39 victory at 40/54/65
-   Sand — and Fraying now BEATS Stable**, because Sand buys the survival that authored encounters
+**STATE, 2026-07-27 (honest):** the first-playable run shape and between-fight UX are walkable end
+to end: Menu → five-card Draft → Management Hall → stakes-first Wager → formation-reveal Deployment
+→ Fight/replay → blocking result report → spatial Hourstone Table → Victory/Defeat. Three acts ×
+five beats, Sand economy, Interludes, boss rewards, terminal loss, save/resume, and a shipped
+standalone build + launcher + public site are all implemented. Authored encounters (ADR 0023),
+per-act bosses and full disclosure (ADR 0024), and act-scoped disjoint pools are in.
+**Combat viewing still does not read well enough, and that judgement is over a year-stale build —
+nobody has watched the corrected player.** UI has had five passes (Muster readability, unified
+decision cards, persistent Warband Shelf + Loadout Table, shared mechanic presentation, and the
+2026-07-27 Workbench overhaul), all Unity-verified by capture, **none watched in motion**.
+Detail for every one: `roadmap-done-archive.md` + `Daily/2026-07-26`.
+
+---
+
+1. **FEEL & READABILITY — Jake's play pass.** — **VERIFY. BLOCKED ON JAKE, NOT ON BUILDING.**
+   This item is now **only the verify gate**; the build work that used to live inside it is split
+   out as 1b/1c/1d below, because a gate bundled with unbuilt work can never close.
+   **Jake, 2026-07-24, after playing:** *"playing it now still does not feel great for a lot of
+   reasons (UI is not great, sim viewing has some issues and is not quite clear what's happening)."*
+   Three candidate causes were named — ① presentation (too much at once, no pacing/emphasis)
+   ② legibility of state (what a unit IS, what's on it, why it did that) ③ UI quality. **All three
+   have since been built against, across five sessions.** Two structural causes were found and fixed
+   along the way: **movement** (ADR 0018 — decide and apply in the same tick meant everyone
+   teleported) and **the opening leap** (2026-07-26, render-only — 24% of fights open with a 1–2
+   instant cross-board dive; air-time now scales with span, plus a 0.7 s opening hold).
+   **What the pass must judge, specifically:** fight-ender slow-mo + camera law · riser mix and
+   announce density in motion · beat sequencer + hit-stop (landed `a1fcf8b`, never seen) · KayKit
+   minis in motion · F1 knobs (field brightness / icon size / wall tint / cleric sigil) · HP-bar snap
+   vs T3 windups (→ bar tween if wrong).
+   **Known-dormant, one-line fix when wanted:** Heal carries no `Cause`, so Boon pulses never fire.
+   **The first standalone pass (2026-07-26) was an INVALID read** — URP Lit/Unlit were stripped from
+   the player build, so the board and HP/Mana bars were pink. Corrected build `0.1.260726.1706`
+   registers them and mutes the (bad, over-long) generated audio by default. **That build has never
+   been watched.** Per the 07-27 order, items 10 and 11 land first.
+1b. **Hall polish slices** — **VERIFY/BUILD.** Foundation built and Unity-verified.
+    Four named slices open: final Bind choreography · Rule Preview diagrams · real-device
+    safe-area/finger/haptic pass · live audio/motion feel tune. `Design/hall-polish.md`.
+1c. **Fight comprehension UI** — **HALF BUILT.** The damage-share + died-to readout shipped
+    (`40eb076`). The other half did not: **`BattleForecast` exists in the sim and is referenced by
+    ZERO client code** (re-verified 2026-07-27) — the win-probability re-sim has no home. This is
+    fight-legibility Phase 4's client half.
+1d. **Camera/framing pass** — **UNBUILT, taste-gated on Jake.** Deliberately not started before the
+    verify pass, since framing is exactly the kind of thing that pass will have opinions about.
+
+2. **Authored PvE content** — **BUILT (ADR 0023 + ADR 0024). Header corrected 2026-07-27: bosses and
+   disclosure are DONE, not remaining.** Five authored enemy roles (Swarm/Anchor/Artillery/Ritualist/
+   Diver) compose six node encounters across act-scoped, **disjoint** act-2/act-3 pools, each posing a
+   placement problem and disclosing its rule; three per-act bosses close the acts.
+   **Composition is the act lever, stats are secondary**; an act's pool is its identity.
+   Laws: `Design/pve-encounters.md`; decisions: ADR 0023, ADR 0024.
+   **What remains:** ③ bespoke enemy art + per-role tells (enemy CARDS no longer borrow hero
+   names/portraits, but board silhouettes still do) · ④ risk-tier mutation of authored encounters
+   (tiers only scale stats today) · ⑤ **still not watched in Unity** — two boss render fixtures exist
+   (`boss-ashfall-battery`, `boss-waning-crown`), so this is one session away.
+   → **The "encounters are FREE" finding is now item 18.**
+
+4. **The pressure tier is a fake choice** — **DESIGN.** Stable/Fraying/Collapsing are visible.
+   The 07-23 sweep found victory saturating ~99% at every tier, so **Collapsing strictly dominated at
+   zero risk**. **Re-measured twice on 2026-07-25** (`Projects/sweep-2026-07-25.md`): after ADR 0022,
+   88/92/79 victory at 69/77/82 Sand; after ADR 0023's authored encounters, **35/48/39 victory at
+   40/54/65 Sand — and Fraying now BEATS Stable**, because Sand buys the survival authored encounters
    demand. That is a real risk curve arriving as a side effect, not a solved item: nothing in either
-   ADR targeted tiers, and the run structure changed (ADR 0019) since the 07-23 baseline. Start the
-   DESIGN pass from a fresh measurement, never from the 07-23 claim.
-(Item 3, the Last Oath's unreachable decision, is DONE — 2026-07-25, see Done. The gap is
-deliberate: item numbers are load-bearing references, so finished items leave a hole rather
-than renumber.)
-Items **5 / 5a / 6** keep their numbers below — their settled laws are referenced from ADRs and
-design docs, so renumbering them would break those references.
+   ADR targeted tiers. **Start the DESIGN pass from a fresh `make baseline`, never from the 07-23
+   claim.** ADR 0007's economy is placeholder either way.
 
-### Gap analysis, 2026-07-26 (overnight, Jake asleep — items 7-15 are NEW to the board)
-Jake: *"research our game, do some gap analysis on what features or content or design
-ideas/combat rendering we are missing. Make a priority list (things not in the roadmap yet)."*
-Everything below was verified against the code, not remembered. **Priority order is P1 → P4;
-none of these outrank items 1 and 2**, which are Jake's own stated pain. The three P1s share one
-property that makes them urgent out of proportion to their size: **item 6 (friends playtest #1)
-cannot happen without them, and each is the kind of work that is discovered too late.**
+(Item 3 — the Last Oath's unreachable decision — is DONE 2026-07-25. The gap is deliberate: item
+numbers are load-bearing references, so finished items leave a hole rather than renumber.)
 
-**P1 — silently blocks friends playtest #1 (item 6).**
-7. **A run cannot be saved.** — **BUILT 2026-07-26 (412 tests). VERIFY: the client half is
-   compile-checked but not yet clicked through.** See the Done entry for what landed and what is
-   still unverified. Jake also settled item 16 on the back of this: terminal loss stays, and
-   save/resume is the whole mitigation.
-8. **Standalone build + launcher/delivery** — **BUILT 2026-07-26. The first warband build exists,
-   and the shader landmine was REAL.** See the Done entry. Remaining: two sudo steps and one
-   decision, all Jake's (`deploy/README.md` §"STILL NEEDS JAKE"). Jake's first player pass reached a
-   fight and caught a second shader landmine: URP Lit/Unlit themselves were stripped. Corrected
-   build `0.1.260726.1648` is ready but not yet visually rechecked or published.
-   *(Original entry, kept because its reasoning is what made this worth doing early:)*
-   **SPEC'D (small, do it EARLY).** Every
-   verification to date is in-Editor. One landmine is already known and written down in the FX
-   ledger: the six hand-HLSL shaders are found by `Shader.Find`, which **silently falls back to a
-   URP/Unlit stand-in in a player build unless they are in Always Included Shaders** — i.e. the
-   first build loses the entire combat-spectacle arc and looks merely broken. Unverified for the
-   same reason: `Resources.Load` paths, StreamingAssets on a real build (`tuning.json`,
-   `scenarios`, replays), the generated audio, KayKit import settings, and IL2CPP/Mono behavior.
-   First builds always find ten of these. Find them on a Tuesday, not the night of the playtest.
-9. **No player-facing options at all.** — **SPEC'D (small).** Audio enable/volume live in
-   `HubPresentation.json`, reduced motion in a dev-key `PlayerPrefs` toggle, battle speed in
-   `tuning.json` behind F1. A friend on their own machine cannot mute the game, slow the fight
-   down, or turn motion off. The values are all already plumbed and hot-reloadable — this is a
-   screen over existing seams, not a system.
+### P1 — silently blocks friends playtest #1 (item 6)
+7. **A run cannot be saved** — **DONE 2026-07-26** (412 tests, verified on Windows). Shell wiring
+   (does CONTINUE appear cold, does clicking it resume, does autosave fire) is **Jake-only** — see
+   the Play Mode gotcha. Settled item 16 on its back.
+8. **Standalone build + launcher/delivery** — **DONE 2026-07-26.** Build, launcher, publish pipeline,
+   and the public site are live; the launcher pulls the real build through the real site. Two shader
+   landmines were real and are now guarded in the build itself. Remaining: one visual recheck of the
+   corrected build before publishing it (folds into item 1's pass).
+9. **No player-facing options at all** — **SPEC'D (small). #4 in the agreed order.** Audio
+   enable/volume live in `HubPresentation.json`, reduced motion in a dev-key `PlayerPrefs` toggle,
+   battle speed in `tuning.json` behind F1. **Re-verified 2026-07-27: no options/settings view exists
+   in the client.** A friend on their own machine cannot mute the game, slow the fight down, or turn
+   motion off. Every value is already plumbed and hot-reloadable — this is a screen over existing
+   seams, not a system.
 
-**P2 — combat legibility (item 1's actual target), cheap, high suspicion.**
+### P2 — combat legibility (item 1's actual target), cheap, high suspicion
 10. **The impact `punch` balloon — the cheapest possible test of Jake's top complaint.** —
-    **SPEC'D (data-only).** Measured 2026-07-25 while probing weapon frames: every unit idles at
-    world scale **0.750**, and 0.10 s after being struck the victims sit at **1.026–1.035** — a
-    ~37% inflation that covers neighbouring units, their HP bars, and any arc drawn near them. It
-    **reproduces with every VFX instance hidden**, so it is not the new FX; it predates the whole
-    arc. A swing's own tell is competing with the victim ballooning over it. The fix is a
-    `punchAmount` value in `tuning.json`, hot-reload, no recompile. Highest suspicion-to-effort
-    ratio on the board. **Exact knobs (checked 2026-07-26):** the balloon is
-    `punchAmount` (per tell row, default 0.25) × `(1 + impact.punchBoost × t)` with
-    `punchBoost` defaulting to **0.8** — so `impact.punchBoost` is a single global slider in the F1
-    cockpit that scales every impact recoil at once. Try that before touching 197 tell rows.
-11. **Overtime is completely invisible — a pillar renders as nothing.** — **SPEC'D.**
-    `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to every unit
-    every tick until someone dies. The pitch calls this a pillar (*"escalating overtime clock
-    guarantees resolution"*), theme.md names it **the Waning** and makes it the Hour running out —
-    and the client draws **no clock, no approach warning, and no storm tell**. A long fight
-    currently reads as "units started dying for no reason." This was filed as combat-spectacle
-    proposal 8 ("its own later slice"); **it is not spectacle, it is item 1's failure mode ②
-    (legibility of state)** and belongs there. A tick clock + a threshold warning + a Storm damage
-    tell is most of it.
+    **SPEC'D (data-only). #1 IN THE AGREED ORDER.** Measured 2026-07-25: every unit idles at world
+    scale **0.750**, and 0.10 s after being struck victims sit at **1.026–1.035** — a ~37% inflation
+    that covers neighbouring units, their HP bars, and any arc drawn near them. It **reproduces with
+    every VFX instance hidden**, so it predates the whole spectacle arc: a swing's own tell is
+    competing with the victim ballooning over it.
+    **Exact knobs (checked 2026-07-26):** the balloon is `punchAmount` (per tell row, default 0.25)
+    × `(1 + impact.punchBoost × t)`, `punchBoost` default **0.8** — so `impact.punchBoost` is a single
+    global slider in the F1 cockpit scaling every impact recoil at once. **Try that before touching
+    197 tell rows.** `tuning.json`, hot-reload, no recompile.
+11. **Overtime is completely invisible — a pillar renders as nothing.** — **SPEC'D. #2 IN THE AGREED
+    ORDER.** `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to
+    every unit every tick until someone dies. The pitch calls this a pillar (*"escalating overtime
+    clock guarantees resolution"*) and theme.md names it **the Waning**, the Hour running out — and
+    the client draws **no clock, no approach warning, and no storm tell** (re-verified 2026-07-27:
+    zero `Overtime` references in client code). A long fight reads as "units started dying for no
+    reason." Filed originally as combat-spectacle proposal 8; **it is not spectacle, it is item 1's
+    failure mode ② (legibility of state).** A tick clock + threshold warning + Storm damage tell is
+    most of it.
 
-**P3 — settled laws the build does not yet keep.**
-12. **Enemy disclosure stops at name/HP/reach.** — **partly addressed by tonight's build.**
+### P3 — settled laws the build does not yet keep
+12. **Enemy disclosure stops short of the deep inspector.** — **partly addressed.**
     `pve-encounters.md` requires attacks, signatures, passives, triggers, **and targeting rules**
-    inspectable before deployment. A Sanddrift Gunner's entire design is "acquires FARTHEST, holds
-    standoff 5" and nothing ever tells the player. Tonight's work adds per-unit role + behavior
-    notes to `EncounterBrief`; the deeper inspector (full signature/passive text on an enemy, as
-    the Muster cards already do for heroes) is still open.
+    inspectable before deployment. ADR 0024 added per-unit role + behavior notes to `EncounterBrief`
+    (a Sanddrift Gunner's "acquires FARTHEST, holds standoff 5" is now disclosed). Still open: the
+    deeper inspector — full signature/passive text on an enemy, as Muster cards already do for heroes.
 13. **The endless seam does not exist.** — **DESIGN → then small.** ADR 0016's identity and the
     first-playable content budget both include a *"crude post-win continue-until-defeat seam."*
     `RunPhase.Complete` is terminal; nothing in `RunController` continues past the last act.
     theme.md's candidate name is **Beyond the Hour**. Cheapest honest version: on Complete, offer
-    CONTINUE, which re-enters act 3's pool at escalating scale until a loss.
-
-**P4 — content identity.**
-14. **Act identity is thin; acts 2 and 3 are the same game at bigger numbers.** — **DONE
-    2026-07-26** (see Done). Acts now draw genuinely different pools and acts 2 and 3 are
-    *disjoint*; two new encounters, zero new roles. What it did NOT do is make the pool harder —
-    that turned out to be a balance problem, not a composition one. Original entry below.
-    ~~**SPEC'D (was DESIGN; unblocked by Jake's 2026-07-26 three-act budget decision).**~~
-    `Encounters.PoolFor` differs between act 1 and act 2+ by exactly one encounter, and acts 2 and
-    3 draw an **identical** pool. theme.md says acts are eras and pve-encounters says *"an act's
-    pool is its identity"*; neither is true yet. The per-act bosses are the first real
-    differentiation. Cheapest next step is act-scoped pools, **not** new roles.
-    **Build law for this item:** propose the act→pool assignment and **measure it with `--enc`
-    before committing** — the probe already caught three of four encounters posing nothing, so an
-    assignment that reads well in prose can still be flat. Do not add a sixth role to solve this.
+    CONTINUE, re-entering act 3's pool at escalating scale until a loss.
+14. **Act identity** — **DONE 2026-07-26.** Acts now draw genuinely different pools; acts 2 and 3 are
+    *disjoint*. Two new encounters, zero new roles. **It did NOT make the pool harder** — that turned
+    out to be a balance problem, not a composition one → **item 18**.
 15. **The Interlude is a non-choice.** — **DESIGN (tiny).** ADR 0019 gives each act one Interlude
-    beat; it currently reads *"A QUIET STRETCH — No one contests the road. Take the coin and move
-    on"* with one button. The content budget explicitly funds **one event**, and it has not been
-    spent. A single two-or-three-way risk/reward choice would make the beat exist.
-16. **Defeat/retry rule — SETTLED 2026-07-26, no work item.** Raised during the grooming because
-    terminal loss (ADR 0019) compounds badly with authored encounters dropping bot completion to
-    **3/12** and there being no save: a friend's first run ends permanently in act 2, ~15 minutes
-    in. **Jake's call: terminal loss STAYS — the mitigation is save/resume (item 7), not a retry
-    currency and not softening the encounters.** So a loss keeps meaning something and the run
-    merely survives across sittings. Recorded here rather than deleted so the next session does not
-    re-open it. Do **not** tune act 2's node pool down to address run length; if the cliff turns out
-    to hurt, it will hurt real playtesters first (ADR 0001: playtests decide).
+    beat; it reads *"A QUIET STRETCH — No one contests the road. Take the coin and move on"* with one
+    button. The content budget explicitly funds **one event**, and it has not been spent. A single
+    two-or-three-way risk/reward choice would make the beat exist.
+16. **Defeat/retry rule — SETTLED 2026-07-26, no work item.** **Jake's call: terminal loss STAYS —
+    the mitigation is save/resume (item 7), not a retry currency and not softening the encounters.**
+    Recorded rather than deleted so the next session does not re-open it. Do **not** tune act 2's node
+    pool down to address run length; if the cliff hurts, it hurts real playtesters first (ADR 0001).
+
+### New 2026-07-27 (promoted out of footnotes during the hard cut)
+17. **Silence is disclosed but unplayable — a shipped honesty defect.** — **SPEC'D. Jake decided the
+    lever 2026-07-27: an INSCRIPTION.** `grep StatusKind.Silence` across `Warband.Content/` returns
+    **zero** hits in Kits, Weapons, or Catalog (re-verified 2026-07-27). Players have Stun only
+    (Shield Slam, Banner of the Held Line). Meanwhile authored encounters name Silence as an intended
+    answer, **in player-facing disclosure text on two of three act bosses**:
+    - `Encounters.cs:249` — "Silence and Stun both stop the clock." (Ninth Bell)
+    - `Encounters.cs:502` — "Silence stops the clock; Stun holds it." (**Ashfall Battery, act 2 boss**)
+    - `Encounters.cs:538` — "Silence stops the bell completely" (**The Waning Crown, act 3 boss**)
+    - `Enemies.cs:218` — the Crown's mana gain is *gated on Silence*, so the bell is designed around it
+    - `roster.md:210` claims the roster covers "Stun, Taunt/**Silence**, Slow, Haste, Mana" — **wrong,
+      also fix this**
+    So ADR 0024's disclosure contract advertises a lever the game does not offer. That is a
+    content-honesty defect, not a content-expansion request. **Why an Inscription:** it stays inside
+    the 24-effect ADR 0017 proof and spends **none** of the hero-kit content budget.
+    **Build note:** needs a target selector. `SelKind` has no Mana ordering or Mana threshold today
+    (only `BelowHpPct` / `MustHave`), so **"nearest enemy with Mana" is the cheap shape** and a
+    highest-Mana selector is the general one. Depends on / lands with item 5a.
+18. **The authored encounters do not actually pose problems — PARKED BY DOCTRINE, not solved.** —
+    **measurement, not a work item until playtest #1.** `--enc` reports **4 of 6 node encounters
+    FREE/FLAT**, contradicting ADR 0023's "all four pose a placement problem at their debut act."
+    Promoted here because it was buried inside a Done entry while directly contradicting item 2's
+    premise. **Root cause, found 2026-07-26 and uncomfortable:** *the gap between the four
+    answer-axis parties and the weakest legal comp is wider than the band an encounter can sit in* —
+    nothing can be made sharp for one without being lethal to the other. Every composition that
+    fixed the flatness drove the naive bot line from 3/12 completed runs to **0/12**.
+    **That is a BALANCE finding, and the content doctrine parks balance until the interactive
+    playtest.** Two further cautions for whoever picks it up:
+    ① **Party size is the strongest difficulty dial in the game, and it is not a stat** — The Long
+    Range admits 3 answers with spread 100 against three heroes and is FREE from every formation
+    against four. Every probe table now prints hero count; always check it.
+    ② the earlier ADR 0023 numbers **could not be bisected** (the whole implementation was
+    uncommitted), so **re-measure with `make baseline` before trusting any number here.**
+
+### Laws pages (keep their numbers — ADRs and design docs reference them by name)
+5. **PvE-first playable loop** — **LAWS PAGE, not a work item** (dissolved 2026-07-26). ADR 0016
+   supersedes mandatory ghost bosses: PvE is the product, encounters are authored and asymmetrical, a
+   completed run has a final PvE victory, and the winning warband may continue into endless until
+   defeated. `IRunContent.Boss(act, rng)` returns an AUTHORED comp · `RunPhase.Defeated` is terminal
+   — **lose any fight and the run ends** (Jake's PoC rule) · `Victory` = reached the end of the last
+   act, NOT the old best-of-5 `BossWins >= 3` · ghost-capture removed.
+   **`RunController.PreviewEnemies(tier)` exists because the encounter rng derives from private salts
+   — never reconstruct a preview client-side**, it will show an army that does not spawn.
+   ADR 0019 + 0020: three acts of Fight/Fight/Interlude/Fight/Boss · terminal losses ·
+   Stable/Fraying/Collapsing fixed rewards · choose 3 of 5 opening draft · Hall → Wager → Deployment
+   → Combat · Sand Market/Armory/Hourstone · 3→6 capacity unlock.
+   **Balance law:** preserve spectacular system-breaking engines; intervene only when one line erases
+   discovery, all encounter problems, determinism, resolution, or readability.
+   **Settled design law** (`Design/pve-encounters.md`): the encounter itself is the boss · every boss
+   is a multi-answer strength exam · the boss mechanically rules and teaches its act · enemy
+   formations are always previewed before deployment · all mechanics are inspectable before Play, the
+   rules known but the outcome not forecast · boss units have **no blanket control immunity**, only
+   explicit previewed passives may negate a specific verb · Execute is a true kill preserving normal
+   death/transform consequences · Phase grants complete personal absence while encounter clocks
+   continue · fields are factional by default, environmental/volatile ones may affect everyone ·
+   fight flow is Encounter Reveal → combined Planning → Play → Result, with lineup, equipment and
+   positions freely editable together until `BEGIN FIGHT`.
+   Remaining scope is tracked elsewhere and must not be re-derived here: risk-tier mutation → item 2④
+   · endless seam → item 13 · defeat/retry → item 16 · encounter sharpness → item 18.
+   **Parked extrapolation (2026-07-24, never taken up):** the **Dying Procession** — an escalation of
+   the Last Oath's bonded pair — remains a possible extrapolation, not current scope.
+5a. **Hourstone / Inscription engine layer** — **BUILD (acquisition/UI seed integrated; engine
+    catalog next).** The expedition carries one Hourstone; every distinct Inscription acquired
+    remains active for the run with no slot cap. Player-facing presentation is a compact top-screen
+    badge rail driven by replay events: inspectable badges pulse on activation, counters expose
+    progress, and high-frequency triggers coalesce rather than flash-spam. Catalog target is 24,
+    staged as five migrated seeds → twelve-family vocabulary proof → twenty-four engine proof.
+    Hybrid acquisition is live: 20%-weighted 7-Sand Workshop offers plus visible one-from-three
+    Hourstone Interlude and boss rewards. **The Hourstone tool shows owned rules; the combat
+    badge/counter rail remains unbuilt.** Before catalog expansion, settle the per-root activation
+    guard, Bearer of the Mark replacement, and the first twelve contracts. Legacy `Banner*` code names
+    are migration debt. **Item 17 (Silence) should land as part of this catalog work.**
+6. **Friends playtest #1** — the milestone that ends arguments (ADR 0001), after the PvE vertical
+   slice. Distribution/launcher work is allowed only as needed to put that slice in friends' hands.
+   **Mechanically, only item 9 still blocks it** — items 7 and 8 are done and the site is live.
+   No date until Jake calls it.
+
+## Client — architecture, and where the bodies are buried
+Bring-up (item 4), render polish (4b) and the PoC shell (4c) are built and verified; full history in
+`Daily/2026-07-23` and `Daily/2026-07-24`. What a future session actually needs:
+
+- **Architecture:** `GameBoot` owns startup order (add a line there — **never** another
+  `RuntimeInitializeOnLoadMethod`; four competing ones is why two UIDocuments once raced for input).
+  Scenes are **Boot(0) → Game(1)**; Boot holds one `~BootLoader` and nothing else.
+  `ReplayPlayer.autoPlayOnStart` is **OFF** by default — the board is driven, never self-starting,
+  and the shell parks it on any transition to a non-board screen.
+- **Shell pattern (extend, don't fork):** `RunShellModel` (plain view-models) · `IRunScreenView` +
+  `RunShellActions` (render out, intent in) · `RunShell` (router, and the ONLY place content ids
+  become words). Flow is `ManagementView` → `WagerView` → `DeployView` → board-only Fight;
+  management still shares one plain `PlanningModel`.
+  `PresentationCatalog` owns art/copy/icon references; composed `UnitDef` owns every mechanical
+  number. `WarbandCard` and `InspectorPanel` are shared UXML-backed renderers;
+  `PlanningWorkspaceStyles.uss` owns layout/motion tokens.
+  **Views may not reference `Warband.*`, so a raw id physically cannot reach the UI.**
+  The opening draft is the deliberate exception to universal-card reuse: `MusterCard` accepts only
+  three facts and two rules, and exact mechanics disclose inside its portrait.
+- **Hydration:** `Warband.Sim.Lexicon` (27 StatusKind + 9 Cause) and `Warband.Content.ContentLexicon`
+  (78 spec nodes + 8 chassis). `LexKind` is a **domain, not a valence and not a colour** —
+  battlefield colour has one owner, the signature-matched tells in `tuning.json`.
+- **Tuning:** `StreamingAssets/tuning.json` + F1 debug cockpit (auto-generates sliders by
+  reflection). Hot-reload, no recompile. F2 is the Flow Lab preview.
+- **Reused USS across shell and Planning:** inherited *position* is context, inherited *paint* is
+  language — override the first, keep the second.
+
+### Client gotchas — these have each cost real time
+- **PLAY MODE IS UNREACHABLE FROM A SESSION (found 2026-07-26).** `EditorApplication.EnterPlaymode()`
+  inside `Unity_RunCommand` is refused outright: *"User interactions are not supported for MCP tool
+  calls."* So **no agent can ever click through the runtime UI** — anything existing only in Play Mode
+  (button wiring, shell state transitions, frame-driven feel) is **Jake-only verification, full
+  stop.** The workable substitute is a **committed edit-mode Editor script + `ExecuteMenuItem`**
+  exercising the real DLLs (`Assets/Editor/RunSaveCheck.cs`, `RenderShots.cs`).
+- **`Unity_RunCommand` rejects `System.Reflection`** and its dynamic assembly cannot reference
+  Warband plugin types — which is *why* the harness must be a real Editor script. Editor scripts live
+  in Assembly-CSharp-**Editor**, so they cannot see `internal` types in Assembly-CSharp either.
+- **Refreshing scripts mid-Play-Mode** leaves GameObjects alive but **wipes the code-built UI tree**
+  (root has 0 children, console clean). Exit and re-enter Play after every source change.
+- **An unfocused Editor idles the player loop**, so `Start()` may simply never have run — same
+  symptom, different cause. Pump `QueuePlayerLoopUpdate` before believing a probe. **Sometimes it
+  does not recover at all** (2026-07-24: `frameCount` stuck at 1, 40 queued pumps, `isPaused=false`).
+  **Verify anything frame-driven in EDIT mode** via `BuildPreview(tick)`, measuring against the
+  generated tile transforms as a hex-centre yardstick. Never `Thread.Sleep` in a
+  RunCommand to wait for frames — it holds the main thread, so nothing ticks and every sample reads
+  identical, mimicking the very bug you are chasing.
+- **Exiting Play returns the Editor to the Boot scene**, which holds only `~BootLoader` — so an
+  edit-mode probe finds no `ReplayPlayer`. Open `Assets/Scenes/Game.unity` first.
+- **Game View capture stalls unattended** (`WaitForEndOfFrame` never completes). Driving the live UI
+  tree over MCP is the reliable verification; screenshots need Jake's focused Editor.
+- **The Editor and the built player share `Application.persistentDataPath`** — a dev Play Mode session
+  and a friend build read/write the SAME `run.save`. That is why a fresh build can appear to "already
+  have a run."
+- **A check that can silently return "nothing found" needs a positive control.** Cost real time twice:
+  a shader grep for invented names reported all six missing, and a `dig` that wasn't installed.
+- **Syncthing ignores are PER-DEVICE**, and `sync-status: 100%` can predate the local scan — confirm
+  over SSH. **Never write captures inside the Syncthing tree** (they sync back into the repo).
+- **`.unity`/`.prefab`/`.asset` edits are guard-hook blocked** — scene work goes through Unity MCP.
+
+## First-playable content budget (hard cap — ADR 0001 + ADR 0016, scope settled 2026-07-26)
+Current 8 heroes × 2 paths · 11 weapons + 1 trinket · **24 Inscriptions, delivered through the ADR
+0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role grammar,
+several encounters, three act bosses, one event) · shops + placement · crude post-win endless seam
+that may reuse and scale the slice · programmer art, no sound.
+Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE content. Do not expand
+beyond three acts, to a full endless mode, or to a catalog beyond the 24-effect proof before
+playtest #1.
+
+**Scope decision, Jake 2026-07-26. Three acts is the cap.** (This previously read "one act / one
+boss", contradicting ADR 0019's shipped three-act shape and ADR 0024's three bosses.)
+
+## Deferred (explicitly NOT now — don't resurrect without Jake)
+**All PvP:** ghost server · matchmaking · ratings/leaderboards · PvP rewards · no-stakes Echo
+exhibitions (the snapshot seam may remain, but no feature work) · Displacement (Push/Pull/collisions)
+· spoils-of-war (historical ADR 0002) · sim-modeled projectile flight ("dodge by movement" lever,
+render-contract) · aura ExcludeOwner option · morale/rout concept · ability crits · predetermined
+terrain (NEVER) · account-scoped power (NEVER — fairness law).
 
 **Deliberately NOT proposed** (so the next session does not re-derive them): more heroes, more
 weapons, a second trinket family, multi-act expansion, difficulty ladders, PvP-adjacent anything,
-and any balance pass on hero kits — all are either capped by the content budget or forbidden by
-the content doctrine until playtest #1.
-
-### Client — built, working, and where the bodies are buried
-The client bring-up (item 4), render polish (4b) and the PoC shell (4c) are **built and
-verified**; full history in `Daily/2026-07-23` and `Daily/2026-07-24`. What a future session
-actually needs from them:
-
-- **Architecture:** `GameBoot` owns startup order (add a line there — **never** another
-  `RuntimeInitializeOnLoadMethod`; four competing ones is why two UIDocuments once raced for
-  input). Scenes are **Boot(0) → Game(1)**; Boot holds one `~BootLoader` and nothing else.
-  `ReplayPlayer.autoPlayOnStart` is **OFF** by default — the board is driven, never
-  self-starting, and the shell parks it on any transition to a non-board screen.
-- **Shell pattern (extend, don't fork):** `RunShellModel` (plain view-models) ·
-  `IRunScreenView` + `RunShellActions` (render out, intent in) · `RunShell` (router, and the
-  ONLY place content ids become words). The player flow is `ManagementView` → `WagerView` →
-  `DeployView` → board-only Fight; management still shares one plain `PlanningModel`.
-  `PresentationCatalog` owns art/copy/icon references; composed
-  `UnitDef` owns every mechanical number. `WarbandCard` and `InspectorPanel` are shared
-  UXML-backed renderers; `PlanningWorkspaceStyles.uss` owns layout/motion tokens. Views may
-  not reference `Warband.*`, so a raw id physically cannot reach the UI.
-  The opening draft is the deliberate exception to universal-card reuse: `MusterCard` accepts
-  only three facts and two rules, and exact mechanics disclose inside its portrait.
-- **Hydration:** `Warband.Sim.Lexicon` (27 StatusKind + 9 Cause) and
-  `Warband.Content.ContentLexicon` (78 spec nodes + 8 chassis). `LexKind` is a **domain, not a
-  valence and not a colour** — battlefield colour has one owner, the signature-matched tells in
-  `tuning.json`.
-- **Tuning:** `StreamingAssets/tuning.json` + F1 debug cockpit (auto-generates sliders by
-  reflection). Hot-reload, no recompile.
-- **Reused USS across shell and Planning:** inherited *position* is context, inherited *paint*
-  is language — override the first, keep the second.
-
-### Client gotchas — these have each cost real time
-- **Refreshing scripts mid-Play-Mode** leaves GameObjects alive but **wipes the code-built UI
-  tree** (root has 0 children, console clean). Exit and re-enter Play after every source change.
-- **An unfocused Editor idles the player loop**, so `Start()` may simply never have run — same
-  symptom as above, different cause. Pump `QueuePlayerLoopUpdate` before believing a probe.
-  **Sometimes it does not recover at all** (2026-07-24: `frameCount` stuck at 1 through play mode,
-  40 queued pumps, `isPaused=false`). **Verify anything frame-driven in EDIT mode** via
-  `BuildPreview(tick)`, measuring against the generated tile transforms as a hex-centre yardstick.
-  Never `Thread.Sleep` in a RunCommand to wait for frames — it holds the main thread, so nothing
-  ticks and every sample reads identical, which mimics the very bug you are chasing.
-- **Exiting Play returns the Editor to the Boot scene**, which holds only `~BootLoader` — so an
-  edit-mode probe finds no `ReplayPlayer`. Open `Assets/Scenes/Game.unity` first.
-- **Game View capture stalls unattended** (`WaitForEndOfFrame` never completes). Driving the live
-  UI tree over MCP is the reliable verification; screenshots need Jake's focused Editor.
-- **PLAY MODE IS UNREACHABLE FROM A SESSION (found 2026-07-26).** `EditorApplication.EnterPlaymode()`
-  inside `Unity_RunCommand` is refused outright: *"User interactions are not supported for MCP tool
-  calls."* So **no agent can ever click through the runtime UI** — anything that only exists in Play
-  Mode (button wiring, shell state transitions, frame-driven feel) is Jake-only verification, full
-  stop. The workable substitute is a **committed edit-mode Editor script + `ExecuteMenuItem`**
-  exercising the real DLLs (see `Assets/Editor/RunSaveCheck.cs` and `RenderShots.cs`). Note
-  `Unity_RunCommand`'s dynamic assembly cannot reference Warband plugin types, which is *why* the
-  harness must be a real Editor script; and Editor scripts live in Assembly-CSharp-**Editor**, so they
-  cannot see `internal` types in Assembly-CSharp either.
-- **`Unity_RunCommand` rejects `System.Reflection`** outright, and its dynamic assembly cannot
-  reference Warband plugin types. Use `SerializedObject.FindProperty` / `SendMessage`, or a real
-  `Assets/Editor` script driven by `ExecuteMenuItem`.
-- **Syncthing ignores are PER-DEVICE**, and `sync-status: 100%` can predate the local scan —
-  confirm over SSH before concluding a file landed.
-- **Never write captures inside the Syncthing tree** (they sync back into the repo).
-- **`.unity`/`.prefab`/`.asset` edits are guard-hook blocked** — scene work goes through Unity MCP.
-
-5. **PvE-first playable loop** — **RUN/UX BUILT; encounter content BUILD.** ADR 0016 supersedes mandatory ghost bosses: PvE is
-   the product, encounters are authored and asymmetrical, a completed run has a final PvE
-   victory, and the winning warband may continue into endless until defeated.
-   **Run layer is ADR-0016-shaped as of 2026-07-24:** `IRunContent.Boss(act, rng)` returns an
-   AUTHORED comp (act-anchored only) · `RunPhase.Defeated` is terminal — **lose any fight and
-   the run ends** (Jake's PoC rule) · `Victory` = reached the end of the last act, NOT the old
-   best-of-5 `BossWins >= 3` · ghost-capture removed (the snapshot seam may remain unused).
-   `RunController.PreviewEnemies(tier)` exists because the encounter rng derives from private
-   salts — **never reconstruct a preview client-side**, it will show an army that does not spawn.
-   **ADR 0019 + ADR 0020 implementation:** three acts of Fight/Fight/Interlude/Fight/Boss;
-   terminal losses; Stable/Fraying/Collapsing fixed rewards; choose 3 of 5 opening draft;
-   full-screen Management Hall → Wager → Deployment → Combat flow; Sand
-   Market/Armory/Hourstone; visible Interlude and boss choices; and
-   3→6 capacity unlock/purchases.
-   **GROOMED 2026-07-26 — this item is now a LAWS page, not a work item.** Its two "still
-   scaffolding" claims are both false (authored encounters, ADR 0023; per-act bosses, ADR 0024), and
-   four of its seven remaining-scope bullets are done: ~~enemy-role grammar~~ ✓ · ~~several
-   encounters~~ ✓ · ~~one boss~~ ✓ (three) · ~~encounter/intent preview~~ ✓. What actually remains
-   is tracked elsewhere and should not be re-derived here: **risk-tier mutation of authored
-   encounters** → item 2④ · **the endless seam** → item 13 · **a defeat/retry rule** → item 16
-   (new, below). Everything below this line is settled law that ADRs and design docs reference by
-   name, which is why the item keeps its number and its text.
-   **Balance law:** preserve spectacular system-breaking engines; intervene only
-   when one line erases discovery, all encounter problems, determinism, resolution, or
-   readability. **Design notes:** `Design/pve-encounters.md` now owns the settled laws that
-   the encounter itself is the boss, every boss is a multi-answer strength exam, the boss
-   mechanically rules and teaches its act, and enemy formations are always previewed before
-   deployment. All mechanics are inspectable before Play; the rules are known but the outcome
-   is not forecast. Boss units have no blanket control immunity; only explicit, previewed
-   content passives may negate or reduce a specific verb. Execute remains a true kill and
-   preserves normal death/transform consequences. Phase grants complete personal absence
-   while encounter clocks and state continue advancing. Fields are factional by default;
-   environmental and explicitly volatile fields may affect everyone. Fight flow is
-   Encounter Reveal → combined Planning → Play → Result; lineup, equipment, and positions
-   remain freely editable together until `BEGIN FIGHT`. **Scope correction
-   2026-07-24:** first authored proof is only a visible bonded pair—when one dies, the other
-   Enrages. The proof is now playable; evaluate it before committing an act boss, enemy-role roster, or
-   encounter ladder; the Dying Procession remains a possible extrapolation, not current scope.
-5a. **Hourstone / Inscription engine layer** — **BUILD (acquisition/UI seed integrated;
-    engine catalog next).** The expedition carries one
-    Hourstone; every distinct Inscription acquired remains active for the run with no slot
-    cap. Player-facing presentation is a compact top-screen badge rail driven by replay
-    events: inspectable badges pulse on activation, counters expose progress, and
-    high-frequency triggers coalesce rather than flash-spam. Catalog target is 24, staged
-    as five migrated seeds → twelve-family vocabulary proof → twenty-four engine proof.
-    Hybrid acquisition is live: 20%-weighted 7-Sand Workshop offers plus visible
-    one-from-three Hourstone Interlude and boss rewards. The Hourstone tool shows owned rules;
-    the combat badge/counter rail remains unbuilt. Before catalog expansion, settle the
-    per-root activation guard, Bearer of the Mark replacement, and first twelve contracts.
-    Legacy `Banner*` code names are migration debt.
-6. **Friends playtest #1** — the milestone that ends arguments (ADR 0001), after the PvE
-   vertical slice. Distribution/launcher work is allowed only as needed to put that slice
-   in friends' hands. No date until Jake calls it.
-
-## First-playable content budget (hard cap — ADR 0001 + ADR 0016, scope settled 2026-07-26)
-Current 8 heroes × 2 paths · 11 weapons + 1 trinket · **24 Inscriptions, delivered through
-the ADR 0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role
-grammar, several encounters, three act bosses, one event) · shops + placement ·
-crude post-win endless seam that may reuse and scale the slice · programmer art, no sound.
-Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE content. Do not
-expand beyond three acts, to a full endless mode, or to a catalog beyond the 24-effect proof before
-playtest #1.
-
-**Scope decision, Jake 2026-07-26.** This cap previously read "one complete authored PvE act / one
-boss / do not expand to multiple acts", which contradicted ADR 0019's shipped three-act run shape
-and ADR 0024's three bosses. Jake settled it: **three acts is the cap.** Consequence — item 14
-(acts 2 and 3 draw an identical pool) is real work, not something to delete, because a three-act
-budget only buys anything if the three acts differ.
-
-## Deferred (explicitly NOT now — don't resurrect without Jake)
-**All PvP:** ghost server · matchmaking · ratings/leaderboards · PvP rewards · no-stakes
-Echo exhibitions (the snapshot seam may remain, but no feature work) ·
-Displacement (Push/Pull/collisions) · spoils-of-war (historical ADR 0002)
-· sim-modeled projectile flight ("dodge by movement" lever, render-contract) · aura
-ExcludeOwner option · morale/rout concept · ability crits · predetermined terrain (NEVER)
-· account-scoped power (NEVER — fairness law).
+and any balance pass on hero kits — all either capped by the content budget or forbidden by the
+content doctrine until playtest #1.
 
 ## Open design questions (ammo for DESIGN sessions)
-Content-fidelity leftovers (2026-07-23, from the de-SIMPLIFY pass): **Wide Banner**
-reads as "inner circle gets innate+crown" instead of "reach replaces" — proposed as
-the actual design, needs Jake's nod (**ADR 0022 makes it a one-liner now**:
-`SignaturePatch = Patch(radius: 1)` grows the Rally radius, so this is a nod away) ·
-~~sig-override composition wart~~ **FIXED 2026-07-25 (ADR 0022)** — signature patches
-compose in node order, so Breach the Line is board-length AND escalating; pinned by
-`SignatureCompositionTests` · **Twist's crit-memory** is a 30-tick Mark, not "since last cast"
-(cast-event ordering) · **weapon fidelity:** War-Priest does not yet acquire mace mastery; Tower
-Shield has no base defensive stat; reforged-item resale does not remember forge spend;
-returning to an implicit starter resets its temper; Company Standard currently expresses
-"Company potency" as an adjacent opening-Haste muster ·
-Inscriptions: pool assignment · first twelve effect contracts ·
-per-root activation representation · exact Bearer of the Mark replacement · legacy
-Banner-data migration ·
-PvE vertical slice: ~~encounter-role budget~~ (answered, ADR 0023: five roles) ·
-~~enemy intent preview~~ (answered, ADR 0024: rule + per-body behavior disclosed every fight;
-the DEEP enemy inspector is still open — item 12) · risk-tier mutation shape ·
-endless cycle/post-rank-S decisions/scaling/score ·
-Sand/economy values (initial ADR 0019 tuning until sweep/playtest) · respec cost (free-for-now decided,
-revisit) · per-rank stat scaling.
+- **Bearer of the Mark replacement** — `Inbox/warband_roster_expansion_plan.md` proposes **Living
+  Inscription** ("when an Inscription activates, Vespera gains 5% Mana, at most once per root event").
+  It scales with *activation* rather than collection size, so it cannot make Vespera mandatory just
+  because a run owns many Inscriptions — the exact failure of today's blanket `DoublesBanners = true`.
+  Worth taking as-is when the Inscription event layer (item 5a) lands.
+- **Wide Banner** reads as "inner circle gets innate+crown" instead of "reach replaces" — proposed as
+  the actual design, needs Jake's nod. **ADR 0022 makes it a one-liner:** `SignaturePatch =
+  Patch(radius: 1)` grows the Rally radius.
+- **Content-fidelity leftovers** (2026-07-23 de-SIMPLIFY pass): **Twist's crit-memory** is a 30-tick
+  Mark, not "since last cast" (cast-event ordering) · War-Priest does not yet acquire mace mastery ·
+  Tower Shield has no base defensive stat · reforged-item resale does not remember forge spend ·
+  returning to an implicit starter resets its temper · Company Standard expresses "Company potency"
+  as an adjacent opening-Haste muster.
+- **Inscriptions:** pool assignment · first twelve effect contracts · per-root activation
+  representation · legacy Banner-data migration.
+- **Balance/economy:** risk-tier mutation shape (item 2④) · endless cycle, post-rank-S decisions,
+  scaling, score (item 13) · Sand/economy values (ADR 0019 tuning until sweep/playtest) · respec cost
+  (free-for-now decided, revisit) · per-rank stat scaling.
+- **Named-not-tuned outliers** (recorded so they are not re-discovered): `banneret` is CHASSIS-DEAD
+  (avg 13%, best build 18%) · four node pairs lopsided by ≥25 (shade.reaper vs phantom Δ-52,
+  sniper.onebreath Δ-47, bulwark.juggernaut vs warden Δ-46, phalanx.pikewall Δ+30) ·
+  `shade:reaper+widowmaker` dead at 8–9% · The Long Range's ward never comes off for the `control`
+  axis (its disclosed answer never happens) · `reach` cannot clear the act-1 boss at all.
 
-## Done
-- **2026-07-26 — ACT-SCOPED ENCOUNTER POOLS (closes item 14).** Acts 2 and 3 drew an identical pool,
-  so a three-act run was one act played three times at rising numbers — while ADR 0024 gave each act
-  a different boss, and pve-encounters.md's law above it is **"the boss rules the act"**: node fights
-  exist to introduce, combine and stress the pieces its boss recombines. A shared pool cannot do
-  that for three different exams. Pools are now built backwards from each boss:
-
-  | act | boss | its exam | what the act introduces |
-  |---|---|---|---|
-  | 1 | The Last Oath | which threat you leave enraged | Gnawing Hour · Ninth Bell · The Drop |
-  | 2 | The Ashfall Battery | reach the gun behind the wall | **The Long Range** (kill order past a ward) |
-  | 3 | The Waning Crown | your own kills ring the bell | **The Long Procession** · **The Slagworks** |
-
-  **Acts 2 and 3 are now disjoint** — the named defect gone at the root. Act 1 deliberately owns no
-  unique encounter: its job is to teach pieces the later acts recombine. **Two new encounters, ZERO
-  new roles** (ADR 0023's cap holds): *The Slagworks* — two Colossi hold the lane and the gunners are
-  already past your front line, deliberately ruleless, the Battery's geometry without its clock;
-  *The Long Procession* — a death-fed Scribe whose ritual advances on every death in its court, the
-  Crown's exact trap at survivable scale. **Until now the run's final boss was the FIRST time a
-  player ever met the idea that their own kills can be the losing line** — a knowledge check, not an
-  exam. `Scribe(deathFed:)` follows the existing `Colossus(warded:)` pattern: same body, one
-  encounter-level rule, no new role. **446 tests green**; baseline, replay, scenarios and DLLs
-  regenerated; content fingerprint `f1f4a7e9b5cd527b` → `3dba11673c26e858`.
-  ⚠ **The build law earned its keep, and the answer was uncomfortable.** It says measure before
-  committing — and the first assignment measured FREE/FLAT for both new encounters. Every
-  composition that fixed that (a third wall in the Slagworks · a nine-body Procession court · act 2
-  drawing only wall fights) drove the naive line from 3/12 completed runs to **0/12** and tripped
-  `FullRunsCompleteOnRealContent`. **The gap between the four answer-axis parties and the weakest
-  legal comp is currently wider than the band an encounter can sit in** — nothing can be made sharp
-  for one without being lethal to the other. That is a BALANCE finding, not a composition one, and
-  the doctrine parks it until playtest #1. The shipped compositions are therefore sized to sit beside
-  the existing pool rather than to beat a metric, and 4 of 6 encounters still measure FREE/FLAT.
-  Cost, straight off the baseline: naive line **3/12 → 2/12** (act 2 node 0 is the pinch, 2 → 4
-  deaths), run EV `fraying` victory 8% → 4%. Sim health unchanged-to-better (never-swung 0.27% → 0.00%).
-- **2026-07-26 — PERSISTENT WARBAND BAR + ATOMIC LOADOUT TRANSFERS.** One shell-owned retained
-  instrument now carries the warband through Hall, Wager, Deployment, and the frozen fight result:
-  class portrait, rank, specialization-choice badges, weapon + temper, trinket, field/reserve state,
-  capacity, and stored-equipment count. It is editable only in Planning Hall, read-only at Wager and
-  result, becomes Deployment's sole friendly roster, and is deliberately hidden during live combat
-  (no mid-fight substitution rule was invented). The old Hall shelf and Deployment rail no longer
-  build duplicate visible controls. Hero identities are stable run-scoped IDs, saved and
-  deterministically migrated for legacy saves. Weapon/trinket drops are atomic: occupied→occupied
-  swaps preserve item identity/tier/investment, occupied→empty moves, explicit weapon→starter
-  restores the source's own starter, and Armory drops unequip. Pointer-capture drag has legal target
-  highlights and a ghost; click/keyboard selection is the equivalent accessible path; runtime
-  hover/focus tooltips cover heroes, gear, and specialization badges. The Loadout Table now reserves
-  the bar's safe area so its action dock stays reachable. **Gates:** 249 sim + 195 run tests green;
-  Unity compiled with zero warnings/errors; one retained bar instance survived Hall→Wager→Deploy,
-  hid in active Fight, restored read-only at result, used zero native tooltips, and the Wager Manage
-  route returned to the focused Hall loadout. Game View captures checked Hall, Wager, Deployment,
-  compatibility phone layout, result, and the expanded Loadout Table.
-- **2026-07-26 — UI PROPOSAL SLICE 1: HALL HIERARCHY + COMPACT WARBAND BAR.** The Hall overview
-  now follows the approved mockup's information order: one dominant Breach decision with a
-  state-aware action, subordinate Market and Armory plaques, and the Hourstone as the lower visual
-  anchor. Overview-only lore, duplicate recommendation chrome, the legacy warband shelf, and the
-  extra `NEXT` attention pill no longer compete with that decision. Outside Deployment, the
-  persistent bar is a 96 px command strip containing only the current field heroes plus a single
-  Manage action; each card keeps class, rank, specialization history, weapon, and trinket visible.
-  Deployment deliberately expands the same retained bar back to all eight field/reserve addresses.
-  The Loadout Table temporarily replaces the compact bar instead of stacking two equipment
-  surfaces. **Gates:** 249 sim + 197 run tests green; clean UXML and whitespace checks; Unity
-  refresh/compile with zero warnings or errors; Play Mode proved three compact Hall cards, the
-  Loadout replacement contract, and eight non-compact Deployment addresses. Visual proof:
-  `client/McpCaptures/ui-proposal-slice1-hall-final-live.png`.
-- **2026-07-26 — BALANCE INSTRUMENTS: 4-axis `--enc` + a committed baseline.** Jake: *"both enemy
-  unit comps and balance tuning for our numbers — do we have a good strategy for that?"* Audit said:
-  four good probes, one blind spot and one missing loop. **`--enc` measured every node encounter
-  against ONE party** while `--boss` used four, so half the encounter report was conditional on a
-  warband the author never chose. Formations, answer axes and the party-size curve now live in
-  `ProbeParties` and BOTH probes read them (the `Encounters.Scale` discipline, applied to the player
-  side); `--boss` output is byte-identical past its header, so the refactor is provably
-  behaviour-preserving. **`make baseline`** writes `Projects/balance-baseline.md` — 104 metrics, one
-  per line, dotted keys — so **the A/B is `git diff`** instead of a hand-built worktree. It asserts
-  nothing and fails nothing; numbers are meant to move, and it exists so a session can see the
-  movement. Byte-stable across regenerations. Also `make enc` / `make boss`.
-  ⚠ **Findings the wider net turned up — measurements, NOT a licence to tune** (doctrine holds:
-  instruments now, tuning after Jake's playtest — his call, 2026-07-26):
-  ① **Party size is the strongest difficulty dial in the game, and it is not a stat.** The Long
-  Range at act 2 admits 3 answers with spread 100 against three heroes and is **FREE from every
-  formation against four**. One extra body deleted the encounter the vault calls "the sharpest in
-  the pool" — that characterisation was an artifact of measuring act 2 with an act-1-sized party.
-  Every probe table now prints the hero count.
-  ② **The node pool is nearly free for a competent party** — of 48 encounter×act×axis cells, all but
-  four sit at win=100. Placement spread, not win%, is the only thing still separating them.
-  ③ **`banneret` is CHASSIS-DEAD** (avg 13%, best build 18%) and four node pairs are lopsided by
-  ≥25 (shade.reaper vs phantom Δ-52, sniper.onebreath Δ-47, bulwark.juggernaut vs warden Δ-46,
-  phalanx.pikewall Δ+30). Pre-existing; now recorded rather than re-discovered.
-  ④ **The Long Range's ward never comes off for the `control` axis** (rule fired 0% at acts 2-3):
-  control kills the warded Colossus straight through 50% DR, so the encounter's disclosed answer
-  never happens even though control wins. An encounter whose rule does not fire is decoration.
-  ⑤ **`reach` cannot clear the act-1 boss at all** (0% from every formation; 33% at act 3).
-- **2026-07-26 — ROUTING + THE ENGAGEMENT LAW (ADR 0025).** Jake's bug report — "units sit behind
-  others in line"; "jump units get stuck between two enemy units doing nothing". Both real, both
-  reproduced headlessly, both worse than reported: a flank body logged **0 swings in 1200 ticks**,
-  and a diver that leapt into a full backline stood **motionless for ~1000 ticks** while five enemies
-  killed it. Cause was never the renderer — movement was a greedy hill-climb on straight-line hex
-  distance (local minima everywhere on a 6-wide board), targeting had no notion of reachability and
-  no fallback, and `LeapTo` cleared the target it had just chosen (inverting every `Farthest` diver).
-  Replaced with a Dijkstra flow field to the **engage ring** (`sim/Warband.Sim/Pathing.cs`): walls
-  impassable, **bodies a detour at `BodyCost = 6`** — which doubles as a unit's patience for a queue.
-  Plus: a unit that can neither reach nor strike its target fights what it CAN reach (Taunt exempt),
-  and a leap keeps its victim. **440 tests green**, new `PathingTests.cs`. Watch `BodyCost` at
-  playtest — it is the one tuning constant in the system.
-  ⚠ **The Drop went FREE → POSES A PROBLEM (100-point placement swing)** and the naive-line bot now
-  dies in **act 1**, not act 2 (still 3/12 runs). That is the enemy AI working, not a regression —
-  **do not rebalance against it before the interactive playtest** (content doctrine).
-- **2026-07-26 — THE SITE IS LIVE AND THE LAUNCHER PULLS FROM IT (closes item 8).** Two failures, both
-  mine, both now guarded in scripts rather than in notes.
-  **(1) SSL protocol error.** Jake ran `setup-warband-site.sh` before the DNS record existed publicly.
-  Caddy loaded the vhost, asked Let's Encrypt immediately, and got `DNS problem: NXDOMAIN looking up A
-  for warband.inhouseboyz.com` on both http-01 and tls-alpn-01, then the same from ZeroSSL. That is a
-  HARD failure, so Caddy backed off and never retried — the site answered `tlsv1 alert internal error`
-  for hours. **The trap: local resolution is not evidence.** dnsmasq answers `*.inhouseboyz.com` from
-  split-DNS, so the name resolved on this box while being NXDOMAIN to the world; I also mis-diagnosed
-  it once as "Caddy never loaded the config," which the journal disproved. The vhost also pointed at
-  **8090 (arena's port)** because it was generated before warband moved to 8092.
-  → `setup-warband-site.sh` now **refuses to add a vhost without a public A record**, checked against
-  1.1.1.1 over DoH and deliberately not the local resolver, and after reloading it **waits for a real
-  TLS handshake**, printing the verbatim ACME error on timeout. "Reloaded" without a cert was the
-  silent failure.
-  **(2) `manifest returned HTTP 404` from the launcher.** The build had only ever been published into a
-  **scratchpad staging dir**, because `/srv/warband-releases` did not exist during verification. Every
-  local check passed and nothing was actually downloadable. `make release-status` said so plainly —
-  nobody asked it.
-  → `ship-release.sh` now **curls the public manifest URL after publishing and fails if the site does
-  not serve the version just shipped**, naming `WARBAND_RELEASES_DIR` as the likely cause. A file on
-  disk that the site does not serve is not a release. Negative-controlled against a 404 path.
-  **Verified live, over the public HTTPS host:** `make ship` published v0.1.260726.1352 (content
-  `f1f4a7e9b5cd527b`, 58 MB, sha matches on-disk) · the manifest and zip serve 200 through Caddy with
-  the full 61,337,121-byte length · **the real launcher ran against the real site**: downloaded,
-  verified the hash, installed 157 MB, and failed only at `exec` (Windows PE on Linux) · second run
-  short-circuits to "Up to date" with no download · all six `Warband/*` shaders and StreamingAssets
-  present in the installed payload · unauthenticated `/` 200 and `/launcher` 302 → Discord.
-  **Method note:** my first shader check on the installed build reported all six MISSING. It was the
-  *check* that was wrong — I grepped invented names (`UnitBody`, `HexTile`, …) instead of the real
-  `Ring`/`GroundFill`/`Sigil`/`Glow`/`Particle`/`Dissolve`. A control grep for a known Unity built-in
-  string is what exposed it. Same class of error as the `dig`-not-installed miss earlier: **a check
-  that can silently return "nothing found" needs a positive control.**
-- **2026-07-26 — FIRST STANDALONE BUILD + LAUNCHER/DELIVERY (item 8).** Jake: *"look at what we did
-  for shoota too… we can piggy back off that infra."* Done exactly that — the pipeline is Shoota's
-  shape (`deploy/ship-release.sh`, `launcher/main.go`) cut down, because warband has no server.
-  **THE LANDMINE WAS REAL, and the preflight caught it before a build was spent on it.** New
-  `Warband/Build Preflight` reported all six hand-HLSL shaders as *"would be STRIPPED from a player
-  build"* — `GraphicsSettings.asset` held seven always-included shaders and every one was a Unity
-  built-in. Since all six are reached only by `Shader.Find` and referenced by no material asset, the
-  first friend build would have silently lost the ENTIRE combat-spectacle arc and looked like broken
-  FX code. `WarbandBuild` now registers them itself every build and logs what it added; all six are
-  in `GraphicsSettings.asset` by guid (verified by mapping guid → `.meta`).
-  **Built:** v0.1.260726.1352, 162 MB, **0 errors**, content `f1f4a7e9b5cd527b`. Artifacts land in
-  `~/warband-builds/` on Windows — OUTSIDE the Syncthing tree, or a 162 MB build syncs back into
-  `git status`. `release.json` is written LAST and only on success, so a failed build cannot be
-  shipped: there is no manifest to ship.
-  **Delivery:** `make ship-preflight` / `ship` / `release-status` / `launcher-release` /
-  `content-version`. Publishing is same-filesystem renames throughout, so a launcher polling
-  mid-publish never sees a half-copied zip. **`ship` refuses a content-fingerprint mismatch** against
-  homeserv's own — that almost always means stale Windows DLLs, and shipping it would make saves
-  refuse to load with corruption-looking symptoms.
-  **Launcher:** Shoota's, retargeted, with two real changes — the token is **optional** (Shoota's Go
-  site checks it; warband serves a static manifest, and the gate can be added later WITHOUT
-  reissuing launchers) and the zip URL is **resolved relative to the manifest URL**, so a plain
-  static Caddy directory is enough and no application server is needed at all.
-  **Verified:** publish pipeline end to end (58 MB zip + manifest, status readback) · launcher end to
-  end against a local HTTP server — cold install, SHA-256 verify, atomic install with rollback,
-  version marker, and the stand-in exe genuinely ran; second run short-circuits to "Up to date" with
-  no download · cross-compiles to a 6.1 MB Windows PE32+ binary · **content fingerprint identical on
-  homeserv and Windows** (closes the question left open by the version-stamp work) · a cold player
-  correctly writes NO save.
-  **First real player pass, 2026-07-26:** the exe boots through the menu and reaches a fight. That
-  pass exposed a second build-only shader hole: runtime-created primitives use URP Lit and legacy
-  tracers/bursts use URP Unlit; both resolved in Editor but were stripped from the player. The board,
-  HP bars, and Mana bars rendered pink, while `Player.log` filled with
-  `ArgumentNullException: shader` from `Burst.Create` / `Tracer.Create`. The build guard now includes
-  URP Lit/Unlit alongside all six Warband shaders; post-build preflight passes and corrected build
-  `0.1.260726.1648` succeeded with 0 errors. Combat and Hall/UI audio are disabled by default after
-  the same pass found the generated clips bad and much too long. **Still needs one visual rerun of
-  the corrected build before publishing.**
-  **Gotcha found, worth knowing:** the **Editor and the built player share
-  `Application.persistentDataPath`** (`AppData/LocalLow/InhouseBoyz/Warband` holds both `run.save`
-  and the Editor's own `Unity/…/Editor/Analytics`). So a dev Play Mode session and a friend build
-  read and write the SAME save file. Benign today, but it is exactly why a fresh build can appear to
-  "already have a run" — that is what happened here, and it cost a detour to rule out as a bug.
-  **ACCESS DECIDED (Jake): Discord sign-in gates the LAUNCHER, nothing else.** *"no gate needed since
-  this doesn't really need a server. I think if someone signs in with discord, they can dl the
-  launcher."* Built as `site/` — one Go file, Shoota's session/OAuth scheme (HMAC cookie, state-cookie
-  CSRF, `identify` scope only) with the database, accounts, telemetry and admin all cut. `/launcher`
-  needs a session; **`/releases/*` is open on purpose**, because the launcher is not a browser and
-  carries no session — gating it would mean embedding a secret in every exe that anyone can read back
-  out. Shoota reached the same conclusion the hard way. No allowlist: any signed-in Discord account.
-  **Verified:** signed out, `/launcher` 302s to Discord while `/releases/*` serves 200; signed in, the
-  exe comes back byte-identical to the published one; tampered and expired cookies both rejected. Then
-  end-to-end — **the launcher pulled the real 58 MB build through the real site code**, verified its
-  hash, installed 157 MB, and failed only at `exec` (a Windows PE on Linux: the correct failure, and it
-  proves every step before it). And the shaders are not merely registered — **all six are physically
-  present in the shipped `Warband_Data`** (`Ring`, `GroundFill`, `Sigil`, `Glow`, `Particle`,
-  `Dissolve`), with StreamingAssets (tuning.json, tuning.ranges.json, 10 fixtures) alongside them.
-  **That verification ran against a STAGING dir, not the deployed one** — `/srv/warband-releases` did
-  not exist yet — so it proved the pipeline but published nothing a friend could reach. Closed below.
-  **Still Jake's:** creating the Discord OAuth app, whose **redirect URI must be exactly**
-  `https://warband.inhouseboyz.com/auth/discord/callback`. The Discord round-trip is the one path that
-  cannot be tested without those credentials.
-- **2026-07-26 — CONTENT VERSION STAMP (433 tests). The prerequisite for a server, not the server.**
-  Jake asked whether we have a server and whether we'd want cloud storage for PvP; the answer is no
-  server exists (**zero networking anywhere in the codebase** — the one grep hit was a cylinder named
-  "Hourstone Socket"), homeserv already runs Caddy/Docker/Tailscale and a native Palworld server so
-  hosting is a solved problem, and Shoota has a Unity **LinuxServer** build as precedent. Decision
-  stands: **not today.** One clarification worth keeping — every PvP idea in the vault is
-  *asynchronous* (Echo exhibitions against a stored snapshot, leaderboards, ghost boards), so it is
-  "upload a blob, download a blob", a key-value store behind Caddy, **not netcode**. Real-time PvP
-  would be a different game.
-  **What was actually missing:** ADR 0008 has specified `contentVersion` since 2026-07-22 and it did
-  not exist. `Replay.cs` had a *format* version only. Now `IRunContent.ContentVersion` — a
-  **computed** FNV-1a-64 fingerprint of the whole content graph (`Warband.Sim.ContentHash`), not a
-  hand-bumped constant, because the failure it guards is a retune and that is exactly what a human
-  forgets to bump. Stamped into `RunState` at creation, into `GhostSnapshot` at capture, persisted by
-  `RunSave`, checked by `Resume`. **Why the eager id check was not enough:** ids resolving proves a
-  rename didn't happen, but a run's encounters derive from its seed at FIGHT time, so identical ids
-  with different numbers resume happily and fight a different army than the save was made against.
-  **Replays deliberately NOT stamped** — they store the full event log, so playback is
-  content-independent; bumping the format to v6 would have forced regenerating 10 fixtures for a
-  reason that does not hold. Re-simulation is what content changes break, and that only happens for
-  saves and snapshots.
-  **Tests (26 new):** the algorithm is pinned to an **independently computed** digest, so swapping in
-  `string.GetHashCode()` — which .NET randomizes per process, and would make saves fail after every
-  restart while looking like corruption — fails the suite · a retune moves the fingerprint at **11
-  different depths** including a magnitude buried in a field's pulse inside a trigger · null ≠ empty ·
-  order is significant · a retuned save is refused *while every id still resolves* · an unversioned
-  save says "unversioned" · a matching stamp still resumes normally.
-  Also: `--version` on the sweep tool prints the fingerprint, and dev builds show it on the menu, so
-  "my save refused to load" is diagnosable instead of unfalsifiable. **Cross-machine check:** the
-  `Warband.Content.dll` on homeserv and Windows is byte-identical (MD5 4DBDDE32…), and the hash uses
-  no platform-dependent primitives. **Still unverified:** the on-Windows harness run — the extended
-  `RunSaveCheck` was written and synced but Codex took the Unity lock mid-verification, so the
-  fingerprint has not yet been printed from inside Unity. Run `Warband/Verify Run Save` when the lock
-  frees.
-- **2026-07-26 — RUN SAVE/RESUME (item 7, 412 tests).** Quitting the app no longer destroys the run.
-  `Warband.Run.RunSave` converts `RunState` ⇄ text and **does no file IO** (the run layer is pure by
-  law, ADR 0008) — the host owns the bytes, which is also what keeps the format headless-testable.
-  Hand-rolled rather than JSON: Warband.Run has zero package references so the DLL drops into Unity
-  unchanged, and reflection-based serialization gets stripped by IL2CPP. Format is
-  `dotted.key=value` lines behind a version header — order-independent, unknown keys ignored,
-  explicit `.count` on every list, and **content ids that could collide with a delimiter throw at
-  WRITE time** rather than silently corrupting a save.
-  `RunController.Resume(state, content, cfg)` rebuilds the machine without regenerating anything
-  (regenerating maps or shop stock would replace what the player was looking at) and **resolves every
-  content id eagerly**, so a save from an older build fails with the offending id named instead of
-  mid-fight. Client half: `RunSaveFile` writes temp-then-move so a crash mid-write leaves the
-  previous good save intact, never throws at the caller, and **deletes any save it cannot read** so
-  CONTINUE can't fail forever. Autosave hangs off `Rebuild()` — the shell's single choke point, so no
-  future action can change the run without the save following — plus `OnApplicationPause/Quit` for
-  alt-tab. CONTINUE now means "a run exists, in memory or on disk"; a discarded save says so on the
-  menu instead of failing silently.
-  **The test that matters:** a run saved, serialized, and rebuilt from text plays out **identical**
-  to one that was never saved — same encounters, same battles event-for-event (order-sensitive log
-  hash), same Sand. Plus: earned growth and frozen offers survive · sold-out offer slots stay empty ·
-  an implicit starter weapon stays implicit (null ≠ "") · a hero with no trinkets resumes with none ·
-  truncated/garbage/future-format saves are refused · Reward-phase and PendingSpec saves resume still
-  owing the choice.
-  **Verified ON WINDOWS, not just headless.** New committed harness
-  `client/Assets/Editor/RunSaveCheck.cs` → menu `Warband/Verify Run Save`, MCP-drivable, edit-mode
-  only. Run this session against the real DLLs: save lands at
-  `C:/Users/jwjwi/AppData/LocalLow/InhouseBoyz/Warband` (2066 bytes) · temp file consumed by the
-  move · **bytes survive Windows text IO unchanged and no CR is injected into the record
-  separator** · resumed act/beat/phase, Sand, warband and shop stock all match · a future format is
-  refused · cleanup works. 12/12 PASS, console 0 errors.
-  **STILL UNVERIFIED — needs Jake at the keyboard:** the shell wiring (does the CONTINUE button
-  appear on a cold start, does clicking it resume, does the autosave hook fire on every action).
-  **`EditorApplication.EnterPlaymode` is refused over MCP** — *"User interactions are not supported
-  for MCP tool calls"* — so Play Mode is not reachable from a session at all. **That is a new,
-  permanent constraint worth knowing: no agent can ever click-through this client.** Add it to the
-  client gotchas.
-  **Known behavior, not a bug:** quitting mid-fight-playback resumes at the *next* beat — the fight
-  had already resolved and paid, so nothing is lost, but the result report is skipped.
-- **2026-07-26 — ACT BOSSES + THE DISCLOSURE CONTRACT (item 2 ①②, ADR 0024, 392 tests).** Built
-  overnight, unattended. Each act now closes on a different strength exam instead of the same bonded
-  pair three times: act 1 **The Last Oath** (`BOND`, unchanged and deliberately so — it is the only
-  boss whose decision has been measured), act 2 **The Ashfall Battery** (`BATTERY` — a Rooted gun
-  behind two Colossi that shells your FARTHEST unit and leaves a burning crater, so bunching behind
-  the tank is the losing answer), act 3 **The Waning Crown** (`WANING` — a bell fed by time AND by
-  **every death in its court**, so clearing the escorts is what rings it). Bosses are authored FOR
-  their act and take no act curve; the multiplier survives only past act 3 for the endless horizon.
-  **The disclosure half was the bigger find.** The live planning beat hardcoded "THE LAST OATH" and
-  disclosed *nothing* for the four node encounters, and enemy cards were built by `UnitCardFromDef`,
-  which titles from `ContentLexicon.Chassis(ChassisId)` — so an **Hourling previewed as "Shade" with
-  the Shade's ability text**, a Colossus as "Bulwark", an Hour-Scribe as "Pyromancer" reading out
-  Inferno. That is worse than no disclosure. Now: `EncounterBrief` carries every body (role, accent,
-  post-scaling HP/power/cadence/reach, row, and a **behavior sentence** covering the targeting rule
-  `pve-encounters.md` always demanded); brief and spawn are built by ONE method so divergence is
-  structurally impossible; enemy cards use the authored name and no portrait.
-  **New instrument `--boss`** (`Projects/boss-probe-2026-07-26.md`) holds a boss to a harder bar than
-  `--enc`: how many *kinds* of strength can pass it. It immediately caught the act-2 boss posing
-  nothing (three of four axes at 100% from every formation, spread 0) — the bell went 14s → 9s
-  against the measurement, not against taste. All three now show spread 100 and 3-4 passing axes.
-  Two render fixtures added through a new `encounter` seam in `scenarios.json`. **Gates:** 392 tests ·
-  scenarios round-trip + byte-stable across two runs · DLLs rebuilt · whole client compiled headless
-  against Unity 6000.3.19 reference assemblies (gate itself negative-controlled).
-  **NOT eyes-verified — nothing was watched in Unity.**
-  **Session-hygiene finding, flagged loudly:** the tree held **178 uncommitted files** including the
-  ENTIRE ADR 0022 + ADR 0023 implementation (`Enemies.cs`, `EncounterProbe.cs`, the unit-behavior and
-  signature-patch tests, `MechanicalRulePresenter`) and most of the client shell — all listed as
-  Done on this board while absent from git. That is why the `--enc` drift above could not be
-  bisected. Committed as part of this session; **future sessions must commit their own work.**
-- **2026-07-25 — AUTHORED PVE ENCOUNTERS (item 2, ADR 0023, 368 tests).** Enemies now have their own
-  designs (Jake's call): authored `UnitDef`s with no chassis/rank/weapon/tree, not composed hero
-  kits. Five roles — Hourling (swarm), Ashen Colossus (anchor), Sanddrift Gunner (artillery,
-  acquires FARTHEST + standoff), Hour-Scribe (rooted ritual clock), Gloamstalker (opening Leap) —
-  compose four node encounters, replacing random kits-as-monsters in `Catalog.Encounter`.
-  **Composition is the act lever** (ADR 0016): factories size themselves by act, and an act's pool
-  is its identity — The Long Range is act 2+ because a rank-C opening warband cannot clear it from
-  ANY formation. Two authored rules bend the shared model on purpose and are both disclosed: WARD
-  (50% DR while escorts live, stripped on the first escort death) and RITUAL (mana fed by trickle
-  ALONE — needed per-unit `ManaPerHitTaken`, mirroring ADR 0022's `ManaPerSwing`, because on the
-  global hit-fed rate a channeller fires the instant it is focused, inverting the problem).
-  `IRunContent.EncounterBrief`/`BossBrief` + `RunController.PreviewBrief` carry the disclosure off
-  the same private salt as `PreviewEnemies`.
-  **The `--enc` probe is the real deliverable here** — it reports per-act win%, the SPREAD between
-  best and worst formation, whether each rule fired, and how the naive bot line does. Its first run
-  caught three of four encounters posing nothing and the Ninth Bell's ritual never firing (the
-  countdown was longer than a fight). All four now pose a placement problem at their debut act.
-  **Difficulty moved hard:** bot tier EV 88/92/79 → **35/48/39**, Fraying beating Stable.
-  `FullRunsCompleteOnRealContent` stopped asserting the bot always wins (against authored content +
-  terminal loss that would mean the PvE poses nothing) and now asserts the machine completes, the
-  arc is reachable, and it is not free. `StarterWarband` drafts a plausible comp instead of
-  `pool[0..2]` — the arbitrary one had a heal-auto Cleric and a Tower Shield Bulwark, i.e. one real
-  damage source, and lost the first fight of every run. **Not eyes-verified: nothing was watched in
-  Unity.** Scenarios regenerated, DLLs rebuilt.
-- **2026-07-25 — UNIT BEHAVIOR LAYER + WEAPON CADENCE + SIGNATURE PATCHES (ADR 0022, 346 tests).**
-  A systems review of the class/weapon/tree layer read the vault against the runnable content and
-  found four levers the design already assumed but the sim had never grown. All four built, plus
-  one plain bug. **① Every unit shared one brain** — `AcquireTargets` was nearest-only with no
-  per-unit hook (combat-grammar.md promised "kits override" in round 6), movement was
-  close-then-stop, and **no chassis ever set `MoveInterval`**, so all eight moved at the default.
-  Now `TargetPref` (Nearest/Farthest/LowestHp/HighestHp, acquisition only — stickiness/Phase/Taunt
-  untouched), `Standoff` (give ground to hold firing distance, never out of range, keeps attacking
-  while withdrawing), and per-chassis speeds 3–7. Nodes may set all three, so **a fork can change
-  the hat at the behavior layer** — Lifebinder's backline SWAP finally moves her.
-  **② `WeaponDef.ManaPerSwing`** replaces the flat rate: mana/tick now spans 0.83 (daggers) → 1.40
-  (mace, 2.80 mastered) instead of being purely 1/Interval. **③ Signature patches** — degree, not
-  verb; 12 copy-pasted overrides converted; `AbilityIdentity` counts patches so cast tells survive.
-  **④ Four trinkets** on the wired-but-unused `ManaMaxDelta` seam; the three item layers now own
-  disjoint jobs (weapon = attack profile · trinket = chassis stat-shape · Inscription = team rules).
-  **⑤ Frenzy** was bypassing `AttackInterval` outright — a window was worth 4 × weapon Damage at no
-  tick cost, making the musket the correct Berserker weapon and his own daggers a trap; it is now
-  +300% attack speed. **Sweep re-run** (`Projects/sweep-2026-07-25.md`): Sharpshot 46→62 and
-  Pyromancer 32→46 (the two classes named as fighting their own pathfinder), Shade 60→45, Bulwark
-  65→53, **Banneret unchanged at 12 — structural, as predicted**. No chassis-DOMINANT build remains
-  (top was 94%, now 86%). New flag NAMED not tuned: `shade:reaper+widowmaker` DEAD at 8–9%, most
-  likely the daggers cadence cut. Last Oath still poses its decision (Enrage 97%, placement chooses
-  in 4/4 lineups, Δ96). Scenarios regenerated + Unity DLLs rebuilt. **Not eyes-verified:** nothing
-  in the client was re-watched — Standoff and per-chassis speeds change how fights LOOK, and that
-  wants Jake's play pass.
-- **2026-07-25 — THE LAST OATH'S DECISION IS REACHABLE (item 3, 313 tests).** The 07-24 probe's
-  "**THE CHOICE DOES NOT EXIST**" was geometry, not numbers: the pair stood asymmetrically
-  (Bulwark (5,2), Sharpshot tucked behind at (6,4)), so the Sharpshot was structurally
-  unreachable first and the Bulwark died in 1000/1000 fights. Both Oathbound now stand on the
-  same rank at opposite board edges — **(5,0) / (5,5)**, a two-line data change. Result: both
-  survive in real fights, **placement chooses the survivor in 4/4 lineups**, and the two
-  branches cost Δ84 win%. Four placements were measured before shipping; the two inner-symmetric
-  ones also pose the decision but make act 1 hard enough that the bot loses 4/6 seeded runs.
-  The probe gained a "does placement choose the survivor?" section — the pitch is now something
-  the report can actually answer. Report: `Projects/oath-probe-2026-07-25.md` (supersedes
-  `oath-probe-2026-07-24.md`). **Named not tuned:** the decision has a strongly correct answer
-  (kill the archer — a lesson, not yet a dilemma) · four arrangements kill both together so
-  Enrage never fires and nothing in the UI names that · two arrangements run ~385 ticks.
-- **2026-07-24 — FIRST-PLAYABLE RUN + PERSISTENT PLANNING UX (ADR 0019, 278 tests).**
-  Three-act/five-beat state machine · terminal loss · initial Sand economy · deterministic
-  Interludes and boss rewards · choose 3 of 5 draft · persistent board-first Planning
-  replacing Map/Shop/Deploy · data-first shared cards + inspector · select-then-Buy/Hold ·
-  portrait/icon presentation catalog · responsive landscape-touch and keyboard input · reduced
-  motion + timing tokens + semantic audio hooks. Direct play feedback then rebuilt the opening
-  draft as a full-screen portrait-led comparison: readable signature/passive blocks, semantic
-  stat colours/icons, large values, and a strong 0/3 → 3/3 selection/action state. Unity Play
-  Mode verified with a clean console; captures are in `client/McpCaptures/`. Detail:
-  `Daily/2026-07-24`.
-- **2026-07-24 — PLAYABLE POC SHELL + DEPLOYMENT + SCENES (263 tests).** Run layer retargeted to
-  ADR 0016 (authored boss, `RunPhase.Defeated`, best-of-5 removed, ghost-capture dropped) ·
-  `RunSetup` recruit draft · the whole client shell (Menu/Recruit/Map/Deploy/Shop/RunOver) on a
-  view-model + router pattern · deployment with swap/pick-up and previewed enemies ·
-  shop depth (equip/unequip/reforge/sell/bench) · `PreviewEnemies` · `GameBoot` startup order ·
-  Boot→Game scenes · board no longer self-starts. Detail: `Daily/2026-07-24`.
-- **2026-07-24 — RENDER + DATA SYSTEMS (item 4b).** Data-driven replay pipeline (`scenarios.json`)
-  · `ReplayInspector` · signature-matched tells (`TellMatch`) · field flavor · directed tells ·
-  unit identity + fight story · event viewer · walls block-then-adapt + firing-angle seek ·
-  replay v3 snapshot identity · the Lexicon (id → words, one source). Detail: `Daily/2026-07-24`.
-- **2026-07-23 — UNITY CLIENT BRING-UP (item 4).** Unity 6.3/URP project, Syncthing + MCP pipeline,
-  sim→Unity DLL bridge, first replay render, diorama look, JSON tuning loop + F1 cockpit.
-  Detail: `Daily/2026-07-23`.
-- **2026-07-23 — OUTLIER SANITY SWEEP (item 3).** `Warband.Sweep`, 2,080 fights + 360 bot runs;
-  zero caps/crashes, determinism intact; outliers NAMED not tuned (Phase uptime, Warden Taunt,
-  Banneret floor) and victory saturating ~99% at every tier. Report:
-  `Projects/sweep-2026-07-23.md`.
-- **2026-07-23 — HERO/BUILD CONTENT PASS (item 2).** 8 kits as data (80 nodes traced to their dive
-  docs), 11-weapon catalog with mastery riders, stat law, reforge, ForkRank, Bearer; then the
-  fidelity pass rebuilding 12/13 SIMPLIFIED nodes to dive truth.
-- **2026-07-23 — SIM MECHANICS BUILD QUEUE (item 1).** The whole dive backlog as reusable grammar
-  primitives — everything Inscription/Relic-hookable, no unit-hardcoded specials.
-- **2026-07-23 — PVE-FIRST IDENTITY AMENDMENT (ADR 0016).** PvE is the product; authored
-  asymmetrical encounters and bosses replace mandatory ghost bosses; the player fantasy is
-  assembling compounding interactions that feel like they break the game; the authored run
-  has a real victory and may continue into endless until defeated. PvP moved wholly to
-  Deferred. Pitch, theme, top-level guidance, affected historical ADR statuses, and this
-  board realigned. Exact vertical-slice run/loss/endless rules intentionally remain DESIGN.
-- **2026-07-23 — DESIGN CAMPAIGN COMPLETE (1a–1d).** Theme (ADR 0010) · impact model
-  (ADR 0011) · 8/8 hero dives settled (Cleric, Bulwark, Shade, Sharpshot, Pyromancer,
-  Berserker, Phalanx, Banneret — all champions named; laws locked along the way: ADR
-  0013 targeting, Burn decay, ADR 0014 aura/muster, cheat-death + cross-layer
-  precedents) · weapons pass (ADR 0015: 11-category catalog, engine riders, temper
-  tiers + Relic rule, Tower forge). Sauce hunt stays PARKED (Design/sauce.md).
-  Full session log: Daily/2026-07-22 + Daily/2026-07-23.
-- **2026-07-22 — RUN LAYER COMPLETE (109 tests).** Bot-ghost generation (BotGhosts: boards
-  sized to slot growth, deepened by act+record, geared, range-aware placement) + full-run
-  harness (RunHarness/RunPolicy/AggregateReport: policy hooks, fight+economy metrics,
-  deterministic). Smoke: 600 bot runs — Greedy tier strictly dominant under placeholder
-  monsters (harness working as intended; tune at sweep/playtest, not now).
-- **2026-07-22 — Run-layer design settled + skeleton & shop built (97 tests).** ADR 0006
-  (shop & economy: every-node shops, 3→6 act-close slot offers, bench 2, gold), ADR 0007
-  (wager tiers, per-kill payout + success bonus), ADR 0008 (run layer = pure host-agnostic
-  lib), ADR 0009 (shop stock: offers/freeze/forks/banners/sell). `Warband.Run`:
-  RunController machine — maps, wager fights, events, ghost bosses (draws = wins), record,
-  slot offers, bench, shop stock, ProgressionFold, snapshot capture (incl. banners); 32 tests.
-- **2026-07-22 — Design foundation.** Pitch v0.3; ADR 0001 (identity + anti-washout
-  contract); ADR 0002 (best-of-5, wagering, anti-snowball); ADR 0003 (combat soul: clock +
-  field, glyphs on flat maps); ADR 0004 (sim framework); ADR 0005 (loadout composition,
-  crit-only RNG, weapon-required/range-on-weapon); combat-grammar, heroes anatomy,
-  render-contract, placeholder roster docs.
-- **2026-07-22 — Sim framework complete (65 tests).** Deterministic tick loop; hex math +
-  lines + PCG32; trigger atom w/ negation; statuses incl. Silence⇄Disarm mirror; cascade
-  bounds + death phase; ramp/zone/placement passives; run-scoped bonuses (ProgressionFold);
-  PlaybackState fold + per-tick reconstruction guardrail; terminal viewer; fields (pulse/
-  wall/projectile-path interaction, attached auras, presence statuses); conditional stat
-  rules; FightStats + conservation; crit (seeded, attacks-only, IsCrit); 6×8 bounds; Leap;
-  loadout composer (chassis/weapon/trinket/node merge).
+## Done — one line each; full detail in `roadmap-done-archive.md`
+- **2026-07-27** — Workbench overhaul (Market Recruit R5, Armory Mode R4, keyword + equipment
+  tooltips R6): object-centric Workbench, live dossiers, permanent equipment rail, paged Armory,
+  runtime tooltip layer, no scrolling. Unity-verified by capture. **Uncommitted as of grooming.**
+- **2026-07-26** — Candidate content + first third path (Sharpshot Spotter), authored but unreachable;
+  `Kits.Candidate*` registries, `IncludeCandidates` default false, fingerprint provably unchanged.
+- **2026-07-26** — Inbox Market UI redesign + equipment preview (455 tests).
+- **2026-07-26** — Variable-arity spec offers + seeded pool draw + fork-rank law (455 tests); the spec
+  tree was the only deterministic layer in a run. Zero behaviour change, fingerprint identical.
+- **2026-07-26** — Act-scoped encounter pools (closed item 14); acts 2 and 3 now disjoint, two new
+  encounters, zero new roles (446 tests). Surfaced the balance finding now tracked as item 18.
+- **2026-07-26** — Persistent Warband bar + atomic loadout transfers (249 sim + 195 run tests).
+- **2026-07-26** — UI proposal slice 1: Hall hierarchy + compact warband bar.
+- **2026-07-26** — Balance instruments: 4-axis `--enc`, `make baseline` (104 metrics, A/B by
+  `git diff`), `make enc` / `make boss`.
+- **2026-07-26** — Routing + the engagement law (ADR 0025): Dijkstra flow field to the engage ring,
+  bodies a detour at `BodyCost = 6`. **Watch `BodyCost` at playtest — the one tuning constant.**
+- **2026-07-26** — The site is live and the launcher pulls from it (closed item 8).
+- **2026-07-26** — First standalone build + launcher/delivery (item 8); the shader landmine was real
+  and the preflight caught it.
+- **2026-07-26** — Content version stamp (433 tests): computed FNV-1a-64 fingerprint of the content
+  graph, not a hand-bumped constant. Replays deliberately unstamped.
+- **2026-07-26** — Run save/resume (item 7, 412 tests), verified on Windows.
+- **2026-07-26** — Act bosses + the disclosure contract (item 2 ①②, ADR 0024, 392 tests).
+- **2026-07-25** — Authored PvE encounters (item 2, ADR 0023, 368 tests); the `--enc` probe.
+- **2026-07-25** — Unit behavior layer + weapon cadence + signature patches (ADR 0022, 346 tests).
+- **2026-07-25** — The Last Oath's decision is reachable (item 3, 313 tests) — geometry, not numbers.
+- **2026-07-25** — Fight-legibility phases 0/1/4-sim + combat-spectacle arc P0–P6, nine commits.
+- **2026-07-24** — First-playable run + persistent Planning UX (ADR 0019, 278 tests).
+- **2026-07-24** — Playable PoC shell + deployment + scenes (263 tests).
+- **2026-07-24** — Render + data systems (item 4b): `scenarios.json`, `TellMatch`, the Lexicon.
+- **2026-07-23** — Unity client bring-up (item 4); outlier sanity sweep; hero/build content pass;
+  sim mechanics build queue; PvE-first identity amendment (ADR 0016); design campaign complete.
+- **2026-07-22** — Design foundation (ADR 0001–0009); sim framework (65 tests); run layer (109 tests).

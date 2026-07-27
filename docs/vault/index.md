@@ -129,7 +129,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
   Regenerate with `make baseline`; the A/B is `git diff`. Not an assertion — it exists so a change's
   effect on the game is visible instead of reconstructed.
 - [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
-  open questions, done log. Sessions plan from here (CLAUDE.md Planning SOP).
+  open questions, one-line done log. Sessions plan from here (CLAUDE.md Planning SOP).
+- [Projects/roadmap-done-archive.md](Projects/roadmap-done-archive.md) — full detail of completed
+  roadmap items + item 1's build history, cut out of the board on 2026-07-27. Read only when you
+  need the blow-by-blow of how something shipped; the board itself is the priority list.
 - [Projects/boss-probe-2026-07-26.md](Projects/boss-probe-2026-07-26.md) — `--boss` output at ship:
   each act boss vs four answer-axis parties × six formations. The bar is "how many kinds of strength
   can pass this", not win%.
