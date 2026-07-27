@@ -29,10 +29,12 @@ this project, and the previous order spent one on a build with a known, one-numb
 **1. ~~Item 10 — the impact balloon.~~ BUILT 2026-07-27** — new `impact.punchScale` global dial,
 default 0.5, halving every recoil (the heaviest tell was at +90%, not the recorded 37%). Feel is
 Jake's to judge; the value is one F1 slider away from any other answer.
-**2. Item 11 — Overtime is invisible. ← NEXT.** A pitch pillar that renders as literally nothing; a
-long fight currently reads as "units started dying for no reason."
-**3. JAKE'S VERIFY PASS (item 1).** Then, and only then, Jake watches a fight — in a build where
-the balloon is fixed and the storm is visible, so the pass is worth the time it costs.
+**2. ~~Item 11 — Overtime is invisible.~~ BUILT 2026-07-27 (THE WANING)** — clock + warning + storm
+tell, render-only, plus an `overtime` fixture so the thing can be seen at all. Root cause was worse
+than "no clock": storm damage inherited a tell row with `minAmount: 5` while the ramp starts at 1,
+so the first 12 s of overtime drew *nothing*. **One edit-mode capture still owed** (see item 11).
+**3. JAKE'S VERIFY PASS (item 1). ← NEXT, AND IT IS YOURS.** Both cheap feel wins have landed, so
+the pass now judges a build with the balloon halved and the storm visible.
 **4. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
 **5. Then re-decide** from the verify pass. Standing candidates: item 17 (Silence) · item 1c/1d
 (comprehension UI, camera) · item 5a (Inscription engine) · items 12, 13, 15.
@@ -153,15 +155,42 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     Gate: headless client compile 0 errors, **negative-controlled** (injected error caught in the
     changed file, clean after revert). **Not watched in motion — nobody can (Play Mode is unreachable
     from a session).** If 0.5 is wrong, it is one F1 slider, no rebuild.
-11. **Overtime is completely invisible — a pillar renders as nothing.** — **SPEC'D. #2 IN THE AGREED
-    ORDER.** `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to
-    every unit every tick until someone dies. The pitch calls this a pillar (*"escalating overtime
-    clock guarantees resolution"*) and theme.md names it **the Waning**, the Hour running out — and
-    the client draws **no clock, no approach warning, and no storm tell** (re-verified 2026-07-27:
-    zero `Overtime` references in client code). A long fight reads as "units started dying for no
-    reason." Filed originally as combat-spectacle proposal 8; **it is not spectacle, it is item 1's
-    failure mode ② (legibility of state).** A tick clock + threshold warning + Storm damage tell is
-    most of it.
+11. **Overtime is completely invisible — a pillar renders as nothing.** — **BUILT 2026-07-27 (THE
+    WANING). VERIFY: machine-gated green, never seen — the Unity lock was held by Codex all session.**
+    `Battle.OvertimeStartTick = 900`, after which `Cause.Storm` deals ramping damage to every unit
+    every tick. The pitch calls this a pillar (*"escalating overtime clock guarantees resolution"*)
+    and theme.md names it **the Waning**.
+    **⚠ The root cause was worse than "no clock", and it is worth keeping.** Storm damage had no tell
+    of its own, so it fell through to the **generic `DamageDealt` row, whose `minAmount` is 5** —
+    and the ramp *starts at 1*. So the first **12 seconds** of overtime drew literally nothing, and
+    from damage 5 on it drew **ordinary orange damage numbers with no attacker.** "Units started
+    dying for no reason" was not an exaggeration; it was a precise description.
+    **NO SIM CHANGE — this was render-only all along.** `Cause.Storm` damage events were always on
+    the wire. (`EventKind.StormTick` is declared but **never emitted**; only the enum and `EventText`
+    reference it. Do not build on it without emitting it first.)
+    **Built:** a world-space **Waning clock** over the board with three states — elapsed `M:SS` ·
+    `THE WANING IN M:SS` once inside `warnLeadTicks` (default 150 = 15 s) · `THE WANING — N/TICK`
+    showing the storm's CURRENT per-tick damage, the only thing on screen that says *getting worse*.
+    Two latched feed beats ("The Hour is running out", "THE WANING — the storm takes everyone") that
+    re-arm on a loop wrap. A `byCause: Storm` tell row so storm damage stops borrowing ordinary
+    combat's number. All of it lives in a new `waning` tuning block (show/size/height/warnLead + 3
+    colours), F1-tunable and hot-reloadable.
+    **Design call worth knowing:** the storm renders **globally, as one clock — numbers and punch are
+    deliberately OFF on the storm tell.** It strikes every living unit every tick, so per-body
+    numbers would be ~40 floating numbers a second and every unit ballooning at once would be item
+    10's defect with the volume up. The clock carries the state, the feed carries the two moments.
+    **New render fixture `overtime`** (`scenarios.json`, data-only — `Scenarios.cs` was untouched
+    because Codex owned it): a warden/lifebinder mirror stalemate that runs **1083 ticks** with
+    **931 storm damage events over ticks 900–1082 ramping 1→7**, and all 3 deaths after overtime
+    opens. Nothing could see this feature before; now anything can.
+    **Gates:** 460 tests green · client compiles (negative-controlled harness) · the clock's readout
+    formula reproduces the fixture's real storm output **exactly at both ends of the ramp** (1 at
+    tick 900, 7 at tick 1082) and its `M:SS` agrees with the toolchain's own 108.3 s · **all 10
+    pre-existing replays regenerated byte-identical**, which also independently proves Codex's
+    uncommitted `Scenarios.cs` change is behaviour-preserving.
+    **NOT seen.** `BuildPreview(tick)` routes through `LayoutStory(true)` → `LayoutWaning`, so a
+    capture at tick ~950 verifies the clock in edit mode **without Play Mode** — do that first when
+    the Unity lock frees. The feel (does it read? is it in the way?) is Jake's.
 
 ### P3 — settled laws the build does not yet keep
 12. **Enemy disclosure stops short of the deep inspector.** — **partly addressed.**

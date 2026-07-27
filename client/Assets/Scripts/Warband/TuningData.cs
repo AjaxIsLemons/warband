@@ -29,6 +29,7 @@ public class TuningData
     public FieldTune fields = new FieldTune();
     public NameplateTune nameplates = new NameplateTune();
     public StoryTune story = new StoryTune();
+    public WaningTune waning = new WaningTune();
     public MotionTune motion = new MotionTune();
     public BeatTune beats = new BeatTune();
     public BarsTune bars = new BarsTune();
@@ -86,6 +87,34 @@ public class StoryTune
     [Range(0.005f, 0.2f)] public float feedSize = 0.02f;
     [Range(0.01f, 0.4f)] public float bannerSize = 0.056f;
     [Range(0f, 15f)] public float endHoldSeconds = 4f;
+}
+
+/// <summary>
+/// THE WANING — the overtime clock, made visible (roadmap item 11). The sim has dealt Cause.Storm
+/// damage to every living unit every tick past Battle.OvertimeStartTick since the first build, and
+/// the client drew NOTHING for it: no clock, no warning, no tell. The pitch calls this a pillar
+/// ("an escalating overtime clock guarantees resolution") and theme.md names it the Waning, the Hour
+/// running out — but on screen a long fight simply became "units started dying for no reason".
+///
+/// It renders GLOBALLY, as one clock, and that is a design choice rather than an economy: the storm
+/// strikes every living unit every tick, so per-body damage numbers would be ~40 floating numbers a
+/// second across the board — a blizzard that buries the fight instead of explaining it. The clock
+/// carries the state (how long, how bad, getting worse); the feed carries the two moments that
+/// matter (it is coming, it is here); the Storm tell row carries the per-unit flash, deliberately
+/// with numbers OFF.
+/// </summary>
+[Serializable]
+public class WaningTune
+{
+    public bool show = true;
+    [Range(0.01f, 0.2f)] public float size = 0.034f;
+    [Range(0f, 10f)] public float height = 4.6f;      // world Y of the clock, above the end banner
+    // Sim ticks of warning before the storm opens (10 ticks = 1 s, ADR render contract). 150 = 15 s,
+    // long enough to change a plan, short enough that it is not background noise.
+    [Range(0, 900)] public int warnLeadTicks = 150;
+    public Color normalColor = new Color(0.72f, 0.76f, 0.84f);
+    public Color warnColor = new Color(1f, 0.78f, 0.30f);
+    public Color stormColor = new Color(1f, 0.42f, 0.36f);
 }
 
 /// <summary>

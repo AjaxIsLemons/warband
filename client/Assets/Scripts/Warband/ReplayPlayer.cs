@@ -86,6 +86,13 @@ public class ReplayPlayer : MonoBehaviour
     private TextMesh _bannerText, _readoutText;
     private readonly List<(string Text, float Age)> _feedLines = new List<(string, float)>();
     private Vector3 _feedAnchor, _bannerAnchor, _readoutAnchor;
+    // The Waning clock (item 11). _clockAnchor keeps only the board's centre in XZ — the height is
+    // applied per frame from tuning so F1 can move it live. _waningStage is a one-shot latch over the
+    // two feed beats: 0 = before the warning, 1 = warned, 2 = the storm is open. It is reset wherever
+    // the playhead rewinds (Build, Clear, loop wrap), so a looped replay warns again.
+    private TextMesh _clockText;
+    private Vector3 _clockAnchor;
+    private int _waningStage;
     private static readonly Color FeedColor = new Color(0.90f, 0.92f, 0.96f);
 
     private static readonly Color Team0 = new Color(0.30f, 0.55f, 0.95f);
@@ -1076,7 +1083,7 @@ public class ReplayPlayer : MonoBehaviour
             if (!_ending) BeginEnding();
             _endHold += Time.deltaTime;
             if (loop && _endHold >= _data.story.endHoldSeconds)
-            { _clock = 0f; _fold = PlaybackState.From(_initial); _fxCursor = 0; ResetAnim(); }
+            { _clock = 0f; _fold = PlaybackState.From(_initial); _fxCursor = 0; _waningStage = 0; ResetAnim(); }
         }
         int tick = Mathf.FloorToInt(_clock);
         ApplyFold(tick, _clock);
@@ -1797,8 +1804,9 @@ public class ReplayPlayer : MonoBehaviour
         for (int i = 0; i < FeedSlots; i++) _feedSlots[i] = MakeWorldText(TextAnchor.UpperLeft);
         _bannerText = MakeWorldText(TextAnchor.MiddleCenter);
         _readoutText = MakeWorldText(TextAnchor.UpperCenter);
+        _clockText = MakeWorldText(TextAnchor.MiddleCenter);
         _feedLines.Clear();
-        _ending = false; _endHold = 0f;
+        _ending = false; _endHold = 0f; _waningStage = 0;
     }
 
     /// <summary>Story overlay anchors from the board bounds (mirrors FrameCamera's min/max) —
@@ -1811,6 +1819,7 @@ public class ReplayPlayer : MonoBehaviour
         _feedAnchor = new Vector3(max.x + 1.6f * hexSize, 3.0f, center.z);  // to the board's +X side
         _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
         _readoutAnchor = new Vector3(center.x, 2.7f, center.z);            // just under the banner
+        _clockAnchor = new Vector3(center.x, 0f, center.z);                 // height applied per frame
     }
 
     /// <summary>A pooled-free world-space TextMesh (FloatingNumber font path), styled + positioned
@@ -1929,6 +1938,68 @@ public class ReplayPlayer : MonoBehaviour
                 _readoutText.transform.rotation = _numberFace;
             }
         }
+
+        LayoutWaning(frozen);
+    }
+
+    /// <summary>Tick count → "M:SS" at the render contract's 10 ticks per second.</summary>
+    private static string ClockText(int ticks)
+    {
+        if (ticks < 0) ticks = 0;
+        int seconds = ticks / 10;
+        return $"{seconds / 60}:{seconds % 60:00}";
+    }
+
+    /// <summary>
+    /// Draw the Waning clock and fire its two feed beats. Three states, one line of text:
+    /// elapsed time · a countdown once inside warnLeadTicks · the open storm with its CURRENT
+    /// per-tick damage, which is the only thing on screen that says "this is getting worse".
+    ///
+    /// Hidden when no battle is loaded (`_endTick == 0` — ShowSnapshot's deployment board), because
+    /// a clock over a formation the player is still arranging is counting nothing.
+    ///
+    /// The damage figure mirrors Battle.cs's own ramp rather than guessing: the sim deals
+    /// 1 + (tick - OvertimeStartTick) / StormRampInterval, and both constants are read from the sim
+    /// assembly, so a retune there moves this readout with it and cannot silently disagree.
+    /// </summary>
+    private void LayoutWaning(bool frozen)
+    {
+        if (_clockText == null) return;
+        var w = _data.waning;
+        bool on = w.show && _endTick > 0;
+        var go = _clockText.gameObject;
+        if (go.activeSelf != on) go.SetActive(on);
+        if (!on) return;
+
+        int tick = Mathf.FloorToInt(_clock);
+        int toStorm = Battle.OvertimeStartTick - tick;
+
+        string text;
+        Color col;
+        if (toStorm > w.warnLeadTicks) { text = ClockText(tick); col = w.normalColor; }
+        else if (toStorm > 0) { text = $"THE WANING IN {ClockText(toStorm)}"; col = w.warnColor; }
+        else
+        {
+            int dmg = 1 + (tick - Battle.OvertimeStartTick) / Battle.StormRampInterval;
+            text = $"THE WANING — {dmg}/TICK";
+            col = w.stormColor;
+        }
+
+        // The two beats, latched so they fire once per pass and again after a loop wrap. Play mode
+        // only: a frozen capture positions the clock but must not push lines into the feed.
+        if (!frozen)
+        {
+            if (_waningStage < 1 && toStorm <= w.warnLeadTicks)
+            { PushFeedLine("The Hour is running out"); _waningStage = 1; }
+            if (_waningStage < 2 && toStorm <= 0)
+            { PushFeedLine("THE WANING — the storm takes everyone"); _waningStage = 2; }
+        }
+
+        _clockText.text = text;
+        _clockText.color = col;
+        _clockText.characterSize = w.size;
+        _clockText.transform.position = _clockAnchor + Vector3.up * w.height;
+        _clockText.transform.rotation = _numberFace;
     }
 
     /// <summary>Latch the fight-end hold: decide the surviving team and fold the event log ONCE via
@@ -1989,12 +2060,13 @@ public class ReplayPlayer : MonoBehaviour
     private void ClearStory()
     {
         _feedLines.Clear();
-        _ending = false; _endHold = 0f;
+        _ending = false; _endHold = 0f; _waningStage = 0;
         if (_feedSlots != null)
             foreach (var slot in _feedSlots)
                 if (slot != null) slot.gameObject.SetActive(false);
         if (_bannerText != null) _bannerText.gameObject.SetActive(false);
         if (_readoutText != null) _readoutText.gameObject.SetActive(false);
+        if (_clockText != null) _clockText.gameObject.SetActive(false);
     }
 
     /// <summary>Screen-space nearest live unit within <paramref name="maxPixels"/> of a screen point,

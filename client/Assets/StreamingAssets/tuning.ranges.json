@@ -4658,5 +4658,17 @@
   "tells[71].hitAnimMinT": {
     "min": 0.0,
     "max": 1.0
+  },
+  "waning.size": {
+    "min": 0.01,
+    "max": 0.2
+  },
+  "waning.height": {
+    "min": 0.0,
+    "max": 10.0
+  },
+  "waning.warnLeadTicks": {
+    "min": 0,
+    "max": 900
   }
 }

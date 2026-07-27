@@ -60,6 +60,15 @@
     "bannerSize": 0.056,
     "endHoldSeconds": 4.0
   },
+  "waning": {
+    "show": true,
+    "size": 0.034,
+    "height": 4.6,
+    "warnLeadTicks": 150,
+    "normalColor": "#B8C2D6FF",
+    "warnColor": "#FFC74DFF",
+    "stormColor": "#FF6B5CFF"
+  },
   "motion": {
     "bobHeight": 0.07,
     "bobSteps": 2.0,
@@ -3797,6 +3806,18 @@
       "announce": false,
       "pulseGround": false,
       "bigImpact": false
+    },
+    {
+      "eventKind": "DamageDealt",
+      "side": "Target",
+      "byCause": true,
+      "cause": "Storm",
+      "flash": true,
+      "flashColor": "#FF6B5CFF",
+      "flashSeconds": 0.12,
+      "punch": false,
+      "number": false,
+      "sound": ""
     }
   ]
 }

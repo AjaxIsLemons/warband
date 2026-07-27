@@ -699,6 +699,18 @@
           "mastered": false
         }
       ]
+    },
+    {
+      "name": "overtime",
+      "seed": 11,
+      "units": [
+        {"team": 0, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 1, "col": 1},
+        {"team": 0, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 1, "col": 4},
+        {"team": 0, "chassis": "cleric",  "picks": [1, 0, 0], "tier": "Relic", "row": 0, "col": 2},
+        {"team": 1, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 6, "col": 1},
+        {"team": 1, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 6, "col": 4},
+        {"team": 1, "chassis": "cleric",  "picks": [1, 0, 0], "tier": "Relic", "row": 7, "col": 2}
+      ]
     }
   ]
 }
