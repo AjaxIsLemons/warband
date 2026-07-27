@@ -35,16 +35,23 @@ than "no clock": storm damage inherited a tell row with `minAmount: 5` while the
 so the first 12 s of overtime drew *nothing*. **One edit-mode capture still owed** (see item 11).
 **3. JAKE'S VERIFY PASS (item 1). ← NEXT, AND IT IS YOURS.** Both cheap feel wins have landed, so
 the pass now judges a build with the balloon halved and the storm visible.
-**4. Item 5a — the Inscription engine layer. ← SET BY THE 2026-07-27 ROADMAP REVIEW (Jake).**
+**4. Item 1c — THE COMBAT RECAP. ← Jake, 2026-07-27, ranked ABOVE 5a.** A comprehensive, polished
+post-fight report: per-unit contribution bars, the five-way damage composition, and a death
+timeline. The result gate is three stat rows and three death lines today, and there is **no graph
+anywhere in the client** — while the sim already computes and tests a full recap the UI throws away.
+So it is a UI job over existing data. It also precedes 5a for a reason: **a recap that shows why a
+build worked is what makes collecting Inscriptions worth doing** — ship the legibility, then ship
+the engine it explains.
+**5. Item 5a — the Inscription engine layer. ← SET BY THE 2026-07-27 ROADMAP REVIEW (Jake).**
 The review measured the build against its own budget and found one large gap: **Inscriptions are at
 5 of 24**, and that is the layer ADR 0016's north star — *compounding builds that feel like they
 break the game* — actually lives in. Everything above it in this list is render and shell. It also
 absorbs **item 17** (Silence), and unlike items 4 and 18 it is **not** blocked behind the balance
 question the content doctrine parks until playtest #1. Target the twelve-family vocabulary proof.
-**5. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
-**6. Then re-decide.** Standing candidates: item 1c/1d (comprehension UI, camera) · item 19
-(measure a human) · items 12, 13, 15's unspent event. Items 4 and 18 are one balance question
-wearing two hats, and the doctrine holds them until playtest #1.
+**6. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
+**7. Then re-decide.** Standing candidates: item 1d (camera) · item 19 (measure a human) ·
+items 12, 13, 15's unspent event. Items 4 and 18 are one balance question wearing two hats, and the
+doctrine holds them until playtest #1.
 
 **⚠ SESSION HYGIENE — UNRESOLVED AS OF 2026-07-27.** The tree carries **5031 insertions across 52
 files plus 29 untracked**, including the Workbench overhaul this board marks BUILT + UNITY-VERIFIED.
@@ -98,10 +105,43 @@ the launcher are all real; **what is thin is the reason to replay it.**
 1b. **Hall polish slices** — **VERIFY/BUILD.** Foundation built and Unity-verified.
     Four named slices open: final Bind choreography · Rule Preview diagrams · real-device
     safe-area/finger/haptic pass · live audio/motion feel tune. `Design/hall-polish.md`.
-1c. **Fight comprehension UI** — **HALF BUILT.** The damage-share + died-to readout shipped
-    (`40eb076`). The other half did not: **`BattleForecast` exists in the sim and is referenced by
-    ZERO client code** (re-verified 2026-07-27) — the win-probability re-sim has no home. This is
-    fight-legibility Phase 4's client half.
+1c. **THE COMBAT RECAP — a comprehensive, polished post-fight report.** — **SPEC'D. RANKED ABOVE 5a
+    BY JAKE, 2026-07-27** (*"a comprehensive and polished combat recap, with graphs and such"*).
+    **Rescoped from "fight comprehension UI"**, which read as a Phase 4 leftover — two words,
+    "damage chart" — and would never have produced what was actually asked for.
+    **There are TWO post-fight surfaces and the board used to treat them as one:**
+    ① the **in-board readout** (world-space text during the end hold) — top-3 damage dealers with
+    team share + died-to attribution. This is what `40eb076` shipped. ② the **result gate**
+    (`ResultGateView`, the blocking screen) — which is **three stat rows and three death lines**:
+    `SAND EARNED`, `ENEMIES FELLED`, `TOP DAMAGE` (one name, one number), then up to three
+    `X fell to Y · Cause · 12.4s` lines. **No graph, chart, bar or timeline exists anywhere in the
+    client.** Both surfaces are text labels. The recap belongs on ②.
+    **⚠ THE POINT: this is a UI job, not a sim job. The data already exists and is already tested —
+    the client computes none of it and displays ~5% of it.**
+    | already computed & tested in the sim | reaches the UI today |
+    |---|---|
+    | `FightSummary.Units[]` — per-unit damage dealt/taken, healing done/received, shields absorbed, kills, death tick, killed-by + cause, **`DamagePctOfTeam`** | one unit's damage number |
+    | `FightStats` — damage split **five ways** (`AttackDamage`/`AbilityDamage`/`DotDamage`/`FieldDamage`/`TriggerDamage`), plus `Casts`, `FirstCastTick`, `CcTicksSuffered`, `Steps`, `ShotsBlocked` | **nothing** |
+    | `FightSummary.Beats[]` — every death: tick, victim, killer, cause, overkill, `KillerInferred` | first 3 lines |
+    | `FightSummary.Teams[]` team totals · `UnattributedDamage` | no |
+    | `BattleForecast.Run(...)` — re-sim win probability | **zero client references** |
+    **Approved scope (Jake, 2026-07-27): contribution + composition + timeline.**
+    ① **per-unit contribution** — a row per hero with a damage-share bar off `DamagePctOfTeam`,
+    replacing the single TOP DAMAGE row · ② **damage composition** — the five-way Attack/Ability/
+    DoT/Field/Trigger split, which is the *"why did my build work"* chart and the closest thing on
+    the board to rendering ADR 0016's north star · ③ **death timeline** — `Beats[]` laid out on the
+    fight's clock, which also gives the Waning (item 11) somewhere to show as a phase.
+    **Deliberately NOT in this slice:** `BattleForecast`. It stays orphaned for now — the per-fight
+    re-sim cost is unmeasured, and it is the one part needing more than layout. Measure before
+    committing to it.
+    **Build notes:** `RunShell:2050` builds the result model and already calls `FightSummary.Build`,
+    so the data is in hand at the call site — this is a model + view change, not plumbing.
+    `FightStats` is currently referenced only by `ReplayPlayer`, so the result gate needs its own
+    fold. Charts must be **code-native** (Painter2D / USS), consistent with the Hall's existing
+    bounded-Painter2D pulse and the shared `MechanicPresentation` glyph and colour language — do not
+    introduce a charting dependency, and do not invent a second colour vocabulary for damage kinds.
+    **Related:** this is also the surface that makes **item 19** (nobody measures a human) tractable —
+    a recap that shows a player their own contribution is one step from recording it.
 1d. **Camera/framing pass** — **UNBUILT, taste-gated on Jake.** Deliberately not started before the
     verify pass, since framing is exactly the kind of thing that pass will have opinions about.
 
@@ -464,7 +504,7 @@ content doctrine until playtest #1.
 ## Done — one line each; full detail in `roadmap-done-archive.md`
 - **2026-07-27** — Workbench overhaul (Market Recruit R5, Armory Mode R4, keyword + equipment
   tooltips R6): object-centric Workbench, live dossiers, permanent equipment rail, paged Armory,
-  runtime tooltip layer, no scrolling. Unity-verified by capture. **Uncommitted as of grooming.**
+  runtime tooltip layer, no scrolling; 50-case viewport/copy matrix PASS. **Uncommitted.**
 - **2026-07-26** — Candidate content + first third path (Sharpshot Spotter), authored but unreachable;
   `Kits.Candidate*` registries, `IncludeCandidates` default false, fingerprint provably unchanged.
 - **2026-07-26** — Inbox Market UI redesign + equipment preview (455 tests).
