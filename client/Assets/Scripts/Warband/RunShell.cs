@@ -35,6 +35,11 @@ public sealed class RunShell : MonoBehaviour
     private PresentationCatalog _presentation;
     private RunConfig _cfg;
     private RunController _run;
+    // Item 19: line formatter (pure, Warband.Run) + byte owner (client). Null until a run exists;
+    // every hook goes through LogLine/LogFight, which are fail-silent — telemetry must never
+    // break a purchase or a fight.
+    private RunTelemetry _telemetry;
+    private RunTelemetryWriter _telemetryWriter;
     private ReplayPlayer _player;
     private HallEnvironmentController _hallEnvironment;
     private PanelSettings _panelSettings;
@@ -289,6 +294,9 @@ public sealed class RunShell : MonoBehaviour
             _savedText = "";
             _notices.Clear(UiNoticeScope.Menu);
             _run = RunSetup.Begin(_seed, _content, _picked, _cfg);
+            _telemetryWriter = new RunTelemetryWriter();
+            _telemetry = new RunTelemetry(_run.State, Application.version);
+            LogLine(() => _telemetry.StartLine(_run.State, DateTime.UtcNow));
             _planningTab = PlanningTab.Market;
             _selectedMarketOffer = _run.State.ShopOffers.FindIndex(o => o != null);
             _selectedCardKey = _selectedMarketOffer >= 0
@@ -387,6 +395,8 @@ public sealed class RunShell : MonoBehaviour
                 resourceId: "ledger-sand", groupId: "market-offers",
                 amount: _run.State.Sand - beforeSand, tone: UiFeedbackTone.Sand,
                 receipt: "Market stock refreshed.");
+            LogLine(() => _telemetry.RerollLine(
+                _run.State, DateTime.UtcNow, beforeSand - _run.State.Sand));
         });
         _actions.ChooseSpec = w =>
         {
@@ -461,10 +471,20 @@ public sealed class RunShell : MonoBehaviour
             ShopAction(() => _run.Reforge(bench ? RosterZone.Bench : RosterZone.Field, idx));
         _actions.SellHero = (bench, idx) => ShopAction(() =>
         {
+            var roster = bench ? _run.State.Bench : _run.State.Field;
+            string soldId = idx >= 0 && idx < roster.Count ? roster[idx].ChassisId : "";
             _run.SellHero(bench ? RosterZone.Bench : RosterZone.Field, idx);
             _selectedItem = -1;
+            LogLine(() => _telemetry.SellLine(_run.State, DateTime.UtcNow, "hero", soldId));
         });
-        _actions.SellItem = i => ShopAction(() => { _run.SellItem(i); _selectedItem = -1; });
+        _actions.SellItem = i => ShopAction(() =>
+        {
+            string soldId = i >= 0 && i < _run.State.Inventory.Count
+                ? _run.State.Inventory[i].Id : "";
+            _run.SellItem(i);
+            _selectedItem = -1;
+            LogLine(() => _telemetry.SellLine(_run.State, DateTime.UtcNow, "item", soldId));
+        });
         _actions.MoveHero = (bench, idx) =>
             ShopAction(() => { if (bench) _run.BenchToField(idx); else _run.FieldToBench(idx); });
 
@@ -897,6 +917,7 @@ public sealed class RunShell : MonoBehaviour
                 resourceId: "ledger-sand", groupId: "market-offers",
                 amount: -spent, tone: UiFeedbackTone.Sand, receipt: notice.Text,
                 transaction: TransactionFor(purchase.Outcome));
+            LogLine(() => _telemetry.PurchaseLine(_run.State, DateTime.UtcNow, purchase));
         }
         Rebuild();
     }
@@ -918,6 +939,7 @@ public sealed class RunShell : MonoBehaviour
                 sourceId: _selectedCardKey, targetId: $"shelf-field:{beforeCapacity}",
                 resourceId: "ledger-sand", amount: -spent, tone: UiFeedbackTone.Sand,
                 receipt: notice.Text, transaction: UiTransactionKind.BuyCapacity);
+            LogLine(() => _telemetry.SlotLine(_run.State, DateTime.UtcNow, spent));
         }
         Rebuild();
     }
@@ -1008,6 +1030,7 @@ public sealed class RunShell : MonoBehaviour
                     rebuild: false);
                 if (succeeded)
                 {
+                    LogLine(() => _telemetry.ReforgeLine(_run.State, DateTime.UtcNow, forged));
                     UiNotice notice = _notices.Set(
                         UiNoticeScope.Hall,
                         $"{forged.WeaponId} forged {forged.PreviousTier} → {forged.NewTier}.",
@@ -1055,6 +1078,8 @@ public sealed class RunShell : MonoBehaviour
         try
         {
             var reward = _run.ResolveInterlude(path, option);
+            LogLine(() => _telemetry.InterludeLine(
+                _run.State, DateTime.UtcNow, path, option, reward.Id));
             UiNotice notice = _notices.Set(
                 UiNoticeScope.Hall,
                 path == InterludePath.Treasury
@@ -1098,8 +1123,11 @@ public sealed class RunShell : MonoBehaviour
         var before = RunMutationSnapshot.Capture(_run.State);
         try
         {
-            string name = _content.Inscription(_run.PreviewBossRewards()[option]).Name;
+            string rewardId = _run.PreviewBossRewards()[option];
+            string name = _content.Inscription(rewardId).Name;
             _run.ChooseBossReward(option);
+            LogLine(() => _telemetry.BossRewardLine(
+                _run.State, DateTime.UtcNow, option, rewardId));
             UiNotice notice = _notices.Set(
                 UiNoticeScope.Hall,
                 $"{name} bound to the Hourstone.",
@@ -1237,6 +1265,7 @@ public sealed class RunShell : MonoBehaviour
             else
             {
                 var placement = CurrentPlacement();
+                EncounterBrief brief = BriefForCurrentNode();   // before resolving — the node advances
                 var outcome = kind == NodeKind.Boss
                     ? _run.ResolveBoss(placement)
                     : _run.ResolveFight(_tier, placement);
@@ -1244,6 +1273,7 @@ public sealed class RunShell : MonoBehaviour
                 _lastFightOutcome = outcome;
                 _lastBattle = outcome.Battle;
                 _fightsCompleted++;
+                LogFight(kind, brief, outcome);
                 var plan = HubFlowPlanner.Plan(before, RunMutationSnapshot.Capture(_run.State));
                 RecordHubPlan(plan, navigateBlocking: false);
                 BuildConclusionReceiptIfNeeded();
@@ -1777,6 +1807,37 @@ public sealed class RunShell : MonoBehaviour
         OpenFightResult();
     }
 
+    /// <summary>Item 19: append one line, or silently none — a telemetry failure must never
+    /// surface inside a purchase, a fight, or anything else the player is doing.</summary>
+    private void LogLine(Func<string> line)
+    {
+        if (_telemetry == null || _telemetryWriter == null || _run == null) return;
+        try { _telemetryWriter.Append(line()); }
+        catch (Exception) { /* fail-silent by design */ }
+    }
+
+    /// <summary>The fight line is also where the run's end is detected — fights are the only
+    /// thing that can end a run, so victory/defeat logs exactly once, here, and the finished
+    /// run uploads fire-and-forget.</summary>
+    private void LogFight(NodeKind kind, EncounterBrief brief, FightOutcome outcome)
+    {
+        if (_telemetry == null || _telemetryWriter == null || outcome == null) return;
+        try
+        {
+            FightSummary summary =
+                outcome.Battle != null ? FightSummary.Build(outcome.Battle) : null;
+            _telemetryWriter.Append(_telemetry.FightLine(
+                _run.State, DateTime.UtcNow, kind, _tier,
+                brief != null ? brief.Name : "", outcome, summary));
+            if (_run.State.Over)
+            {
+                _telemetryWriter.Append(_telemetry.EndLine(_run.State, DateTime.UtcNow));
+                StartCoroutine(_telemetryWriter.Upload());
+            }
+        }
+        catch (Exception) { /* fail-silent by design */ }
+    }
+
     /// <summary>
     /// Item 9: a live fight re-reads its pace immediately through the player's own hot-reload
     /// entry (the F1 cockpit's proven path); off the Fight screen there is nothing to push —
@@ -1823,6 +1884,10 @@ public sealed class RunShell : MonoBehaviour
     {
         _run = run;
         _seed = run.State.Seed;
+        // Same run id as before the save (seed + content are both in the state), so a resumed
+        // run's lines append to the same trail. No start line — the run already started.
+        _telemetryWriter = new RunTelemetryWriter();
+        _telemetry = new RunTelemetry(run.State, Application.version);
         _planningTab = PlanningTab.Market;
         _selectedMarketOffer = run.State.ShopOffers.FindIndex(o => o != null);
         _selectedCardKey = _selectedMarketOffer >= 0

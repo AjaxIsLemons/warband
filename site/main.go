@@ -58,6 +58,7 @@ type config struct {
 	cookieSecret []byte
 	releasesDir  string
 	sfxDir       string
+	runlogDir    string
 	adminIDs     []string
 }
 
@@ -76,6 +77,7 @@ func main() {
 		cookieSecret: []byte(os.Getenv("WARBAND_COOKIE_SECRET")),
 		releasesDir:  envOr("WARBAND_RELEASES_DIR", "/srv/warband-releases"),
 		sfxDir:       envOr("WARBAND_SFX_DIR", os.ExpandEnv("$HOME/Work/warband/docs/audio")),
+		runlogDir:    envOr("WARBAND_RUNLOG_DIR", os.ExpandEnv("$HOME/warband-runlogs")),
 		adminIDs:     splitIDs(os.Getenv("WARBAND_ADMIN_IDS")),
 	}
 	if len(cfg.cookieSecret) < 16 {
@@ -101,6 +103,8 @@ func main() {
 	// Dev-only audition surface; admin-gated and fail-closed. See sfx.go.
 	mux.HandleFunc("GET /sfx", handleSfx)
 	mux.HandleFunc("GET /sfx/", handleSfx)
+	// Playtest telemetry sink (item 19); key-gated, size-capped. See runlog.go.
+	mux.HandleFunc("POST /api/runlog", handleRunlog)
 
 	log.Printf("warband-site on %s (base %s, releases %s, sfx %s, %d admin(s))",
 		cfg.addr, cfg.baseURL, cfg.releasesDir, cfg.sfxDir, len(cfg.adminIDs))

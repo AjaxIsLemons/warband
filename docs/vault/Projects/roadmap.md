@@ -139,12 +139,11 @@ center` cost five rounds) · the unfocused-Editor player-loop freeze is SOLVED �
 weapon-tier augmented marking · WHEN/THEN trigger anatomy · text-budget CI · rank pips ·
 paradox badge · rule-delta rows clipped at drawer-open (info still on tile hover).
 
-**⚠ SESSION HYGIENE — UNRESOLVED AS OF 2026-07-27.** The tree carries **5031 insertions across 52
-files plus 29 untracked**, including the Workbench overhaul this board marks BUILT + UNITY-VERIFIED.
-This is the **second** occurrence; the 07-26 entry flagged 178 uncommitted files, and that is exactly
-why the `--enc` drift could not be bisected. **Do not assume this is yours** — Jake runs Claude and
-Codex in parallel (CLAUDE.md), so another session may be live in these files. Agree ownership before
-committing. `make test` is green at **460 (249 sim + 211 run), verified 2026-07-27**.
+**SESSION HYGIENE — RESOLVED 2026-07-28.** The whole 07-27/28 build wave is committed as
+`cc058c2` (104 files, 5020 insertions) after Jake confirmed no Codex session was live; `make test`
+green at **514 (275 sim + 239 run)** at commit time. `client/TempCaptures/` and `.playwright-mcp/`
+are now git-ignored (capture artifacts — synced for review, never history). Keep it this way:
+commit at stream boundaries, don't let verified work pool uncommitted.
 
 **STATE, 2026-07-27 (honest):** the first-playable run shape and between-fight UX are walkable end
 to end: Menu → five-card Draft → Management Hall → stakes-first Wager → formation-reveal Deployment
@@ -542,8 +541,30 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     against four. Every probe table now prints hero count; always check it.
     ② the earlier ADR 0023 numbers **could not be bisected** (the whole implementation was
     uncommitted), so **re-measure with `make baseline` before trusting any number here.**
-19. **Every instrument measures a BOT. Nothing measures a human — and nothing plans to.** —
-    **DESIGN (small), found 2026-07-27 during the roadmap review.** `run.*` is a default-policy bot
+19. **Every instrument measures a BOT. Nothing measures a human.** —
+    **BUILT 2026-07-28, same day Jake spec'd it (mobile chat: log every fight, every purchase,
+    every tier selection — the full decision trail). VERIFY: one real Play-Mode run writing +
+    uploading is Jake's; everything below it is machine-gated green.**
+    **Built:** `Warband.Run/RunTelemetry.cs` — pure line formatter, RunSave's law (no IO, no
+    packages, hand-rolled JSON), one JSONL line per event: `start` · `fight` (kind, tier,
+    encounter, outcome, ticks, per-hero dmg/pct/healed/died, party+paths — the tier is chosen at
+    the wager that resolves the fight, so this line IS the tier-selection record) · `buy` ·
+    `reroll` · `slot` · `reforge` · `sell` · `interlude` · `bossReward` · `victory`/`defeat`.
+    Run id = seed + content prefix, **stable across save/resume (tested)**; every line
+    re-simulable by construction. **5 headless tests** verify the writer against System.Text.Json
+    as the independent parser, hostile ids included (519 total green).
+    **Client:** `RunTelemetryWriter.cs` appends to `persistentDataPath/runlog.jsonl` beside
+    `run.save`; RunShell hooks at BeginRun/resume, BuyOffer, Reroll, BuySlot, Reforge, sells,
+    Interlude, boss reward, and fight resolution (brief captured BEFORE resolving — the node
+    advances). Fights are the only run-enders, so victory/defeat logs exactly once, then uploads
+    fire-and-forget. **Every hook is fail-silent by design** — telemetry can never break a
+    purchase. `make check-client` 62 scripts 0 errors.
+    **Site:** `POST /api/runlog` (`site/runlog.go`) — static-key spam gate (404 either way),
+    1 MiB cap, one file per UTC day under `WARBAND_RUNLOG_DIR` (default `~/warband-runlogs`),
+    single-write append so concurrent uploads can't interleave. **Smoke-tested end to end
+    locally** (404/404/204/204/413 + file contents). **Deploy pending Jake's tap** — the site
+    restart is the one outward-facing step.
+    **Original finding, kept as the argument:** `run.*` is a default-policy bot
     (no placement, no purchase decisions) over 120 runs/tier; the `--enc` "naive line" is a
     fixed-comp bot at 2/12. **Both are floors, not forecasts** — the whole point of the game is the
     two levers the bots do not pull. So the honest state is: *we do not know the human win rate, and
