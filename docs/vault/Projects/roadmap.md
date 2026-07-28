@@ -562,8 +562,10 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     **Site:** `POST /api/runlog` (`site/runlog.go`) — static-key spam gate (404 either way),
     1 MiB cap, one file per UTC day under `WARBAND_RUNLOG_DIR` (default `~/warband-runlogs`),
     single-write append so concurrent uploads can't interleave. **Smoke-tested end to end
-    locally** (404/404/204/204/413 + file contents). **Deploy pending Jake's tap** — the site
-    restart is the one outward-facing step.
+    locally** (404/404/204/204/413 + file contents). **DEPLOYED 2026-07-28 (Jake's tap) and
+    verified against the LIVE site**: healthz ok · unkeyed POST 404 · keyed POST 204 · the test
+    line landed in `~/warband-runlogs/2026-07-28.jsonl` (removed after). The sink is listening;
+    the next finished run anywhere is the first human data point.
     **Original finding, kept as the argument:** `run.*` is a default-policy bot
     (no placement, no purchase decisions) over 120 runs/tier; the `--enc` "naive line" is a
     fixed-comp bot at 2/12. **Both are floors, not forecasts** — the whole point of the game is the
