@@ -17,6 +17,10 @@ namespace Warband.Sim
         /// <summary>The rule-id table TriggerFired/RuleChanged index into (Battle.BuildRuleTable).
         /// Part of the snapshot, not the event stream — ids are strings and BattleEvent is all ints.</summary>
         public List<string> RuleIds = new List<string>();
+        /// <summary>Which side each rule-table entry belongs to, parallel to <see cref="RuleIds"/>.
+        /// The id alone can NEVER say: a mirror fight registers "inscription.brand" on both sides.
+        /// The badge rail needs this to show YOUR Hourstone and not the enemy's (ADR 0026).</summary>
+        public List<int> RuleTeams = new List<int>();
     }
 
     /// <summary>
@@ -104,17 +108,20 @@ namespace Warband.Sim
             foreach (var u in _units)
             {
                 u.TriggerBase = RuleIds.Count;
-                foreach (var t in u.Def.Triggers) RuleIds.Add(t.RuleId ?? "");
+                foreach (var t in u.Def.Triggers) { RuleIds.Add(t.RuleId ?? ""); RuleTeams.Add(u.Team); }
                 u.StatRuleBase = RuleIds.Count;
-                foreach (var r in u.Def.StatRules) RuleIds.Add(r.RuleId ?? "");
+                foreach (var r in u.Def.StatRules) { RuleIds.Add(r.RuleId ?? ""); RuleTeams.Add(u.Team); }
             }
             _teamRuleBase = RuleIds.Count;
-            foreach (var (_, t) in _teamTriggers) RuleIds.Add(t.RuleId ?? "");
+            foreach (var (team, t) in _teamTriggers) { RuleIds.Add(t.RuleId ?? ""); RuleTeams.Add(team); }
         }
 
         /// <summary>The battle-wide rule-id table — see <see cref="BuildRuleTable"/>. Rides the
         /// replay so the client can resolve an index to a name without the sim.</summary>
         public List<string> RuleIds { get; } = new List<string>();
+        /// <summary>Owning side per rule-table entry, parallel to <see cref="RuleIds"/> — see
+        /// <see cref="BattleResult.RuleTeams"/> for why the id alone cannot carry this.</summary>
+        public List<int> RuleTeams { get; } = new List<int>();
         private int _teamRuleBase;
 
         public static bool InBounds(Hex h) =>
@@ -190,6 +197,7 @@ namespace Warband.Sim
                         InitialUnits = _initialView,
                         TickViewHashes = _tickViewHashes,
                         RuleIds = RuleIds,
+                        RuleTeams = RuleTeams,
                     };
                     _log.Add(new BattleEvent { Tick = _tick, Kind = EventKind.End, Amount = (int)result.Winner });
                     return result;
@@ -648,8 +656,35 @@ namespace Warband.Sim
         private void Emit(BattleEvent ev)
         {
             ev.Tick = _tick;
+            // Root-event identity (ADR 0026): every depth-0 event opens a new cascade tree; its
+            // children inherit the tree id so the once-per-root guard has a key. Two emitters
+            // exist and they arm differently:
+            //  - tick-phase roots (attacks, casts, deaths, pulses) are followed SYNCHRONOUSLY by
+            //    their depth>0 children before any Drain runs, so a phase root re-arms the
+            //    active tree;
+            //  - depth-0 events emitted DURING Drain (GainMana defaults to depth 0, so a cascade
+            //    hit's mana gain is a root mid-drain) must NOT re-arm, or the current tree's
+            //    remaining children would be filed under the wrong root. Their own cascade is
+            //    safe either way — Drain re-arms from the event itself at dequeue.
+            if (ev.Depth == 0)
+            {
+                ev.RootSeq = ++_rootSeqCounter;
+                if (!_inDrain) _processingRootSeq = ev.RootSeq;
+            }
+            else ev.RootSeq = _processingRootSeq;
             _queue.Enqueue(ev);
         }
+
+        private int _rootSeqCounter;
+        private int _processingRootSeq;
+        private bool _inDrain;
+        /// <summary>(RootSeq, ruleIndex) pairs that already engaged this root — the once-per-root
+        /// guard's memory. A root's whole tree resolves inside one Drain call, so clearing per
+        /// Drain keeps it tiny without ever forgetting a live root.</summary>
+        private readonly HashSet<long> _firedPerRoot = new HashSet<long>();
+        /// <summary>Per-rule fight-long match counts for EveryN counter triggers, keyed by rule
+        /// index. Deliberately never reset: "every third allied cast" counts the whole fight.</summary>
+        private readonly Dictionary<int, int> _ruleMatchCounts = new Dictionary<int, int>();
 
         /// <summary>StatusApplied's duration slots (Aux2 = ticks, Aux3 = swings): -1 means "not on
         /// this clock", so a client can tell a running countdown from a permanent hold without
@@ -659,18 +694,26 @@ namespace Warband.Sim
         private void Drain()
         {
             int budget = MaxEventsPerDrain;
+            _inDrain = true;
+            _firedPerRoot.Clear();
             while (_queue.Count > 0)
             {
                 var ev = _queue.Dequeue();
                 _log.Add(ev);
-                // Presentation-only events are logged and then dropped: they fire no triggers AND
-                // spend no cascade budget. That second half is the load-bearing one — without it,
-                // announcing a passive would consume MaxEventsPerDrain faster than before and could,
-                // in a deep enough cascade, change which triggers still got to fire. This feature
-                // must be provably incapable of altering a fight's outcome, and this is where that
-                // is enforced. Gate: `make baseline` byte-identical.
-                if (ev.Kind == EventKind.TriggerFired || ev.Kind == EventKind.RuleChanged) continue;
-                if (budget-- <= 0 || ev.Depth >= MaxCascadeDepth) continue; // logged, no further triggers
+                _processingRootSeq = ev.RootSeq;   // children emitted below join this event's tree
+                // RuleChanged and RuleProgress are pure presentation: logged, then dropped — they
+                // fire no triggers AND spend no cascade budget. That second half is load-bearing:
+                // without it, announcing a passive would consume MaxEventsPerDrain faster than
+                // before and could, in a deep enough cascade, change which triggers still got to
+                // fire. Gate: `make baseline` byte-identical.
+                //
+                // TriggerFired left this club in ADR 0026: it still spends NO budget (announcing
+                // must never starve real events), but it MAY now wake On==TriggerFired triggers —
+                // that is the whole Living Inscription hook. Bounded like everything else by
+                // cascade depth, and by once-per-root on the triggers that ride it.
+                if (ev.Kind == EventKind.RuleChanged || ev.Kind == EventKind.RuleProgress) continue;
+                if (ev.Kind != EventKind.TriggerFired && budget-- <= 0) continue;
+                if (ev.Depth >= MaxCascadeDepth) continue; // logged, no further triggers
 
                 foreach (var owner in _units)
                 {
@@ -688,11 +731,33 @@ namespace Warband.Sim
                             { FireIfMatch(owner, trig, ev, _teamRuleBase + i); break; } // once per team, lowest-id rep
                     }
             }
+            _inDrain = false;
         }
 
         private void FireIfMatch(UnitState owner, Trigger trig, BattleEvent ev, int ruleIndex)
         {
             if (trig.On != ev.Kind || !CondsOk(owner, trig.When, ev)) return;
+            // Once per root event (ADR 0026): the rule ENGAGES — fires or counts — at most once in
+            // one depth-0 event's cascade tree. Checked after conditions so a non-match costs
+            // nothing, and marked before the counter so a cascade echo cannot double-count either.
+            if (trig.OncePerRoot && !_firedPerRoot.Add(((long)ev.RootSeq << 20) | (uint)ruleIndex))
+                return;
+            if (trig.EveryN > 1)
+            {
+                _ruleMatchCounts.TryGetValue(ruleIndex, out int seen);
+                _ruleMatchCounts[ruleIndex] = ++seen;
+                int progress = seen % trig.EveryN;
+                // Every counted match rides the wire: the badge rail may not count for itself
+                // (render-contract law #1), so its pips are SET from Amount, never accumulated.
+                Emit(new BattleEvent
+                {
+                    Kind = EventKind.RuleProgress, Source = owner.Id,
+                    Target = ev.Target >= 0 ? ev.Target : ev.Source,
+                    Amount = progress == 0 ? trig.EveryN : progress, Aux = ruleIndex,
+                    Aux2 = trig.EveryN, Depth = ev.Depth + 1, Root = owner.Id,
+                });
+                if (progress != 0) return;   // counted, not yet the Nth — no fire
+            }
             // Announce the passive BEFORE its effects, so the tell is the cause of the children that
             // follow it in drain order rather than an afterthought behind them. Target is what the
             // triggering event was about, which is the far end of the attribution spark-link.
@@ -841,6 +906,12 @@ namespace Warband.Sim
                                 if (f.OwnerId == owner.Id && HexesOf(f).Contains(t.Pos)) { ok = true; break; }
                         break;
                     }
+                    case CondKind.EventRuleIsTeamRule:
+                        ok = ev.Kind == EventKind.TriggerFired && ev.Aux >= _teamRuleBase;
+                        break;
+                    case CondKind.TargetIsEnemyOfOwner:
+                        var tgtRaw = Raw(ev.Target);
+                        ok = tgtRaw != null && tgtRaw.Team != owner.Team; break;
                     case CondKind.OwnerRecentDamageAbovePct:
                     {
                         int sum = 0;
@@ -1030,6 +1101,9 @@ namespace Warband.Sim
                         Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = pool.Mag, Aux = (int)StatusKind.Burn, Aux2 = Countdown(pool.TicksLeft), Aux3 = Countdown(pool.SwingsLeft), Depth = depth, Root = root });
                         break;
                     }
+                    if (eff.Status == StatusKind.Mustered && target.Has(StatusKind.Mustered))
+                        break;   // a roster is a set: overlapping musters (Wide Banner over the
+                                 // innate one) name the same Company member once, not twice.
                     var applied = new Status { Kind = eff.Status, Mag = amount, TicksLeft = eff.StatusTicks, SwingsLeft = eff.StatusSwings, SourceId = sourceId };
                     target.Statuses.Add(applied);
                     Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = amount, Aux = (int)eff.Status, Aux2 = Countdown(applied.TicksLeft), Aux3 = Countdown(applied.SwingsLeft), Depth = depth, Root = root });
@@ -1050,6 +1124,16 @@ namespace Warband.Sim
             }
         }
 
+        /// <summary>"Mustered beside an ally": a living teammate on an adjacent hex. Evaluated at
+        /// resolve time, so an opener reads the actual deployment, not the intended one.</summary>
+        private bool HasAdjacentAlly(UnitState u)
+        {
+            foreach (var x in _units)
+                if (x.Alive && x.Id != u.Id && x.Team == u.Team && Hex.Distance(u.Pos, x.Pos) == 1)
+                    return true;
+            return false;
+        }
+
         private List<UnitState> ResolveSelector(UnitState owner, Selector sel, BattleEvent ctx)
         {
             var result = new List<UnitState>();
@@ -1065,6 +1149,7 @@ namespace Warband.Sim
             bool StatusOk(UnitState u) =>
                 (sel.MustHave == null || u.Has(sel.MustHave.Value))
                 && (sel.BelowHpPct <= 0 || u.Hp * 100 < sel.BelowHpPct * u.Def.MaxHp)
+                && (!sel.AdjacentToAlly || HasAdjacentAlly(u))
                 && !(sel.ExcludeAnchorUnit && u.Id == anchorId);
             void AddIf(UnitState? u) { if (u != null && u.Alive && StatusOk(u)) result.Add(u); }
 
@@ -1189,6 +1274,20 @@ namespace Warband.Sim
         private void Heal(int sourceId, UnitState target, int amount, int depth, int root)
         {
             if (amount <= 0 || !target.Alive) return;
+            // The Bloodless Hour (ADR 0026's first Paradox): while held, healing cannot restore
+            // HP — the WHOLE amount becomes Shield, not just the overflow like OverhealToShield.
+            // Checked before any HP math so no Heal event exists under it: on-Heal engines (Tithe
+            // of Hours) genuinely go silent, which is the Paradox's real, inspectable drawback.
+            if (target.Has(StatusKind.HealToShield))
+            {
+                target.Shield += amount;
+                Emit(new BattleEvent
+                {
+                    Kind = EventKind.ShieldChanged, Source = sourceId, Target = target.Id,
+                    Amount = amount, Depth = depth, Root = root, PostShield = target.Shield,
+                });
+                return;
+            }
             int healed = Math.Min(amount, target.Def.MaxHp - target.Hp);
             if (healed > 0)
             {

@@ -17,6 +17,14 @@ internal sealed class WarbandBarView : IDisposable
         public bool Armory;
     }
 
+    private sealed class RosterTarget
+    {
+        public long HeroId;
+        public bool Reserve;
+        public int SlotIndex;
+        public bool Locked;
+    }
+
     private sealed class HeroTile
     {
         public readonly VisualElement Root = new VisualElement();
@@ -32,6 +40,7 @@ internal sealed class WarbandBarView : IDisposable
         public readonly Label TrinketIcon = new Label();
         public WarbandHeroModel Model = new WarbandHeroModel();
         public string SpecSignature = "";
+        public bool SuppressClick;
 
         public HeroTile()
         {
@@ -88,12 +97,14 @@ internal sealed class WarbandBarView : IDisposable
     private readonly Label _reserveCount;
     private readonly Button _armory;
     private readonly Label _armoryCount;
+    private readonly Label _armoryHint;
     private readonly VisualElement _dragGhost;
     private readonly Label _dragGhostIcon;
     private readonly Label _dragGhostName;
     private readonly RuntimeTooltipService _tooltip;
     private readonly Dictionary<long, HeroTile> _tiles = new Dictionary<long, HeroTile>();
     private readonly List<VisualElement> _gearTargets = new List<VisualElement>();
+    private readonly List<VisualElement> _rosterTargets = new List<VisualElement>();
     private readonly Dictionary<string, Texture2D> _portraitCache =
         new Dictionary<string, Texture2D>(StringComparer.Ordinal);
 
@@ -105,6 +116,9 @@ internal sealed class WarbandBarView : IDisposable
     private int _dragPointerId = -1;
     private Vector2 _dragStart;
     private bool _dragging;
+    private bool _dragRoster;
+    private long _keyboardMoveHeroId;
+    private VisualElement _keyboardMoveSource;
     private long _selectedSourceHeroId;
     private int _selectedKind = -1;
     private long _lastArmedInventoryItemInstanceId;
@@ -162,11 +176,11 @@ internal sealed class WarbandBarView : IDisposable
         armoryTitle.AddToClassList("warband-bar__section");
         _armoryCount = new Label();
         _armoryCount.AddToClassList("warband-bar__armory-count");
-        var armoryHint = new Label("DROP TO UNEQUIP");
-        armoryHint.AddToClassList("warband-bar__armory-hint");
+        _armoryHint = new Label("OPEN DRAWER  ▴");
+        _armoryHint.AddToClassList("warband-bar__armory-hint");
         _armory.Add(armoryTitle);
         _armory.Add(_armoryCount);
-        _armory.Add(armoryHint);
+        _armory.Add(_armoryHint);
         _root.Add(_armory);
 
         _dragGhost = new VisualElement();
@@ -200,9 +214,11 @@ internal sealed class WarbandBarView : IDisposable
         if (!shown)
         {
             CancelDrag();
+            CancelKeyboardMove();
             _tooltip.Hide();
             return;
         }
+        if (!_model.CanEdit) CancelKeyboardMove();
 
         _root.EnableInClassList("warband-bar--editable", _model.CanEdit);
         _root.EnableInClassList("warband-bar--compact", _model.Compact);
@@ -220,7 +236,9 @@ internal sealed class WarbandBarView : IDisposable
             _root.Insert(1, _scroll);
         }
         _capacity.text = $"FIELD  {_model.FieldCount} / {_model.FieldCapacity}";
-        _reserveCount.text = $"RESERVE  {_model.ReserveCount} / {_model.ReserveCapacity}";
+        // Two deliberate lines: the narrow divider column otherwise wraps mid-word
+        // ("RESERV / E 2/2") at small viewports.
+        _reserveCount.text = $"RESERVE\n{_model.ReserveCount} / {_model.ReserveCapacity}";
         _armoryCount.text = _model.StoredItems == 1 ? "1 STORED" : $"{_model.StoredItems} STORED";
         _manageLabel.text = _model.CanManage ? "MANAGE WARBAND" : "WAR BAND";
         _manage.SetEnabled(_model.CanManage);
@@ -241,6 +259,16 @@ internal sealed class WarbandBarView : IDisposable
         _armory.SetEnabled(_model.CanManage || HasSelectedEquipment());
         _armory.EnableInClassList("warband-bar__armory--drop-target",
             _model.CanEdit && HasSelectedEquipment());
+        UpdateArmoryHint(_model.CanEdit && HasSelectedEquipment());
+    }
+
+    /// <summary>The chip is the drawer's handle when idle and the unequip target while gear
+    /// is armed or dragged — the hint says which mode it is in right now.</summary>
+    private void UpdateArmoryHint(bool unequipTarget)
+    {
+        _armoryHint.text = unequipTarget
+            ? "DROP TO UNEQUIP"
+            : _model.ArmoryDrawerOpen ? "CLOSE DRAWER  ▾" : "OPEN DRAWER  ▴";
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -272,8 +300,10 @@ internal sealed class WarbandBarView : IDisposable
     private void RebuildTiles()
     {
         CancelDrag();
+        CancelKeyboardMove();
         _tiles.Clear();
         _gearTargets.Clear();
+        _rosterTargets.Clear();
         _field.Clear();
         _reserve.Clear();
         foreach (WarbandHeroModel hero in _model.Field)
@@ -286,8 +316,26 @@ internal sealed class WarbandBarView : IDisposable
     private void AddTile(WarbandHeroModel model, VisualElement parent)
     {
         var tile = new HeroTile { Model = model };
+        tile.Root.userData = new RosterTarget
+        {
+            HeroId = model.HeroInstanceId,
+            Reserve = model.Reserve,
+            SlotIndex = model.SlotIndex,
+            Locked = model.Locked,
+        };
+        _rosterTargets.Add(tile.Root);
+        tile.Root.RegisterCallback<PointerDownEvent>(evt => BeginHeroDrag(evt, tile));
+        tile.Root.RegisterCallback<PointerMoveEvent>(evt => MoveHeroDrag(evt, tile));
+        tile.Root.RegisterCallback<PointerUpEvent>(evt => EndHeroDrag(evt, tile));
+        tile.Root.RegisterCallback<PointerCancelEvent>(evt => CancelHeroDrag(evt, tile));
         tile.Root.RegisterCallback<ClickEvent>(evt =>
         {
+            if (tile.SuppressClick)
+            {
+                tile.SuppressClick = false;
+                evt.StopPropagation();
+                return;
+            }
             var target = evt.target as VisualElement;
             if (target != null &&
                 (target == tile.Weapon || target == tile.Trinket ||
@@ -298,12 +346,24 @@ internal sealed class WarbandBarView : IDisposable
         });
         tile.Root.RegisterCallback<KeyDownEvent>(evt =>
         {
+            if (evt.keyCode == KeyCode.Escape && _keyboardMoveHeroId > 0)
+            {
+                CancelKeyboardMove();
+                evt.StopPropagation();
+                return;
+            }
+            if (evt.keyCode == KeyCode.Space && _model.CanEdit)
+            {
+                ActivateRosterKeyboardTarget(tile);
+                evt.StopPropagation();
+                return;
+            }
             if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.Space) return;
             if (tile.Model.HeroInstanceId > 0)
                 _actions.FocusWarbandHero?.Invoke(tile.Model.HeroInstanceId);
             evt.StopPropagation();
         });
-        AttachTooltip(tile.Root, () => HeroTooltip(tile.Model));
+        AttachTooltip(tile.Root, () => HeroTooltip(tile.Model, _model.CanEdit));
         ConfigureGear(tile, tile.Weapon, 0);
         ConfigureGear(tile, tile.Trinket, 1);
         if (model.HeroInstanceId <= 0)
@@ -312,12 +372,117 @@ internal sealed class WarbandBarView : IDisposable
             tile.Root.EnableInClassList("warband-hero--locked", model.Locked);
             tile.Fallback.text = model.Locked ? "◇" : "+";
             tile.ClassName.text = model.Locked ? "LOCKED" : "OPEN";
-            tile.Rank.text = (model.FieldIndex + 1).ToString();
+            tile.Rank.text = (model.SlotIndex + 1).ToString();
             SetDisplayed(tile.Weapon, false);
             SetDisplayed(tile.Trinket, false);
         }
         parent.Add(tile.Root);
         if (model.HeroInstanceId > 0) _tiles[model.HeroInstanceId] = tile;
+    }
+
+    private void BeginHeroDrag(PointerDownEvent evt, HeroTile tile)
+    {
+        if (evt.button != 0 || _dragPointerId >= 0 || !_model.CanEdit ||
+            tile.Model.HeroInstanceId <= 0 || tile.Model.Locked)
+            return;
+        CancelKeyboardMove();
+        _dragSource = tile.Root;
+        _dragHeroId = tile.Model.HeroInstanceId;
+        _dragKind = -1;
+        _dragStart = new Vector2(evt.position.x, evt.position.y);
+        _dragPointerId = evt.pointerId;
+        _dragging = false;
+        _dragRoster = true;
+        _dragGhostIcon.text = tile.Model.Rank;
+        _dragGhostName.text = tile.Model.ClassName.ToUpperInvariant();
+        _dragGhost.EnableInClassList("warband-drag-ghost--hero", true);
+        tile.Root.CapturePointer(evt.pointerId);
+        evt.StopPropagation();
+    }
+
+    private void MoveHeroDrag(PointerMoveEvent evt, HeroTile tile)
+    {
+        if (!_dragRoster || evt.pointerId != _dragPointerId ||
+            !ReferenceEquals(tile.Root, _dragSource))
+            return;
+        Vector2 position = new Vector2(evt.position.x, evt.position.y);
+        if (!_dragging && Vector2.Distance(position, _dragStart) >= DragThreshold)
+        {
+            _dragging = true;
+            _tooltip.Hide();
+            tile.Root.EnableInClassList("warband-hero--drag-source", true);
+            SetRosterDropHighlights(true, _dragHeroId);
+        }
+        if (_dragging)
+        {
+            _dragGhost.style.left = position.x + 14f;
+            _dragGhost.style.top = position.y + 14f;
+            SetDisplayed(_dragGhost, true);
+        }
+        evt.StopPropagation();
+    }
+
+    private void EndHeroDrag(PointerUpEvent evt, HeroTile tile)
+    {
+        if (!_dragRoster || evt.pointerId != _dragPointerId ||
+            !ReferenceEquals(tile.Root, _dragSource))
+            return;
+        Vector2 position = new Vector2(evt.position.x, evt.position.y);
+        if (tile.Root.HasPointerCapture(evt.pointerId))
+            tile.Root.ReleasePointer(evt.pointerId);
+
+        bool moved = _dragging;
+        long source = _dragHeroId;
+        RosterTarget target = moved ? PickRosterTarget(position) : null;
+        if (moved) SuppressNextClick(tile);
+        CancelDrag();
+        if (moved && IsLegalRosterTarget(target, source))
+            _actions.MoveWarbandHero?.Invoke(
+                source, target.Reserve, target.SlotIndex);
+        evt.StopPropagation();
+    }
+
+    private void CancelHeroDrag(PointerCancelEvent evt, HeroTile tile)
+    {
+        if (!_dragRoster || evt.pointerId != _dragPointerId ||
+            !ReferenceEquals(tile.Root, _dragSource))
+            return;
+        if (_dragging) SuppressNextClick(tile);
+        CancelDrag();
+        evt.StopPropagation();
+    }
+
+    private static void SuppressNextClick(HeroTile tile)
+    {
+        tile.SuppressClick = true;
+        tile.Root.schedule.Execute(() => tile.SuppressClick = false);
+    }
+
+    private void ActivateRosterKeyboardTarget(HeroTile tile)
+    {
+        if (!_model.CanEdit || !(tile.Root.userData is RosterTarget target)) return;
+        if (_keyboardMoveHeroId <= 0)
+        {
+            if (tile.Model.HeroInstanceId <= 0 || tile.Model.Locked) return;
+            _keyboardMoveHeroId = tile.Model.HeroInstanceId;
+            _keyboardMoveSource = tile.Root;
+            tile.Root.EnableInClassList("warband-hero--drag-source", true);
+            SetRosterDropHighlights(true, _keyboardMoveHeroId);
+            _tooltip.Hide();
+            UiPolishSignals.Emit(UiPolishSignals.Cue.Pin,
+                targetId: "warband-roster", tone: UiFeedbackTone.Preview);
+            return;
+        }
+
+        long source = _keyboardMoveHeroId;
+        if (target.HeroId == source)
+        {
+            CancelKeyboardMove();
+            return;
+        }
+        if (!IsLegalRosterTarget(target, source)) return;
+        CancelKeyboardMove();
+        _actions.MoveWarbandHero?.Invoke(source, target.Reserve, target.SlotIndex);
     }
 
     private void ConfigureGear(HeroTile tile, VisualElement element, int kind)
@@ -345,6 +510,13 @@ internal sealed class WarbandBarView : IDisposable
         if (model.HeroInstanceId <= 0) return;
         if (!_tiles.TryGetValue(model.HeroInstanceId, out HeroTile tile)) return;
         tile.Model = model;
+        tile.Root.userData = new RosterTarget
+        {
+            HeroId = model.HeroInstanceId,
+            Reserve = model.Reserve,
+            SlotIndex = model.SlotIndex,
+            Locked = model.Locked,
+        };
         tile.Root.EnableInClassList("warband-hero--selected", model.Selected);
         tile.Root.EnableInClassList("warband-hero--reserve", model.Reserve);
         tile.Root.EnableInClassList("warband-hero--placed", model.Placed);
@@ -418,14 +590,17 @@ internal sealed class WarbandBarView : IDisposable
         if (evt.button != 0 || _dragPointerId >= 0 || !_model.CanEdit) return;
         WarbandEquipmentModel gear = kind == 0 ? tile.Model.Weapon : tile.Model.Trinket;
         if (!gear.Transferable) return;
+        CancelKeyboardMove();
         _dragSource = element;
         _dragHeroId = tile.Model.HeroInstanceId;
         _dragKind = kind;
         _dragStart = new Vector2(evt.position.x, evt.position.y);
         _dragPointerId = evt.pointerId;
         _dragging = false;
+        _dragRoster = false;
         _dragGhostIcon.text = gear.Icon;
         _dragGhostName.text = gear.Name;
+        _dragGhost.EnableInClassList("warband-drag-ghost--hero", false);
         element.CapturePointer(evt.pointerId);
         evt.StopPropagation();
     }
@@ -439,7 +614,7 @@ internal sealed class WarbandBarView : IDisposable
             _dragging = true;
             _tooltip.Hide();
             if (_model.Compact) SetDisplayed(_armory, true);
-            SetDropHighlights(true);
+            SetGearDropHighlights(true);
         }
         if (_dragging)
         {
@@ -516,7 +691,21 @@ internal sealed class WarbandBarView : IDisposable
         return null;
     }
 
-    private void SetDropHighlights(bool enabled)
+    private RosterTarget PickRosterTarget(Vector2 panelPosition)
+    {
+        VisualElement picked = _shellRoot.panel?.Pick(panelPosition);
+        while (picked != null)
+        {
+            if (picked.userData is RosterTarget target) return target;
+            picked = picked.parent;
+        }
+        return null;
+    }
+
+    private static bool IsLegalRosterTarget(RosterTarget target, long sourceHeroId) =>
+        target != null && !target.Locked && target.HeroId != sourceHeroId;
+
+    private void SetGearDropHighlights(bool enabled)
     {
         foreach (VisualElement target in _gearTargets)
         {
@@ -526,6 +715,21 @@ internal sealed class WarbandBarView : IDisposable
             target.EnableInClassList("warband-gear--drop-target", legal);
         }
         _armory.EnableInClassList("warband-bar__armory--drop-target", enabled);
+        UpdateArmoryHint(enabled || (_model.CanEdit && HasSelectedEquipment()));
+    }
+
+    private void SetRosterDropHighlights(bool enabled, long sourceHeroId)
+    {
+        foreach (VisualElement element in _rosterTargets)
+        {
+            RosterTarget target = element.userData as RosterTarget;
+            bool legal = enabled && IsLegalRosterTarget(target, sourceHeroId);
+            element.EnableInClassList("warband-hero--drop-target", legal);
+            element.EnableInClassList("warband-hero--drop-swap",
+                legal && target.HeroId > 0);
+        }
+        _field.EnableInClassList("warband-bar__slots--drop-active", enabled);
+        _reserve.EnableInClassList("warband-bar__slots--drop-active", enabled);
     }
 
     private void CancelDrag()
@@ -533,14 +737,26 @@ internal sealed class WarbandBarView : IDisposable
         if (_dragSource != null && _dragPointerId >= 0 &&
             _dragSource.HasPointerCapture(_dragPointerId))
             _dragSource.ReleasePointer(_dragPointerId);
+        _dragSource?.EnableInClassList("warband-hero--drag-source", false);
         _dragSource = null;
         _dragHeroId = 0;
         _dragKind = -1;
         _dragPointerId = -1;
         _dragging = false;
+        _dragRoster = false;
         SetDisplayed(_dragGhost, false);
-        SetDropHighlights(false);
+        _dragGhost.EnableInClassList("warband-drag-ghost--hero", false);
+        SetGearDropHighlights(false);
+        SetRosterDropHighlights(false, 0);
         if (_model.Compact && !HasSelectedEquipment()) SetDisplayed(_armory, false);
+    }
+
+    private void CancelKeyboardMove()
+    {
+        _keyboardMoveSource?.EnableInClassList("warband-hero--drag-source", false);
+        _keyboardMoveSource = null;
+        _keyboardMoveHeroId = 0;
+        SetRosterDropHighlights(false, 0);
     }
 
     private void UseArmory()
@@ -550,7 +766,15 @@ internal sealed class WarbandBarView : IDisposable
             _actions.UnequipWarbandEquipment?.Invoke(_selectedSourceHeroId, _selectedKind);
             return;
         }
-        ManageFocused();
+        if (!_model.CanManage) return;
+        // The chip is the drawer's handle. On the Workbench it plainly toggles; from
+        // read-only screens ManageFocused still navigates home first, then opens.
+        if (_model.ArmoryDrawerOpen)
+            _actions.CloseLoadout?.Invoke();
+        else if (_model.Mode == WarbandBarMode.HallEditable)
+            _actions.OpenLoadout?.Invoke("");
+        else
+            ManageFocused();
     }
 
     private void ManageFocused()
@@ -574,8 +798,25 @@ internal sealed class WarbandBarView : IDisposable
     private void AttachTooltip(VisualElement anchor, Func<RuntimeTooltipModel> copy) =>
         _tooltip.Attach(anchor, copy);
 
-    private static RuntimeTooltipModel HeroTooltip(WarbandHeroModel hero)
+    private static RuntimeTooltipModel HeroTooltip(WarbandHeroModel hero, bool editable)
     {
+        if (hero.HeroInstanceId <= 0)
+        {
+            return new RuntimeTooltipModel
+            {
+                Kind = RuntimeTooltipKind.General,
+                Family = MechanicFamily.Neutral,
+                Eyebrow = hero.Reserve ? "RESERVE SLOT" : $"FIELD SLOT {hero.SlotIndex + 1}",
+                Title = hero.Locked ? "Locked slot" : "Open slot",
+                Domain = "WARBAND",
+                Body = hero.Locked
+                    ? "This field position has not been unlocked."
+                    : "Move a champion here to change the active formation.",
+                Footer = hero.Locked || !editable
+                    ? ""
+                    : "Drag a champion here · Or arm and place with Space",
+            };
+        }
         var body = new StringBuilder();
         body.Append(hero.Role);
         body.Append("\nWeapon: ").Append(hero.Weapon.Name);
@@ -597,7 +838,9 @@ internal sealed class WarbandBarView : IDisposable
             Title = hero.ClassName,
             Domain = "CHAMPION",
             Body = body.ToString(),
-            Footer = "Select for full dossier",
+            Footer = editable
+                ? "Click for dossier · Drag to move or swap · Space to place"
+                : "Select for full dossier",
         };
     }
 
@@ -651,6 +894,7 @@ internal sealed class WarbandBarView : IDisposable
     public void Dispose()
     {
         CancelDrag();
+        CancelKeyboardMove();
         _dragGhost.RemoveFromHierarchy();
     }
 
@@ -664,6 +908,63 @@ internal sealed class WarbandBarView : IDisposable
             return true;
         }
         return false;
+    }
+
+    public bool EditorPreviewFirstRosterDrag()
+    {
+        if (!_model.CanEdit) return false;
+        HeroTile source = null;
+        foreach (HeroTile tile in _tiles.Values)
+            if (tile.Model.Reserve)
+            {
+                source = tile;
+                break;
+            }
+        if (source == null)
+            foreach (HeroTile tile in _tiles.Values)
+            {
+                source = tile;
+                break;
+            }
+        if (source == null) return false;
+
+        CancelDrag();
+        CancelKeyboardMove();
+        _dragRoster = true;
+        _dragging = true;
+        _dragSource = source.Root;
+        _dragHeroId = source.Model.HeroInstanceId;
+        _dragGhostIcon.text = source.Model.Rank;
+        _dragGhostName.text = source.Model.ClassName.ToUpperInvariant();
+        _dragGhost.EnableInClassList("warband-drag-ghost--hero", true);
+        _dragGhost.style.left = Mathf.Max(16f, source.Root.worldBound.x - 24f);
+        _dragGhost.style.top = Mathf.Max(16f, source.Root.worldBound.y - 72f);
+        source.Root.EnableInClassList("warband-hero--drag-source", true);
+        SetRosterDropHighlights(true, _dragHeroId);
+        SetDisplayed(_dragGhost, true);
+        return true;
+    }
+
+    public string EditorRosterInteractionReport()
+    {
+        int occupied = 0;
+        int open = 0;
+        int locked = 0;
+        foreach (VisualElement element in _rosterTargets)
+        {
+            if (!(element.userData is RosterTarget target)) continue;
+            if (target.Locked) locked++;
+            else if (target.HeroId > 0) occupied++;
+            else open++;
+        }
+        // A roster at full capacity legitimately has zero open slots — swap targets still
+        // exist, so "no open slot" is only a defect when capacity remains (2026-07-28).
+        bool atCapacity =
+            _model.FieldCount >= _model.FieldCapacity &&
+            _model.ReserveCount >= _model.ReserveCapacity;
+        bool passed = occupied > 0 && (_model.Compact || open > 0 || atCapacity);
+        return $"Warband roster interaction: {(passed ? "PASS" : "FAIL")} · " +
+               $"{occupied} occupied · {open} open · {locked} locked";
     }
 #endif
 

@@ -44,7 +44,7 @@ namespace Warband.Viewer
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(dumpPath))!);
                 using (var fs = File.Create(dumpPath))
-                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds);
+                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds, result.RuleTeams);
 
                 // Round-trip self-check: re-read and fold to the end; the view the client
                 // will reconstruct must hash-match the live fight (render-contract fidelity).
@@ -112,7 +112,7 @@ namespace Warband.Viewer
                 var result = Warband.Viewer.Scenarios.Build(s, cat);
                 string outPath = Path.Combine(outDir, s.name + ".bytes");
                 using (var fs = File.Create(outPath))
-                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds);
+                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds, result.RuleTeams);
 
                 List<PlaybackUnit> rtInitial;
                 List<BattleEvent> rtEvents;

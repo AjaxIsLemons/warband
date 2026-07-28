@@ -55,6 +55,10 @@ internal sealed class MenuView : IRunScreenView
         _continue.AddToClassList("btn");
         column.Add(_continue);
 
+        var options = new Button(() => _actions?.OpenOptions?.Invoke()) { text = "OPTIONS" };
+        options.AddToClassList("btn");
+        column.Add(options);
+
         var quit = new Button(() => _actions?.Quit?.Invoke()) { text = "QUIT" };
         quit.AddToClassList("btn");
         quit.AddToClassList("btn--ghost");

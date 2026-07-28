@@ -80,7 +80,7 @@ namespace Warband.Run
                     hero.TrinketIds.Add(trinkets[rng.Next(trinkets.Count)]);
             }
 
-            var banners = content.BannerPool(act);
+            var banners = content.InscriptionPool(act);
             if (act >= 3 && banners.Count > 0)
                 snap.BannerIds.Add(banners[rng.Next(banners.Count)]);
 

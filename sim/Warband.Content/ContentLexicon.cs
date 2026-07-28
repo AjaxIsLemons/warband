@@ -42,7 +42,7 @@ namespace Warband.Content
                 ["phalanx"] = new LexEntry("Phalanx",
                     "Leonnatos of the Unbroken Line. Spacing and punishment — he owns the hex nobody wants to approach.", LexKind.Reaction),
                 ["banneret"] = new LexEntry("Banneret",
-                    "Capitana Vespera, Banner of the Turning Age. The captain: his worth is what he does to everyone standing near him.", LexKind.Utility),
+                    "Capitana Vespera, Banner of the Turning Age. The captain: whoever stands beside the banner at placement is sworn to the Company, and every rally reaches them for the rest of the fight.", LexKind.Utility),
             };
 
         public static readonly IReadOnlyDictionary<string, LexEntry> Nodes =
@@ -210,13 +210,13 @@ namespace Warband.Content
                 ["banneret.herald.quickening"] = new LexEntry("Quickening",
                     "Intensity over breadth: the few, faster.", LexKind.Tempo),
                 ["banneret.herald.widebanner"] = new LexEntry("Wide Banner",
-                    "Breadth over intensity: the muster reaches two hexes out.", LexKind.Utility),
+                    "Breadth over intensity: the muster reaches two hexes out, swearing in a larger Company.", LexKind.Utility),
                 ["banneret.warcaller.drumbeat"] = new LexEntry("Drumbeat",
                     "Rallied allies swing faster for their next three.", LexKind.Tempo),
                 ["banneret.warcaller.dreadpresence"] = new LexEntry("Dread Presence",
                     "Enemies standing beside him swing slower — a living aura.", LexKind.Tempo),
-                ["banneret.warcaller.bearer"] = new LexEntry("Bearer of the Mark",
-                    "The cross-layer node: his presence doubles the warband's run-long banner.", LexKind.Utility),
+                ["banneret.warcaller.bearer"] = new LexEntry("Living Inscription",
+                    "When a law of the Hourstone activates, Vespera gains Mana — at most once per chain of events.", LexKind.Utility),
                 ["banneret.warcaller.lastmarch"] = new LexEntry("Last March",
                     "The whole warband counts as his Company.", LexKind.Utility),
             };
@@ -233,7 +233,7 @@ namespace Warband.Content
         /// <item>weapon — "Greataxe" is already display text, by the same law that keeps weapons
         ///       out of the Nodes table above</item>
         /// <item>mastery rider — "Greataxe/mastery"</item>
-        /// <item>team rule — "banner.chorus" → the Banner registry (these become Inscriptions)</item>
+        /// <item>team rule — "inscription.chorus" → the Inscription registry (ADR 0026)</item>
         /// <item>authored enemy/boss rule — "crown.bell", named in Enemies.cs/Encounters.cs</item>
         /// <item>the "#2" suffix a source with several rules gets</item>
         /// </list>
@@ -271,11 +271,11 @@ namespace Warband.Content
                     "The weapon's latent rider — live for specialists, and for everyone at Relic temper.",
                     LexKind.Utility);
             }
-            if (id.StartsWith("banner.", System.StringComparison.Ordinal))
+            if (id.StartsWith("inscription.", System.StringComparison.Ordinal))
             {
-                string key = id.Substring("banner.".Length);
-                return Catalog.Banners.TryGetValue(key, out var banner)
-                    ? new LexEntry(banner.Name, "A run-long rule carried by the whole warband.", LexKind.Utility)
+                string key = id.Substring("inscription.".Length);
+                return Catalog.Inscriptions.TryGetValue(key, out var inscription)
+                    ? new LexEntry(inscription.Name, "A law inscribed in the Hourstone — carried by the whole warband.", LexKind.Utility)
                     : Lexicon.Fallback(key);
             }
             if (Nodes.TryGetValue(id, out var node)) return node;

@@ -21,6 +21,7 @@ internal sealed class CombatRecapPanel
     private readonly Label _axisStart;
     private readonly Label _axisWaning;
     private readonly Label _axisEnd;
+    private readonly Label _losses;
     private readonly Label _empty;
 
     private readonly List<VisualElement> _rowPool = new List<VisualElement>();
@@ -48,16 +49,26 @@ internal sealed class CombatRecapPanel
         _contribution.Add(_empty);
         Root.Add(_contribution);
 
+        // Height is the scarce axis on this panel and width is abundant, so the two short charts
+        // share a row instead of stacking. Stacking them is what pushed the gate past its
+        // max-height budget and silently squashed every element in it.
+        var split = new VisualElement();
+        split.AddToClassList("recap__split");
+        Root.Add(split);
+
         _composition = Section("DAMAGE COMPOSITION");
+        _composition.AddToClassList("recap__col");
+        _composition.AddToClassList("recap__col--first");
         _compBar = new VisualElement();
         _compBar.AddToClassList("recap-comp");
         _composition.Add(_compBar);
         _compLegend = new VisualElement();
         _compLegend.AddToClassList("recap-comp__legend");
         _composition.Add(_compLegend);
-        Root.Add(_composition);
+        split.Add(_composition);
 
         _timeline = Section("TIMELINE");
+        _timeline.AddToClassList("recap__col");
         _track = new VisualElement();
         _track.AddToClassList("recap-track");
         var mid = new VisualElement();
@@ -77,7 +88,13 @@ internal sealed class CombatRecapPanel
         axis.Add(_axisWaning);
         axis.Add(_axisEnd);
         _timeline.Add(axis);
-        Root.Add(_timeline);
+
+        // The gate used to print up to three "X fell to Y · Cause · 12.4s" labels below the panel.
+        // The track already says WHEN; this says WHO, on one line instead of ~90px of stacked
+        // labels — height the panel did not have.
+        _losses = Text("recap-losses");
+        _timeline.Add(_losses);
+        split.Add(_timeline);
     }
 
     public void Bind(CombatRecap recap)
@@ -103,8 +120,10 @@ internal sealed class CombatRecapPanel
         {
             var row = new VisualElement();
             row.AddToClassList("recap-row");
-            row.Add(Text("recap-row__name"));
+            // Dagger FIRST so it forms its own column — trailing the name left it floating in
+            // the gap after a short one, reading as unrelated punctuation.
             row.Add(Text("recap-row__dagger"));
+            row.Add(Text("recap-row__name"));
             var track = new VisualElement();
             track.AddToClassList("recap-row__track");
             var fill = new VisualElement();
@@ -122,8 +141,8 @@ internal sealed class CombatRecapPanel
             var model = models[i];
             var row = _rowPool[i];
             row.EnableInClassList("recap-row--dead", model.Died);
-            ((Label)row.ElementAt(0)).text = model.Name;
-            ((Label)row.ElementAt(1)).text = model.Died ? "†" : "";
+            ((Label)row.ElementAt(0)).text = model.Died ? "†" : "";
+            ((Label)row.ElementAt(1)).text = model.Name;
             row.ElementAt(2).ElementAt(0).style.width = Percent(model.BarFill * 100.0);
             ((Label)row.ElementAt(3)).text = $"{model.Damage} · {model.PctOfTeam:0}%";
             ((Label)row.ElementAt(4)).text = Secondary(model);
@@ -239,6 +258,14 @@ internal sealed class CombatRecapPanel
 
         _axisStart.text = "0s";
         _axisEnd.text = $"{recap.Seconds:0.0}s";
+
+        // Our losses, named, on one line — the fact the old death labels carried.
+        var lost = new List<string>();
+        foreach (var beat in models)
+            if (beat.Friendly) lost.Add($"{beat.Victim} {beat.Tick / 10f:0.0}s");
+        _losses.text = lost.Count == 0 ? "No losses." : "Lost: " + string.Join(" · ", lost);
+        _losses.tooltip = _losses.text;
+
         _timeline.style.display = models.Count > 0 || recap.ReachedWaning
             ? DisplayStyle.Flex
             : DisplayStyle.None;
@@ -312,8 +339,8 @@ internal sealed class CombatRecapPanel
             Victory = true,
             EndTick = 1022,
             Seconds = 102.2,
-            Survivors = 3,
-            Losses = 1,
+            Survivors = 4,
+            Losses = 2,
             HealingDone = 2093,
             ShieldAbsorbed = 168,
             CompositionTotal = 1461,
@@ -326,7 +353,9 @@ internal sealed class CombatRecapPanel
         recap.Rows.Add(Row(2, "Bulwark", "bulwark", 149, 10.2, 149.0 / 865, absorbed: 168));
         recap.Rows.Add(Row(3, "Shade", "shade", 100, 6.8, 100.0 / 865, kills: 1,
             died: true, deathTick: 604));
-        recap.Rows.Add(Row(4, "Cleric", "cleric", 0, 0, 0, healing: 2093));
+        recap.Rows.Add(Row(4, "Sharpshot", "sharpshot", 0, 0, 0, kills: 0,
+            died: true, deathTick: 712));
+        recap.Rows.Add(Row(5, "Cleric", "cleric", 0, 0, 0, healing: 2093));
 
         Seg(recap, Cause.Attack, 827);
         Seg(recap, Cause.Ability, 314);
@@ -338,6 +367,7 @@ internal sealed class CombatRecapPanel
         Beat(recap, 195, "Dune Reaver", "Pyromancer", "Burn", friendly: false);
         Beat(recap, 210, "Glass Seer", "Pyromancer", "Burn", friendly: false);
         Beat(recap, 604, "Shade", "Ash Warden", "Ability", friendly: true, overkill: 31);
+        Beat(recap, 712, "Sharpshot", "Sanddrift Gunner", "Attack", friendly: true);
         Beat(recap, 970, "Sand Choir", "Storm", "Storm", friendly: false);
         return recap;
     }

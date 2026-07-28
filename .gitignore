@@ -11,3 +11,7 @@ client/McpCaptures/
 # Editor-time scratch, referenced by no runtime code. Kept on disk + Syncthing, out of git
 # history until Jake decides (commit / git-lfs / drop) — see roadmap gap analysis 2026-07-26.
 client/Assets/GeneratedAssets/
+
+# UI QA / capture artifacts — synced for review, regenerable, never history
+client/TempCaptures/
+.playwright-mcp/

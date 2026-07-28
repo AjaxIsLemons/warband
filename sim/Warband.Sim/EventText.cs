@@ -37,6 +37,8 @@ namespace Warband.Sim
                     return e.Amount != 0
                         ? $"Rule ON: {Nm(e.Source)} rule #{e.Aux} ({e.Aux2:+#;-#;0})"
                         : $"Rule OFF: {Nm(e.Source)} rule #{e.Aux}";
+                case EventKind.RuleProgress:
+                    return $"Count: rule #{e.Aux} at {e.Amount}/{e.Aux2}";
 
                 case EventKind.MoveStart:
                     return $"Step: {Nm(e.Source)} → {Hex(e.Amount, e.Aux)} ({e.Aux2}t)";

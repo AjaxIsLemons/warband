@@ -21,7 +21,7 @@ namespace Warband.Run.Tests
             foreach (var id in Cat.HeroPool(1)) Assert.NotNull(Cat.Chassis(id));
             foreach (var id in Cat.WeaponPool(1)) Assert.NotNull(Cat.Weapon(id));
             foreach (var id in Cat.TrinketPool(1)) Assert.NotNull(Cat.Trinket(id));
-            foreach (var id in Cat.BannerPool(1)) Assert.NotNull(((IRunContent)Cat).Banner(id));
+            foreach (var id in Cat.InscriptionPool(1)) Assert.NotNull(((IRunContent)Cat).Inscription(id));
 
             foreach (var (key, pool) in Kits.Offers.Select(kv => (kv.Key, kv.Value)))
             {
@@ -152,7 +152,11 @@ namespace Warband.Run.Tests
             // spec picks and default placement winning every time would mean the PvE content poses
             // nothing. So the assertion is now that the MACHINE always completes, that the full arc
             // is reachable, and that it is not free.
-            var reports = RunHarness.PlayMany(12, seedBase: 1000, new Catalog());
+            // 48 seeds, not 12: the sweep puts the bot's victory rate at only 2–8% (a greedy bot
+            // with default placement against authored encounters), so a dozen seeds made
+            // "completed > 0" a coin flip that any pool-size change re-rolls — exactly what
+            // ADR 0026's seven new Inscriptions did. At ~4% × 48 the reachability claim is real.
+            var reports = RunHarness.PlayMany(48, seedBase: 1000, new Catalog());
 
             Assert.All(reports, r =>
             {

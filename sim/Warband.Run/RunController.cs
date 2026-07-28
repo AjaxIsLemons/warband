@@ -77,8 +77,8 @@ namespace Warband.Run
                     foreach (string t in h.TrinketIds) Resolve(() => _content.Trinket(t), "trinket", t);
                     foreach (string n in h.SpecNodeIds) Resolve(() => _content.Node(n), "spec node", n);
                 }
-            foreach (string b in State.Banners) Resolve(() => _content.Banner(b), "inscription", b);
-            foreach (string b in State.PendingBossRewards) Resolve(() => _content.Banner(b), "inscription", b);
+            foreach (string b in State.Inscriptions) Resolve(() => _content.Inscription(b), "inscription", b);
+            foreach (string b in State.PendingBossRewards) Resolve(() => _content.Inscription(b), "inscription", b);
             foreach (var o in State.ShopOffers)
             {
                 if (o == null) continue;
@@ -87,7 +87,7 @@ namespace Warband.Run
                     case OfferKind.Hero: Resolve(() => _content.Chassis(o.Id), "chassis", o.Id); break;
                     case OfferKind.Weapon: Resolve(() => _content.Weapon(o.Id), "weapon", o.Id); break;
                     case OfferKind.Trinket: Resolve(() => _content.Trinket(o.Id), "trinket", o.Id); break;
-                    default: Resolve(() => _content.Banner(o.Id), "inscription", o.Id); break;
+                    default: Resolve(() => _content.Inscription(o.Id), "inscription", o.Id); break;
                 }
             }
             foreach (var it in State.Inventory)
@@ -215,8 +215,8 @@ namespace Warband.Run
             DrawDistinct(armory, preview.Armory, _cfg.RewardChoices, rng);
 
             var hourstone = new List<RewardOffer>();
-            foreach (var id in _content.BannerPool(State.Act))
-                if (!State.Banners.Contains(id))
+            foreach (var id in _content.InscriptionPool(State.Act))
+                if (!State.Inscriptions.Contains(id) && !_content.Inscription(id).Paradox)
                     hourstone.Add(new RewardOffer
                     {
                         Path = InterludePath.Hourstone,
@@ -254,7 +254,7 @@ namespace Warband.Run
                     break;
                 case InterludePath.Hourstone:
                     reward = At(preview.Hourstone, optionIndex, "Hourstone reward");
-                    State.Banners.Add(reward.Id);
+                    State.Inscriptions.Add(reward.Id);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(path));
@@ -309,7 +309,7 @@ namespace Warband.Run
         {
             Require(State.Phase == RunPhase.Reward, "no boss reward pending");
             string id = At(State.PendingBossRewards, index, "boss reward");
-            State.Banners.Add(id);
+            State.Inscriptions.Add(id);
             State.PendingBossRewards.Clear();
             State.PendingBossSand = 0;
             AdvanceToNextAct();
@@ -386,7 +386,7 @@ namespace Warband.Run
                     break;
                 }
                 case OfferKind.Inscription:
-                    State.Banners.Add(offer.Id);
+                    State.Inscriptions.Add(offer.Id);
                     result.Outcome = PurchaseOutcome.Inscription;
                     break;
             }
@@ -747,20 +747,73 @@ namespace Warband.Run
         public bool HasRoomForRecruit =>
             State.Field.Count < State.FieldSlots || State.Bench.Count < _cfg.BenchSlots;
 
+        /// <summary>
+        /// Move one hero by stable identity to a visible roster slot. Roster lists stay packed:
+        /// dropping on an occupied slot swaps the two heroes atomically, while dropping on any
+        /// open slot appends to that zone. Stable identity is required because a UI drag can
+        /// outlive the source's transient list index.
+        /// </summary>
+        public void MoveRosterHero(long heroInstanceId, RosterZone targetZone, int targetIndex)
+        {
+            RequireShopActionable();
+            Require(targetZone == RosterZone.Field || targetZone == RosterZone.Bench,
+                    "destination roster zone is not available");
+            Require(TryFindHero(heroInstanceId, out var sourceZone, out int sourceIndex),
+                    "hero no longer exists");
+
+            List<HeroInstance> source = Zone(sourceZone);
+            List<HeroInstance> target = Zone(targetZone);
+            int targetCapacity = targetZone == RosterZone.Field
+                ? State.FieldSlots
+                : _cfg.BenchSlots;
+            Require(targetIndex >= 0 && targetIndex < targetCapacity,
+                    "destination slot is not available");
+
+            if (sourceZone == targetZone)
+            {
+                if (targetIndex == sourceIndex) return;
+                if (targetIndex < source.Count)
+                {
+                    (source[sourceIndex], source[targetIndex]) =
+                        (source[targetIndex], source[sourceIndex]);
+                    return;
+                }
+
+                HeroInstance moved = source[sourceIndex];
+                source.RemoveAt(sourceIndex);
+                source.Add(moved);
+                return;
+            }
+
+            if (targetIndex < target.Count)
+            {
+                HeroInstance displaced = target[targetIndex];
+                target[targetIndex] = source[sourceIndex];
+                source[sourceIndex] = displaced;
+                return;
+            }
+
+            Require(target.Count < targetCapacity,
+                    targetZone == RosterZone.Field ? "field is full" : "bench is full");
+            HeroInstance hero = source[sourceIndex];
+            source.RemoveAt(sourceIndex);
+            target.Add(hero);
+        }
+
         public void BenchToField(int benchIndex)
         {
             RequireShopActionable();
             Require(State.Field.Count < State.FieldSlots, "field is full");
-            State.Field.Add(State.Bench[benchIndex]);
-            State.Bench.RemoveAt(benchIndex);
+            MoveRosterHero(State.Bench[benchIndex].InstanceId,
+                           RosterZone.Field, State.Field.Count);
         }
 
         public void FieldToBench(int fieldIndex)
         {
             RequireShopActionable();
             Require(State.Bench.Count < _cfg.BenchSlots, "bench is full");
-            State.Bench.Add(State.Field[fieldIndex]);
-            State.Field.RemoveAt(fieldIndex);
+            MoveRosterHero(State.Field[fieldIndex].InstanceId,
+                           RosterZone.Bench, State.Bench.Count);
         }
 
         /// <summary>
@@ -825,8 +878,11 @@ namespace Warband.Run
             var weapons = _content.WeaponPool(State.Act);
             var trinkets = _content.TrinketPool(State.Act);
             var inscriptions = new List<string>();
-            foreach (var id in _content.BannerPool(State.Act))
-                if (!State.Banners.Contains(id)) inscriptions.Add(id);
+            foreach (var id in _content.InscriptionPool(State.Act))
+                // Paradoxes never reach the Workshop or the Interlude: a rule-rewrite with a real
+                // drawback must arrive as a considered boss choice, not shop filler (ADR 0026).
+                if (!State.Inscriptions.Contains(id) && !_content.Inscription(id).Paradox)
+                    inscriptions.Add(id);
 
             int category = rng.Next(100);
             if (category < _cfg.WeaponChancePct && weapons.Count > 0)
@@ -1004,8 +1060,8 @@ namespace Warband.Run
         private List<string> PreviewBossRewardIds()
         {
             var source = new List<string>();
-            foreach (var id in _content.BannerPool(State.Act))
-                if (!State.Banners.Contains(id))
+            foreach (var id in _content.InscriptionPool(State.Act))
+                if (!State.Inscriptions.Contains(id))
                     source.Add(id);
             var rewards = new List<string>();
             DrawDistinct(source, rewards, _cfg.RewardChoices,
@@ -1021,27 +1077,20 @@ namespace Warband.Run
 
         private FightOutcome RunBattle(IReadOnlyList<Hex> placement,
                                        List<(UnitDef Def, Hex Pos)> enemies,
-                                       List<string>? enemyBanners = null,
-                                       int enemyBannerCopies = 1)
+                                       List<string>? enemyInscriptions = null)
         {
             ValidatePlacement(placement);
             var teamTriggers = new List<(int Team, Trigger T)>();
-            // Bearer of the Mark (ADR 0015 dive law): a fielded bearer doubles the
-            // warband's banner effects. Player side only for now — ghost bearers noted
-            // as a fairness follow-up.
-            int bannerCopies = 1;
-            foreach (var hero in State.Field)
-                foreach (var nodeId in hero.SpecNodeIds)
-                    if (_content.Node(nodeId).DoublesBanners) { bannerCopies = 2; break; }
-            for (int c = 0; c < bannerCopies; c++)
-                foreach (var id in State.Banners)
-                    foreach (var t in _content.Banner(id).TeamTriggers)
-                        teamTriggers.Add((0, t));
-            if (enemyBanners != null)
-                for (int c = 0; c < enemyBannerCopies; c++)      // ghost bearers double too (fairness)
-                    foreach (var id in enemyBanners)
-                        foreach (var t in _content.Banner(id).TeamTriggers)
-                            teamTriggers.Add((1, t));
+            // Blanket doubling (the old Bearer of the Mark) is gone — ADR 0026 replaced it with
+            // Living Inscription, an ordinary spec-node trigger that rides TriggerFired, so the
+            // run layer no longer special-cases any node here.
+            foreach (var id in State.Inscriptions)
+                foreach (var t in _content.Inscription(id).TeamTriggers)
+                    teamTriggers.Add((0, t));
+            if (enemyInscriptions != null)
+                foreach (var id in enemyInscriptions)
+                    foreach (var t in _content.Inscription(id).TeamTriggers)
+                        teamTriggers.Add((1, t));
             var units = new List<UnitState>();
             for (int i = 0; i < State.Field.Count; i++)
             {
@@ -1099,6 +1148,14 @@ namespace Warband.Run
                 rankSteps: (int)hero.Rank);
         }
 
+        /// <summary>
+        /// Can a hero be deployed here? The one definition of the player half — the deployment
+        /// screen paints muster rings out of it, and it is what refuses a placement at lock-in, so
+        /// a board that promised a seat and a run that rejects it cannot drift apart.
+        /// </summary>
+        public static bool IsDeployable(Hex h) =>
+            Battle.InBounds(h) && h.Row < Battle.BoardRows / 2;
+
         private void ValidatePlacement(IReadOnlyList<Hex> placement)
         {
             if (State.Field.Count == 0)
@@ -1108,7 +1165,7 @@ namespace Warband.Run
             var seen = new HashSet<Hex>();
             foreach (var h in placement)
             {
-                if (!Battle.InBounds(h) || h.Row >= Battle.BoardRows / 2)
+                if (!IsDeployable(h))
                     throw new ArgumentException($"hex {h} is not in the player half");
                 if (!seen.Add(h))
                     throw new ArgumentException($"duplicate placement hex {h}");

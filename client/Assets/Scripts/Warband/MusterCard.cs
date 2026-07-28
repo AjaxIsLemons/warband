@@ -24,8 +24,10 @@ internal sealed class MusterCard
     {
         public readonly MusterFactKind Kind;
         public readonly VisualElement Root = new VisualElement();
+        public readonly VisualElement Primary = new VisualElement();
         public readonly WarbandGlyph Icon = new WarbandGlyph();
         public readonly Label Value = new Label();
+        public readonly VisualElement Secondary = new VisualElement();
         public readonly WarbandGlyph SecondaryIcon = new WarbandGlyph();
         public readonly Label SecondaryValue = new Label();
 
@@ -35,14 +37,18 @@ internal sealed class MusterCard
             Root.AddToClassList("muster-fact");
             Root.AddToClassList("muster-fact--" + kind.ToString().ToLowerInvariant());
             Root.pickingMode = PickingMode.Position;
+            Primary.AddToClassList("muster-fact__primary");
             Icon.AddToClassList("muster-fact__icon");
             Value.AddToClassList("muster-fact__value");
+            Secondary.AddToClassList("muster-fact__secondary");
             SecondaryIcon.AddToClassList("muster-fact__secondary-icon");
             SecondaryValue.AddToClassList("muster-fact__secondary-value");
-            Root.Add(Icon);
-            Root.Add(Value);
-            Root.Add(SecondaryIcon);
-            Root.Add(SecondaryValue);
+            Primary.Add(Icon);
+            Primary.Add(Value);
+            Secondary.Add(SecondaryIcon);
+            Secondary.Add(SecondaryValue);
+            Root.Add(Primary);
+            Root.Add(Secondary);
         }
 
         public void Bind(MusterFactModel model)
@@ -64,8 +70,8 @@ internal sealed class MusterCard
             SecondaryValue.text = model.SecondaryValue;
             Root.tooltip = model.AccessibleLabel + " · " + model.TooltipBody;
             DecisionCardPresentation.ApplyFact(Root, fact);
-            SetDisplayed(SecondaryIcon, model.SecondaryIcon != UiGlyphId.Unknown);
-            SetDisplayed(SecondaryValue, !string.IsNullOrEmpty(model.SecondaryValue));
+            SetDisplayed(Secondary, model.SecondaryIcon != UiGlyphId.Unknown &&
+                !string.IsNullOrEmpty(model.SecondaryValue));
         }
     }
 
@@ -96,17 +102,20 @@ internal sealed class MusterCard
 
             var copy = new VisualElement();
             copy.AddToClassList("muster-rule__copy");
+            var meta = new VisualElement();
+            meta.AddToClassList("muster-rule__meta");
             Type.AddToClassList("muster-rule__type");
-            copy.Add(Type);
-            Name.AddToClassList("muster-rule__name");
-            copy.Add(Name);
+            meta.Add(Type);
 
             Keyword.AddToClassList("muster-rule__keyword");
             KeywordIcon.AddToClassList("muster-rule__keyword-icon");
             KeywordText.AddToClassList("muster-rule__keyword-text");
             Keyword.Add(KeywordIcon);
             Keyword.Add(KeywordText);
-            copy.Add(Keyword);
+            meta.Add(Keyword);
+            copy.Add(meta);
+            Name.AddToClassList("muster-rule__name");
+            copy.Add(Name);
             Root.Add(copy);
 
             Cost.AddToClassList("muster-rule__cost");
@@ -137,7 +146,10 @@ internal sealed class MusterCard
                     : "\n\nADVANCED · " + model.AdvancedRule);
             SetDisplayed(Cost, model.Kind == MusterRuleKind.Signature &&
                 model.ManaCost >= 0);
-            SetDisplayed(Context, model.Kind != MusterRuleKind.Signature ||
+            // Passive is already the authored context. "ALWAYS ON" consumed a third of the row,
+            // forced long passive names into ellipsis, and repeated information the player
+            // already has. Mana-less signatures may still need their authored context.
+            SetDisplayed(Context, model.Kind == MusterRuleKind.Signature &&
                 model.ManaCost < 0);
         }
     }
@@ -149,7 +161,6 @@ internal sealed class MusterCard
     private readonly WarbandGlyph _roleIcon;
     private readonly Label _roleBadge;
     private readonly Label _name;
-    private readonly Label _role;
     private readonly VisualElement _facts;
     private readonly Dictionary<MusterFactKind, FactView> _factViews =
         new Dictionary<MusterFactKind, FactView>();
@@ -243,10 +254,7 @@ internal sealed class MusterCard
         identity.AddToClassList("muster-card__identity");
         _name = new Label();
         _name.AddToClassList("muster-card__name");
-        _role = new Label();
-        _role.AddToClassList("muster-card__role");
         identity.Add(_name);
-        identity.Add(_role);
         _info.Add(identity);
 
         _facts = new VisualElement();
@@ -284,10 +292,17 @@ internal sealed class MusterCard
         {
             if (!_focused) ScheduleLens(MusterLensTarget.None, _tuning.lensCloseMs);
         });
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        Root.RegisterCallback<GeometryChangedEvent>(_ => ValidateResolvedLayout());
-#endif
+        Root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         HideLensImmediately();
+    }
+
+    private void OnGeometryChanged(GeometryChangedEvent evt)
+    {
+        // Card composition follows the space the card actually receives, not the global window
+        // label. This keeps five-up Muster stable inside capture panels and future split views
+        // whose usable width can differ from the screen-width breakpoint.
+        Root.EnableInClassList(
+            "muster-card--compact", evt.newRect.width > 0f && evt.newRect.width < 280f);
     }
 
     public void Bind(MusterCardModel model)
@@ -300,7 +315,6 @@ internal sealed class MusterCard
             : _model.DisabledReason;
 
         _name.text = _model.Name;
-        _role.text = _model.Role;
         _roleBadge.text = _model.Role.ToUpperInvariant();
         _roleIcon.Set(_model.RoleIcon);
         _portraitFallback.text = _model.PortraitFallback;
@@ -569,7 +583,21 @@ internal sealed class MusterCard
         bool rulesOverlap = _signature.Root.worldBound.yMax >
                             _passive.Root.worldBound.yMin + epsilon;
         bool nameEscapes = _name.worldBound.xMax > Root.worldBound.xMax + epsilon;
-        bool valid = !infoEscapes && !rulesOverlap && !nameEscapes;
+        bool signatureContentEscapes =
+            Escapes(_signature.Keyword, _signature.Root, epsilon) ||
+            Escapes(_signature.Cost, _signature.Root, epsilon);
+        bool passiveContentEscapes =
+            Escapes(_passive.Keyword, _passive.Root, epsilon);
+        bool factContentEscapes = false;
+        foreach (FactView fact in _factViews.Values)
+            foreach (VisualElement descendant in
+                     fact.Root.Query<VisualElement>().ToList())
+                if (descendant.resolvedStyle.display != DisplayStyle.None &&
+                    Escapes(descendant, fact.Root, epsilon))
+                    factContentEscapes = true;
+        bool valid = !infoEscapes && !rulesOverlap && !nameEscapes &&
+                     !signatureContentEscapes && !passiveContentEscapes &&
+                     !factContentEscapes;
         if (valid)
         {
             _lastLayoutWarning = "";
@@ -579,7 +607,8 @@ internal sealed class MusterCard
         string signature =
             $"{_key}|{Mathf.RoundToInt(Root.resolvedStyle.width)}x" +
             $"{Mathf.RoundToInt(Root.resolvedStyle.height)}|{infoEscapes}|" +
-            $"{rulesOverlap}|{nameEscapes}";
+            $"{rulesOverlap}|{nameEscapes}|{signatureContentEscapes}|" +
+            $"{passiveContentEscapes}|{factContentEscapes}";
         if (!string.Equals(signature, _lastLayoutWarning, StringComparison.Ordinal))
         {
             _lastLayoutWarning = signature;
@@ -587,9 +616,25 @@ internal sealed class MusterCard
                 $"[Muster Card Layout] '{_model.Name}' violated its layout contract at " +
                 $"{Root.resolvedStyle.width:0}×{Root.resolvedStyle.height:0}. " +
                 $"info escape={infoEscapes}, rule overlap={rulesOverlap}, " +
-                $"name escape={nameEscapes}.");
+                $"name escape={nameEscapes}, signature content escape=" +
+                $"{signatureContentEscapes}, passive content escape=" +
+                $"{passiveContentEscapes}, fact content escape={factContentEscapes}.");
         }
         return false;
+    }
+
+    private static bool Escapes(
+        VisualElement element, VisualElement container, float epsilon)
+    {
+        if (element == null || container == null ||
+            element.resolvedStyle.display == DisplayStyle.None)
+            return false;
+        Rect item = element.worldBound;
+        Rect bounds = container.worldBound;
+        return item.xMin < bounds.xMin - epsilon ||
+               item.yMin < bounds.yMin - epsilon ||
+               item.xMax > bounds.xMax + epsilon ||
+               item.yMax > bounds.yMax + epsilon;
     }
 #endif
 

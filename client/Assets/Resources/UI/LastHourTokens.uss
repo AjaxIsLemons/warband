@@ -37,8 +37,6 @@
 
 .workbench-header__title,
 .workbench-section-heading__title,
-.workbench-market-collapsed__title,
-.workbench-armory-handle__title,
 .wb-inspector__title,
 .wb-choice-preview__name,
 .workbench-item__title,

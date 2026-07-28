@@ -104,6 +104,9 @@ namespace Warband.Sim
                 [StatusKind.CounterCharge] = new LexEntry("Riposte", "Ammunition for a counter-swing — spent when one fires.", LexKind.Reaction),
 
                 [StatusKind.Mark] = new LexEntry("Marked", "A tag with no effect of its own. Other rules read it.", LexKind.Mark),
+                [StatusKind.Mustered] = new LexEntry("Mustered", "Sworn to a captain's Company at placement — its rallies reach this unit anywhere on the field.", LexKind.Mark),
+
+                [StatusKind.HealToShield] = new LexEntry("Bloodless", "Healing restores no HP — it becomes Shield instead.", LexKind.Ward),
             };
 
         public static readonly IReadOnlyDictionary<Cause, LexEntry> Causes =

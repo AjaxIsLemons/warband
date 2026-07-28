@@ -146,6 +146,13 @@ namespace Warband.Sim
         public string RuleId(int index) =>
             index >= 0 && index < RuleIds.Count ? RuleIds[index] : "";
 
+        /// <summary>Counter-rule progress by rule index — the badge rail's pips (ADR 0026), folded
+        /// from RuleProgress so scrubbing to tick N reconstructs "2 of 3" like any other state.
+        /// SET from the event, never accumulated (ADR 0004). State-level because a team rule
+        /// belongs to no unit. Like ExpiryTick it is decoration, deliberately NOT in ViewHash —
+        /// Battle's per-tick hashes are projections of unit state and know nothing of it.</summary>
+        public Dictionary<int, (int Progress, int N)> RuleCounters = new Dictionary<int, (int, int)>();
+
         public static PlaybackState From(IEnumerable<PlaybackUnit> initial, IEnumerable<string>? ruleIds = null)
         {
             var s = new PlaybackState();
@@ -290,6 +297,10 @@ namespace Warband.Sim
                 // TriggerFired mutates nothing — it is pure attribution, consumed by the renderer as
                 // it is dispatched. Listed so the switch documents that the omission is deliberate.
                 case EventKind.TriggerFired:
+                    break;
+
+                case EventKind.RuleProgress:
+                    RuleCounters[e.Aux] = (e.Amount, e.Aux2);
                     break;
             }
         }

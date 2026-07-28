@@ -31,7 +31,7 @@ namespace Warband.Run.Tests
         public TrinketDef Trinket(string id) => new TrinketDef { Name = id, HpBonus = 20 };
         public SpecNode Node(string id) => new SpecNode { Name = id, HpBonus = 10 };
 
-        public BannerDef Banner(string id) => new BannerDef
+        public InscriptionDef Inscription(string id) => new InscriptionDef
         {
             Name = id,
             TeamTriggers =
@@ -60,7 +60,7 @@ namespace Warband.Run.Tests
         public IReadOnlyList<string> HeroPool(int act) => Heroes;
         public IReadOnlyList<string> WeaponPool(int act) => Weapons;
         public IReadOnlyList<string> TrinketPool(int act) => Trinkets;
-        public IReadOnlyList<string> BannerPool(int act) => Banners;
+        public IReadOnlyList<string> InscriptionPool(int act) => Banners;
 
         /// <summary>How wide every authored spec pool is. 2 = the pre-variable-arity shape.</summary>
         public int SpecPoolWidth = 2;

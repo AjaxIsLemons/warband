@@ -134,6 +134,10 @@ Read this first. One line per page; open only what's relevant. Update on every a
   units follow a flow field to an engage ring instead of hill-climbing on hex distance (bodies are
   detours, not walls), a unit that can neither reach nor strike its target fights what it can, and a
   leap keeps the victim it jumped at. Fixes units idling entire fights.
+- [Decisions/0026-inscription-engine-first-twelve.md](Decisions/0026-inscription-engine-first-twelve.md) —
+  item 5a's four gates settled: once-per-root guard (Inscriptions only), Living Inscription replaces
+  Bearer of the Mark, full Banner→Inscription rename, and the first-twelve catalog (Silence ships as
+  The Stilled Bell, healing→Shield is the first boss-gated Paradox).
 - [Decisions/0024-act-bosses-and-the-disclosure-contract.md](Decisions/0024-act-bosses-and-the-disclosure-contract.md) —
   three per-act bosses (Last Oath / Ashfall Battery / Waning Crown), bosses authored for their act,
   brief and spawn built by one method, per-body behavior disclosure, and enemy cards that stop

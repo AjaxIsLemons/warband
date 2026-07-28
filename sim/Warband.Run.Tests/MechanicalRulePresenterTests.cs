@@ -29,7 +29,7 @@ namespace Warband.Run.Tests
                 MechanicalRule rule = MechanicalRulePresenter.Trinket(pair.Value);
                 Assert.False(string.IsNullOrWhiteSpace(rule.Full), pair.Key);
             }
-            foreach (var pair in Catalog.Banners)
+            foreach (var pair in Catalog.Inscriptions)
             {
                 MechanicalRule rule = MechanicalRulePresenter.Inscription(pair.Value);
                 Assert.False(string.IsNullOrWhiteSpace(rule.Full), pair.Key);
@@ -188,7 +188,7 @@ namespace Warband.Run.Tests
             var output = Kits.Nodes.Values.Select(n => MechanicalRulePresenter.Node(n).Full)
                 .Concat(Catalog.Trinkets.Values.Select(
                     t => MechanicalRulePresenter.Trinket(t).Full))
-                .Concat(Catalog.Banners.Values.Select(
+                .Concat(Catalog.Inscriptions.Values.Select(
                     b => MechanicalRulePresenter.Inscription(b).Full))
                 .Concat(Weapons.All.Values.Select(
                     w => MechanicalRulePresenter.WeaponMastery(w).Full))

@@ -49,12 +49,21 @@ namespace Warband.Sim.Tests
         }
 
         [Fact]
-        public void TriggerFiredSpendsNoCascadeBudgetAndFiresNoTriggers()
+        public void UnguardedTriggerFiredEchoIsBoundedByCascadeDepth()
         {
-            // A trigger that listens for *every* event kind would re-fire off its own announcement
-            // if TriggerFired were drained normally — an infinite echo. The drain guard is what
-            // stops it, so assert the count is bounded by the swings that actually happened.
+            // ADR 0026 amended the original law here: TriggerFired MAY now wake On==TriggerFired
+            // triggers (the Living Inscription hook) — but it still spends no cascade budget, and
+            // even the pathological echo that matches its OWN announcement is cut by
+            // MaxCascadeDepth rather than running away.
             var def = Fighter("echo");
+            def.Triggers.Add(new Trigger
+            {
+                On = EventKind.DamageDealt,            // the seed: announces once per swing
+                When = { new Cond { Kind = CondKind.SourceIsOwner } },
+                Do = { new EffectDef { Kind = EffectKind.GrantShield, Amount = 1,
+                                       Select = new Selector { Kind = SelKind.Self } } },
+                RuleId = "echo.seed",
+            });
             def.Triggers.Add(new Trigger
             {
                 On = EventKind.TriggerFired,           // deliberately pathological
@@ -65,11 +74,14 @@ namespace Warband.Sim.Tests
             var result = new Battle(new[]
             {
                 U(1, 0, def, 1, 1),
-                U(2, 1, Fighter("dummy", hp: 400), 6, 1),
+                U(2, 1, Fighter("dummy", hp: 400), 1, 2),
             }, seed: 4).Run();
 
-            Assert.DoesNotContain(result.Events,
-                e => e.Kind == EventKind.ShieldChanged && e.Cause == Cause.Trigger);
+            int loopIdx = result.RuleIds.IndexOf("echo.loop");
+            Assert.Contains(result.Events,                     // the hook is real…
+                e => e.Kind == EventKind.TriggerFired && e.Aux == loopIdx);
+            Assert.All(result.Events,                          // …and the ceiling held
+                e => Assert.True(e.Depth <= Battle.MaxCascadeDepth));
         }
 
         // ---- identity ----------------------------------------------------------------

@@ -34,6 +34,7 @@ public class ReplayPlayer : MonoBehaviour
     /// <summary>The battle's rule-id table (replay v6). Every fold is built WITH it — a fold without
     /// it resolves every passive to "" and the whole layer silently degrades to the generic tell.</summary>
     private List<string> _ruleIds = new List<string>();
+    private List<int> _ruleTeams = new List<int>();
     private PlaybackState _fold;
     private int _endTick, _fxCursor, _lastPreviewTick = 60;
     private float _clock;
@@ -87,8 +88,22 @@ public class ReplayPlayer : MonoBehaviour
     private const int FeedSlots = 4;
     private TextMesh[] _feedSlots;
     private TextMesh _bannerText, _readoutText;
+
+    /// <summary>Set while the result gate is open. The gate is a blocking surface carrying the
+    /// same facts in a readable form, so the board's own end-of-fight banner, readout and Waning
+    /// clock stand down rather than showing through it.</summary>
+    public bool EndReadoutSuppressed;
     private readonly List<(string Text, float Age)> _feedLines = new List<(string, float)>();
     private Vector3 _feedAnchor, _bannerAnchor, _readoutAnchor;
+
+    // The Inscription badge rail lived HERE as world-space text for a few hours on 2026-07-27,
+    // then item 5b superseded it with the shell's persistent screen-space tray. The board's only
+    // remaining job for that surface is the event below: the tray may not reconstruct trigger
+    // logic (render-contract law #1), so the dispatch loop republishes the two law events —
+    // TriggerFired and RuleProgress — for RunShell to route into the tray.
+    /// <summary>Fired at dispatch for TriggerFired/RuleProgress events, play mode only — the
+    /// item 5b fight bridge. Subscribers resolve the rule index via <see cref="RuleIdOf"/>.</summary>
+    public event Action<BattleEvent> LawDispatched;
     // The Waning clock (item 11). _clockAnchor keeps only the board's centre in XZ — the height is
     // applied per frame from tuning so F1 can move it live. _waningStage is a one-shot latch over the
     // two feed beats: 0 = before the warning, 1 = warned, 2 = the storm is open. It is reset wherever
@@ -1111,6 +1126,11 @@ public class ReplayPlayer : MonoBehaviour
     {
         if (result == null) throw new ArgumentNullException(nameof(result));
         loop = false;
+        // The live fight's rule table rides the result. Without this, a live battle resolved
+        // passive names — and now the badge rail — against whatever replay FILE loaded last:
+        // empty on a fresh boot, someone else's fight after a scenario. Found building the rail.
+        _ruleIds = result.RuleIds ?? new List<string>();
+        _ruleTeams = result.RuleTeams ?? new List<int>();
         SetReplayData(result.InitialUnits, result.Events, result.EndTick, autoplay: true);
     }
 
@@ -1151,6 +1171,10 @@ public class ReplayPlayer : MonoBehaviour
 
     private void Update()
     {
+        // Ahead of the playing gate on purpose: deployment's board is a frozen snapshot, and its
+        // muster rings still have to trace themselves in and hold.
+        if (_musterViews.Count > 0) StepMusterRings(Time.deltaTime);
+
         if (!_playing || _fold == null) return;
         // The opening beat. Nothing has happened yet — the fold is parked before tick 0 and the
         // board is already placed and posed by ArmOpeningHold — so this returns outright rather
@@ -1283,6 +1307,111 @@ public class ReplayPlayer : MonoBehaviour
     public void PulseFieldsAt(Hex hex)
     {
         foreach (var kv in _fieldViews) if (kv.Value.Covers(hex)) kv.Value.Pulse();
+    }
+
+    // ---- deployment muster rings (ADR 0014) ----------------------------------
+
+    /// <summary>
+    /// One hero's placement promise, drawn on the board while deploying.
+    ///
+    /// Hexes, not centre-and-radius: the caller owns which of them are real seats. A muster on the
+    /// board edge covers hexes that are off the board or in the enemy half, and drawing those would
+    /// promise a seat no ally can ever take — the deployment screen knows that rule, this does not.
+    /// </summary>
+    public readonly struct MusterRing
+    {
+        public readonly int OwnerId;
+        public readonly List<Hex> Hexes;
+        /// <summary>The owner is the hero currently selected in the rail — bring this ring up.</summary>
+        public readonly bool Emphasised;
+
+        public MusterRing(int ownerId, List<Hex> hexes, bool emphasised)
+        {
+            OwnerId = ownerId; Hexes = hexes; Emphasised = emphasised;
+        }
+    }
+
+    private readonly Dictionary<int, FieldView> _musterViews = new Dictionary<int, FieldView>();
+    private readonly List<int> _staleMusters = new List<int>();
+
+    /// <summary>
+    /// FX seconds each ring has been on the board, kept OUTSIDE the view dictionary because the
+    /// view does not survive its own board. Every deployment click re-snapshots, which rebuilds
+    /// `_generated` and takes the rings with it — without carrying the age across, a standing ring
+    /// would replay its 0.2 s rim trace on every single click and the board would never settle.
+    /// A ring that genuinely goes away forgets its age, so re-placing that hero traces in again.
+    /// </summary>
+    private readonly Dictionary<int, float> _musterAges = new Dictionary<int, float>();
+
+    /// <summary>
+    /// Show the hexes each placed muster will catch when the horns sound. Deployment calls this on
+    /// every board change; it is idempotent, so an unchanged ring keeps its traced-in rim rather
+    /// than replaying its spawn on each click.
+    ///
+    /// Kept in its own dictionary rather than borrowing field ids: these are not sim fields, they
+    /// must survive a fold that has no events in it, and nothing may pulse them.
+    /// </summary>
+    public void SetMusterRings(IReadOnlyList<MusterRing> rings)
+    {
+        _staleMusters.Clear();
+        foreach (var kv in _musterViews)
+        {
+            bool live = false;
+            if (rings != null)
+                foreach (var r in rings) if (r.OwnerId == kv.Key) { live = true; break; }
+            if (!live) _staleMusters.Add(kv.Key);
+        }
+        foreach (int id in _staleMusters)
+        {
+            _musterViews[id].Destroy();
+            _musterViews.Remove(id);
+            _musterAges.Remove(id);
+        }
+
+        if (rings == null) return;
+        var fields = _data != null ? _data.fields : new FieldTune();
+        foreach (var ring in rings)
+        {
+            if (!_musterViews.TryGetValue(ring.OwnerId, out var view))
+            {
+                // _generated is torn down and rebuilt by Build(); a ring created against a stale
+                // parent would be orphaned invisibly, so this is always re-created after a rebuild.
+                float age = _musterAges.TryGetValue(ring.OwnerId, out float t) ? t : 0f;
+                view = FieldView.Create(_generated, ring.OwnerId, wall: false,
+                                        flavor: FieldFlavor.Buff, HexToWorld, () => _data,
+                                        hexSize, HexMesh(), PaintTile, startAge: age);
+                _musterViews[ring.OwnerId] = view;
+                _musterAges[ring.OwnerId] = age;
+            }
+            view.ColorOverride = fields.muster;
+            view.Emphasis = ring.Emphasised ? fields.musterBright : fields.musterQuiet;
+            view.FillEmphasis = ring.Emphasised ? fields.musterBrightFill : fields.musterQuietFill;
+            view.SetFootprint(ring.Hexes);
+        }
+    }
+
+    public void ClearMusterRings()
+    {
+        foreach (var kv in _musterViews) kv.Value.Destroy();
+        _musterViews.Clear();
+        _musterAges.Clear();
+    }
+
+    /// <summary>
+    /// Muster rings animate on a board that is deliberately NOT playing — deployment renders a
+    /// frozen snapshot — so they get their own step ahead of <see cref="Update"/>'s playing gate.
+    /// Nothing here can expire: a ring lives exactly as long as deployment says it does.
+    ///
+    /// Public for the same reason <see cref="previewAdvanceSeconds"/> exists: a frozen editor
+    /// capture has no frames to accumulate, and a ring rendered at age 0 has drawn nothing yet.
+    /// </summary>
+    public void StepMusterRings(float dt)
+    {
+        foreach (var kv in _musterViews)
+        {
+            kv.Value.Step(dt);
+            _musterAges[kv.Key] = (_musterAges.TryGetValue(kv.Key, out float t) ? t : 0f) + dt;
+        }
     }
 
     // ---- death presentation (fx-runtime "Death presentation", combat-spectacle §7.1) ----------
@@ -1583,7 +1712,8 @@ public class ReplayPlayer : MonoBehaviour
         if (_tuning != null) _data = _tuning.data;
         if (Application.isPlaying)
         {
-            if (_data != null && _data.playback != null) ticksPerSecond = _data.playback.ticksPerSecond;
+            if (_data != null && _data.playback != null)
+            ticksPerSecond = _data.playback.ticksPerSecond * PlayerOptions.BattleSpeed;
             _director?.Reset();   // recycle in-flight FX + clear offsets before swapping the Director
             _director = MakeDirector();
             ApplyBoardTune();     // hexSize/tileScale live: tiles rebuild, units re-place via ApplyFold
@@ -1617,6 +1747,7 @@ public class ReplayPlayer : MonoBehaviour
             // them (replaying the spawn-in, which is the honest read of a rebuilt board). Death marks
             // bake the old hex CENTRES the same way, so the graveyard goes with them.
             ClearFieldViews();
+            ClearMusterRings();   // rings bake hexSize into their overlay scale the same way
             ResetDeaths();
             _boardCenter = (HexToWorld(new Hex(0, 0))
                           + HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1))) * 0.5f;
@@ -1630,7 +1761,7 @@ public class ReplayPlayer : MonoBehaviour
         // Death state points INTO _generated (corpse views, marks, the props they hid), so it goes
         // with it — a sequence aborted after this would be reaching into destroyed objects.
         _deaths.Clear(); _hiddenProps.Clear(); _marks = null;
-        _views.Clear(); _fieldViews.Clear(); _numberPool.Clear();
+        _views.Clear(); _fieldViews.Clear(); _musterViews.Clear(); _numberPool.Clear();
         _tracerPool.Clear(); _burstPool.Clear(); _vfxPools.Clear();
         // The VFX light budget is a static live count; destroying the pools underneath it would
         // otherwise leak the lights of a board that no longer exists.
@@ -1646,7 +1777,7 @@ public class ReplayPlayer : MonoBehaviour
         string path = Path.Combine(Application.streamingAssetsPath, replayFile);
         if (!File.Exists(path)) { Debug.LogError($"[ReplayPlayer] replay not found: {path}"); return false; }
         using (var fs = File.OpenRead(path))
-            (_initial, _events) = Replay.Read(fs, out _ruleIds);
+            (_initial, _events) = Replay.Read(fs, out _ruleIds, out _ruleTeams);
         _endTick = _events.Count > 0 ? _events[_events.Count - 1].Tick : 0;
         PrepareLoadedData();
         return true;
@@ -1663,7 +1794,8 @@ public class ReplayPlayer : MonoBehaviour
         if (_tuning != null) { _tuning.LoadFromJson(); _data = _tuning.data; }
         // Battle speed is tuning-owned (persists via F1 save). Apply BEFORE MakeDirector — the
         // Director snapshots its motion speed-scale from ticksPerSecond at construction.
-        if (_data != null && _data.playback != null) ticksPerSecond = _data.playback.ticksPerSecond;
+        if (_data != null && _data.playback != null)
+            ticksPerSecond = _data.playback.ticksPerSecond * PlayerOptions.BattleSpeed;
         _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         _director = MakeDirector();
     }
@@ -1781,6 +1913,10 @@ public class ReplayPlayer : MonoBehaviour
                 // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
                 // The corpse's linger starts here for the same reason: it must not depend on a tell row.
                 if (e.Kind == EventKind.Death) { PushKill(e); BeginDeath(e.Target); }
+                // The badge rail hooks TriggerFired the same way: a law announcing itself is not a
+                // tell-dependent effect, it IS the passive layer's visibility (ADR 0026 §rail).
+                if (e.Kind == EventKind.TriggerFired || e.Kind == EventKind.RuleProgress)
+                    LawDispatched?.Invoke(e);
                 // The fight-ender (combat-spectacle §7.5): the death that empties a side drops the
                 // playhead to 0.2x for a breath, and the end-tick hold then slides the FightSummary
                 // readout out of that freeze. Latched — a multi-death final beat ramps once.
@@ -1934,6 +2070,32 @@ public class ReplayPlayer : MonoBehaviour
         _ending = false; _endHold = 0f; _waningStage = 0;
     }
 
+    /// <summary>Resolve a rule-table index to its id ("inscription.stilledbell") — the item 5b
+    /// fight bridge's lookup, paired with <see cref="LawDispatched"/>. Team-0 filtering happens
+    /// shell-side against <see cref="RuleTeamOf"/>: a mirror fight registers the same id on both
+    /// sides, so the index's owning team — not the id — decides whose law fired.</summary>
+    public string RuleIdOf(int index) =>
+        _ruleIds != null && index >= 0 && index < _ruleIds.Count ? _ruleIds[index] ?? "" : "";
+
+    /// <summary>Owning team of a rule-table index, from the replay's v8 parallel table. Unknown
+    /// indices default to team 0 ("assume it is yours" — same degradation as the wire).</summary>
+    public int RuleTeamOf(int index) =>
+        _ruleTeams != null && index >= 0 && index < _ruleTeams.Count ? _ruleTeams[index] : 0;
+
+    /// <summary>Screen position of a unit's body, for the tray's indicator line. False when the
+    /// unit has no live view (dead and reclaimed, or a stale id).</summary>
+    public bool TryUnitScreen(int unitId, out Vector2 screen)
+    {
+        screen = default;
+        var cam = Camera.main;
+        if (cam == null || !_views.TryGetValue(unitId, out var view) || view?.Root == null)
+            return false;
+        Vector3 sp = cam.WorldToScreenPoint(view.Root.position + Vector3.up * 0.6f);
+        if (sp.z <= 0f) return false;
+        screen = new Vector2(sp.x, sp.y);
+        return true;
+    }
+
     /// <summary>Story overlay anchors from the board bounds (mirrors FrameCamera's min/max) —
     /// separate from BuildStory so a live board-size reload can re-anchor without recreating texts.</summary>
     private void RecomputeStoryAnchors()
@@ -1945,6 +2107,7 @@ public class ReplayPlayer : MonoBehaviour
         // Beside the board by default; tunable because this anchor sets the frame's horizontal
         // budget and so caps how far the camera can be tightened (StoryTune.feedGapHexes).
         _feedAnchor = new Vector3(max.x + st.feedGapHexes * hexSize, st.feedHeight, center.z);
+        // The rail mirrors the feed across the board: same gap, same height, opposite edge.
         _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
         _readoutAnchor = new Vector3(center.x, 2.7f, center.z);            // just under the banner
         _clockAnchor = new Vector3(center.x, 0f, center.z);                 // height applied per frame
@@ -2045,7 +2208,10 @@ public class ReplayPlayer : MonoBehaviour
             slot.transform.rotation = _numberFace;
         }
 
-        bool bannerOn = _ending;
+        // There are TWO post-fight readouts: this world-space one and the result gate's recap.
+        // Both were drawing at once — the gate opens during the end hold, so its charts sat on top
+        // of this text and neither could be read. The blocking surface wins; the board goes quiet.
+        bool bannerOn = _ending && !EndReadoutSuppressed;
         if (_bannerText != null)
         {
             if (_bannerText.gameObject.activeSelf != bannerOn) _bannerText.gameObject.SetActive(bannerOn);
@@ -2094,7 +2260,7 @@ public class ReplayPlayer : MonoBehaviour
     {
         if (_clockText == null) return;
         var w = _data.waning;
-        bool on = w.show && _endTick > 0;
+        bool on = w.show && _endTick > 0 && !EndReadoutSuppressed;
         var go = _clockText.gameObject;
         if (go.activeSelf != on) go.SetActive(on);
         if (!on) return;

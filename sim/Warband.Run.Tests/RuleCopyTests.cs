@@ -66,8 +66,8 @@ namespace Warband.Run.Tests
                                           "crown.bell", "crown.emplaced" })
                 Assert.NotEqual(id, ContentLexicon.Rule(id).Name);
 
-            foreach (string key in Catalog.Banners.Keys)
-                Assert.Equal(Catalog.Banners[key].Name, ContentLexicon.Rule("banner." + key).Name);
+            foreach (string key in Catalog.Inscriptions.Keys)
+                Assert.Equal(Catalog.Inscriptions[key].Name, ContentLexicon.Rule("inscription." + key).Name);
         }
 
         [Fact]

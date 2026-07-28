@@ -34,6 +34,12 @@ namespace Warband.Sim
                         // the sim SAMPLES every rule once per tick and emits transitions only. The
                         // client may not evaluate a condition itself (render-contract law #1), so
                         // this event is the only way a conditional passive can ever be seen.
+        RuleProgress,   // Source=counting rep, Aux=index into BattleResult.RuleIds,
+                        // Amount=progress 1..N (N on the firing match), Aux2=N, Target=what the
+                        // counted event was about. A counter Inscription's pips (ADR 0026): every
+                        // counted match rides the wire because the badge rail may not count for
+                        // itself (render-contract law #1). Presentation-only like RuleChanged —
+                        // fires no triggers, spends no cascade budget, provably outcome-neutral.
     }
 
     public enum Cause
@@ -69,6 +75,11 @@ namespace Warband.Sim
         /// event built without one reads as an uncolored zone rather than a bogus enum value.</summary>
         public FieldFlavor Flavor => Aux3 < 0 ? FieldFlavor.Neutral : (FieldFlavor)Aux3;
         public bool Crit;         // DamageDealt from a critical auto-attack
+
+        /// <summary>Which root event's cascade tree this event belongs to — the once-per-root
+        /// guard's key (ADR 0026). Engine-internal and NEVER serialized: replay is re-simulation,
+        /// and depth-0 events already define root identity on the wire (IsRootEvent).</summary>
+        internal int RootSeq;
         public const int Unset = int.MinValue; // Post* sentinel — HP can legitimately go negative
         public int PostHp = Unset;
         public int PostShield = Unset;

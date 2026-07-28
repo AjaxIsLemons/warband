@@ -123,7 +123,7 @@ namespace Warband.Sim
 
         public ContentHash AddNode(SpecNode n)
         {
-            Add("node").Add(n.Name).Add(n.HpBonus).Add(n.CleaveBonusPct).Add(n.DoublesBanners);
+            Add("node").Add(n.Name).Add(n.HpBonus).Add(n.CleaveBonusPct);
             Add(n.TargetPref.HasValue).Add(n.TargetPref.HasValue ? (int)n.TargetPref!.Value : 0);
             Add(n.Standoff);
             AddTriggers(n.Triggers);
@@ -147,7 +147,7 @@ namespace Warband.Sim
             Add(triggers.Count);
             foreach (var t in triggers)
             {
-                Add((int)t.On);
+                Add((int)t.On).Add(t.OncePerRoot).Add(t.EveryN);
                 Add(t.When.Count);
                 foreach (var c in t.When) AddCond(c);
                 AddEffects(t.Do);
@@ -173,7 +173,7 @@ namespace Warband.Sim
         public ContentHash AddSelector(Selector s) =>
             Add((int)s.Kind).Add(s.Range).Add(s.ExcludeSelf).Add(s.AnchorEvent)
                 .Add(s.AnchorEventTarget).Add(s.ExcludeAnchorUnit).Add(s.SkipCtxTarget)
-                .Add(s.BelowHpPct).Add(s.MustHave);
+                .Add(s.BelowHpPct).Add(s.MustHave).Add(s.AdjacentToAlly);
 
         public ContentHash AddCond(Cond c) =>
             Add((int)c.Kind).Add(c.Not).Add(c.Amount).Add((int)c.Cause).Add((int)c.Status);

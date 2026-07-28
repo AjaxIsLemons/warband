@@ -325,7 +325,7 @@ public static class RenderShots
             gameView.Repaint();
     }
 
-    private static void RenderTo(Camera cam, string path, int w, int h)
+    internal static void RenderTo(Camera cam, string path, int w, int h)
     {
         var rt = new RenderTexture(w, h, 24);
         var prevTarget = cam.targetTexture;

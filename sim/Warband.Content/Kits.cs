@@ -721,16 +721,19 @@ namespace Warband.Content
                 MoveInterval = 5,
                 StarterWeapon = Weapons.All["standard"],
                 Specializations = { "standard", "sabre" },
-                // Standard-Bearer [MUSTER]: the Company swings faster, wherever they drift.
-                Passives = { AtStart(Status(StatusKind.Haste, 200, Allies(1))) },
-                Signature = { Mana(Allies(2), 10) },                 // Rally (live r2 — ADR 0014)
+                // Standard-Bearer [MUSTER]: whoever he is TOUCHING when the horns sound is sworn
+                // into the Company for the fight — they swing faster, and every rally he calls
+                // reaches them, wherever they drift.
+                Passives = { AtStart(Status(StatusKind.Haste, 200, Allies(1)),
+                                     Status(StatusKind.Mustered, 1, Allies(1))) },
+                Signature = { Mana(Company(), 10) },                 // Rally (the Company — ADR 0014)
             };
             ForkRanks["banneret"] = Rank.B;
             Offer("banneret", Rank.B, null, "banneret.herald", "banneret.warcaller");
 
             Node("banneret.herald", new SpecNode // the shieldward
             {
-                SignaturePatch = Patch(add: Shield(Allies(2), 10)),
+                SignaturePatch = Patch(add: Shield(Company(), 10)),
             });
             Node("banneret.warcaller", new SpecNode // the dread captain: one cast, both tempos
             {
@@ -745,7 +748,7 @@ namespace Warband.Content
             Node("banneret.herald.secondwind", new SpecNode // allies below half receive double Rally
             {
                 Triggers = { On(EventKind.Cast, W(SrcOwner),
-                    Mana(Allies(2, below: 50), 10), Shield(Allies(2, below: 50), 10)) },
+                    Mana(Company(below: 50), 10), Shield(Company(below: 50), 10)) },
             });
             Offer("banneret", Rank.S, "banneret.herald", "banneret.herald.quickening", "banneret.herald.widebanner");
             Node("banneret.herald.quickening", new SpecNode // intensity: the few, faster (doubles the innate)
@@ -753,14 +756,15 @@ namespace Warband.Content
                 Triggers = { AtStart(Status(StatusKind.Haste, 200, Allies(1))) },
             });
             Node("banneret.herald.widebanner", new SpecNode // breadth: muster reach 2 (r1 companions get both)
-            {
-                Triggers = { AtStart(Status(StatusKind.Haste, 200, Allies(2))) },
+            {                                               // — a WIDER Company, sworn at placement
+                Triggers = { AtStart(Status(StatusKind.Haste, 200, Allies(2)),
+                                     Status(StatusKind.Mustered, 1, Allies(2))) },
             });
 
             Offer("banneret", Rank.A, "banneret.warcaller", "banneret.warcaller.drumbeat", "banneret.warcaller.dreadpresence");
             Node("banneret.warcaller.drumbeat", new SpecNode // Rallied allies' next 3 swings, faster
             {
-                Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Haste, 300, Allies(2), swings: 3)) },
+                Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Haste, 300, Company(), swings: 3)) },
             });
             Node("banneret.warcaller.dreadpresence", new SpecNode // enemies beside him swing slower (live aura — clause 3)
             {
@@ -771,13 +775,16 @@ namespace Warband.Content
                 })) },
             });
             Offer("banneret", Rank.S, "banneret.warcaller", "banneret.warcaller.bearer", "banneret.warcaller.lastmarch");
-            Node("banneret.warcaller.bearer", new SpecNode // the first cross-layer node: doubles the run-banner
-            {
-                DoublesBanners = true,
+            Node("banneret.warcaller.bearer", new SpecNode // Living Inscription (ADR 0026): the
+            {                                              // Hourstone pays its bearer — scales with
+                                                           // ACTIVATION, never collection size, so
+                                                           // Banneret can't become compulsory.
+                Triggers = { On(EventKind.TriggerFired, W(FiredTeamRule), Mana(Self, 10)).Guarded() },
             });
             Node("banneret.warcaller.lastmarch", new SpecNode // the whole warband is his Company
-            {
-                Triggers = { AtStart(Status(StatusKind.Haste, 200, Allies(99))) },
+            {                                                // — literally: placement stops mattering
+                Triggers = { AtStart(Status(StatusKind.Haste, 200, Allies(99)),
+                                     Status(StatusKind.Mustered, 1, Allies(99))) },
             });
         }
     }

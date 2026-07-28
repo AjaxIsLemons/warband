@@ -209,7 +209,9 @@ The eight candidates already cover the first-playable PvE answer space:
 - **sustain and attrition:** Cleric, Bloodreaver, Bulwark, Herald, and Phantom;
 - **protected backlines:** Shade, Sniper, Lancer, and long-range wardrobes;
 - **dive defense:** Pikewall, Warden, formation, and support tools;
-- **Clock pressure:** Stun, Taunt/Silence, Slow, Haste, Mana, and attack denial;
+- **Clock pressure:** Stun, Taunt, Slow, Haste, Mana, and attack denial. Silence is real but
+  arrives through the Hourstone (The Stilled Bell, ADR 0026 catalog #10), not any hero kit —
+  this line falsely claimed roster Silence until 2026-07-27 (roadmap item 17);
 - **Field pressure:** Inferno and Lifebinder, plus authored Inscriptions and enemy glyphs.
 
 The roster deliberately lacks universal cleanse/tenacity, enemy-field removal, anti-heal,

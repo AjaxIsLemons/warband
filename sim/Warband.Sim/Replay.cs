@@ -12,7 +12,11 @@ namespace Warband.Sim
     public static class Replay
     {
         private const uint Magic = 0x57425250; // "WBRP"
-        private const int Version = 7;   // v7: + PlaybackUnit targeting rule (TargetPref/Standoff) and
+        private const int Version = 8;   // v8: + per-rule owning team beside each rule id — the id
+                                         //     alone cannot say whose law it is (mirror fights
+                                         //     register the same Inscription on both sides), and
+                                         //     the badge rail must show YOUR Hourstone (ADR 0026)
+                                         // v7: + PlaybackUnit targeting rule (TargetPref/Standoff) and
                                          //     its span in the rule table — the in-fight inspector
                                          // v6: + the battle's rule-id table (TriggerFired/RuleChanged
                                          //     carry an index into it — passive legibility, item 20)
@@ -22,7 +26,8 @@ namespace Warband.Sim
                                          // v2: + BattleEvent.Aux3 (FieldCreated carries FieldFlavor)
 
         public static void Write(Stream stream, IReadOnlyList<PlaybackUnit> initial,
-                                 IReadOnlyList<BattleEvent> events, IReadOnlyList<string>? ruleIds = null)
+                                 IReadOnlyList<BattleEvent> events, IReadOnlyList<string>? ruleIds = null,
+                                 IReadOnlyList<int>? ruleTeams = null)
         {
             using var w = new BinaryWriter(stream);
             w.Write(Magic);
@@ -31,9 +36,15 @@ namespace Warband.Sim
             // The rule-id table, before the units: TriggerFired/RuleChanged carry an int index into
             // it because BattleEvent is all ints by design. Null is written as an empty table, which
             // is the honest degradation — every index then resolves to "" and every passive falls
-            // through to the generic tell instead of naming itself.
+            // through to the generic tell instead of naming itself. The owning team rides beside
+            // each id; a missing table degrades to team 0, "assume it is yours".
             w.Write(ruleIds?.Count ?? 0);
-            if (ruleIds != null) foreach (var id in ruleIds) w.Write(id ?? "");
+            if (ruleIds != null)
+                for (int i = 0; i < ruleIds.Count; i++)
+                {
+                    w.Write(ruleIds[i] ?? "");
+                    w.Write(ruleTeams != null && i < ruleTeams.Count ? ruleTeams[i] : 0);
+                }
 
             w.Write(initial.Count);
             foreach (var u in initial)
@@ -72,7 +83,10 @@ namespace Warband.Sim
             Read(stream, out _);
 
         public static (List<PlaybackUnit> Initial, List<BattleEvent> Events) Read(
-            Stream stream, out List<string> ruleIds)
+            Stream stream, out List<string> ruleIds) => Read(stream, out ruleIds, out _);
+
+        public static (List<PlaybackUnit> Initial, List<BattleEvent> Events) Read(
+            Stream stream, out List<string> ruleIds, out List<int> ruleTeams)
         {
             using var r = new BinaryReader(stream);
             if (r.ReadUInt32() != Magic) throw new InvalidDataException("Not a warband replay (bad magic).");
@@ -81,7 +95,8 @@ namespace Warband.Sim
 
             int ruleCount = r.ReadInt32();
             ruleIds = new List<string>(ruleCount);
-            for (int i = 0; i < ruleCount; i++) ruleIds.Add(r.ReadString());
+            ruleTeams = new List<int>(ruleCount);
+            for (int i = 0; i < ruleCount; i++) { ruleIds.Add(r.ReadString()); ruleTeams.Add(r.ReadInt32()); }
 
             int unitCount = r.ReadInt32();
             var initial = new List<PlaybackUnit>(unitCount);

@@ -60,6 +60,19 @@ public class FieldTune
     public Color debuff  = new Color(0.65f, 0.40f, 0.85f);
     public Color neutral = new Color(0.95f, 0.80f, 0.35f);
     public Color wall    = new Color(0.55f, 0.55f, 0.60f);
+
+    // ---- deployment muster rings (ADR 0014) ----
+    // Its own color rather than reusing `buff`: a muster ring is read in a quiet planning screen
+    // against a still board, not glanced at mid-fight, and the two want different weights.
+    public Color muster       = new Color(0.98f, 0.84f, 0.42f);
+    /// <summary>Rim alpha for a ring whose hero is NOT selected. Every placed muster stays up —
+    /// the ring's whole job is guiding where the NEXT hero goes — so an unselected muster keeps a
+    /// readable OUTLINE and gives up its floor entirely (`musterQuietFill` 0). Overlapping musters
+    /// can cover most of a deploy half, and dim floors merely wash that whole area out.</summary>
+    public float musterQuiet       = 0.85f;
+    public float musterQuietFill   = 0f;
+    public float musterBright      = 1.30f;
+    public float musterBrightFill  = 1f;
 }
 
 /// <summary>

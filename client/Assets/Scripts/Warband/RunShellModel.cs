@@ -431,12 +431,24 @@ internal enum InspectorSectionKind
 }
 
 /// <summary>
+/// Content role, not geometry: Primary renders in full; Deferred renders as one compact
+/// line whose full rule lives on hover. Width decides layout, never what exists
+/// (Design/workbench-dossier.md).
+/// </summary>
+internal enum InspectorSectionRole
+{
+    Primary,
+    Deferred,
+}
+
+/// <summary>
 /// One semantically named block in a decision detail. Item and run-law details deliberately use
 /// this instead of being squeezed into the champion-only Basic / Signature / Passive skeleton.
 /// </summary>
 internal sealed class InspectorSectionModel
 {
     public InspectorSectionKind Kind = InspectorSectionKind.Rule;
+    public InspectorSectionRole Role = InspectorSectionRole.Primary;
     public string Label = "";
     public string Icon = "";
     public string Name = "";
@@ -582,6 +594,9 @@ internal sealed class ChoicePreviewModel
 {
     public string Change = "";
     public string Name = "";
+    /// <summary>The authored one-liner (ContentLexicon) shown at the preview tier; machine
+    /// prose in Rule is too long to glance. Empty falls back to Rule's first sentence.</summary>
+    public string Summary = "";
     public string Rule = "";
     public string Accent = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
@@ -681,6 +696,7 @@ internal sealed class WarbandHeroModel
 {
     public long HeroInstanceId;
     public int FieldIndex = -1;
+    public int SlotIndex = -1;
     public bool Reserve;
     public bool Empty;
     public bool Locked;
@@ -711,6 +727,8 @@ internal sealed class WarbandBarModel
     public int ReserveCount;
     public int ReserveCapacity;
     public int StoredItems;
+    /// <summary>The Armory chip doubles as the drawer toggle; its hint copy flips on this.</summary>
+    public bool ArmoryDrawerOpen;
     public bool CanManage;
     public bool CanEdit;
     public long FocusedHeroInstanceId;

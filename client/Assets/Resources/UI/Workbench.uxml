@@ -28,14 +28,6 @@
                 <ui:VisualElement name="market-grid" class="workbench-market__grid" />
             </ui:VisualElement>
 
-            <ui:Button name="market-collapsed" class="workbench-market-collapsed">
-                <ui:VisualElement class="workbench-market-collapsed__copy">
-                    <ui:Label text="LIVE MARKET" class="workbench-market-collapsed__title" />
-                    <ui:Label name="market-collapsed-status" class="workbench-market-collapsed__meta" />
-                </ui:VisualElement>
-                <ui:Label text="RETURN TO MARKET  ↑" class="workbench-market-collapsed__action" />
-            </ui:Button>
-
             <ui:VisualElement name="body" class="workbench-body">
                 <ui:VisualElement name="dossier-frame" class="workbench-dossier">
                     <ui:VisualElement name="inspector-slot" class="workbench-dossier__slot" />
@@ -43,15 +35,16 @@
 
                 <ui:VisualElement name="armory" class="workbench-armory">
                     <ui:VisualElement class="workbench-armory__heading">
-                        <ui:VisualElement>
+                        <ui:VisualElement class="workbench-armory__heading-copy">
                             <ui:Label text="ARMORY" class="workbench-section-heading__title" />
                             <ui:Label name="armory-status" class="workbench-section-heading__meta" />
                         </ui:VisualElement>
+                        <ui:Label text="Select an item, then choose a matching weapon or trinket socket in the unit rail below." class="workbench-armory__instruction" />
                         <ui:VisualElement class="workbench-armory__heading-actions">
                             <ui:Button name="armory-prev" text="‹" class="workbench-page-button" />
                             <ui:Label name="armory-page" class="workbench-armory__page" />
                             <ui:Button name="armory-next" text="›" class="workbench-page-button" />
-                            <ui:Button name="armory-close" text="COLLAPSE  ×" class="btn btn--ghost workbench-armory__close" />
+                            <ui:Button name="armory-close" text="COLLAPSE  ▾" class="btn btn--ghost workbench-armory__close" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="armory-grid" class="workbench-armory__grid" />
@@ -60,14 +53,7 @@
                         <ui:Label text="No unequipped items." class="workbench-armory__empty-title" />
                         <ui:Label text="Purchased weapons and trinkets arrive here." class="workbench-armory__empty-copy" />
                     </ui:VisualElement>
-                    <ui:Label text="Select an item, then choose a matching weapon or trinket socket in the permanent unit rail." class="workbench-armory__instruction" />
                 </ui:VisualElement>
-
-                <ui:Button name="armory-open" class="workbench-armory-handle">
-                    <ui:Label text="ARMORY" class="workbench-armory-handle__title" />
-                    <ui:Label name="armory-handle-count" class="workbench-armory-handle__count" />
-                    <ui:Label text="OPEN DRAWER  →" class="workbench-armory-handle__action" />
-                </ui:Button>
             </ui:VisualElement>
 
             <ui:Label name="feedback" class="workbench-feedback" />

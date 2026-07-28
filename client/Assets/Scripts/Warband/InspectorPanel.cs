@@ -34,17 +34,13 @@ internal sealed class InspectorPanel
     private readonly Label _price;
     private readonly HourstoneAmount _currencyPrice;
     private readonly VisualElement _stats;
-    private readonly VisualElement _pageNav;
-    private readonly Button _pagePrev;
-    private readonly Button _pageDetails;
-    private readonly Button _pageNext;
     private readonly VisualElement _rankUpBody;
+    private readonly VisualElement _rankUpGains;
     private readonly VisualElement _rankUpLadder;
     private readonly VisualElement _rankUpOptions;
     private readonly VisualElement _decisionBody;
     private readonly VisualElement _sections;
-    private readonly VisualElement _secondarySections;
-    private readonly VisualElement _secondaryColumn;
+    private readonly VisualElement _deferred;
     private readonly VisualElement _equipmentPreview;
     private readonly VisualElement _recipients;
     private readonly Label _comparisonTitle;
@@ -52,16 +48,6 @@ internal sealed class InspectorPanel
     private readonly VisualElement _ruleDeltas;
     private readonly VisualElement _tags;
     private readonly VisualElement _actions;
-    private readonly List<VisualElement> _detailSections = new List<VisualElement>();
-    private readonly List<int> _detailOwners = new List<int>();
-    private readonly List<string> _detailLabels = new List<string>();
-    private int _detailPageIndex;
-    private float _resolvedWidth;
-    private bool _paginateDetails;
-    private bool _secondaryDefaultVisible;
-    private bool _hasEquipmentPreview;
-    private DecisionDetailKind _boundKind;
-    private string _boundSignature = "";
 
     public VisualElement Root { get; }
     public VisualElement ActionsRoot => _actions;
@@ -95,17 +81,13 @@ internal sealed class InspectorPanel
         _currencyPrice = new HourstoneAmount(0, "wb-inspector__currency-price");
         _economy.Add(_currencyPrice);
         _stats = Required<VisualElement>(Root, "stats");
-        _pageNav = Required<VisualElement>(Root, "page-nav");
-        _pagePrev = Required<Button>(Root, "page-prev");
-        _pageDetails = Required<Button>(Root, "page-details");
-        _pageNext = Required<Button>(Root, "page-next");
         _rankUpBody = Required<VisualElement>(Root, "rank-up-body");
+        _rankUpGains = Required<VisualElement>(Root, "rank-up-gains");
         _rankUpLadder = Required<VisualElement>(Root, "rank-up-ladder");
         _rankUpOptions = Required<VisualElement>(Root, "rank-up-options");
         _decisionBody = Required<VisualElement>(Root, "decision-body");
         _sections = Required<VisualElement>(Root, "sections");
-        _secondarySections = Required<VisualElement>(Root, "secondary-sections");
-        _secondaryColumn = Required<VisualElement>(Root, "secondary-column");
+        _deferred = Required<VisualElement>(Root, "deferred");
         _equipmentPreview = Required<VisualElement>(Root, "equipment-preview");
         _recipients = Required<VisualElement>(Root, "recipients");
         _comparisonTitle = Required<Label>(Root, "comparison-title");
@@ -113,9 +95,6 @@ internal sealed class InspectorPanel
         _ruleDeltas = Required<VisualElement>(Root, "rule-deltas");
         _tags = Required<VisualElement>(Root, "tags");
         _actions = Required<VisualElement>(Root, "actions");
-        _pagePrev.clicked += () => StepDetail(-1);
-        _pageNext.clicked += () => StepDetail(1);
-        Root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
     }
 
     public void Bind(InspectorModel model)
@@ -134,18 +113,8 @@ internal sealed class InspectorPanel
             // The Hall can present actions in a pinned dock outside this panel's content tree.
             // Clear stale commits before returning so an empty dossier can never retain BUY/EQUIP.
             _actions.Clear();
-            SetDisplayed(_pageNav, false);
             SetDisplayed(_rankUpBody, false);
             return;
-        }
-        _boundKind = model.Kind;
-        _hasEquipmentPreview = model.EquipmentPreview != null;
-
-        string signature = model.Kind + "|" + model.Title + "|" + model.Subtitle;
-        if (!string.Equals(signature, _boundSignature, StringComparison.Ordinal))
-        {
-            _boundSignature = signature;
-            _detailPageIndex = 0;
         }
 
         _eyebrow.text = model.Eyebrow;
@@ -169,17 +138,22 @@ internal sealed class InspectorPanel
         SetDisplayed(_economy, model.CurrencyCost >= 0 || !string.IsNullOrEmpty(model.Price));
         BindSections(model);
         BindEquipmentPreview(model.EquipmentPreview);
-        BindRankUp(model.RankUpDetail, model.Title);
+        BindRankUp(model);
 
+        bool typedRankUp = model.RankUpDetail != null;
         _stats.Clear();
-        foreach (var stat in model.Stats)
-        {
-            var chip = new MechanicStatTile(
-                "wb-inspector-stat", "wb-inspector-stat");
-            chip.Bind(stat);
-            _tooltips?.Attach(chip, () => StatTooltip(stat, model.Title));
-            _stats.Add(chip);
-        }
+        // Rank-up shows its gains as before → after rows inside the rank-up body; repeating
+        // them as +N chips here would encode one fact in two channels (workbench-dossier.md).
+        if (!typedRankUp)
+            foreach (var stat in model.Stats)
+            {
+                var chip = new MechanicStatTile(
+                    "wb-inspector-stat", "wb-inspector-stat");
+                chip.Bind(stat);
+                _tooltips?.Attach(chip, () => StatTooltip(stat, model.Title));
+                _stats.Add(chip);
+            }
+        SetDisplayed(_stats, _stats.childCount > 0);
 
         _tags.Clear();
         foreach (var tag in model.Tags)
@@ -188,22 +162,10 @@ internal sealed class InspectorPanel
             label.AddToClassList("wb-tag");
             _tags.Add(label);
         }
-        bool typedRankUp = model.RankUpDetail != null;
-        if (typedRankUp)
-        {
-            _paginateDetails = false;
-            SetDisplayed(_pageNav, false);
-            SetDisplayed(_decisionBody, false);
-            SetDisplayed(_tags, false);
-            SetDisplayed(_rankUpBody, true);
-            Root.EnableInClassList("wb-inspector--paged-details", false);
-        }
-        else
-        {
-            RefreshDetailPagination();
-            SetDisplayed(_pageNav, _paginateDetails);
-            ApplyPage();
-        }
+        SetDisplayed(_decisionBody, !typedRankUp);
+        SetDisplayed(_tags, !typedRankUp && _tags.childCount > 0 &&
+            model.EquipmentPreview == null);
+        SetDisplayed(_rankUpBody, typedRankUp);
 
         _actions.Clear();
         foreach (var action in model.Actions)
@@ -238,67 +200,6 @@ internal sealed class InspectorPanel
         }
     }
 
-    private void StepDetail(int delta)
-    {
-        if (_detailSections.Count == 0) return;
-        _detailPageIndex = Mathf.Clamp(
-            _detailPageIndex + delta, 0, _detailSections.Count - 1);
-        ApplyPage();
-        UiPolishSignals.Emit(UiPolishSignals.Cue.Tab,
-            targetId: "workbench-dossier", tone: UiFeedbackTone.Preview);
-    }
-
-    private void ApplyPage()
-    {
-        bool paged = _paginateDetails && _detailSections.Count > 1;
-        _detailPageIndex = Mathf.Clamp(
-            _detailPageIndex, 0, Mathf.Max(0, _detailSections.Count - 1));
-        SetDisplayed(_decisionBody, true);
-        SetDisplayed(_tags, _tags.childCount > 0);
-        _tags.EnableInClassList("wb-inspector__tags--page", false);
-        Root.EnableInClassList("wb-inspector--paged-details", paged);
-        for (int i = 0; i < _detailSections.Count; i++)
-            SetDisplayed(_detailSections[i],
-                !paged || i == _detailPageIndex);
-        bool profileVisible = !paged ||
-            _detailOwners.Count == 0 ||
-            _detailOwners[_detailPageIndex] == 0;
-        bool secondaryVisible = paged
-            ? _detailOwners.Count > _detailPageIndex &&
-              _detailOwners[_detailPageIndex] == 1
-            : _secondaryDefaultVisible;
-        SetDisplayed(_sections.parent, profileVisible);
-        SetDisplayed(_secondaryColumn, secondaryVisible);
-        bool showSteps = paged;
-        SetDisplayed(_pagePrev, showSteps);
-        SetDisplayed(_pageNext, showSteps);
-        _pagePrev.SetEnabled(_detailPageIndex > 0);
-        _pageNext.SetEnabled(_detailPageIndex + 1 < _detailSections.Count);
-        _pageDetails.text = paged && _detailLabels.Count > _detailPageIndex
-            ? _detailLabels[_detailPageIndex].ToUpperInvariant()
-            : "DETAILS";
-        _pageDetails.EnableInClassList("wb-inspector__page-button--active", true);
-    }
-
-    private void OnGeometryChanged(GeometryChangedEvent evt)
-    {
-        if (Mathf.Abs(_resolvedWidth - evt.newRect.width) < 1f) return;
-        _resolvedWidth = evt.newRect.width;
-        bool previous = _paginateDetails;
-        RefreshDetailPagination();
-        if (previous != _paginateDetails)
-            ApplyPage();
-    }
-
-    private void RefreshDetailPagination()
-    {
-        _paginateDetails =
-            !_hasEquipmentPreview &&
-            _detailSections.Count > 1 &&
-            (_boundKind == DecisionDetailKind.RankUp ||
-             (_resolvedWidth > 1f && _resolvedWidth < 1000f));
-    }
-
     private static RuntimeTooltipModel StatTooltip(StatChipModel stat, string context)
     {
         MechanicFamily family = MechanicPresentation.Family(stat?.Id ??
@@ -320,16 +221,24 @@ internal sealed class InspectorPanel
     private void BindSections(InspectorModel model)
     {
         _sections.Clear();
-        _secondarySections.Clear();
-        _detailSections.Clear();
-        _detailOwners.Clear();
-        _detailLabels.Clear();
+        _deferred.Clear();
         var sections = model.Sections.Count > 0
             ? model.Sections
             : LegacySections(model);
-        for (int i = 0; i < sections.Count; i++)
+        // During an equip projection the preview owns the whole detail column — the unit's
+        // rules stay one click away on its own dossier, so even deferred rows yield.
+        bool equipProjection = model.EquipmentPreview != null;
+        foreach (InspectorSectionModel section in sections)
         {
-            InspectorSectionModel section = sections[i];
+            // Role, not geometry: Deferred renders as one compact line whose full rule lives
+            // on hover; Primary renders in full. Width never decides what exists
+            // (Design/workbench-dossier.md).
+            if (section.Role == InspectorSectionRole.Deferred)
+            {
+                if (!equipProjection)
+                    _deferred.Add(DeferredRow(section, model.Title));
+                continue;
+            }
             var root = new VisualElement();
             root.AddToClassList("wb-inspector__section");
             root.AddToClassList("wb-inspector__section--" +
@@ -354,35 +263,93 @@ internal sealed class InspectorPanel
             }
             else if (section.Kind == InspectorSectionKind.Capacity)
                 root.Add(CapacityDiagram(section));
-            bool secondary =
-                (model.Kind == DecisionDetailKind.Recruit && i >= 2) ||
-                (model.Kind == DecisionDetailKind.RankUp &&
-                 section.Kind == InspectorSectionKind.Choices);
-            (secondary ? _secondarySections : _sections).Add(root);
-            _detailSections.Add(root);
-            _detailOwners.Add(secondary ? 1 : 0);
-            _detailLabels.Add(string.IsNullOrWhiteSpace(section.Label)
-                ? $"DETAIL {i + 1}"
-                : section.Label);
+            _sections.Add(root);
         }
-        _secondaryDefaultVisible =
-            (model.Kind == DecisionDetailKind.Recruit ||
-             model.Kind == DecisionDetailKind.RankUp) &&
-            _secondarySections.childCount > 0;
-        SetDisplayed(_secondaryColumn, _secondaryDefaultVisible);
+        SetDisplayed(_deferred, _deferred.childCount > 0);
+        // An empty rule column yields its width to the equip preview instead of holding a
+        // blank flex share.
+        SetDisplayed(_sections.parent,
+            _sections.childCount > 0 || _deferred.childCount > 0);
     }
 
-    private void BindRankUp(RankUpDetailModel model, string context)
+    /// <summary>
+    /// One compact line for a Deferred section: icon · trigger label · name, full rule on
+    /// hover. The name is always visible — deferred is never hidden (workbench-dossier.md).
+    /// </summary>
+    private VisualElement DeferredRow(InspectorSectionModel section, string context)
     {
+        var row = new VisualElement();
+        row.AddToClassList("wb-deferred-row");
+        row.focusable = true;
+        row.tabIndex = 0;
+
+        var icon = new Label(string.IsNullOrWhiteSpace(section.Icon) ? "◇" : section.Icon);
+        icon.AddToClassList("wb-deferred-row__icon");
+        var label = new Label(section.Label);
+        label.AddToClassList("wb-deferred-row__label");
+        var name = new Label(DeferredName(section));
+        name.AddToClassList("wb-deferred-row__name");
+        var hint = new Label("HOVER");
+        hint.AddToClassList("wb-deferred-row__hint");
+        row.Add(icon);
+        row.Add(label);
+        row.Add(name);
+        row.Add(hint);
+
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(section.Name),
+            Eyebrow = section.Label,
+            Title = DeferredName(section),
+            Domain = "FULL RULE",
+            Body = DeferredBody(section),
+            Context = context,
+        };
+        if (_tooltips == null) row.tooltip = DeferredBody(section);
+        else _tooltips.Attach(row, Tooltip);
+        return row;
+    }
+
+    private static string DeferredName(InspectorSectionModel section)
+    {
+        if (section.Kind == InspectorSectionKind.Choices)
+        {
+            var names = new List<string>();
+            foreach (ChoicePreviewModel choice in section.Choices) names.Add(choice.Name);
+            return string.Join("  OR  ", names);
+        }
+        return section.Name;
+    }
+
+    private static string DeferredBody(InspectorSectionModel section)
+    {
+        if (section.Kind != InspectorSectionKind.Choices) return section.Summary;
+        var lines = new List<string>();
+        foreach (ChoicePreviewModel choice in section.Choices)
+            lines.Add($"{choice.Name} — {choice.Rule}");
+        return string.Join("\n\n", lines);
+    }
+
+    private void BindRankUp(InspectorModel model)
+    {
+        RankUpDetailModel detail = model.RankUpDetail;
+        _rankUpGains.Clear();
         _rankUpLadder.Clear();
         _rankUpOptions.Clear();
-        SetDisplayed(_rankUpBody, model != null);
-        if (model == null) return;
+        SetDisplayed(_rankUpBody, detail != null);
+        if (detail == null) return;
 
-        foreach (RankTierSlotModel tier in model.Tiers)
-            _rankUpLadder.Add(RankTier(tier, context));
-        foreach (ChoicePreviewModel option in model.Options)
-            _rankUpOptions.Add(RankUpOption(option, context));
+        // The guaranteed gains as before → after rows — delta and absolute in one view
+        // (workbench-dossier.md, law 4). These replace the +N stat chips.
+        foreach (StatComparisonModel comparison in model.Comparisons)
+            _rankUpGains.Add(ComparisonRow(comparison));
+        SetDisplayed(_rankUpGains, _rankUpGains.childCount > 0);
+
+        foreach (RankTierSlotModel tier in detail.Tiers)
+            _rankUpLadder.Add(RankTier(tier, model.Title));
+        foreach (ChoicePreviewModel option in detail.Options)
+            _rankUpOptions.Add(RankUpOption(option, model.Title));
     }
 
     private VisualElement RankTier(RankTierSlotModel model, string context)
@@ -463,7 +430,13 @@ internal sealed class InspectorPanel
         name.AddToClassList("wb-rank-option__name");
         var rule = new Label();
         rule.AddToClassList("wb-rank-option__rule");
-        MechanicPresentation.BindInline(rule, model.Rule);
+        // Scent, not the contract: the option preview carries the authored one-liner (or the
+        // first sentence when none is authored); the full rule lives on hover and again in
+        // the blocking choice after purchase. Machine trigger-prose runs a whole rule
+        // without a sentence break, so it can never be the glance text.
+        MechanicPresentation.BindInline(rule, string.IsNullOrWhiteSpace(model.Summary)
+            ? FirstSentence(model.Rule)
+            : model.Summary);
         option.Add(change);
         option.Add(name);
         option.Add(rule);
@@ -805,6 +778,22 @@ internal sealed class InspectorPanel
         return trigger.EndsWith(always, StringComparison.OrdinalIgnoreCase)
             ? trigger.Substring(0, trigger.Length - always.Length)
             : trigger;
+    }
+
+    /// <summary>First sentence of a rule, with a continuation mark when more follows.
+    /// Generated trigger-prose can run 170+ characters without a sentence break, so a
+    /// word-boundary budget backstops the split — the option card clips overflow, and the
+    /// full text always survives on hover.</summary>
+    private static string FirstSentence(string rule)
+    {
+        if (string.IsNullOrWhiteSpace(rule)) return rule;
+        int end = rule.IndexOf(". ", StringComparison.Ordinal);
+        string sentence = end < 0 ? rule : rule.Substring(0, end + 1) + " …";
+        const int budget = 120;
+        if (sentence.Length <= budget) return sentence;
+        int cut = sentence.LastIndexOf(' ', budget);
+        if (cut <= 0) cut = budget;
+        return sentence.Substring(0, cut) + " …";
     }
 
     private static T Required<T>(VisualElement root, string name) where T : VisualElement

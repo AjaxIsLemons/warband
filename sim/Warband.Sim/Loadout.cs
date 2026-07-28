@@ -129,7 +129,6 @@ namespace Warband.Sim
         public TargetPref? TargetPref;
         public int? Standoff;
         public int CleaveBonusPct;  // added to the weapon's cleave (No Quarter: width becomes weight)
-        public bool DoublesBanners; // Bearer of the Mark (ADR: first cross-layer node) — read by the run layer
     }
 
     public sealed class ComposedLoadout

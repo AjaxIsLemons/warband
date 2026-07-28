@@ -2,6 +2,96 @@
   "// note": "Data-driven replay set. Each unit is a real Catalog build. picks = path choices at B/A/S (0 or 1). tier: Worn|Honed|Relic. Board is 8 rows x 6 cols; team0 lower rows march up, team1 upper rows march down. Regenerate with `make scenarios`.",
   "scenarios": [
     {
+      "name": "hourstone",
+      "seed": 11,
+      "banners": {
+        "0": [
+          "brand",
+          "chorus",
+          "thirdchime",
+          "tithe",
+          "stilledbell"
+        ],
+        "1": [
+          "bronzehour"
+        ]
+      },
+      "units": [
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Honed",
+          "row": 1,
+          "col": 1
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Honed",
+          "row": 1,
+          "col": 3
+        },
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            1
+          ],
+          "tier": "Honed",
+          "row": 2,
+          "col": 2
+        },
+        {
+          "team": 1,
+          "chassis": "cleric",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Honed",
+          "row": 6,
+          "col": 1
+        },
+        {
+          "team": 1,
+          "chassis": "berserker",
+          "picks": [
+            0,
+            1,
+            0
+          ],
+          "tier": "Honed",
+          "row": 5,
+          "col": 2
+        },
+        {
+          "team": 1,
+          "chassis": "phalanx",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Honed",
+          "row": 6,
+          "col": 3
+        }
+      ]
+    },
+    {
       "name": "duel-crit-vs-tank",
       "seed": 7,
       "units": [

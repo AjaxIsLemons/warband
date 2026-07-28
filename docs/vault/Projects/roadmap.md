@@ -32,12 +32,20 @@ Jake's to judge; the value is one F1 slider away from any other answer.
 **2. ~~Item 11 — Overtime is invisible.~~ BUILT 2026-07-27 (THE WANING)** — clock + warning + storm
 tell, render-only, plus an `overtime` fixture so the thing can be seen at all. Root cause was worse
 than "no clock": storm damage inherited a tell row with `minAmount: 5` while the ramp starts at 1,
-so the first 12 s of overtime drew *nothing*. **One edit-mode capture still owed** (see item 11).
+so the first 12 s of overtime drew *nothing*. **Capture verified 2026-07-28** (see item 11); the feel is Jake's.
 **2b. ~~Sim/render audit — the three cheap wins.~~ BUILT 2026-07-27** (`Design/sim-render-audit.md`,
 items A/C/D of its ranked arc, Jake's selection). `camera.fov` is a tuning field at last · the cast
 sigil now outlives its own payoff instead of closing at it · status flashes fire on ONSET, not on
 every re-application. All three are F1-revertible. **The measurement is the deliverable**: the audit
 also priced the framing question and found the *board shape* caps it, which is item 22.
+**2b. THE MUSTER RING — BUILT 2026-07-27 (late). VERIFY.** Deployment now paints the hexes each
+placed muster will catch: quiet outlines for every placed muster, filled for the selected hero.
+General over the law, not the Banneret — Cleric's Mercy Aura (r2) and Phalanx's Unbroken Line (r1)
+were equally invisible before this. One definition (`MechanicalRulePresenter.MusterSeats` +
+`RunController.IsDeployable`, 13 tests) so the board and the lock-in validator cannot disagree.
+**Board API capture-verified** (`Warband/MCP/Capture Muster Rings`); the `ShowDeploymentOnBoard`
+call into it has never run — no live run reached Deploy. **That is what VERIFY means here.**
+Open: overlapping musters share one gold, so whose ring is whose is not readable.
 **3. JAKE'S VERIFY PASS (item 1). ← NEXT, AND IT IS YOURS.** Both cheap feel wins have landed, so
 the pass now judges a build with the balloon halved, the storm visible, the sigils held, and the
 status strobe down ~26% in a cast-heavy fight.
@@ -53,10 +61,83 @@ The review measured the build against its own budget and found one large gap: **
 break the game* — actually lives in. Everything above it in this list is render and shell. It also
 absorbs **item 17** (Silence), and unlike items 4 and 18 it is **not** blocked behind the balance
 question the content doctrine parks until playtest #1. Target the twelve-family vocabulary proof.
-**6. Item 9 — the options screen.** The last P1 blocker on friends playtest #1 (item 6).
+**5b. THE PERSISTENT INSCRIPTION RAIL — SPEC'D BY JAKE 2026-07-27 after playing the Stilled Bell.**
+His words: *"we should take this from guildrun's book … a persistent icon rail somewhere (maybe top
+of the screen?) EVERYWHERE … during shop/UI as well. Then the icon should flash and draw a quick
+indicator to the affected units."* Supersedes the world-space TextMesh rail (hours old — delete it,
+keep its laws: coalescing, fold-driven pips, team-0 only, acquisition order).
+**Spec:** ① screen-space UI Toolkit strip, top of screen, in the SHELL's persistent layer so it
+survives Management/Wager/Deploy/Fight alike · ② one icon per owned Inscription (programmer-art
+glyphs in `PresentationCatalog` — 12 needed, no art dependency) · ③ hover/press tooltip = full rule
+via `MechanicalRulePresenter` (same copy as the Hourstone tool) · ④ counter pips under the icon
+(fold's `RuleCounters` in fight; static elsewhere) · ⑤ on `TriggerFired`: icon flash + a brief
+indicator line from icon to the affected unit's screen-projected position, coalescing under the
+passive-onset ration so cast-storms don't strobe · ⑥ fight bridge: `SkirmishController` owns both
+the shell surface and `ReplayPlayer`, so the event hook and world→screen projection live there.
+**Player laws only (settled with the v8 wire); enemy laws stay on the encounter reveal.**
+**REVISED BY JAKE 2026-07-27 before the build went deep:** the rail is a **limited-size icon TRAY**
+— compact fixed footprint collapsed, hover "opens" it like a **drawer on top**, and only inside the
+open drawer do individual icons give their tooltips. Use the existing `DrawerExpand`/`DrawerCollapse`
+cue pattern (sound + motion conventions come free). Collapsed tray: capped width, overflow as
+"+N". **IN COMBAT the tray is ALWAYS EXPANDED to the full rail — every icon visible, no hover
+needed (Jake 2026-07-27): you must be able to read activations at a glance while fighting.**
+Collapsed/hover-drawer behavior applies to the non-combat surfaces (Hall/Wager/Deploy).
+**⚠ VERIFICATION IS PART OF THE SPEC (Jake):** follow existing UI conventions (`UiEnvironment`
+sheets, accent classes, layout tokens), and prove with SCREENSHOTS that no existing page breaks —
+before/after captures of Management/Wager/Deploy/fight at the size matrix (1024x768@130%,
+1280x720, 1600x900, 2556x1317, phone), READ BY EYE, per the flex-shrink lesson. Expect rework.
+**Build note:** follow `WarbandBarView`'s exact pattern — constructed once in `RunShell.BuildUI`
+into `_safeAreaFrame` beside the Warband Shelf, shares `RuntimeTooltipService`; views never touch
+it (data via `RunShellModel`, ids→words in RunShell only). Icons: per-inscription glyphs are in
+`PresentationCatalog` (all 12, done). `InscriptionRailView.cs` exists and compiles — rework it to
+the tray/drawer shape rather than starting over. Fight flash/indicator: `SkirmishController` hears
+`TriggerFired` via the player's dispatch and projects unit→screen for the line; respect the
+passive-onset ration. The v1 world-space TextMesh rail in ReplayPlayer still awaits deletion.
+**5b PROGRESS 2026-07-27 late:** tray BUILT + wired (RunShell persistent layer, QA fixtures push
+seven laws, combat pins expanded). Smoke matrix before/after: baseline 14/15, after 13/15 — BOTH
+failures are the pre-existing `rail-full` header/Market overlap, now at 2 viewports because the
+market row gained a 5th card type (INSCRIPTION offers — the PARALLEL session's content, landed
+mid-run; their surface, flagged not fixed). Tray verified by eye on the contact sheet at every
+surface/viewport; two seed glyphs were font-tofu, swapped. FIGHT BRIDGE BUILT 2026-07-28 00:xx (`ReplayPlayer.LawDispatched`
+→ RunShell → Flash/pips/`InscriptionIndicatorLayer` lines; team-filtered by `RuleTeamOf`), v1
+world-text rail DELETED, `make check-client` green. POST-BRIDGE VERIFY DONE 2026-07-28 AM:
+smoke matrix **17/17 PASS** (`ui-qa/20260728-093053/`, six captures read by eye at both
+viewports) — the two pre-existing `rail-full` header/Market overlaps now PASS, fixed en route by
+item 24's header/market reshape; the tray reads correctly on Workbench/Wager/Deploy/Result.
+World-rail absence capture-proven (`McpCaptures/verify5b/hourstone_t24/t200.png` + a live
+world-TextMesh inventory — only StatusIconRow/feed/clock texts remain). LEFT: VERIFY-in-motion
+with Jake (drawer hover, flash/indicator feel).
+**6. ~~Item 9 — the options screen.~~ BUILT 2026-07-28 (see item 9). VERIFY in motion is Jake's** —
+the last P1 blocker on friends playtest #1 (item 6) is now a modal + three entry points, all seams
+pre-existing.
 **7. Then re-decide.** Standing candidates: item 1d (camera) · item 19 (measure a human) ·
 items 12, 13, 15's unspent event. Items 4 and 18 are one balance question wearing two hats, and the
 doctrine holds them until playtest #1.
+
+**24. WORKBENCH DOSSIER & ARMORY-DRAWER REDESIGN — BUILT + CAPTURE-VERIFIED 2026-07-28
+(overnight, Jake's directive). VERIFY: the in-motion feel pass is Jake's.** *"The dossier is
+quite crowded … per-type formats … remove the armory tab, keep it like a drawer on the
+footer."* Research-first (three UX reports: autobattler shops, card anatomy, progressive
+disclosure), decision in **`Design/workbench-dossier.md`**; full build/loop record in
+`Daily/2026-07-28.md`. Core moves: section ROLE (Primary/Deferred) replaces width/index
+demotion — deferred = compact row + hover, never hidden · signature-first hero dossiers ·
+rank-up gains as before→after rows (delta chips deleted) · spec options show the AUTHORED
+lexicon one-liner, full generated rule on hover (2026-07-28 AM — machine prose has no sentence
+break; Pikewall was the clipped repro; `market-rankup-long` is now the real Phalanx fork) ·
+stat rail leads the detail column · armory side column deleted → footer drawer band above the
+unit rail, Market always live, drawer-open dossier always compact · peek strip deleted
+(2026-07-28 AM, Jake) — the footer ARMORY chip is the one drawer handle, hint state-driven
+(`DROP TO UNEQUIP` / `OPEN DRAWER ▴` / `CLOSE DRAWER ▾`) · synthetic passive filler
+gone · fixes: comparison-cell overlap, `accent--choice`/`stilledbell` accents, RESERVE wrap,
+roster contract vs at-capacity warbands, 1024 cost-digit clip. **Workbench Full Matrix 68/70**
+(overnight round 11 `ui-qa/20260728-025334/`; morning round 3 `ui-qa/20260728-091422/`), the 2
+residual rows are a 2556×1317 subtitle measurement artifact — capture shows the text intact.
+⚠ Process laws from the loop are in the daily note: the matrix leaves play mode ON
+(stale-assembly stalls) · Hall base styles leak into `--workbench` scopes (`justify-content:
+center` cost five rounds) · the unfocused-Editor player-loop freeze is SOLVED —
+`Application.runInBackground` pinned in `WarbandUiQa` (2026-07-28 AM), full matrix ≈ 70 s. Deferred polish recorded in the note:
+weapon-tier augmented marking · WHEN/THEN trigger anatomy · text-budget CI · rank pips ·
+paradox badge · rule-delta rows clipped at drawer-open (info still on tile hover).
 
 **⚠ SESSION HYGIENE — UNRESOLVED AS OF 2026-07-27.** The tree carries **5031 insertions across 52
 files plus 29 untracked**, including the Workbench overhaul this board marks BUILT + UNITY-VERIFIED.
@@ -82,7 +163,8 @@ bot run victory **4 / 4 / 7** (stable/fraying/collapsing) · fight win 76% · na
 completed** · **4 of 6 node encounters FREE + FLAT at their own debut act** · all 3 bosses admit 3–4
 answer axes at spread 100 (**the healthiest content in the game — protect it in any balance pass**) ·
 `banneret` still chassis-dead at 13 avg vs berserker 75 · sim health clean (never-swung 0.00%,
-deadtime 1.81%) · **Inscriptions 5 of 24**. The three-act run, the shell, save/resume, the build and
+deadtime 1.81%) · **Inscriptions 12 of 24 — ADR 0026 wave 2 landed 2026-07-27** (was 5 at review
+time, and closing that gap was this review's whole point). The three-act run, the shell, save/resume, the build and
 the launcher are all real; **what is thin is the reason to replay it.**
 
 ---
@@ -127,8 +209,42 @@ the launcher are all real; **what is thin is the reason to replay it.**
     of consuming a detached keyword row. A dedicated Workbench-only full runner keeps this surface
     independently verifiable; its post-migration matrix is **65/65 PASS** with no scrolling or
     content/action overlap under `client/TempCaptures/ui-qa/20260727-202843/`.
-1c. **THE COMBAT RECAP — a comprehensive, polished post-fight report.** — **BUILT 2026-07-27,
-    PIXELS UNSEEN.** All three approved charts ship; what is missing is a look at them.
+1f. **Persistent Warband footer roster manipulation** — **BUILT, VERIFY.**
+    Stable-ID drag/drop now moves into open field/reserve slots and atomically swaps occupied
+    slots; Space/Escape provides keyboard placement, and the retained footer owns its drag ghost,
+    target semantics, and cancellation. `Warband.Run.Tests` 239/239 and the 59-script headless
+    client compile are green. Final gate: Unity console + by-eye `rail-open` fixture capture
+    (first attempt found the shared editor correctly leased by another session).
+1c. **THE COMBAT RECAP — a comprehensive, polished post-fight report.** — **BUILT + PIXEL-VERIFIED
+    2026-07-27, after shipping broken once.**
+    **⚠ READ THIS BEFORE ADDING ANYTHING TO THE RESULT GATE.** The first build was unreadable in a
+    real fight (Jake, `inbox/post-match-recaps/`). Root cause: **every element in UI Toolkit
+    defaults to `flex-shrink: 1`**, and the gate is capped at `max-height: 94%` of a 900px
+    reference viewport. The recap pushed content past that budget, so Yoga did not clip or
+    scroll — it **silently squashed every child**. 22px rows resolved to ~11px, their text spilled
+    out of the box, and even the *pre-existing* stat cards dropped their values outside their own
+    background. Nothing errored. **Everything with a fixed height in this panel is now
+    `flex-shrink: 0`**, so an overrun presents as visible overflow a contract can fail on.
+    **THE PROCESS LESSON, which cost more than the bug: a green layout contract is NOT evidence.**
+    It said PASS over a broken screen **twice**. ① The first contracts asserted min-font and
+    single-line width — blind to a vertical collapse, because the font never changed and nothing
+    clipped horizontally. ② After fixing that, the phone layout drew composition, timeline and the
+    recommendation *on top of each other* and still passed, because overlapping siblings are each
+    the right height and each inside the panel. Both were caught by **looking at the capture**.
+    `UiLayoutContract` is a regression net, not a substitute for eyes.
+    **Four more defects the captures caught, none of which any assertion would have:** the board's
+    own world-space end-of-fight readout drew *through* the gate (two post-fight surfaces at once —
+    now `ReplayPlayer.EndReadoutSuppressed`) · the QA fixture still printed the three death labels
+    the shipping path had dropped, so the capture rendered a screen the game no longer produces ·
+    the name label's own `overflow: hidden` clipped its descenders until given an explicit height ·
+    the exit buttons hung through the panel border while `RequireInside` on their *row* passed,
+    because the buttons overflow the row, not the row the panel.
+    **Verified 2026-07-27:** `Warband/UI QA/Run Result Gate Matrix` (new 5-shot mode — the 82-shot
+    full matrix is too slow to iterate one surface against, which is why nobody ran it, which is
+    why this shipped) **PASS at 1024x768/130%, 1280x720, 1600x900, 2556x1317 and phone**, with the
+    fixture at a **six-hero worst case**; four of the five captures inspected by eye.
+    **Still unseen: the double-readout fix**, which needs a real fight — the fixture runs no battle.
+    All three approved charts ship.
     **Built:** `Warband.Sim/CombatRecap.cs` — the fold from `FightSummary` to the exact rows,
     segments and marker positions the panel draws (contribution · composition · timeline), with
     **8 headless tests** (`CombatRecapTests`). `CombatRecapPanel.cs` + `CombatRecapStyles.uss`
@@ -242,12 +358,29 @@ numbers are load-bearing references, so finished items leave a hole rather than 
    and the public site are live; the launcher pulls the real build through the real site. Two shader
    landmines were real and are now guarded in the build itself. Remaining: one visual recheck of the
    corrected build before publishing it (folds into item 1's pass).
-9. **No player-facing options at all** — **SPEC'D (small). #4 in the agreed order.** Audio
-   enable/volume live in `HubPresentation.json`, reduced motion in a dev-key `PlayerPrefs` toggle,
-   battle speed in `tuning.json` behind F1. **Re-verified 2026-07-27: no options/settings view exists
-   in the client.** A friend on their own machine cannot mute the game, slow the fight down, or turn
-   motion off. Every value is already plumbed and hot-reloadable — this is a screen over existing
-   seams, not a system.
+9. **No player-facing options at all** — **BUILT 2026-07-28, machine-gated green. VERIFY: the
+   in-motion click-through (menu button, fight button, Esc, audible sliders, live speed change) is
+   Jake-only — Play Mode.** The screen is a MODAL over the shell's persistent layer, so one
+   implementation serves Menu, Hall and fight: `OptionsPanel.cs` (scrim + `.modal`, applies
+   instantly, no OK/Cancel) over `PlayerOptions.cs` (PlayerPrefs store; the only new state).
+   Entries: OPTIONS on the menu · OPTIONS beside SKIP on the fight overlay · Esc everywhere
+   (accepted collision: Esc during an armed keyboard drag also opens it — Esc again closes).
+   **Seams, none invented:** sound on/off + Master/Interface/Battle sliders drive the mixer's
+   exposed params via `SfxPlayer.SetBusVolume` (**param names verified against the real
+   `GameMixer` asset with a negative control** — a wrong name is a SILENT no-op, the one failure
+   mode this build could not afford) · mute = MasterVol −80 dB, so the per-surface enables in
+   tuning.json/HubPresentation.json stay shipped defaults · reduced motion reuses the
+   `ui.reducedMotion` key + the Flow Lab toggle's exact Rebuild seam · battle speed is a
+   0.5–2× multiplier over tuning's `playback.ticksPerSecond` at ReplayPlayer's two read sites;
+   a live fight re-reads it through `ReapplyTuning()` (the F1 cockpit's proven path).
+   **Verified:** `make check-client` 61 scripts 0 errors · smoke matrix now 18 items
+   (`options-nominal` surface + `EditorOptionsLayoutReport` contracts; loaders close the modal so
+   it cannot haunt later captures) — **18/18 PASS**, capture read by eye
+   (`ui-qa/20260728-095256/`) · scrim measured correct (0.78 alpha composited in LINEAR space —
+   it reads lighter than gamma intuition; same class as every existing modal). **Full matrix run
+   same day: 90/92** (`ui-qa/20260728-095949/` — the 2 fails are the documented pre-existing
+   2556×1317 subtitle measurement artifact, byte-for-byte the same rows as item 24's baseline);
+   options PASS at all 5 viewports, phone + 1024-expanded captures read by eye.
 
 ### P2 — combat legibility (item 1's actual target), cheap, high suspicion
 10. **The impact `punch` balloon** — **BUILT 2026-07-27. VERIFY: the number is measured, the FEEL is
@@ -320,11 +453,11 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     blast radius is wider than this one clock.
     **Fixed:** `_clock = tick` in `BuildLoadedPreview`. Hand-checked against the formula
     (t=700 → `1:10` · t=800 → `THE WANING IN 0:10` · t=950 → `THE WANING — 2/TICK`).
-    **STILL NOT SEEN.** Unity could not reload assemblies to pick the fix up: Codex's in-flight
-    `Assets/Editor/WarbandMixerTools.cs` fails with `CS0122: 'SfxPlayer' is inaccessible` — the
-    documented Assembly-CSharp-Editor-cannot-see-`internal` trap in this file's own gotcha list —
-    and one failing assembly blocks the whole reload. **Re-run the overtime capture at t=800/950
-    once that compiles; it is now a two-minute job.** The feel is still Jake's.
+    **SEEN 2026-07-28 AM.** Edit-mode captures at t=800 (`THE WANING IN 0:10`, warning gold) and
+    t=950 (`THE WANING — 2/TICK`, storm red) verified in pixels AND in the live world-text
+    inventory (`client/McpCaptures/verify5b/`) — the readout matches the hand-checked formula at
+    both states, so the `_clock = tick` fix is confirmed in the real capture path. The blocking
+    `WarbandMixerTools.cs` CS0122 is gone (step 4 landed). The feel is still Jake's.
 
 ### P3 — settled laws the build does not yet keep
 12. **Enemy disclosure stops short of the deep inspector.** — **partly addressed.**
@@ -363,8 +496,13 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     pool down to address run length; if the cliff hurts, it hurts real playtesters first (ADR 0001).
 
 ### New 2026-07-27 (promoted out of footnotes during the hard cut)
-17. **Silence is disclosed but unplayable — a shipped honesty defect.** — **SPEC'D. Jake decided the
-    lever 2026-07-27: an INSCRIPTION.** `grep StatusKind.Silence` across `Warband.Content/` returns
+17. **Silence is disclosed but unplayable — a shipped honesty defect.** — **DONE 2026-07-27:
+    shipped as ADR 0026 catalog #10, "The Stilled Bell"** (reaction shape: "when an enemy casts,
+    Silence the caster 30 ticks" — zero new selector machinery; the Mana-selector build note below
+    only applies if it ever becomes a preemptive opener). `roster.md`'s false claim fixed same day.
+    Tested (content tests + presenter grammar) and on the badge rail in the `hourstone` fixture.
+    **PLAYED by Jake same evening — "worked great." First Inscription verified in a real run.
+    His verdict on the same run: the PRESENTATION lags the mechanics → feeds item 1's fix list.** `grep StatusKind.Silence` across `Warband.Content/` returns
     **zero** hits in Kits, Weapons, or Catalog (re-verified 2026-07-27). Players have Stun only
     (Shield Slam, Banner of the Held Line). Meanwhile authored encounters name Silence as an intended
     answer, **in player-facing disclosure text on two of three act bosses**:
@@ -475,8 +613,16 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     (Audit headline **H** = the combat recap, already ranked as **item 1c** — no new item.)
 
 23. **A whole sensory channel ships at zero — and the tooling that would fix it does not exist**
-    (audit headline **F**) — **BUILD (steps 0–2), researched + planned 2026-07-27 →
-    `Design/audio.md`.** A measurement pass over all 35 clips replaces "the stings were bad" with
+    (audit headline **F**) — **BUILT 2026-07-27, steps 0–6. VERIFY: machine-gated green, NEVER
+    HEARD.** Plan + full record: `Design/audio.md`. Step 7 (volume sliders) is a screen and belongs
+    to **item 9**, not here.
+    **Gate state: `make sfx-lint` PASSES against shipped `Resources/`** — 0 violations, 20/20 board
+    ids resolve, all 6 UI families present, no silent weapons.
+    **What VERIFY means here:** nobody has heard the mix in motion. Open questions only ears can
+    answer — does the −6 dB duck read on a death · do crits cut through at ~9.6 onsets/s · is the
+    UI tick right at 41–51 ms · is `State` (the tightest bus at 1.6/3) audibly crowded in overtime.
+    Folds into item 1's pass.
+    **Original diagnosis, kept because it is the argument for the gate:** A measurement pass over all 35 clips replaces "the stings were bad" with
     three separable, measurable defects. **UI:** 14 of 18 clips carry **0.5–1.0 s** of continuous
     audible content (a click is 40–120 ms; `route_1` is a full second for *moving a resource*), the
     level spread across the set is **20 dB** (`error_1` at −20.7 dBFS is the quietest thing in it,
@@ -586,9 +732,8 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     **Swept 3.49 MB of dead weight** — 15 superseded clips deleted from `Resources/`, which ships
     everything it contains regardless of references (`hall_ambience` alone was 1.4 MB of a bed D1
     cut). UI 11 clips/360 KB · board 20 clips/1.1 MB.
-    **ONLY STEP 7 LEFT, and it is not an audio job:** the mixer params exist and
-    `SfxPlayer.SetBusVolume` drives them, so wiring Master/Ui/Board sliders is a screen — it belongs
-    to **item 9**.
+    **STEP 7 LANDED 2026-07-28 with item 9:** Master/Interface/Battle sliders + the sound switch
+    drive the mixer through `SfxPlayer.SetBusVolume`; param names verified against the asset.
     **CAPS PRICED + A ROUTING BUG FOUND 2026-07-27.** `make sfx-density` now also reports per-bus
     pressure against every fixture. Building it exposed that **the per-weapon hit sounds sit on
     `EventKind.Attack` (the swing), not `DamageDealt`** — `Damage/Attack` has no sound row at all —
@@ -636,21 +781,29 @@ numbers are load-bearing references, so finished items leave a hole rather than 
    · endless seam → item 13 · defeat/retry → item 16 · encounter sharpness → item 18.
    **Parked extrapolation (2026-07-24, never taken up):** the **Dying Procession** — an escalation of
    the Last Oath's bonded pair — remains a possible extrapolation, not current scope.
-5a. **Hourstone / Inscription engine layer** — **BUILD (acquisition/UI seed integrated; engine
-    catalog next).** The expedition carries one Hourstone; every distinct Inscription acquired
-    remains active for the run with no slot cap. Player-facing presentation is a compact top-screen
-    badge rail driven by replay events: inspectable badges pulse on activation, counters expose
-    progress, and high-frequency triggers coalesce rather than flash-spam. Catalog target is 24,
-    staged as five migrated seeds → twelve-family vocabulary proof → twenty-four engine proof.
-    Hybrid acquisition is live: 20%-weighted 7-Sand Workshop offers plus visible one-from-three
-    Hourstone Interlude and boss rewards. **The Hourstone tool shows owned rules; the combat
-    badge/counter rail remains unbuilt.** Before catalog expansion, settle the per-root activation
-    guard, Bearer of the Mark replacement, and the first twelve contracts. Legacy `Banner*` code names
-    are migration debt. **Item 17 (Silence) should land as part of this catalog work.**
+5a. **Hourstone / Inscription engine layer** — **WAVE 2 BUILT 2026-07-27 (ADR 0026). VERIFY in
+    motion folds into item 1's pass; wave 3 (12→24) gated on the twelve staying legible in play.**
+    Shipped this pass, all machine-gated green (`make test` 492, `make baseline` explained,
+    `make check-client`, capture-reviewed):
+    ① sim machinery — once-per-root guard (Inscriptions only), `EveryN` counters with
+    `RuleProgress` pips on the wire, `AdjacentToAlly` selector, `HealToShield` status,
+    `TriggerFired` hook; baseline was **byte-identical** for the guard alone. ② the twelve —
+    five seeds renamed (First Bell/Closed Gate/Cinder Law/Bronze Testament/Chorus of Hours) +
+    tithe/woundclock/thirdchime/ashbequest/stilledbell/shoulder/bloodless; Paradoxes reachable
+    via boss rewards only. ③ Living Inscription replaced Bearer of the Mark (`DoublesBanners`
+    deleted everywhere). ④ full `Banner*`→`Inscription*` rename; RuleIds are `inscription.*`;
+    replay v8 carries per-rule owning team. ⑤ **the combat badge rail is BUILT** — left-edge
+    world-text badges, team-0 laws only, counter pips fold-driven (capture: `hourstone` fixture,
+    "The Third Chime 2/3"), pulse+coalesce on TriggerFired. **Unverifiable from a session: the
+    pulse/coalesce glow in motion (Play Mode is Jake-only).** In-fight full-rule inspection
+    deferred — the Hourstone Table remains the disclosure surface. Fixed en route: `PlayBattle`
+    never carried the result's rule table, so LIVE fights resolved passive names against a stale
+    file table (item 20 latent). New render fixture: `hourstone` (5 player + 1 enemy law).
+    Numbers all placeholder by doctrine — shapes tune in review once heard/seen in play.
 6. **Friends playtest #1** — the milestone that ends arguments (ADR 0001), after the PvE vertical
    slice. Distribution/launcher work is allowed only as needed to put that slice in friends' hands.
-   **Mechanically, only item 9 still blocks it** — items 7 and 8 are done and the site is live.
-   No date until Jake calls it.
+   **Mechanically nothing blocks it as of 2026-07-28** — items 7, 8 and 9 are built and the site
+   is live; item 9's in-motion verify folds into item 1's pass. No date until Jake calls it.
 
 ## Client — architecture, and where the bodies are buried
 Bring-up (item 4), render polish (4b) and the PoC shell (4c) are built and verified; full history in
@@ -717,9 +870,10 @@ ADR 0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusab
 several encounters, three act bosses, one event) · shops + placement · crude post-win endless seam
 that may reuse and scale the slice · programmer art, no sound.
 
-**Measured against the cap, 2026-07-27** (`make baseline`, fingerprint `3dba11673c26e858`):
+**Measured against the cap, 2026-07-27 evening** (`make baseline`, fingerprint `b8640a3ea7cd360b` —
+moved by ADR 0026: hash schema + twelve Inscriptions + Living Inscription, saves invalidated once):
 8 chassis ✓ · 78 spec nodes · 11 weapons ✓ · **5 trinkets** (this line said "1 trinket" until today —
-ADR 0022 added four and the budget was never updated) · **5 Inscriptions of 24** ← *the one place the
+ADR 0022 added four and the budget was never updated) · **12 Inscriptions of 24** ← *was 5 — the one place the
 build is far under its own budget, and it is the layer ADR 0016's identity depends on* ·
 7 enemy unit types · 6 node encounters · 3 act bosses · **1 event still unspent** (see item 15).
 Random hero-kits-as-monsters remain scaffolding, not acceptable final PvE content. Do not expand
@@ -767,6 +921,10 @@ content doctrine until playtest #1.
   axis (its disclosed answer never happens) · `reach` cannot clear the act-1 boss at all.
 
 ## Done — one line each; full detail in `roadmap-done-archive.md`
+- **2026-07-27** — Muster spacing/responsive pass: duplicate role/context copy removed, facts and
+  authored rule metadata reflowed, card-width-owned compact composition added, and a dedicated
+  six-capture 1024–3440/copy-stress matrix added; **6/6 structural PASS and pixels reviewed** at
+  `client/TempCaptures/ui-qa/20260727-233852/`.
 - **2026-07-27** — Responsive UI foundation: shared 1600×900 height-locked panel profile, root-owned safe area + portrait guard, independent geometry/form-factor/input/motion classes, semantic type/spacing/hit tokens, route-scoped notices, responsive dossier pages, and a deterministic 57-case Play Mode matrix across Workbench/Wager/Deployment/Result; 57/57 structural contracts PASS. **Uncommitted.**
 - **2026-07-27** — Item 21, the in-fight inspector (476 tests, replay v7): identity line, placement
   facts, targeting rule, and the passive roster with live conditionals — plus `ContentLexicon.Rule`

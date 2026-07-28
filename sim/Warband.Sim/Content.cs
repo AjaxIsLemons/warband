@@ -37,6 +37,13 @@ namespace Warband.Sim
         AnyEnemyHasStatus,         // Cond.Status — state cond, StatRule-legal (Undying Zeal)
         TargetInFieldOfOwner,      // event target stands in a field the owner created
                                    // (Choking Smoke, Stoke the Coals; "in your fields" banners)
+        EventRuleIsTeamRule,       // TriggerFired events only: the rule that fired is a TEAM rule
+                                   // (an Inscription), not a unit passive. The hook Living
+                                   // Inscription rides (ADR 0026) — and the guard that keeps it
+                                   // from waking itself off its own announcement.
+        TargetIsEnemyOfOwner,      // the target-side twin of SourceIsEnemyOfOwner. Negated it means
+                                   // "an ally OR the owner" — which TargetIsAllyOfOwner cannot say,
+                                   // and team rules about "any ally" need (the rep is somebody).
     }
 
     public sealed class Cond
@@ -70,6 +77,8 @@ namespace Warband.Sim
         public bool SkipCtxTarget;     // line kinds: skip the through-target itself (Overreach's "behind")
         public int BelowHpPct;         // >0: only units under this HP% (Second Wind's triage filter)
         public StatusKind? MustHave; // filter: only units carrying this status ("nearest Burning enemy")
+        public bool AdjacentToAlly;  // filter: only units with a living ally on an adjacent hex
+                                     // ("mustered beside an ally" — Shoulder to Shoulder, ADR 0026)
 
         public Selector Clone() => (Selector)MemberwiseClone();
     }
@@ -129,6 +138,17 @@ namespace Warband.Sim
         public EventKind On;
         public List<Cond> When = new List<Cond>();   // ANDed; empty = always
         public List<EffectDef> Do = new List<EffectDef>();
+
+        /// <summary>ADR 0026 cascade law: at most one activation per root event (one depth-0
+        /// event's whole cascade tree). Effects are always child events, so this also bans a rule
+        /// waking itself. Stamped by the CONTENT layer on Inscription team triggers — the engine
+        /// never assumes it, so kit passives and encounter rules keep their exact behavior.</summary>
+        public bool OncePerRoot;
+
+        /// <summary>&gt;1: the trigger fires on every Nth matching event instead of every one
+        /// ("every third allied cast" — the Counters family). Each counted match goes on the wire
+        /// as RuleProgress so the badge rail can show pips without counting for itself.</summary>
+        public int EveryN;
 
         /// <summary>Render identity — WHICH passive this is. Stamped automatically by
         /// <see cref="Loadout.Compose"/> from the content that contributed the rule (chassis id,

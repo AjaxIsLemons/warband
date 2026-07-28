@@ -39,6 +39,7 @@ internal static class UiStyleCatalog
         "UI/MechanicPresentationStyles",
         "UI/WorkbenchStyles",
         "UI/CombatRecapStyles",
+        "UI/InscriptionRailStyles",
     };
 
     public static void AttachShipping(VisualElement root, string owner)

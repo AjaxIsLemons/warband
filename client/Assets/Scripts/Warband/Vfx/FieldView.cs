@@ -83,6 +83,24 @@ public sealed class FieldView
     private float _age, _pulse, _expireT;
     private bool _expiring;
 
+    /// <summary>Paint this footprint in a color the FieldTune palette does not assign to any
+    /// flavor. Deployment's muster rings borrow this view — they are the same three-layer ground
+    /// sentence, but they are not sim fields and must not read as one.</summary>
+    public Color? ColorOverride;
+
+    /// <summary>Alpha scale on the RIM, 1 = the authored look.</summary>
+    public float Emphasis = 1f;
+
+    /// <summary>
+    /// Alpha scale on the FLOOR FILL, applied on top of <see cref="Emphasis"/>.
+    ///
+    /// Split from the rim because deployment needs quiet and loud to differ in KIND, not in
+    /// opacity. Several musters can overlap most of a deploy half at once; dimming their floors
+    /// equally just makes one large dim wash where the boundaries used to be. Dropping the floor to
+    /// zero leaves outlines, which stay legible however many of them cross.
+    /// </summary>
+    public float FillEmphasis = 1f;
+
     /// <summary><paramref name="startAge"/> is how long this field has ALREADY existed in FX
     /// seconds. Live playback passes ~0 (the field just appeared), but a frozen scrub builds every
     /// field the fold currently holds at once — without this, a capture at tick 60 would show a
@@ -276,7 +294,7 @@ public sealed class FieldView
             var p = _fills[i];
             if (!p.T.gameObject.activeSelf) continue;
             var c = color;
-            c.a = idle * floor * fade * boost;
+            c.a = idle * floor * fade * boost * Emphasis * FillEmphasis;
             p.Mpb.SetColor(ColorId, c);
             // Per-hex phase offset: every overlay carries the same unit UVs, so without this the
             // noise would run in lockstep across the footprint and the field would read as one
@@ -294,7 +312,7 @@ public sealed class FieldView
             var p = _rims[i];
             if (!p.T.gameObject.activeSelf) continue;
             var c = color;
-            c.a = fx.fieldEdgeAlpha * fade * rimBoost * Flicker(look, p.H);
+            c.a = fx.fieldEdgeAlpha * fade * rimBoost * Flicker(look, p.H) * Emphasis;
             p.Mpb.SetColor(ColorId, c);
             p.Mpb.SetFloat(RadiusId, RimRadius);
             p.Mpb.SetFloat(ThicknessId, look.Thickness);
@@ -326,6 +344,7 @@ public sealed class FieldView
 
     private Color ColorFor(TuningData data)
     {
+        if (ColorOverride.HasValue) return ColorOverride.Value;
         var f = data != null ? data.fields : new FieldTune();
         switch (_flavor)
         {

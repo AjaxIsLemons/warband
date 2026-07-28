@@ -16,6 +16,7 @@ internal sealed class ResultGateView
     private readonly Label _heading;
     private readonly Label _summary;
     private readonly VisualElement _stats;
+    private readonly VisualElement _actionsRow;
     private readonly CombatRecapPanel _recap;
     private readonly VisualElement _deaths;
     private readonly Label _recommendation;
@@ -71,6 +72,7 @@ internal sealed class ResultGateView
         _panel.Add(_recommendation);
 
         var actionsRow = new VisualElement();
+        _actionsRow = actionsRow;
         actionsRow.AddToClassList("result-gate__actions");
         _watchAgain = new Button(() => _actions.WatchFightAgain?.Invoke())
         {
@@ -158,9 +160,39 @@ internal sealed class ResultGateView
         UiLayoutContract.RequireWrappedTextFits(report, Root, "result-gate__summary");
         UiLayoutContract.RequireWrappedTextFits(report, Root, "result-gate__death");
 
-        // The recap adds three charts to a panel that is contract-bound NOT to scroll, so the
-        // thing most likely to break is height and the second most likely is a clipped number.
+        // ⚠ HEIGHT FIRST. The 2026-07-27 break was a VERTICAL collapse: the panel ran past its
+        // max-height and Yoga's default flex-shrink squashed every child, so 22px rows resolved
+        // to ~11px and their text spilled out of the box. The min-font and text-fits checks below
+        // were blind to it — the font never changed and nothing clipped horizontally. These
+        // height assertions are the ones that fail when it happens again.
+        // Each minimum is the USS design height MINUS 1px. PanelSettings scales this document
+        // (1600x900 reference, match=1), and layout rounds to device pixels, so a 24px row
+        // measures 23.9px at 2556x1317 and 23.1px at 1024x768 while resolving exactly at
+        // scale 1.0. That 1px of slack is rounding; it is not collapse — the real bug resolved
+        // 22px rows at 11px, a 50% shortfall this still fails on loudly.
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-row", 21f);
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-row__track", 11f);
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-comp", 15f);
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-track", 21f);
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-key", 17f);
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap-losses", 17f);
+        // The columns must be as tall as what they hold. This is the check that catches a
+        // zero-height flex column — the phone break where composition, timeline and the
+        // recommendation all drew on top of each other while every other assertion passed,
+        // because overlapping siblings are still the right height and still inside the panel.
+        UiLayoutContract.RequireMinimumHeight(report, Root, "recap__col", 55f);
+        // The gate's own boxes squashed too — the stat card spilled its value outside its
+        // background — so the pre-existing elements get the same guard.
+        UiLayoutContract.RequireMinimumHeight(report, Root, "result-stat", 59f);
+
         UiLayoutContract.RequireInside(report, _recap.Root, _panel, "combat recap");
+        // The exit buttons are the LAST thing in the panel, so they are where a height overrun
+        // now surfaces: with flex-shrink pinned off, overflow pushes them through the bottom
+        // border instead of quietly squashing the charts above them.
+        // Assert the BUTTONS, not their row — the buttons overflow the row, so checking the row
+        // reported PASS while they were visibly hanging through the panel's bottom border.
+        UiLayoutContract.RequireInside(report, _actionsRow, _panel, "result actions");
+        UiLayoutContract.RequireClassInside(report, Root, "btn", _panel);
         UiLayoutContract.RequireClassInside(report, Root, "recap-row", _panel);
         UiLayoutContract.RequireMinimumFont(report, Root, "recap-row__name", 13f);
         UiLayoutContract.RequireMinimumFont(report, Root, "recap-row__value", 13f);

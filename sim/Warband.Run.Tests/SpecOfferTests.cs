@@ -211,7 +211,12 @@ namespace Warband.Run.Tests
             Assert.NotEmpty(Kits.CandidateNodes);
             foreach (string id in Kits.CandidateNodes.Keys)
                 Assert.False(Kits.Nodes.ContainsKey(id), $"{id} is both live and candidate");
-            Assert.Equal("3dba11673c26e858", new Catalog().ContentVersion);
+            // Moved 2026-07-27 (ADR 0026): the hash schema grew the new mechanical trigger/selector
+            // fields, the catalog grew from five to twelve Inscriptions, and Living Inscription
+            // replaced Bearer of the Mark — one deliberate, save-invalidating move.
+            // Moved again 2026-07-27: the Banneret's Company became a placement roster (Mustered)
+            // instead of a live radius, which rewrote Rally and four of his nodes.
+            Assert.Equal("a6d4b52f6b8d824f", new Catalog().ContentVersion);
         }
 
         [Fact]

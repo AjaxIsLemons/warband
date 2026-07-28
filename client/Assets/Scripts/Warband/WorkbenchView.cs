@@ -179,17 +179,13 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
     private readonly Button _continue;
     private readonly VisualElement _market;
     private readonly Label _marketStatus;
-    private readonly Button _marketCollapsed;
-    private readonly Label _marketCollapsedStatus;
     private readonly Button _reroll;
     private readonly VisualElement _armory;
     private readonly Label _armoryStatus;
     private readonly Label _armoryPage;
     private readonly Button _armoryPrev;
     private readonly Button _armoryNext;
-    private readonly Button _armoryOpen;
     private readonly Button _armoryClose;
-    private readonly Label _armoryHandleCount;
     private readonly VisualElement _armoryGrid;
     private readonly VisualElement _armoryEmpty;
     private readonly Label _feedback;
@@ -231,17 +227,13 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         _continue = Required<Button>(_root, "continue");
         _market = Required<VisualElement>(_root, "market");
         _marketStatus = Required<Label>(_root, "market-status");
-        _marketCollapsed = Required<Button>(_root, "market-collapsed");
-        _marketCollapsedStatus = Required<Label>(_root, "market-collapsed-status");
         _reroll = Required<Button>(_root, "reroll");
         _armory = Required<VisualElement>(_root, "armory");
         _armoryStatus = Required<Label>(_root, "armory-status");
         _armoryPage = Required<Label>(_root, "armory-page");
         _armoryPrev = Required<Button>(_root, "armory-prev");
         _armoryNext = Required<Button>(_root, "armory-next");
-        _armoryOpen = Required<Button>(_root, "armory-open");
         _armoryClose = Required<Button>(_root, "armory-close");
-        _armoryHandleCount = Required<Label>(_root, "armory-handle-count");
         _armoryGrid = Required<VisualElement>(_root, "armory-grid");
         _armoryEmpty = Required<VisualElement>(_root, "armory-empty");
         _feedback = Required<Label>(_root, "feedback");
@@ -276,14 +268,11 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         RegisterTarget("workbench-dossier", _inspector.Root);
         RegisterTarget("workbench-armory", _armory);
         RegisterTarget("workbench-market", _market);
-        RegisterTarget("workbench-market-collapsed", _marketCollapsed);
         RegisterTarget("feedback", _feedback);
 
         _continue.clicked += () => _actions.Advance?.Invoke();
         _reroll.clicked += () => _actions.Reroll?.Invoke();
-        _armoryOpen.clicked += () => _actions.OpenLoadout?.Invoke("");
         _armoryClose.clicked += () => _actions.CloseLoadout?.Invoke();
-        _marketCollapsed.clicked += () => _actions.CloseLoadout?.Invoke();
         _armoryPrev.clicked += () => ChangeArmoryPage(-1);
         _armoryNext.clicked += () => ChangeArmoryPage(1);
         _root.RegisterCallback<KeyDownEvent>(OnKeyDown, TrickleDown.TrickleDown);
@@ -310,9 +299,8 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         int live = 0;
         foreach (MarketOfferCardModel offer in model.MarketOffers)
             if (!offer.Sold) live++;
-        string marketCopy = $"{live} LIVE OFFER{(live == 1 ? "" : "S")} · SELECT FOR FULL DOSSIER";
-        _marketStatus.text = marketCopy;
-        _marketCollapsedStatus.text = marketCopy;
+        _marketStatus.text =
+            $"{live} LIVE OFFER{(live == 1 ? "" : "S")} · SELECT FOR FULL DOSSIER";
         _marketCards.Bind(model.MarketOffers);
         if (model.RerollCost >= 0)
             MechanicPresentation.BindCurrencyButton(
@@ -324,15 +312,15 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         _feedback.text = model.Feedback;
         _feedback.EnableInClassList("workbench-feedback--error", model.FeedbackIsError);
         SetDisplayed(_feedback, !string.IsNullOrWhiteSpace(model.Feedback));
-        SetDisplayed(_market, !drawerOpen);
-        SetDisplayed(_marketCollapsed, drawerOpen);
+        // The Market never yields to the drawer: the armory opens as a footer band under the
+        // dossier, so browsing and equipping are one workspace (Design/workbench-dossier.md).
+        // Opening lives on the warband bar's ARMORY chip — the drawer sits directly above it.
         SetDisplayed(_armory, drawerOpen);
-        SetDisplayed(_armoryOpen, !drawerOpen);
         if (_drawerStateInitialized && drawerOpen != _lastDrawerOpen)
         {
             if (drawerOpen)
                 UiPolishSignals.Emit(UiPolishSignals.Cue.DrawerExpand,
-                    sourceId: "workbench-market-collapsed",
+                    sourceId: "workbench-market",
                     targetId: "workbench-armory", tone: UiFeedbackTone.Preview);
             else
                 UiPolishSignals.Emit(UiPolishSignals.Cue.DrawerCollapse,
@@ -390,7 +378,6 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
 
         int pages = ArmoryPageCount();
         _armoryStatus.text = count == 1 ? "1 STORED ITEM" : $"{count} STORED ITEMS";
-        _armoryHandleCount.text = count == 1 ? "1 ITEM" : $"{count} ITEMS";
         _armoryPage.text = pages <= 1 ? "" : $"{_armoryPageIndex + 1} / {pages}";
         _armoryPrev.SetEnabled(_armoryPageIndex > 0);
         _armoryNext.SetEnabled(_armoryPageIndex + 1 < pages);
@@ -534,7 +521,7 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         VisualElement rankUpBody = _inspector.Root.Q<VisualElement>("rank-up-body");
         VisualElement ladder = _inspector.Root.Q<VisualElement>("rank-up-ladder");
         VisualElement options = _inspector.Root.Q<VisualElement>("rank-up-options");
-        VisualElement pager = _inspector.Root.Q<VisualElement>("page-nav");
+        VisualElement deferred = _inspector.Root.Q<VisualElement>("deferred");
         List<VisualElement> inlineTraits =
             _inspector.Root.Query<VisualElement>(
                 className: "wb-trait-chip--inline").ToList();
@@ -556,7 +543,7 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
             $"viewport={_root.resolvedStyle.width:0.#}x{_root.resolvedStyle.height:0.#};" +
             $"scale={scale:0.###};classes={string.Join(",", _root.GetClasses())};" +
             $"market={Bounds(marketGrid)};minArt={minArt:0.#};" +
-            $"rankUp={Visible(rankUpBody)};pager={Visible(pager)};" +
+            $"rankUp={Visible(rankUpBody)};deferred={VisibleChildren(deferred)};" +
             $"tiers={VisibleChildren(ladder)};options={VisibleChildren(options)};" +
             $"inlineTraits={inlineTraits.Count};semanticText={semanticTokens.Count};" +
             $"detachedKeywords={detachedKeywords.Count}";
@@ -572,8 +559,6 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         VisualElement dossier = Required<VisualElement>(_root, "dossier-frame");
         VisualElement inspectorContent =
             _inspector.Root.Q<VisualElement>("content");
-        VisualElement inspectorPageNav =
-            _inspector.Root.Q<VisualElement>("page-nav");
         VisualElement inspectorTraitTab =
             _inspector.Root.Q<VisualElement>("page-traits");
         VisualElement inspectorBody =
@@ -582,6 +567,8 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
             _inspector.Root.Q<VisualElement>("actions");
         VisualElement inspectorTags =
             _inspector.Root.Q<VisualElement>("tags");
+        VisualElement inspectorDeferred =
+            _inspector.Root.Q<VisualElement>("deferred");
         VisualElement rankUpBody =
             _inspector.Root.Q<VisualElement>("rank-up-body");
         VisualElement rankUpLadder =
@@ -595,10 +582,25 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
         UiLayoutContract.RequireAbove(report, header, _market, "header / Market");
         UiLayoutContract.RequireAbove(report, _market, body, "Market / dossier body");
         UiLayoutContract.RequireInside(report, dossier, body, "dossier");
-        UiLayoutContract.RequireAbove(
-            report, inspectorSubtitle, inspectorStats, "dossier subtitle / stats");
-        UiLayoutContract.RequireInside(
-            report, inspectorPageNav, inspectorContent, "dossier page navigation");
+        if (inspectorStats != null &&
+            inspectorStats.resolvedStyle.display != DisplayStyle.None)
+            UiLayoutContract.RequireInside(
+                report, inspectorStats, inspectorContent, "dossier stat rail");
+        // The Market must stay live while the drawer is open — the drawer and the market
+        // share one workspace now, never swap (Design/workbench-dossier.md).
+        if (_armory.resolvedStyle.display != DisplayStyle.None)
+        {
+            if (_market.resolvedStyle.display == DisplayStyle.None)
+                report.Fail("Market hidden while the Armory drawer is open");
+            UiLayoutContract.RequireInside(report, _armory, body, "Armory drawer");
+            UiLayoutContract.RequireAbove(
+                report, dossier, _armory, "dossier / Armory drawer");
+        }
+        if (inspectorDeferred != null &&
+            inspectorDeferred.resolvedStyle.display != DisplayStyle.None)
+            UiLayoutContract.RequireClassInside(
+                report, _inspector.Root, "wb-deferred-row",
+                inspectorBody, inspectorActions);
         if (inspectorBody != null && inspectorActions != null &&
             inspectorBody.worldBound.yMax > inspectorActions.worldBound.yMin + 1f)
             report.Fail("dossier detail runs behind its pinned actions");
@@ -622,8 +624,6 @@ internal sealed class WorkbenchView : IRunScreenView, IRunScreenLifecycle, IDisp
                 report, rankUpBody, inspectorContent, "Rank Up body");
             UiLayoutContract.RequireAbove(
                 report, rankUpBody, inspectorActions, "Rank Up body / pinned actions");
-            UiLayoutContract.RequireHidden(
-                report, inspectorPageNav, "Rank Up detail pager");
             UiLayoutContract.RequireVisibleChildCount(
                 report, rankUpLadder, 3, "Rank Up B/A/S ladder");
             UiLayoutContract.RequireVisibleChildCount(

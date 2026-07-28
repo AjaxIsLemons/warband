@@ -1004,6 +1004,13 @@
     min-height: 48px;
 }
 
+.fight-options {
+    position: absolute;
+    right: 170px;
+    bottom: 22px;
+    min-height: 48px;
+}
+
 .fight-inspector-scrim {
     background-color: rgba(2, 5, 9, 0.78);
 }

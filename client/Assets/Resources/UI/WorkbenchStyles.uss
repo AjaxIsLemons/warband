@@ -59,7 +59,6 @@
 
 .workbench-header__act,
 .workbench-section-heading__meta,
-.workbench-market-collapsed__meta,
 .workbench-armory__page,
 .workbench-dossier__hint {
     color: rgb(133, 158, 188);
@@ -172,13 +171,6 @@
 }
 
 .workbench-section-heading__title,
-.workbench-market-collapsed__title {
-    color: rgb(229, 234, 241);
-    font-size: 16px;
-    -unity-font-style: bold;
-    letter-spacing: 2px;
-}
-
 .workbench-section-heading__meta {
     margin-top: 2px;
     font-size: 10px;
@@ -237,45 +229,13 @@
     min-height: 44px;
 }
 
-.workbench-market-collapsed {
-    height: 54px;
-    min-height: 54px;
-    margin-top: 10px;
-    padding-left: 18px;
-    padding-right: 18px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    background-color: rgba(9, 17, 26, 0.98);
-    border-left-width: 3px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(217, 164, 58);
-    border-bottom-color: rgba(91, 126, 169, 0.62);
-}
-
-.workbench-market-collapsed__copy {
-    flex-grow: 1;
-    flex-direction: row;
-    align-items: center;
-}
-
-.workbench-market-collapsed__meta {
-    margin-left: 18px;
-    font-size: 10px;
-}
-
-.workbench-market-collapsed__action {
-    color: rgb(104, 165, 231);
-    font-size: 11px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
+/* The body stacks the dossier over the Armory drawer band; the Market above never yields
+   (Design/workbench-dossier.md). */
 .workbench-body {
     min-height: 0;
     flex-grow: 1;
     margin-top: 10px;
-    flex-direction: row;
+    flex-direction: column;
     overflow: hidden;
 }
 
@@ -341,63 +301,114 @@
     border-bottom-width: 0;
 }
 
+/* Identity column left, detail column right (Design/workbench-dossier.md). The base
+   (fight-card) inspector keeps its stacked layout — only --workbench goes two-column. */
 .wb-inspector--workbench .wb-inspector__content {
     min-height: 0;
     flex-grow: 1;
+    flex-direction: row;
     overflow: hidden;
 }
 
 .wb-inspector--workbench .wb-inspector__overview {
-    height: 158px;
-    min-height: 158px;
-    flex-direction: row;
+    width: 256px;
+    min-width: 256px;
+    flex-direction: column;
+    margin-right: 18px;
+    overflow: hidden;
 }
 
 .wb-inspector--workbench .wb-inspector__portrait {
-    width: 214px;
-    min-width: 214px;
-    height: 150px;
-    min-height: 150px;
-    margin-right: 16px;
+    width: 100%;
+    height: 118px;
+    min-height: 118px;
+    flex-shrink: 0;
+    margin-right: 0;
+    margin-bottom: 10px;
 }
 
+/* The Hall's detail profile centers the summary vertically; in a stacked identity column
+   centered overflow spills BOTH ways — the title climbed into the portrait and the stats
+   fell past the clip (rounds 1-5's ghost). Top-anchor it. */
 .wb-inspector--workbench .wb-inspector__summary {
-    min-width: 0;
+    min-height: 0;
     flex-grow: 1;
+    justify-content: flex-start;
 }
 
 .wb-inspector--workbench .wb-inspector__heading {
-    min-height: 58px;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-shrink: 0;
+}
+
+/* Sections take their natural height — a row of sections must never stretch-crush a
+   sibling's rule copy (the weapon dossier's 6px copy in round 3). Width keeps its shrink:
+   only the vertical children pin (round 4 taught the difference). */
+.wb-inspector--workbench .wb-inspector__sections {
+    align-items: flex-start;
+}
+
+.wb-inspector--workbench .wb-inspector__line-copy {
+    flex-shrink: 0;
+    min-height: 20px;
+}
+
+.wb-inspector--workbench .wb-inspector__identity {
+    flex-shrink: 0;
+}
+
+.wb-inspector--workbench .wb-inspector__economy {
+    margin-top: 4px;
+    margin-bottom: 6px;
+    /* The hub's 206px floor overflows the 196-256px identity column and clips the
+       price's last digit at 1024x768. Cost is never allowed to be obscured (law 8). */
+    min-width: 0;
 }
 
 .wb-inspector--workbench .wb-inspector__title {
-    font-size: 27px;
+    font-size: 24px;
 }
 
 .wb-inspector--workbench .wb-inspector__subtitle {
-    max-height: 32px;
+    min-height: 32px;
+    max-height: 64px;
+    flex-shrink: 0;
     font-size: 12px;
+    white-space: normal;
     overflow: hidden;
 }
 
+/* The stat rail leads the detail column — numbers beside the rules they parametrize, where
+   the identity column never had the height for them (round 7's finding). */
 .wb-inspector--workbench .wb-inspector__stats {
-    min-height: 66px;
+    min-height: 58px;
+    flex-shrink: 0;
     flex-direction: row;
     flex-wrap: wrap;
+    margin-bottom: 6px;
     overflow: hidden;
 }
 
-.wb-inspector--workbench .wb-inspector__page-nav {
-    height: 38px;
-    min-height: 38px;
-    flex-shrink: 0;
+/* While the Armory drawer is open the dossier shows the projected unit: identity shrinks to
+   name + subtitle (the portrait is the selected footer card, one glance below; the stat
+   chips are cleared model-side — deltas carry the numbers). */
+.workbench--armory-open .wb-inspector--workbench .wb-inspector__portrait {
+    display: none;
 }
 
 .wb-inspector--workbench .wb-inspector-stat {
     min-width: 108px;
-    height: 54px;
+    height: 52px;
     margin-right: 5px;
     margin-bottom: 5px;
+}
+
+.wb-inspector--workbench .wb-inspector__detail {
+    min-width: 0;
+    min-height: 0;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .wb-inspector--workbench .wb-inspector__decision-body {
@@ -411,6 +422,68 @@
     min-width: 0;
     flex-grow: 1;
     overflow: hidden;
+}
+
+/* Deferred sections: one compact line each — name always visible, full rule on hover. */
+.wb-inspector--workbench .wb-inspector__deferred {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.wb-deferred-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 34px;
+    margin-bottom: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: rgba(12, 20, 31, 0.85);
+    border-left-width: 2px;
+    border-left-color: rgba(91, 126, 169, 0.65);
+}
+
+.wb-deferred-row:hover,
+.wb-deferred-row:focus {
+    background-color: rgba(24, 41, 59, 1);
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-deferred-row__icon {
+    width: 24px;
+    flex-shrink: 0;
+    color: rgb(219, 178, 84);
+    font-size: 14px;
+    -unity-text-align: middle-center;
+}
+
+.wb-deferred-row__label {
+    flex-shrink: 0;
+    margin-left: 6px;
+    margin-right: 12px;
+    color: rgb(133, 158, 188);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.wb-deferred-row__name {
+    min-width: 0;
+    flex-grow: 1;
+    color: rgb(230, 236, 243);
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.wb-deferred-row__hint {
+    flex-shrink: 0;
+    margin-left: 12px;
+    color: rgb(94, 118, 148);
+    font-size: 9px;
+    letter-spacing: 1px;
 }
 
 .wb-inspector--workbench .wb-inspector__section {
@@ -429,7 +502,7 @@
 }
 
 .wb-inspector--workbench .wb-inspector__line-copy {
-    max-height: 42px;
+    max-height: 76px;
     overflow: hidden;
     font-size: 13px;
 }
@@ -438,146 +511,26 @@
     font-size: 15px;
 }
 
-/* Rank Up is the Workbench's densest dossier: guaranteed chassis gains plus two exact
-   specialization paths. Treat those as three parallel reads instead of stacking them beneath
-   a hero-sized overview, which previously let the comparison/choice sections run behind the
-   pinned action tray at the live 2558×1313 Game View size. */
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__overview {
-    height: 96px;
-    min-height: 96px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__portrait {
-    width: 150px;
-    min-width: 150px;
-    height: 88px;
-    min-height: 88px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__heading {
-    min-height: 48px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__title {
-    font-size: 24px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__subtitle {
-    display: none;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__stats {
-    min-height: 52px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector-stat {
-    height: 44px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__column--profile {
-    width: 40%;
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__column--secondary {
-    width: 60%;
-    flex-grow: 0;
-    flex-shrink: 0;
-    border-left-width: 1px;
-    border-left-color: rgba(74, 99, 129, 0.55);
-}
-
-.wb-inspector--workbench.wb-inspector--rankup
-    .wb-inspector__column--profile .wb-inspector__sections {
-    height: 100%;
-    min-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+/* Rank Up shares the identity column; its detail column is the typed one-page body:
+   guaranteed gains as before → after rows, the B/A/S ladder, then the two paths as
+   first-sentence previews (full rule on hover). */
+.wb-inspector--workbench.wb-inspector--rankup .wb-rank-up__gains {
     flex-direction: row;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    margin-bottom: 8px;
 }
 
-.wb-inspector--workbench.wb-inspector--rankup
-    .wb-inspector__column--profile .wb-inspector__section {
-    width: 50%;
-    min-width: 0;
-    height: 100%;
-    min-height: 0;
-    margin-left: 6px;
-    margin-right: 6px;
-    margin-bottom: 0;
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 6px;
-    padding-bottom: 5px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup
-    .wb-inspector__column--secondary .wb-inspector__sections {
-    height: 100%;
-    min-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__section--choices {
-    height: 100%;
-    min-height: 0;
-    margin-left: 6px;
-    margin-right: 6px;
-    margin-bottom: 0;
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 6px;
-    padding-bottom: 5px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup
-    .wb-inspector__choice-preview-options {
-    min-height: 0;
-    flex-grow: 1;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    margin-top: 3px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview {
-    min-width: 0;
-    flex-basis: 0;
-    margin-right: 6px;
-    margin-bottom: 0;
-    padding-left: 9px;
-    padding-right: 9px;
-    padding-top: 7px;
-    padding-bottom: 6px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__change {
-    font-size: 9px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__name {
-    margin-top: 2px;
-    font-size: 15px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__rule {
-    max-height: 58px;
-    margin-top: 3px;
-    margin-bottom: 3px;
-    overflow: hidden;
-    font-size: 11px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-comparison {
-    min-height: 30px;
-    margin-top: 3px;
+.wb-rank-up__gains .wb-comparison {
+    min-height: 32px;
+    margin-right: 12px;
+    margin-bottom: 4px;
     padding-left: 32px;
 }
 
-.wb-inspector--workbench.wb-inspector--rankup .wb-comparison__icon {
+.wb-rank-up__gains .wb-comparison__icon {
     left: 8px;
-    top: 7px;
+    top: 8px;
     width: 15px;
     height: 15px;
 }
@@ -795,28 +748,73 @@
     height: 15px;
 }
 
-.wb-inspector--workbench.wb-inspector--equipment-preview .wb-inspector__overview,
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__overview {
-    height: 158px;
-    min-height: 158px;
+/* Item dossiers carry glyph art rather than a portrait: a shorter art box gives the
+   comparison column the height instead. */
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--trinket .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--inscription .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--capacity .wb-inspector__portrait {
+    height: 96px;
+    min-height: 96px;
 }
 
-.wb-inspector--workbench.wb-inspector--equipment-preview .wb-inspector__portrait,
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait {
-    height: 150px;
-    min-height: 150px;
+/* The equip preview is the weapon/trinket dossier's PRIMARY content: a fixed right column
+   beside the rule column, never a squeezed afterthought. */
+.wb-inspector--workbench .wb-equipment-preview {
+    width: 46%;
+    min-width: 0;
+    flex-shrink: 0;
+    margin-left: 12px;
+    overflow: hidden;
 }
 
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__heading {
+/* Drawer open: the preview is the only detail content and owns the full width, with its
+   chrome compacted to fit the shortened body. */
+.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview {
+    width: 100%;
+    margin-left: 0;
+}
+
+.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview__title {
+    min-height: 22px;
+    margin-top: 0;
+    padding-top: 3px;
+}
+
+.workbench--armory-open .wb-inspector--workbench .wb-rule-delta {
+    min-height: 32px;
+    padding-top: 3px;
+}
+
+.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview__label {
+    display: none;
+}
+
+.workbench--armory-open .wb-deferred-row {
+    min-height: 28px;
+    margin-bottom: 3px;
     padding-top: 2px;
-    padding-bottom: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__stats {
     padding-bottom: 2px;
 }
 
-.wb-inspector--workbench .wb-equipment-preview {
+/* Every comparison cell clips instead of spilling into its neighbour (the "PO4WER → 19"
+   overlap from the armory-full capture). */
+.wb-inspector--workbench .wb-comparison__label,
+.wb-inspector--workbench .wb-comparison__before,
+.wb-inspector--workbench .wb-comparison__after {
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-equipment-preview__recipients {
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/* The 4:3 floor has no height for the recipients row — and with the drawer open the unit
+   rail below IS the recipient picker. The chosen recipient stays named in the subtitle. */
+.layout--narrow .wb-equipment-preview__recipients,
+.layout--compact .wb-equipment-preview__recipients,
+.workbench--armory-open .wb-equipment-preview__recipients {
     display: none;
 }
 
@@ -827,13 +825,7 @@
     flex-wrap: wrap;
     align-items: center;
     overflow: hidden;
-}
-
-.wb-inspector--workbench .wb-inspector__tags--page {
-    min-height: 0;
-    max-height: none;
-    flex-grow: 1;
-    align-content: flex-start;
+    flex-shrink: 0;
 }
 
 .wb-traits-label {
@@ -947,81 +939,53 @@
     margin-left: 7px;
 }
 
-.workbench-armory-handle {
-    width: 190px;
-    min-width: 190px;
-    margin-left: 10px;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(12, 24, 36, 0.98);
-    border-left-width: 2px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(104, 165, 231);
-    border-right-color: rgba(74, 99, 129, 0.7);
-    border-top-color: rgba(74, 99, 129, 0.7);
-    border-bottom-color: rgba(74, 99, 129, 0.7);
-}
-
-.workbench-armory-handle:hover,
-.workbench-armory-handle:focus {
-    background-color: rgba(24, 47, 68, 1);
-}
-
-.workbench-armory-handle__title {
-    color: rgb(232, 238, 246);
-    font-size: 19px;
-    -unity-font-style: bold;
-    letter-spacing: 2px;
-}
-
-.workbench-armory-handle__count {
-    margin-top: 7px;
-    color: rgb(217, 164, 58);
-    font-size: 15px;
-    -unity-font-style: bold;
-}
-
-.workbench-armory-handle__action {
-    margin-top: 18px;
-    color: rgb(104, 165, 231);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
+/* Open drawer state: one horizontal band of item tiles above the unit rail. The rail and the
+   Market both stay fully visible — select an item here, then a socket below. The handle is
+   the warband bar's ARMORY chip; closed, the drawer has no footprint here at all. */
 .workbench-armory {
-    width: 790px;
-    min-width: 790px;
-    margin-left: 10px;
+    height: 184px;
+    min-height: 184px;
+    flex-shrink: 0;
+    margin-top: 8px;
     padding-left: 14px;
     padding-right: 14px;
-    padding-top: 10px;
+    padding-top: 8px;
     padding-bottom: 10px;
     overflow: hidden;
     background-color: rgba(8, 15, 23, 0.99);
-    border-left-width: 2px;
+    border-left-width: 1px;
     border-right-width: 1px;
-    border-top-width: 1px;
+    border-top-width: 2px;
     border-bottom-width: 1px;
-    border-left-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-left-color: rgba(74, 99, 129, 0.72);
     border-right-color: rgba(74, 99, 129, 0.72);
-    border-top-color: rgba(74, 99, 129, 0.72);
     border-bottom-color: rgba(74, 99, 129, 0.72);
 }
 
 .workbench-armory__heading {
-    height: 48px;
-    min-height: 48px;
+    height: 40px;
+    min-height: 40px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 }
 
+.workbench-armory__heading-copy {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.workbench-armory__heading-copy .workbench-section-heading__meta {
+    margin-left: 14px;
+    margin-top: 0;
+}
+
 .workbench-armory__heading-actions {
     flex-direction: row;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .workbench-armory__page {
@@ -1058,21 +1022,20 @@
     min-height: 0;
     flex-grow: 1;
     flex-direction: row;
-    flex-wrap: wrap;
-    align-content: stretch;
-    justify-content: space-between;
+    justify-content: flex-start;
     overflow: hidden;
 }
 
 .workbench-item {
     position: relative;
-    width: 48.8%;
-    height: 30.8%;
-    margin-bottom: 2.5%;
-    padding-left: 72px;
+    width: 16%;
+    min-width: 0;
+    flex-shrink: 1;
+    margin-right: 8px;
+    padding-left: 58px;
     padding-right: 10px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    padding-top: 10px;
+    padding-bottom: 8px;
     overflow: hidden;
     background-color: rgba(14, 24, 36, 0.98);
     border-left-width: 2px;
@@ -1115,12 +1078,12 @@
 
 .workbench-item__icon {
     position: absolute;
-    left: 12px;
-    top: 34px;
-    width: 46px;
-    height: 46px;
+    left: 8px;
+    top: 32px;
+    width: 42px;
+    height: 42px;
     color: rgb(219, 178, 84);
-    font-size: 30px;
+    font-size: 26px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
     background-color: rgba(6, 11, 18, 0.9);
@@ -1135,9 +1098,10 @@
 }
 
 .workbench-item__title {
-    height: 42px;
+    min-height: 48px;
+    flex-shrink: 0;
     color: rgb(238, 242, 247);
-    font-size: 17px;
+    font-size: 16px;
     -unity-font-style: bold;
     white-space: normal;
     overflow: hidden;
@@ -1152,8 +1116,8 @@
 }
 
 .workbench-item-fact {
-    min-width: 82px;
-    height: 48px;
+    min-width: 96px;
+    height: 46px;
     margin-right: 4px;
 }
 
@@ -1165,17 +1129,18 @@
     font-size: 13px;
 }
 
+/* Lives inside the drawer heading now: one quiet line between the title and the pager. */
 .workbench-armory__instruction {
-    height: 32px;
-    min-height: 32px;
-    padding-top: 8px;
+    min-width: 0;
+    flex-shrink: 1;
+    margin-left: 18px;
+    margin-right: 18px;
     color: rgb(129, 153, 184);
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.5px;
-    white-space: normal;
+    white-space: nowrap;
+    overflow: hidden;
     -unity-text-align: middle-center;
-    border-top-width: 1px;
-    border-top-color: rgba(74, 99, 129, 0.45);
 }
 
 .workbench-armory__empty {
@@ -1569,11 +1534,15 @@
 }
 
 .warband-bar--editable .warband-bar__reserve .warband-bar__section {
-    width: 64px;
-    min-width: 64px;
+    /* Size to the text and forbid soft wrap — a fixed 64px wrapped "RESERVE" mid-word,
+       and widening it pushed the 8-tile rail out of its container at 1024x768. The
+       label's explicit \n owns the only line break. */
+    width: auto;
+    min-width: 0;
     margin-left: 0;
     margin-right: 4px;
-    white-space: normal;
+    letter-spacing: 0;
+    white-space: nowrap;
 }
 
 .warband-bar--editable .warband-tooltip {
@@ -1588,7 +1557,6 @@
 
 .workbench-header__act,
 .workbench-section-heading__meta,
-.workbench-market-collapsed__meta,
 .workbench-armory__page,
 .workbench-dossier__hint {
     font-size: var(--ui-type-meta);
@@ -1596,8 +1564,7 @@
 
 .workbench-header__beat-label,
 .workbench-header__continue,
-.workbench-section-heading__title,
-.workbench-market-collapsed__title {
+.workbench-section-heading__title {
     font-size: 16px;
 }
 
@@ -1606,8 +1573,6 @@
 }
 
 .workbench-dossier__label,
-.workbench-market-collapsed__action,
-.workbench-armory-handle__action,
 .workbench-armory__close,
 .workbench-armory__instruction,
 .workbench-feedback {
@@ -1636,84 +1601,22 @@
     font-size: var(--ui-type-meta);
 }
 
+/* Natural height: a one-line rule must not reserve four lines — the old 64px floor was the
+   hidden height hog that crushed hero-with-equipment states once the stat rail moved in. */
 .wb-inspector--workbench .wb-inspector__line-copy {
-    min-height: 64px;
+    min-height: 20px;
     max-height: 90px;
     font-size: var(--ui-type-body);
 }
 
+/* flex-shrink 0: a squeezed section must clip its copy, never silently squash its title
+   (the CombatRecap flex-shrink lesson). */
 .wb-inspector--workbench .wb-inspector__line-title {
     min-height: 22px;
+    flex-shrink: 0;
     font-size: 17px;
 }
 
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__change {
-    font-size: var(--ui-type-meta);
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__name {
-    font-size: 18px;
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__rule {
-    min-height: 80px;
-    max-height: 84px;
-    margin-top: 1px;
-    margin-bottom: 0;
-    font-size: var(--ui-type-body);
-}
-
-.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__line-copy {
-    width: 100%;
-    min-width: 0;
-    min-height: 80px;
-    max-height: 90px;
-}
-
-.wb-inspector--workbench .wb-inspector__page-button {
-    font-size: var(--ui-type-meta);
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__decision-body,
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__column,
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__sections,
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__section {
-    width: 100%;
-    min-width: 0;
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__sections {
-    flex-direction: column;
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__line-copy,
-.wb-inspector--workbench.wb-inspector--paged-details .wb-choice-preview__rule {
-    width: 100%;
-    max-height: none;
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__overview {
-    height: 190px;
-    min-height: 190px;
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__portrait {
-    width: 160px;
-    min-width: 160px;
-    height: 182px;
-    min-height: 182px;
-}
-
-.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector-stat {
-    min-width: 96px;
-    height: 50px;
-}
 
 .wb-inspector--workbench .wb-inspector__actions .btn {
     font-size: var(--ui-type-body);
@@ -1725,7 +1628,7 @@
 }
 
 .workbench-item__title {
-    font-size: 20px;
+    font-size: 17px;
 }
 
 .workbench-item-fact__value,
@@ -1851,8 +1754,8 @@
 }
 
 .layout--compact .workbench-armory {
-    width: 690px;
-    min-width: 690px;
+    height: 180px;
+    min-height: 180px;
 }
 
 .layout--narrow .market-offer-card.decision-card--stock.market-offer-card--workbench {
@@ -1863,8 +1766,20 @@
 }
 
 .layout--narrow .workbench-armory {
-    width: 54%;
-    min-width: 0;
+    height: 176px;
+    min-height: 176px;
+}
+
+.layout--narrow .workbench-armory__instruction {
+    display: none;
+}
+
+.layout--narrow .workbench-item {
+    padding-left: 12px;
+}
+
+.layout--narrow .workbench-item__icon {
+    display: none;
 }
 
 .layout--phone .warband-bar--editable {
@@ -1873,52 +1788,28 @@
 }
 
 .layout--compact .workbench-item {
-    height: 30%;
-    margin-bottom: 2%;
+    padding-left: 50px;
 }
 
+.layout--compact .workbench-item__icon {
+    left: 6px;
+    top: 30px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+}
+
+/* Compact viewports: shorter identity column so the detail column keeps its height. */
 .layout--compact .wb-inspector--workbench .wb-inspector__overview {
-    height: 158px;
-    min-height: 158px;
+    width: 220px;
+    min-width: 220px;
 }
 
 .layout--compact .wb-inspector--workbench .wb-inspector__portrait {
-    width: 184px;
-    min-width: 184px;
-    height: 150px;
-    min-height: 150px;
+    height: 118px;
+    min-height: 118px;
 }
 
-.layout--compact .wb-inspector--workbench.wb-inspector--rankup .wb-inspector__overview {
-    height: 96px;
-    min-height: 96px;
-}
-
-.layout--compact .wb-inspector--workbench.wb-inspector--rankup .wb-inspector__portrait {
-    width: 148px;
-    min-width: 148px;
-    height: 88px;
-    min-height: 88px;
-}
-
-.layout--compact .wb-inspector--workbench.wb-inspector--weapon .wb-inspector__overview {
-    height: 136px;
-    min-height: 136px;
-}
-
-.layout--compact .wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait {
-    height: 128px;
-    min-height: 128px;
-}
-
-.layout--compact .wb-inspector--workbench.wb-inspector--weapon
-    .wb-inspector__subtitle {
-    display: none;
-}
-
-/* Fixed dossier pages use the available width before stacking. The old vertical section list
-   left only a few pixels for exact rule copy at the 720p floor even though most of the dossier
-   was horizontally empty. */
 .wb-inspector--workbench.wb-inspector--champion .wb-inspector__column--profile {
     width: 100%;
 }
@@ -2099,32 +1990,27 @@
 }
 
 .layout--narrow .workbench-item__title {
-    height: 34px;
-    min-height: 34px;
+    min-height: 48px;
     flex-shrink: 0;
+    font-size: 15px;
 }
 
 .layout--narrow .workbench-item__facts {
     display: none;
 }
 
-/* Compact defaults intentionally shrink the overview. A paged narrow dossier has only one
-   rule section below it, so it can instead reserve enough height for a two-row stat grid. */
-.layout--narrow
-    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__overview {
-    height: 190px;
-    min-height: 190px;
+/* Narrow (4:3) viewports: a slimmer identity column keeps the detail column readable. */
+.layout--narrow .wb-inspector--workbench .wb-inspector__overview {
+    width: 196px;
+    min-width: 196px;
+    margin-right: 12px;
 }
 
-.layout--narrow
-    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__portrait {
-    width: 154px;
-    min-width: 154px;
-    height: 182px;
-    min-height: 182px;
+.layout--narrow .wb-inspector--workbench .wb-inspector__portrait {
+    height: 108px;
+    min-height: 108px;
 }
 
-.layout--narrow
-    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__stats {
-    margin-top: 4px;
+.layout--narrow .wb-inspector--workbench .wb-equipment-preview {
+    width: 52%;
 }

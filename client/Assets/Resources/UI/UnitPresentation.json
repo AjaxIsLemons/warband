@@ -197,7 +197,7 @@
     },
     {
       "id": "leapstun",
-      "icon": "⬢",
+      "icon": "◎",
       "summary": "Enemies that Leap are Stunned on arrival.",
       "accent": "reaction"
     },
@@ -209,7 +209,7 @@
     },
     {
       "id": "bronzehour",
-      "icon": "⬡",
+      "icon": "◆",
       "summary": "Every ally begins combat with 20 Shield.",
       "accent": "ward"
     },
@@ -218,6 +218,48 @@
       "icon": "✦",
       "summary": "Whenever an ally casts, that ally gains 5 Shield.",
       "accent": "mending"
+    },
+    {
+      "id": "tithe",
+      "icon": "❖",
+      "summary": "Whenever an ally is healed, it gains 10 Mana.",
+      "accent": "utility"
+    },
+    {
+      "id": "woundclock",
+      "icon": "◑",
+      "summary": "Struck allies gain 5 extra Mana per hit taken.",
+      "accent": "utility"
+    },
+    {
+      "id": "thirdchime",
+      "icon": "♪",
+      "summary": "Every third allied cast, the warband gains brief Haste.",
+      "accent": "tempo"
+    },
+    {
+      "id": "ashbequest",
+      "icon": "♻",
+      "summary": "When a Burning enemy dies, its remaining Burn spreads to enemies near the corpse.",
+      "accent": "affliction"
+    },
+    {
+      "id": "stilledbell",
+      "icon": "Ω",
+      "summary": "When an enemy casts, the caster is Silenced briefly.",
+      "accent": "reaction"
+    },
+    {
+      "id": "shoulder",
+      "icon": "⚌",
+      "summary": "Heroes mustered beside an ally begin with +5 attack.",
+      "accent": "power"
+    },
+    {
+      "id": "bloodless",
+      "icon": "◍",
+      "summary": "PARADOX — healing restores no HP; it becomes Shield instead.",
+      "accent": "ward"
     }
   ]
 }

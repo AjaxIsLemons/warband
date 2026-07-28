@@ -60,9 +60,6 @@ namespace Warband.Content
                     : $"Maintains {node.Standoff.Value}-hex standoff while the target remains in weapon reach.");
             if (node.CleaveBonusPct != 0)
                 clauses.Add($"Basic attack cleave {Signed(node.CleaveBonusPct)} percentage points.");
-            if (node.DoublesBanners)
-                clauses.Add("Every bound Inscription triggers twice.");
-
             foreach (var (kind, mag) in node.SpawnStatuses)
                 clauses.Add($"Starts combat with {Status(kind, mag)} for the rest of the fight.");
             foreach (var rule in node.StatRules)
@@ -105,7 +102,7 @@ namespace Warband.Content
             return Rule(MechanicalChangeKind.Add, clauses);
         }
 
-        public static MechanicalRule Inscription(BannerDef inscription)
+        public static MechanicalRule Inscription(InscriptionDef inscription)
         {
             if (inscription == null) throw new ArgumentNullException(nameof(inscription));
             var clauses = inscription.TeamTriggers.Select(Trigger).ToList();
@@ -145,6 +142,99 @@ namespace Warband.Content
         }
 
         /// <summary>
+        /// One muster: a rule that resolves ONCE at BattleStart against allies within a radius, so
+        /// the set it catches is decided by deployment and nothing afterwards can change it
+        /// (ADR 0014). The Cleric's Mercy Aura, the Phalanx's Unbroken Line and every rung of the
+        /// Banneret's Company are all this shape.
+        /// </summary>
+        public readonly struct Muster
+        {
+            /// <summary>Reach in hexes, or <see cref="Unbounded"/> for "the whole warband" — a
+            /// board-spanning radius is a different promise, not a very large ring.</summary>
+            public readonly int Radius;
+            /// <summary>What standing inside it buys, in the same grammar as the card.</summary>
+            public readonly string Text;
+
+            public Muster(int radius, string text) { Radius = radius; Text = text; }
+
+            public const int Unbounded = -1;
+            public bool IsUnbounded => Radius == Unbounded;
+        }
+
+        /// <summary>
+        /// Every muster a composed unit brings to deployment, innermost reach first.
+        ///
+        /// This exists so the BOARD and the CARD cannot disagree. Deployment wants to draw the
+        /// hexes a muster will catch, and the client is not allowed to infer that by pattern-
+        /// matching triggers itself (render-contract law #1) — a kit that changed its reach would
+        /// silently leave a lying ring behind. Both readouts resolve from the composed def here.
+        ///
+        /// Only UNCONDITIONAL BattleStart rules qualify: a conditional one is not a placement
+        /// promise, because the player cannot see at deploy time whether it will hold.
+        /// </summary>
+        public static IReadOnlyList<Muster> Musters(UnitDef unit)
+        {
+            if (unit == null) throw new ArgumentNullException(nameof(unit));
+
+            // A radius that spans the board is authored as "everyone" (Last March writes 99), and
+            // the two must not be conflated: one is a ring you can stand outside of.
+            int boardSpan = Battle.BoardRows + Battle.BoardCols;
+
+            var byRadius = new SortedDictionary<int, List<EffectDef>>();
+            foreach (var trigger in unit.Triggers)
+            {
+                if (trigger == null || trigger.On != EventKind.BattleStart) continue;
+                if (trigger.When.Count > 0) continue;
+                foreach (var effect in trigger.Do)
+                {
+                    if (effect?.Select == null || effect.Select.Kind != SelKind.AlliesWithin) continue;
+                    int radius = effect.Select.Range >= boardSpan ? Muster.Unbounded : effect.Select.Range;
+                    if (!byRadius.TryGetValue(radius, out var effects))
+                        byRadius[radius] = effects = new List<EffectDef>();
+                    effects.Add(effect);
+                }
+            }
+
+            // SortedDictionary puts Unbounded (-1) first; it belongs last, being the widest reach.
+            var musters = byRadius.Where(pair => pair.Key != Muster.Unbounded)
+                .Select(pair => new Muster(pair.Key, InlineEffects(pair.Value)))
+                .ToList();
+            if (byRadius.TryGetValue(Muster.Unbounded, out var all))
+                musters.Add(new Muster(Muster.Unbounded, InlineEffects(all)));
+            return musters;
+        }
+
+        /// <summary>
+        /// The hexes a hero standing on <paramref name="center"/> offers to the rest of the warband
+        /// — the seats its muster will catch — or an empty list if it has no placement promise.
+        ///
+        /// Only the OUTERMOST finite reach. A Banneret carrying Wide Banner musters at both r1 and
+        /// r2, but two nested rings is a diagram, not a board read: which rung buys what is the
+        /// card's job. An unbounded muster (Last March) offers no seats at all, because there is
+        /// nowhere to stand that is outside it.
+        ///
+        /// Clipped to where a hero can actually be deployed. An unclipped radius around an edge hex
+        /// reaches off the board and into the enemy half, and offering those would promise a seat
+        /// nobody can ever take.
+        /// </summary>
+        public static IReadOnlyList<Hex> MusterSeats(UnitDef unit, Hex center)
+        {
+            int radius = -1;
+            foreach (var muster in Musters(unit))
+            {
+                // An unbounded rung silences the ring outright rather than falling back to the
+                // narrower one beneath it. Last March keeps its innate radius-1 muster, but once
+                // the whole warband is the Company, drawing seven hexes would read as "stand here
+                // to join" when standing anywhere joins.
+                if (muster.IsUnbounded) return new List<Hex>();
+                if (muster.Radius > radius) radius = muster.Radius;
+            }
+            if (radius < 0) return new List<Hex>();
+
+            return Hex.Range(center, radius).Where(RunController.IsDeployable).ToList();
+        }
+
+        /// <summary>
         /// Exact innate/passive language for a composed unit. A hero may express a passive as an
         /// event trigger, a live stat rule, or both, so the overload keeps both authored channels
         /// visible without asking the Unity client to understand their grammar.
@@ -171,10 +261,18 @@ namespace Warband.Content
                 throw new InvalidOperationException("A displayed trigger has no effects.");
             var remaining = trigger.When.ToList();
             string when = EventPhrase(trigger.On, remaining);
+            if (trigger.EveryN > 1)
+                when = $"every {Ordinal(trigger.EveryN)} time {when}";
             if (remaining.Count > 0)
                 when += " if " + string.Join(" and ", remaining.Select(Condition));
             string prefix = trigger.On == EventKind.BattleStart ? "When" : "After";
-            return $"{prefix} {when}: {Effects(trigger.Do, trigger.On)}";
+            string tail = "";
+            // Once-per-root is the UNIVERSAL Inscription default (ADR 0026) and would be tooltip
+            // noise repeated twelve times; the Hourstone surface states the law once. It is spelled
+            // out only on TriggerFired hooks, where echo semantics are exactly the question.
+            if (trigger.OncePerRoot && trigger.On == EventKind.TriggerFired)
+                tail = " At most once per chain of events.";
+            return $"{prefix} {when}: {Effects(trigger.Do, trigger.On)}{tail}";
         }
 
         private static MechanicalRule Rule(MechanicalChangeKind change, List<string> clauses)
@@ -218,11 +316,19 @@ namespace Warband.Content
                     clause = $"Heal {target} for {amount}.";
                     break;
                 case EffectKind.ApplyStatus:
-                    clause = target == "this champion"
-                        ? $"Gain {Status(effect.Status, effect.Amount)}" +
-                          Duration(effect.StatusTicks, effect.StatusSwings, true) + "."
-                        : $"Apply {Status(effect.Status, effect.Amount)} to {target}" +
-                          Duration(effect.StatusTicks, effect.StatusSwings, false) + ".";
+                    // Swearing in the Company is an act, not a debuff landing: "Apply Mustered 1"
+                    // is the tag talking, and the tag is an implementation detail of the roster.
+                    if (effect.Status == StatusKind.Mustered)
+                        // A captain is never in his own Company, so the generic exclusion suffix
+                        // is noise on this one clause and nowhere else.
+                        clause = $"Swear {target.Replace(", excluding this champion", "")} " +
+                                 "into the Company for the fight.";
+                    else
+                        clause = target == "this champion"
+                            ? $"Gain {Status(effect.Status, effect.Amount)}" +
+                              Duration(effect.StatusTicks, effect.StatusSwings, true) + "."
+                            : $"Apply {Status(effect.Status, effect.Amount)} to {target}" +
+                              Duration(effect.StatusTicks, effect.StatusSwings, false) + ".";
                     break;
                 case EffectKind.GrantShield:
                     clause = $"Grant {amount} Shield to {target}.";
@@ -312,6 +418,15 @@ namespace Warband.Content
         private static string Selector(Selector selector)
         {
             if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            // The Company is a roster, not a radius. Say its name rather than reading out the
+            // tag-and-99-hexes machinery that implements it — "allies within 99 hexes, with
+            // Mustered" describes the code, not the promise the player is choosing between.
+            if (selector.Kind == SelKind.AlliesWithin && selector.MustHave == StatusKind.Mustered)
+                return selector.BelowHpPct > 0
+                    ? $"Company members below {selector.BelowHpPct}% HP"
+                    : "the Company";
+
             string value;
             switch (selector.Kind)
             {
@@ -350,6 +465,7 @@ namespace Warband.Content
             if (selector.BelowHpPct > 0) value += $", below {selector.BelowHpPct}% HP";
             if (selector.MustHave.HasValue)
                 value += $", with {Lexicon.Of(selector.MustHave.Value).Name}";
+            if (selector.AdjacentToAlly) value += ", standing beside an ally";
             return value;
         }
 
@@ -396,6 +512,10 @@ namespace Warband.Content
                     value = $"any enemy has {Lexicon.Of(condition.Status).Name}"; break;
                 case CondKind.TargetInFieldOfOwner:
                     value = "the target stands in this champion's field"; break;
+                case CondKind.TargetIsEnemyOfOwner:
+                    value = "the target is an enemy"; break;
+                case CondKind.EventRuleIsTeamRule:
+                    value = "the rule that fired is inscribed in the Hourstone"; break;
                 default:
                     throw new InvalidOperationException(
                         $"No display grammar for CondKind.{condition.Kind}.");
@@ -405,6 +525,8 @@ namespace Warband.Content
             {
                 case CondKind.SourceIsEnemyOfOwner: return "the source is an ally";
                 case CondKind.TargetIsAllyOfOwner: return "the target is an enemy";
+                case CondKind.TargetIsEnemyOfOwner: return "the target is allied";
+                case CondKind.CauseIs: return $"the event did not come from {CausePhrase(condition.Cause)}";
                 case CondKind.OwnerHasStatus:
                     return $"this champion does not have {Lexicon.Of(condition.Status).Name}";
                 case CondKind.IsRootEvent: return "this is a triggered echo";
@@ -571,6 +693,12 @@ namespace Warband.Content
                         ? "this champion refuses a lethal hit"
                         : "a lethal hit is refused";
 
+                case EventKind.TriggerFired:
+                    // Living Inscription's hook: fold the team-rule condition into the phrase.
+                    return Take(conditions, CondKind.EventRuleIsTeamRule, false) != null
+                        ? "a law of the Hourstone activates"
+                        : "a passive rule fires";
+
                 default:
                     return Event(kind);
             }
@@ -649,6 +777,7 @@ namespace Warband.Content
                 case EventKind.Leap: return "a unit Leaps";
                 case EventKind.CheatDeath: return "a lethal hit is refused";
                 case EventKind.MoveStart: return "a unit starts moving";
+                case EventKind.TriggerFired: return "a passive rule fires";
                 default:
                     throw new InvalidOperationException($"No display grammar for EventKind.{kind}.");
             }

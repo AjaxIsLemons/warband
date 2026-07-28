@@ -40,11 +40,11 @@ namespace Warband.Run.Tests
             public WeaponDef Weapon(string id) => _inner.Weapon(id);
             public TrinketDef Trinket(string id) => _inner.Trinket(id);
             public SpecNode Node(string id) => _inner.Node(id);
-            public BannerDef Banner(string id) => _inner.Banner(id);
+            public InscriptionDef Inscription(string id) => _inner.Inscription(id);
             public IReadOnlyList<string> HeroPool(int act) => _inner.HeroPool(act);
             public IReadOnlyList<string> WeaponPool(int act) => _inner.WeaponPool(act);
             public IReadOnlyList<string> TrinketPool(int act) => _inner.TrinketPool(act);
-            public IReadOnlyList<string> BannerPool(int act) => _inner.BannerPool(act);
+            public IReadOnlyList<string> InscriptionPool(int act) => _inner.InscriptionPool(act);
             public IReadOnlyList<string> SpecOptions(string chassisId, Rank rank, string? pathId)
                 => _inner.SpecOptions(chassisId, rank, pathId);
             public Rank ForkRank(string chassisId) => _inner.ForkRank(chassisId);

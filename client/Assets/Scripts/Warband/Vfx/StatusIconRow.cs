@@ -206,6 +206,10 @@ public sealed class StatusIconRow
         for (int i = 0; i < _cache.Count; i++)
         {
             var s = _cache[i];
+            // Mustered is a roster tag, not a combat state: every unit carrying it also carries the
+            // muster's own permanent Haste from the same trigger, so a second fight-long pip on the
+            // same bodies costs a row slot and says nothing the first one didn't.
+            if (s.Kind == StatusKind.Mustered) continue;
             int at = -1;
             for (int j = 0; j < _agg.Count; j++) if (_agg[j].Kind == s.Kind) { at = j; break; }
             if (at < 0)

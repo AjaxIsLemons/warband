@@ -116,7 +116,7 @@ namespace Warband.Viewer
                         throw new InvalidDataException($"scenario '{s.name}': banner team key '{kv.Key}' is not an integer");
                     foreach (var bannerId in kv.Value)
                     {
-                        if (!Catalog.Banners.TryGetValue(bannerId, out var banner))
+                        if (!Catalog.Inscriptions.TryGetValue(bannerId, out var banner))
                             throw new InvalidDataException($"scenario '{s.name}': unknown banner '{bannerId}'");
                         foreach (var trig in banner.TeamTriggers)
                             teamTriggers.Add((team, trig));

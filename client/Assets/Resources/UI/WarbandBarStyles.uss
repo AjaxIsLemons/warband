@@ -96,6 +96,9 @@
 
 .warband-bar__reserve .warband-bar__section {
     margin-left: 4px;
+    /* The divider sliver is ~50px; spacing-inflated "RESERVE" wrapped mid-word there. */
+    letter-spacing: 0.5px;
+    white-space: normal;
 }
 
 .warband-bar__armory {
@@ -179,6 +182,37 @@
     width: 68px;
     min-width: 68px;
     opacity: 0.54;
+}
+
+.warband-bar__slots--drop-active {
+    background-color: rgba(18, 43, 49, 0.3);
+}
+
+.warband-hero--drag-source {
+    opacity: 0.42;
+    translate: 0 -2px;
+    border-left-color: rgb(217, 164, 58);
+    border-right-color: rgb(217, 164, 58);
+    border-top-color: rgb(217, 164, 58);
+    border-bottom-color: rgb(217, 164, 58);
+}
+
+.warband-hero--drop-target {
+    opacity: 1;
+    translate: 0 -5px;
+    background-color: rgba(25, 73, 72, 1);
+    border-left-color: rgb(88, 211, 177);
+    border-right-color: rgb(88, 211, 177);
+    border-top-color: rgb(88, 211, 177);
+    border-bottom-color: rgb(88, 211, 177);
+}
+
+.warband-hero--drop-swap {
+    background-color: rgba(34, 62, 83, 1);
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
 }
 
 .warband-hero__portrait {
@@ -363,6 +397,31 @@
     color: rgb(234, 239, 247);
     font-size: 12px;
     -unity-font-style: bold;
+}
+
+.warband-drag-ghost--hero {
+    width: 158px;
+    min-height: 58px;
+    border-left-color: rgb(217, 164, 58);
+}
+
+.warband-drag-ghost--hero .warband-drag-ghost__icon {
+    width: 34px;
+    height: 34px;
+    padding-top: 7px;
+    color: rgb(8, 12, 18);
+    background-color: rgb(217, 164, 58);
+    border-top-left-radius: 17px;
+    border-top-right-radius: 17px;
+    border-bottom-left-radius: 17px;
+    border-bottom-right-radius: 17px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.warband-drag-ghost--hero .warband-drag-ghost__name {
+    margin-left: 9px;
 }
 
 .warband-tooltip {

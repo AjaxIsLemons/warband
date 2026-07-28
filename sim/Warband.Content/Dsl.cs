@@ -17,8 +17,18 @@ namespace Warband.Content
                            AnchorEventTarget = atCorpse, ExcludeAnchorUnit = exAnchor };
         public static Selector Farthest => new Selector { Kind = SelKind.FarthestEnemy };
         public static Selector Lowest => new Selector { Kind = SelKind.LowestHpAlly };
-        public static Selector Allies(int r, bool exSelf = true, int below = 0) =>
-            new Selector { Kind = SelKind.AlliesWithin, Range = r, ExcludeSelf = exSelf, BelowHpPct = below };
+        public static Selector Allies(int r, bool exSelf = true, int below = 0, bool besideAlly = false) =>
+            new Selector { Kind = SelKind.AlliesWithin, Range = r, ExcludeSelf = exSelf, BelowHpPct = below,
+                           AdjacentToAlly = besideAlly };
+        /// <summary>The captain's Company: whoever his muster swore in at placement, at ANY range.
+        /// A live radius cannot express this — the fight drags a warband apart within a few ticks,
+        /// so a radius-2 rally lands on ~1 of 3 allies and the placement decision it was supposed
+        /// to reward is erased by pathfinding. The roster is stamped once by an AtStart Mustered
+        /// and read here, which is the same "locks at placement, follows the drift" law the muster
+        /// Haste has always had (ADR 0014).</summary>
+        public static Selector Company(int below = 0) =>
+            new Selector { Kind = SelKind.AlliesWithin, Range = 99, ExcludeSelf = true,
+                           BelowHpPct = below, MustHave = StatusKind.Mustered };
         public static Selector Enemies(int r, StatusKind? must = null, bool atVictim = false, bool exAnchor = false) =>
             new Selector { Kind = SelKind.EnemiesWithin, Range = r, MustHave = must,
                            AnchorEventTarget = atVictim, ExcludeAnchorUnit = exAnchor };
@@ -33,9 +43,11 @@ namespace Warband.Content
         public static Cond SrcEnemy => new Cond { Kind = CondKind.SourceIsEnemyOfOwner };
         public static Cond SrcAlly => new Cond { Kind = CondKind.SourceIsEnemyOfOwner, Not = true };
         public static Cond TgtAlly(bool not = false) => new Cond { Kind = CondKind.TargetIsAllyOfOwner, Not = not };
+        public static Cond TgtAllied => new Cond { Kind = CondKind.TargetIsEnemyOfOwner, Not = true }; // ally OR owner
         public static Cond ByAttack => new Cond { Kind = CondKind.CauseIs, Cause = Cause.Attack };
         public static Cond ByAbility => new Cond { Kind = CondKind.CauseIs, Cause = Cause.Ability };
         public static Cond ByCounter => new Cond { Kind = CondKind.CauseIs, Cause = Cause.Counter };
+        public static Cond ByNot(Cause c) => new Cond { Kind = CondKind.CauseIs, Cause = c, Not = true };
         public static Cond RootEv => new Cond { Kind = CondKind.IsRootEvent };
         public static Cond Crit => new Cond { Kind = CondKind.IsCrit };
         public static Cond TgtBelow(int pct) => new Cond { Kind = CondKind.TargetBelowHpPct, Amount = pct };
@@ -49,6 +61,7 @@ namespace Warband.Content
         public static Cond StatusIs(StatusKind s) => new Cond { Kind = CondKind.StatusIs, Status = s };
         public static Cond SrcWithin(int r) => new Cond { Kind = CondKind.SourceWithinHexesOfOwner, Amount = r };
         public static Cond RecentDmg(int pct) => new Cond { Kind = CondKind.OwnerRecentDamageAbovePct, Amount = pct };
+        public static Cond FiredTeamRule => new Cond { Kind = CondKind.EventRuleIsTeamRule };
 
         // ---- effects ----
         public static EffectDef Dmg(Selector sel, int amt, int pctOfEvent = 0, int escalate = 0) =>
@@ -116,6 +129,12 @@ namespace Warband.Content
         /// per call by the DSL and never shared with the catalog.</summary>
         public static Trigger Named(this Trigger t, string ruleId) { t.RuleId = ruleId; return t; }
         public static StatRule Named(this StatRule r, string ruleId) { r.RuleId = ruleId; return r; }
+        /// <summary>Counter shape (ADR 0026): fire on every Nth match instead of every one.
+        /// Progress rides RuleProgress so the badge rail can show pips.</summary>
+        public static Trigger Every(this Trigger t, int n) { t.EveryN = n; return t; }
+        /// <summary>Once-per-root guard for a KIT trigger (Living Inscription). Inscription team
+        /// triggers get this stamped automatically by Catalog.Identify — never call it there.</summary>
+        public static Trigger Guarded(this Trigger t) { t.OncePerRoot = true; return t; }
         public static Cond[] W(params Cond[] c) => c;
         public static StatRule Rule(StatKind stat, int amt, StatScale scale = StatScale.None, params Cond[] when)
         {

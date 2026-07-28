@@ -41,6 +41,15 @@ namespace Warband.Sim
         CritMultUp,       // Mag = fixed-point added to the crit multiplier (Widowmaker)
         Mark,             // inert tag — pure trigger fuel (Twist the Knife's crit-memory;
                           // "marked enemies" banner space). The engine never reads it.
+        HealToShield,     // while held, ALL healing becomes Shield — not just overflow like
+                          // OverhealToShield. The Bloodless Hour Paradox (ADR 0026): applied
+                          // fight-long to the whole warband by its AtStart trigger, so the
+                          // rewrite is a visible status on every unit, not hidden engine state.
+        Mustered,         // inert roster tag: membership in a muster (the Banneret's Company).
+                          // A SET, not a stack — re-applying is a no-op, so overlapping musters
+                          // cannot put a unit in the same Company twice. Stamped at BattleStart
+                          // so PLACEMENT decides the roster, then read by radius-free selectors:
+                          // the muster law of ADR 0014 survives the drift the fight causes.
     }
 
     public sealed class Status

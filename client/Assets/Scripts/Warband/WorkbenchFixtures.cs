@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Warband.Content;
+using Warband.Sim;
 
 /// <summary>
 /// Deterministic, presentation-only Workbench states. They never enter RunController and never
@@ -40,6 +42,7 @@ public static class WorkbenchFixtures
         "armory-empty",
         "armory-full",
         "rail-full",
+        "rail-open",
         "tooltip-keyword",
         "tooltip-equipment",
         "tooltip-rank-tier",
@@ -53,16 +56,16 @@ public static class WorkbenchFixtures
         switch (id)
         {
             case "market-rankup-b":
-                SelectRankUp(shell, expandedText, 1);
+                SelectRankUp(shell, RankUpInspector(expandedText, 1));
                 break;
             case "market-rankup-long":
-                SelectRankUp(shell, expandedText, 2);
+                SelectRankUp(shell, PhalanxRankUpInspector(expandedText));
                 break;
             case "market-rankup-s":
-                SelectRankUp(shell, expandedText, 3);
+                SelectRankUp(shell, RankUpInspector(expandedText, 3));
                 break;
             case "tooltip-rank-tier":
-                SelectRankUp(shell, expandedText, 3);
+                SelectRankUp(shell, RankUpInspector(expandedText, 3));
                 break;
             case "market-weapon":
                 Select(shell, "fixture:weapon", WeaponInspector(expandedText));
@@ -72,11 +75,15 @@ public static class WorkbenchFixtures
                 break;
             case "armory-empty":
                 shell.Planning.PartyShelf.Expanded = true;
+                shell.WarbandBar.ArmoryDrawerOpen = true;
+                shell.WarbandBar.StoredItems = 0;
                 shell.Planning.PartyShelf.LoadoutInventory.Clear();
-                shell.Planning.PartyShelf.LoadoutInspector = HeroInspector(expandedText);
+                shell.Planning.PartyShelf.LoadoutInspector =
+                    CompactLoadout(HeroInspector(expandedText));
                 break;
             case "armory-full":
                 shell.Planning.PartyShelf.Expanded = true;
+                shell.WarbandBar.ArmoryDrawerOpen = true;
                 shell.Planning.PartyShelf.LoadoutInventory = Inventory(expandedText);
                 shell.Planning.PartyShelf.LoadoutInspector = ProjectedHeroInspector(expandedText);
                 shell.WarbandBar.ArmedInventoryItemInstanceId = 1000;
@@ -88,6 +95,10 @@ public static class WorkbenchFixtures
                 break;
             case "rail-full":
                 shell.Planning.Inspector = HeroInspector(expandedText);
+                break;
+            case "rail-open":
+                shell.Planning.Inspector = HeroInspector(expandedText);
+                shell.WarbandBar = OpenWarbandBar();
                 break;
             case "tooltip-keyword":
                 shell.Planning.Inspector = KeywordInspector(expandedText);
@@ -147,16 +158,20 @@ public static class WorkbenchFixtures
                 shell.Planning.MarketOffers[i].Key == key;
     }
 
-    private static void SelectRankUp(RunShellModel shell, bool expanded, int nextTier)
+    private static void SelectRankUp(RunShellModel shell, InspectorModel inspector)
     {
-        InspectorModel inspector = RankUpInspector(expanded, nextTier);
         Select(shell, "fixture:rankup", inspector);
         for (int i = 0; i < shell.Planning.MarketOffers.Count; i++)
         {
             MarketOfferCardModel offer = shell.Planning.MarketOffers[i];
             if (offer.Key != "fixture:rankup") continue;
             offer.Title = inspector.Title;
+            offer.ArtworkResource = inspector.PortraitResource;
+            offer.ArtworkFallback = inspector.PortraitFallback;
+            offer.Accent = inspector.Accent;
+            offer.CurrencyCost = inspector.CurrencyCost;
             offer.Metrics = new List<StatChipModel>(inspector.Stats);
+            if (offer.Detail != null) offer.Detail.Title = inspector.Title;
             break;
         }
     }
@@ -283,14 +298,14 @@ public static class WorkbenchFixtures
             },
             Sections = new List<InspectorSectionModel>
             {
-                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
-                    Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("SIGNATURE", "HOLD THE LINE",
                     Expand("Grant 24 Protection to the two lowest-Health allies for 5 seconds.",
                         expanded), UiGlyphId.Mana, "70"),
+                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
+                    Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("PASSIVE", "COMMAND AURA",
                     Expand("At battle start, adjacent allies gain 18 Protection for 4 seconds.",
-                        expanded)),
+                        expanded), role: InspectorSectionRole.Deferred),
             },
             Actions = BuyActions("RECRUIT", 12),
         };
@@ -298,8 +313,8 @@ public static class WorkbenchFixtures
 
     private static InspectorModel RankUpInspector(bool expanded, int nextTier)
     {
-        string current = nextTier == 1 ? "C" : nextTier == 2 ? "B" : "A";
-        string next = nextTier == 1 ? "B" : nextTier == 2 ? "A" : "S";
+        string current = nextTier == 1 ? "C" : "A";
+        string next = nextTier == 1 ? "B" : "S";
         var traits = new List<WarbandSpecBadgeModel>();
         if (nextTier >= 2)
             traits.Add(new WarbandSpecBadgeModel
@@ -342,6 +357,11 @@ public static class WorkbenchFixtures
                 Fact("CHOICE", "1 OF 2", PresentationFactId.ChoiceCount),
             },
             Traits = traits,
+            Comparisons = new List<StatComparisonModel>
+            {
+                Compare("HP", "164", "188", DeltaDirection.Positive),
+                Compare("POWER", "14", "18", DeltaDirection.Positive),
+            },
             RankUpDetail = new RankUpDetailModel
             {
                 CurrentRank = current,
@@ -366,24 +386,78 @@ public static class WorkbenchFixtures
                     "Sanctified Pyre becomes a long-range restore for the lowest-Health ally.",
                     "mending", expanded),
             };
-        if (nextTier == 3)
-            return new List<ChoicePreviewModel>
-            {
-                Choice("CROWN · PROTECTION", "Great Chorus",
-                    "Sanctuary resolves twice; the second pulse finds the new lowest-Health ally.",
-                    "ward", expanded),
-                Choice("CROWN · RECOVERY", "Sanctuary",
-                    "Allies restored by the signature leave consecrated ground beneath them.",
-                    "mending", expanded),
-            };
         return new List<ChoicePreviewModel>
         {
-            Choice("PATH OF MERCY", "Last Light",
-                "The first allied defeat each battle is prevented; that ally instead returns " +
-                "with 28 Health and cannot trigger this again.", "ward", expanded),
-            Choice("PATH OF ZEAL", "Radiant Verdict",
-                "Sanctuary also scorches the nearest enemy for 16 damage and restores 5 Mana " +
-                "when its healing reaches a wounded ally.", "power", expanded),
+            Choice("CROWN · PROTECTION", "Great Chorus",
+                "Sanctuary resolves twice; the second pulse finds the new lowest-Health ally.",
+                "ward", expanded),
+            Choice("CROWN · RECOVERY", "Sanctuary",
+                "Allies restored by the signature leave consecrated ground beneath them.",
+                "mending", expanded),
+        };
+    }
+
+    /// <summary>
+    /// The fork rank-up exactly as the live shop builds it — real catalog nodes, real
+    /// generated prose. Pikewall's machine rule runs 170+ characters without a sentence
+    /// break, which is what forced the authored-summary preview tier; this fixture is its
+    /// regression stage.
+    /// </summary>
+    private static InspectorModel PhalanxRankUpInspector(bool expanded)
+    {
+        return new InspectorModel
+        {
+            Key = "fixture:rankup",
+            Kind = DecisionDetailKind.RankUp,
+            Eyebrow = "LIVE MARKET · RANK UP",
+            Title = "Phalanx · Rank B",
+            Subtitle = "Guaranteed growth · specialization follows purchase",
+            PortraitResource = "UI/Portraits/phalanx",
+            PortraitFallback = "PH",
+            Accent = "reaction",
+            CurrencyCost = 5,
+            CurrencyBalance = 31,
+            Stats = new List<StatChipModel>
+            {
+                Fact("RANK", "C → B", PresentationFactId.Rank),
+                Fact("HP", "+30", PresentationFactId.Hp),
+                Fact("POWER", "+2", PresentationFactId.BasicPower),
+                Fact("CHOICE", "1 OF 2", PresentationFactId.ChoiceCount),
+            },
+            Comparisons = new List<StatComparisonModel>
+            {
+                Compare("HP", "150", "180", DeltaDirection.Positive),
+                Compare("POWER", "9", "11", DeltaDirection.Positive),
+            },
+            RankUpDetail = new RankUpDetailModel
+            {
+                CurrentRank = "C",
+                NextRank = "B",
+                Tiers = RankTierFixtures(new List<WarbandSpecBadgeModel>(), "B"),
+                Options = new List<ChoicePreviewModel>
+                {
+                    RealNodeChoice("phalanx.pikewall", "reaction", expanded),
+                    RealNodeChoice("phalanx.lancer", "power", expanded),
+                },
+            },
+            Actions = BuyActions("RANK UP", 5),
+        };
+    }
+
+    /// <summary>One option exactly as RunShell.RankChoicePreview builds it: the authored
+    /// lexicon one-liner at the glance tier, the full generated prose on hover.</summary>
+    private static ChoicePreviewModel RealNodeChoice(
+        string nodeId, string accent, bool expanded)
+    {
+        MechanicalRule rule = MechanicalRulePresenter.Node(Kits.Nodes[nodeId]);
+        LexEntry lex = ContentLexicon.Node(nodeId);
+        return new ChoicePreviewModel
+        {
+            Change = rule.Change.ToString().ToUpperInvariant(),
+            Name = lex.Name,
+            Summary = lex.Text,
+            Rule = Expand(rule.Full, expanded),
+            Accent = accent,
         };
     }
 
@@ -420,7 +494,7 @@ public static class WorkbenchFixtures
                 Rule = chosen?.Rule ?? (pending
                     ? $"Purchase, then choose the Rank {rank} specialization."
                     : $"Reach Rank {rank} to unlock this specialization tier."),
-                Accent = chosen?.Accent ?? (pending ? "choice" : ""),
+                Accent = chosen?.Accent ?? "",
             });
         }
         return result;
@@ -442,12 +516,15 @@ public static class WorkbenchFixtures
             Stats = CombatStats("—", "19", "2", "1.0"),
             Sections = new List<InspectorSectionModel>
             {
-                Rule("BASIC ATTACK", "SOLAR EDGE",
+                Rule("WEAPON PROFILE", "SOLAR EDGE",
                     Expand("Deal 19 damage at Reach 2. Each swing grants 2 Mana.", expanded)),
                 Comparison("ON SELECTED UNIT",
                     Compare("POWER", "14", "19", DeltaDirection.Positive),
                     Compare("REACH", "3", "2", DeltaDirection.Contextual),
                     Compare("CADENCE", "0.9", "1.0", DeltaDirection.Contextual)),
+                Rule("POLEARM MASTERY", "SUNWARD RIDER",
+                    Expand("Mastered or Relic: the third swing in a row burns for 6.", expanded),
+                    role: InspectorSectionRole.Deferred),
             },
             Actions = BuyActions("BUY TO ARMORY", 9),
         };
@@ -528,14 +605,14 @@ public static class WorkbenchFixtures
             },
             Sections = new List<InspectorSectionModel>
             {
-                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
-                    Expand("Deal 17 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("SIGNATURE", "HOLD THE LINE",
                     Expand("Grant 24 Protection and Haste to the two lowest-Health allies.",
                         expanded), UiGlyphId.Mana, "70"),
+                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
+                    Expand("Deal 17 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("PASSIVE", "COMMAND AURA",
                     Expand("Adjacent allies begin battle with 18 Protection for 4 seconds.",
-                        expanded)),
+                        expanded), role: InspectorSectionRole.Deferred),
             },
             Actions = new List<InspectorActionModel>
             {
@@ -565,23 +642,36 @@ public static class WorkbenchFixtures
             },
             Sections = new List<InspectorSectionModel>
             {
-                Rule("BASIC ATTACK", "PIKE",
-                    Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("SIGNATURE", "SKEWER",
                     Expand(
                         "Enemies on a 3-hex Line through the current target take 12 damage.",
                         expanded), UiGlyphId.Mana, "35"),
+                // The semantic-keyword capture targets "Gain 1 Riposte" inside a rendered rule
+                // sentence, so this fixture keeps its passive PRIMARY on purpose — it stands in
+                // for any kind whose passive carries the keyword under test.
                 Rule("PASSIVE", "RIPOSTE",
                     Expand(
                         "Gain 1 Riposte. When hit by a basic attack, spend it to " +
                         "counterattack that attacker.", expanded)),
+                Rule("BASIC ATTACK", "PIKE",
+                    Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
             },
         };
     }
 
+    /// <summary>Mirrors the live drawer-open rule: rules defer, stat chips yield.</summary>
+    private static InspectorModel CompactLoadout(InspectorModel model)
+    {
+        foreach (InspectorSectionModel section in model.Sections)
+            if (section.Kind == InspectorSectionKind.Rule)
+                section.Role = InspectorSectionRole.Deferred;
+        model.Stats.Clear();
+        return model;
+    }
+
     private static InspectorModel ProjectedHeroInspector(bool expanded)
     {
-        InspectorModel model = HeroInspector(expanded);
+        InspectorModel model = CompactLoadout(HeroInspector(expanded));
         model.Eyebrow = "ARMORY · PROJECTED UNIT";
         model.Subtitle = "Sunforged Glaive pinned · choose a compatible weapon socket";
         model.EquipmentPreview = new EquipmentPreviewModel
@@ -730,6 +820,7 @@ public static class WorkbenchFixtures
             {
                 HeroInstanceId = i + 1,
                 FieldIndex = i < 6 ? i : -1,
+                SlotIndex = i < 6 ? i : i - 6,
                 Reserve = i >= 6,
                 Selected = i == 0,
                 ClassName = heroes[i],
@@ -778,6 +869,28 @@ public static class WorkbenchFixtures
         return bar;
     }
 
+    private static WarbandBarModel OpenWarbandBar()
+    {
+        WarbandBarModel bar = FullWarbandBar();
+        bar.FieldCount = 5;
+        bar.ReserveCount = 1;
+        bar.Field.RemoveAt(5);
+        bar.Field.Add(new WarbandHeroModel
+        {
+            FieldIndex = 5,
+            SlotIndex = 5,
+            Empty = true,
+        });
+        bar.Reserve.RemoveAt(1);
+        bar.Reserve.Add(new WarbandHeroModel
+        {
+            SlotIndex = 1,
+            Reserve = true,
+            Empty = true,
+        });
+        return bar;
+    }
+
     private static List<InspectorActionModel> BuyActions(string label, int cost) =>
         new List<InspectorActionModel>
         {
@@ -794,10 +907,12 @@ public static class WorkbenchFixtures
 
     private static InspectorSectionModel Rule(
         string label, string name, string summary,
-        UiGlyphId labelGlyph = UiGlyphId.Unknown, string labelValue = "") =>
+        UiGlyphId labelGlyph = UiGlyphId.Unknown, string labelValue = "",
+        InspectorSectionRole role = InspectorSectionRole.Primary) =>
         new InspectorSectionModel
         {
             Kind = InspectorSectionKind.Rule,
+            Role = role,
             Label = label,
             Name = name,
             Summary = summary,

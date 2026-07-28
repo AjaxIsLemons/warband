@@ -8,11 +8,17 @@ namespace Warband.Run
     /// seam where encounters and ghost bosses come from — bot-ghost generation (roadmap 1d)
     /// and the server-backed pool (roadmap 5) plug in here without touching the machine.
     /// </summary>
-    /// <summary>A team relic: whole-team rules that ride into battle as team triggers.</summary>
-    public sealed class BannerDef
+    /// <summary>A law in the Hourstone: whole-team rules that ride into battle as team triggers
+    /// (ADR 0017/0026 — the layer legacy code called Banners).</summary>
+    public sealed class InscriptionDef
     {
-        public string Name = "banner";
+        public string Name = "inscription";
         public List<Trigger> TeamTriggers = new List<Trigger>();
+
+        /// <summary>Rule-rewrites with a real drawback (ADR 0017 family six). Paradoxes are
+        /// reachable ONLY through boss rewards — the Workshop and the Hourstone Interlude filter
+        /// them out — so the commitment always arrives as a considered choice, never shop filler.</summary>
+        public bool Paradox;
     }
 
     /// <summary>
@@ -79,13 +85,13 @@ namespace Warband.Run
         WeaponDef Weapon(string id);
         TrinketDef Trinket(string id);
         SpecNode Node(string id);
-        BannerDef Banner(string id);
+        InscriptionDef Inscription(string id);
 
         /// <summary>Shop pools (ADR 0009): infinite weighted draws, act-anchored.</summary>
         IReadOnlyList<string> HeroPool(int act);
         IReadOnlyList<string> WeaponPool(int act);
         IReadOnlyList<string> TrinketPool(int act);
-        IReadOnlyList<string> BannerPool(int act);
+        IReadOnlyList<string> InscriptionPool(int act);
 
         /// <summary>The authored POOL a rank-up draws from, in authored order. The choice made at
         /// ForkRank(chassis) is the hero's path; other ranks offer in-path (or

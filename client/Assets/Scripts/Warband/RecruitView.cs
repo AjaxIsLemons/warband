@@ -268,11 +268,32 @@ internal sealed class RecruitView : IRunScreenView, IRunScreenLifecycle, IDispos
         UiLayoutContract.RequireMinimumFont(
             report, _root, "muster-lens__body", 16f);
         UiLayoutContract.RequireMinimumFont(
-            report, _root, "muster-card__class", 13f);
+            report, _root, "muster-card__name", 20f);
+        UiLayoutContract.RequireMinimumFont(
+            report, _root, "muster-rule__name", 13f);
+        UiLayoutContract.RequireMinimumFont(
+            report, _root, "muster-rule__keyword-text", 13f);
         UiLayoutContract.RequireMinimumRenderedFont(
             report, _root, "recruit-footer__hint", 12.5f);
         UiLayoutContract.RequireWrappedTextFits(
             report, _root, "recruit-footer__hint");
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "shell-title", 2f);
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "muster-card__name", 2f);
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "muster-rule__name", 2f);
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "muster-fact__value", 2f);
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "muster-fact__secondary-value", 2f);
+        UiLayoutContract.RequireMinimumHeight(
+            report, _root, "muster-rule", 78f);
+        UiLayoutContract.RequireMinimumHeight(
+            report, _root, "muster-card__facts", 62f);
+        foreach (MusterCard card in _cards)
+            UiLayoutContract.RequireInside(
+                report, card.Root, _grid, "Muster card", 2f);
         if (!report.Passed)
         {
             Debug.LogError("[Muster Layout] " + report);

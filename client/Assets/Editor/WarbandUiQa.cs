@@ -77,6 +77,17 @@ public static class WarbandUiQa
 
     public static void RunFullHeadless() => Begin("full", preferOffscreen: true);
 
+    [MenuItem("Warband/UI QA/Run Result Gate Matrix")]
+    public static void RunResultFull() => Begin("result-full");
+
+    public static void RunResultFullHeadless() => Begin("result-full", preferOffscreen: true);
+
+    [MenuItem("Warband/UI QA/Run Muster Full Matrix")]
+    public static void RunMusterFull() => Begin("muster-full");
+
+    public static void RunMusterFullHeadless() =>
+        Begin("muster-full", preferOffscreen: true);
+
     [MenuItem("Warband/UI QA/Run Workbench Full Matrix")]
     public static void RunWorkbenchFull() => Begin("workbench-full");
 
@@ -136,6 +147,11 @@ public static class WarbandUiQa
             return;
         }
 
+        // Without this the player loop pauses whenever the Editor loses OS focus — the run
+        // then "progresses" on editor ticks while layout never resolves (frameCount stuck
+        // at 1, every contract NaN, every capture timing out). Unfocused is the NORMAL
+        // state for this rig: the matrix is driven remotely with Play Unfocused.
+        Application.runInBackground = true;
         string runId = DateTime.Now.ToString("yyyyMMdd-HHmmss");
         string output = Path.GetFullPath(Path.Combine(
             Application.dataPath, "..", "TempCaptures", "ui-qa", runId));
@@ -164,6 +180,68 @@ public static class WarbandUiQa
     private static List<WorkItem> BuildItems(string mode)
     {
         var items = new List<WorkItem>();
+
+        if (mode == "muster-full")
+        {
+            foreach (Vector2Int viewport in new[]
+                     {
+                         new Vector2Int(1024, 768),
+                         new Vector2Int(1280, 720),
+                         new Vector2Int(1600, 900),
+                         new Vector2Int(2556, 1317),
+                         new Vector2Int(3440, 1440),
+                     })
+                items.Add(new WorkItem
+                {
+                    Surface = "recruit",
+                    Fixture = "muster-nominal",
+                    Width = viewport.x,
+                    Height = viewport.y,
+                });
+            items.Add(new WorkItem
+            {
+                Surface = "recruit",
+                Fixture = "muster-copy-stress",
+                Width = 1024,
+                Height = 768,
+                ExpandedText = true,
+            });
+            return items;
+        }
+
+        // The result gate alone, across every viewport that matters plus phone. Added 2026-07-27
+        // after the combat recap shipped a vertical-collapse bug that only the full matrix would
+        // have caught — 82 captures is too slow to iterate a single surface against, so nobody
+        // ran it, so it shipped. A five-shot run is one you will actually do.
+        if (mode == "result-full")
+        {
+            foreach (Vector2Int viewport in new[]
+                     {
+                         new Vector2Int(1024, 768),
+                         new Vector2Int(1280, 720),
+                         new Vector2Int(1600, 900),
+                         new Vector2Int(2556, 1317),
+                     })
+                items.Add(new WorkItem
+                {
+                    Surface = "result",
+                    Fixture = "result-nominal",
+                    Width = viewport.x,
+                    Height = viewport.y,
+                    ExpandedText = viewport.x == 1024,
+                });
+            items.Add(new WorkItem
+            {
+                Surface = "result",
+                Fixture = "result-phone",
+                Width = 1920,
+                Height = 1080,
+                ForcePhone = true,
+                ExpandedText = true,
+            });
+            return items;
+        }
+
         bool full = mode == "full" || mode == "workbench-full";
         bool workbenchOnly = mode == "workbench-full";
         var viewports = full
@@ -188,6 +266,7 @@ public static class WarbandUiQa
                 "market-rankup-long",
                 "armory-full",
                 "rail-full",
+                "rail-open",
                 "tooltip-keyword",
                 "tooltip-equipment",
             };
@@ -223,7 +302,7 @@ public static class WarbandUiQa
             }
             : new[] { new Vector2Int(1280, 720) };
         foreach (Vector2Int viewport in routeViewports)
-            foreach (string surface in new[] { "wager", "deploy", "result" })
+            foreach (string surface in new[] { "wager", "deploy", "result", "options" })
                 items.Add(new WorkItem
                 {
                     Surface = surface,
@@ -234,7 +313,7 @@ public static class WarbandUiQa
                 });
         if (mode == "full")
         {
-            foreach (string surface in new[] { "workbench", "wager", "deploy", "result" })
+            foreach (string surface in new[] { "workbench", "wager", "deploy", "result", "options" })
                 items.Add(new WorkItem
                 {
                     Surface = surface,
@@ -270,6 +349,9 @@ public static class WarbandUiQa
                 RenderShots.McpEnterPlayMode();
             return;
         }
+        // Play-mode entry resets this to the PlayerSettings value; re-pin it so an
+        // unfocused Editor keeps ticking the player loop (see Begin).
+        Application.runInBackground = true;
 
         RunShell shell = UnityEngine.Object.FindFirstObjectByType<RunShell>();
         if (shell == null || !shell.EditorEnsureReadyForFixtures()) return;
@@ -315,14 +397,22 @@ public static class WarbandUiQa
             selected += "; " + UiVerificationCapture.BeginCapture(
                 document, item.Width, item.Height);
         }
-        shell.EditorForcePhoneLayout(item.ForcePhone);
+        // The retained Recruit view owns a direct presentation fixture. Rebuilding the
+        // authoritative shell before binding it can transiently expose an empty opening offer,
+        // which correctly fails the Muster content contract. Muster has no phone fixture.
+        if (item.Surface != "recruit")
+            shell.EditorForcePhoneLayout(item.ForcePhone);
         bool loaded = item.Surface switch
         {
+            "recruit" => shell.EditorLoadRecruitFixture(
+                item.ExpandedText, reducedMotion: false),
             "wager" => shell.EditorLoadWagerFixture(
                 item.ExpandedText, reducedMotion: false),
             "deploy" => shell.EditorLoadDeployFixture(
                 item.ExpandedText, reducedMotion: false),
             "result" => shell.EditorLoadResultFixture(
+                item.ExpandedText, reducedMotion: false),
+            "options" => shell.EditorLoadOptionsFixture(
                 item.ExpandedText, reducedMotion: false),
             "rotation" => shell.EditorLoadWorkbenchFixture(
                 "market-recruit", item.ExpandedText, reducedMotion: false),
@@ -355,6 +445,8 @@ public static class WarbandUiQa
                 shell.EditorShowWorkbenchEquipmentTooltip();
             else if (item.Surface == "workbench" && item.Fixture == "tooltip-rank-tier")
                 shell.EditorShowWorkbenchRankTierTooltip();
+            else if (item.Surface == "workbench" && item.Fixture == "rail-open")
+                shell.EditorPreviewWarbandRosterDrag();
         }
         if (s_state.Frames < 10)
         {
@@ -447,18 +539,28 @@ public static class WarbandUiQa
 
     private static void Finish(RunShell shell)
     {
-        try
+        bool musterOnly = string.Equals(
+            s_state.Mode, "muster-full", StringComparison.Ordinal);
+        if (musterOnly)
         {
             s_state.LiveRankUpRegression =
-                shell.EditorVerifyPendingForkMarketRebuild();
+                "PASS · not applicable to the Muster-only matrix";
         }
-        catch (Exception ex)
+        else
         {
-            s_state.LiveRankUpRegression =
-                $"FAIL · pending-fork Market rebuild threw {ex.GetType().Name}: {ex.Message}";
+            try
+            {
+                s_state.LiveRankUpRegression =
+                    shell.EditorVerifyPendingForkMarketRebuild();
+            }
+            catch (Exception ex)
+            {
+                s_state.LiveRankUpRegression =
+                    $"FAIL · pending-fork Market rebuild threw {ex.GetType().Name}: {ex.Message}";
+            }
+            shell.EditorForcePhoneLayout(false);
+            shell.EditorClearWorkbenchFixture();
         }
-        shell.EditorForcePhoneLayout(false);
-        shell.EditorClearWorkbenchFixture();
         WriteReport();
         WriteContactSheet();
         int failed = 0;
@@ -569,9 +671,13 @@ public static class WarbandUiQa
     private static string Layout(RunShell shell, WorkItem item) =>
         item.Surface switch
         {
+            "recruit" => shell.EditorValidateMusterLayout()
+                ? "Muster: PASS"
+                : "Muster: FAIL · resolved layout contract failed",
             "wager" => shell.EditorWagerLayoutReport(),
             "deploy" => shell.EditorDeployLayoutReport(),
             "result" => shell.EditorResultLayoutReport(),
+            "options" => shell.EditorOptionsLayoutReport(),
             "rotation" => shell.EditorRotationGuardReport(),
             _ => shell.EditorWorkbenchLayoutReport(),
         };
@@ -579,6 +685,7 @@ public static class WarbandUiQa
     private static bool Passed(string layout) =>
         !string.IsNullOrWhiteSpace(layout) &&
         (layout.StartsWith("Workbench QA: PASS", StringComparison.Ordinal) ||
+         layout.StartsWith("Muster: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Wager: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Deploy: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Result gate: PASS", StringComparison.Ordinal) ||

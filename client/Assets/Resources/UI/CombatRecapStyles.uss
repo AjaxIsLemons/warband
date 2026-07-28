@@ -1,19 +1,29 @@
 /* THE COMBAT RECAP (roadmap item 1c) — the three charts on the result gate.
  *
+ * ⚠ THE BUG THIS FILE EXISTS TO NOT REPEAT (2026-07-27, caught by Jake in a real fight):
+ * every element in UI Toolkit defaults to `flex-shrink: 1`. The result gate is capped at
+ * `max-height: 94%` of a 900px reference viewport, so when the recap pushed the content past
+ * that budget, Yoga did not clip or scroll — it SILENTLY SQUASHED every child. 22px rows
+ * resolved to ~11px, their 14px text overflowed the box, and even the pre-existing stat cards
+ * spilled their values outside their own background. Nothing errored. It just became unreadable.
+ *
+ * So: everything with a fixed height here is `flex-shrink: 0`. Overflow must present as honest
+ * overflow that UiLayoutContract.RequireMinimumHeight can FAIL on, never as a silent squash.
+ * Height is the scarce axis and width is abundant (1757x900 reference at Jake's 2543x1302), which
+ * is why composition and timeline sit side by side rather than stacked.
+ *
  * Palette note: cause colour lives HERE and only here. Sim-side LexKind is deliberately not a
  * colour (see Lexicon docs — battlefield colour is owned by the signature-matched tells in
- * tuning.json), so the chart picks its own hues in the UI layer rather than teaching the sim
- * about paint.
- *
- * Height is the binding constraint: the result gate is contract-bound to fit with NO ScrollView
- * (ResultGateView.EditorResolvedLayoutReport), so every row here is deliberately short. */
+ * tuning.json), so the chart picks its own hues in the UI layer. */
 
 .recap {
-    margin-top: 18px;
+    margin-top: 6px;
+    flex-shrink: 0;
 }
 
 .recap__section {
-    margin-bottom: 14px;
+    margin-bottom: 6px;
+    flex-shrink: 0;
 }
 
 .recap__title {
@@ -21,7 +31,8 @@
     font-size: 12px;
     -unity-font-style: bold;
     letter-spacing: 2px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    flex-shrink: 0;
 }
 
 .recap__empty {
@@ -29,17 +40,43 @@
     font-size: 14px;
 }
 
+/* Composition and timeline share a row: each is short and neither needs the full 892px. */
+.recap__split {
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.recap__col {
+    flex-grow: 1;
+    flex-basis: 0;
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+/* Wider than the timeline so a five-cause legend stays on ONE line — a wrapped legend cost
+ * ~18px of the exact height this panel does not have. */
+.recap__col--first {
+    flex-grow: 1.4;
+    margin-right: 24px;
+}
+
 /* ---- ① contribution ------------------------------------------------------------------ */
 
+/* The name label carries an EXPLICIT height. Without it, its own `overflow: hidden` (which the
+ * ellipsis needs) clipped the descenders — "Vigil" lost the tail of its g. Long names must
+ * truncate horizontally, never vertically. */
 .recap-row {
     flex-direction: row;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: 1px;
     height: 22px;
+    min-height: 22px;
+    flex-shrink: 0;
 }
 
 .recap-row__name {
-    width: 132px;
+    width: 150px;
+    height: 20px;
     flex-shrink: 0;
     color: rgb(214, 226, 242);
     font-size: 14px;
@@ -62,7 +99,9 @@
 
 .recap-row__track {
     flex-grow: 1;
+    flex-shrink: 1;
     height: 12px;
+    min-height: 12px;
     background-color: rgba(14, 21, 32, 0.9);
     border-left-width: 1px;
     border-right-width: 1px;
@@ -84,7 +123,7 @@
 }
 
 .recap-row__value {
-    width: 116px;
+    width: 104px;
     flex-shrink: 0;
     margin-left: 10px;
     -unity-text-align: middle-right;
@@ -94,19 +133,24 @@
 }
 
 .recap-row__sub {
-    width: 96px;
+    width: 104px;
     flex-shrink: 0;
     margin-left: 8px;
     -unity-text-align: middle-right;
     color: rgb(139, 158, 184);
     font-size: 12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 /* ---- ② composition ------------------------------------------------------------------- */
 
 .recap-comp {
     flex-direction: row;
-    height: 18px;
+    height: 16px;
+    min-height: 16px;
+    flex-shrink: 0;
     background-color: rgba(14, 21, 32, 0.9);
 }
 
@@ -118,19 +162,23 @@
 .recap-comp__legend {
     flex-direction: row;
     flex-wrap: wrap;
-    margin-top: 7px;
+    margin-top: 5px;
+    flex-shrink: 0;
 }
 
 .recap-key {
     flex-direction: row;
     align-items: center;
-    margin-right: 16px;
-    margin-bottom: 3px;
+    margin-right: 14px;
+    height: 18px;
+    min-height: 18px;
+    flex-shrink: 0;
 }
 
 .recap-key__swatch {
     width: 10px;
     height: 10px;
+    flex-shrink: 0;
     margin-right: 6px;
     background-color: rgb(110, 124, 146);
 }
@@ -152,7 +200,9 @@
 /* ---- ③ timeline ---------------------------------------------------------------------- */
 
 .recap-track {
-    height: 26px;
+    height: 22px;
+    min-height: 22px;
+    flex-shrink: 0;
     background-color: rgba(14, 21, 32, 0.9);
     border-bottom-width: 1px;
     border-bottom-color: rgba(90, 112, 142, 0.5);
@@ -163,11 +213,11 @@
 .recap-mark {
     position: absolute;
     width: 3px;
-    height: 11px;
+    height: 10px;
 }
 
 .recap-mark--ours {
-    top: 14px;
+    top: 11px;
     background-color: rgb(224, 98, 104);
 }
 
@@ -180,13 +230,13 @@
     position: absolute;
     top: 0;
     width: 2px;
-    height: 26px;
+    height: 22px;
     background-color: rgba(244, 146, 76, 0.85);
 }
 
 .recap-track__mid {
     position: absolute;
-    top: 12px;
+    top: 10px;
     left: 0;
     right: 0;
     height: 1px;
@@ -196,7 +246,10 @@
 .recap-track__axis {
     flex-direction: row;
     justify-content: space-between;
-    margin-top: 4px;
+    margin-top: 2px;
+    height: 17px;
+    min-height: 17px;
+    flex-shrink: 0;
 }
 
 .recap-axis__label {
@@ -211,10 +264,55 @@
     letter-spacing: 1px;
 }
 
+/* Replaces the three death lines the gate used to print under the panel: same facts, one row
+ * instead of ~90px of stacked labels. The track says WHEN, this says WHO. */
+.recap-losses {
+    margin-top: 3px;
+    height: 18px;
+    min-height: 18px;
+    flex-shrink: 0;
+    color: rgb(214, 226, 242);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* ---- the gate's own boxes must not squash either -------------------------------------- */
+/* This sheet loads after HubStyles, so these win. Same bug, pre-existing elements: the stat
+ * card's value spilled outside its background the moment the panel ran short of height. */
+
+.result-gate__stats {
+    flex-shrink: 0;
+}
+
+.result-stat {
+    flex-shrink: 0;
+}
+
 /* ---- phone: the gate cannot scroll, so the chart gives up width and detail, not rows ---- */
 
+.layout--phone .recap__split {
+    flex-direction: column;
+}
+
+/* `flex-basis: 0` + `flex-grow: 1` distributes the MAIN axis. In the desktop row that axis is
+ * width, which is what we want. Turning the split into a column makes it HEIGHT — and with no
+ * definite height on the split there is no free space to grow into, so both columns resolved to
+ * ZERO height and their contents drew on top of each other and on top of the recommendation.
+ * On phone the columns size to their content instead. */
+.layout--phone .recap__col {
+    flex-basis: auto;
+    flex-grow: 0;
+}
+
+.layout--phone .recap__col--first {
+    margin-right: 0;
+    margin-bottom: 10px;
+}
+
 .layout--phone .recap-row__name {
-    width: 92px;
+    width: 96px;
     font-size: 13px;
 }
 
@@ -228,5 +326,5 @@
 }
 
 .layout--phone .recap__section {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }

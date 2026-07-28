@@ -70,45 +70,103 @@ namespace Warband.Content
         /// the engine that stays anonymous, and it is the part ADR 0016's north star lives in
         /// (these are the legacy Banner form of Inscriptions, item 5a).
         /// Done once at static init: these are catalog constants, not per-composition state.</summary>
-        private static Dictionary<string, BannerDef> Identify(Dictionary<string, BannerDef> banners)
+        private static Dictionary<string, InscriptionDef> Identify(Dictionary<string, InscriptionDef> inscriptions)
         {
-            foreach (var kv in banners)
+            foreach (var kv in inscriptions)
                 for (int i = 0; i < kv.Value.TeamTriggers.Count; i++)
-                    kv.Value.TeamTriggers[i].RuleId =
-                        i == 0 ? "banner." + kv.Key : "banner." + kv.Key + "#" + (i + 1);
-            return banners;
+                {
+                    var t = kv.Value.TeamTriggers[i];
+                    t.RuleId = i == 0 ? "inscription." + kv.Key : "inscription." + kv.Key + "#" + (i + 1);
+                    // ADR 0026 cascade law: every Inscription engages at most once per root event.
+                    // Stamped HERE — content-side — so kit passives and encounter rules keep their
+                    // exact behavior. An authored repeater would clear the flag explicitly; none
+                    // exists in the first twelve.
+                    t.OncePerRoot = true;
+                }
+            return inscriptions;
         }
 
-        public static readonly Dictionary<string, BannerDef> Banners = Identify(new Dictionary<string, BannerDef>
+        /// <summary>ADR 0026's first twelve: the five migrated seeds plus the vocabulary proof —
+        /// every authoring family (Foundation, Bridge, Counter, Payoff, Opener, Paradox) and every
+        /// major roster engine hooked at least once. Registry keys are save/ghost data and never
+        /// change; display names are presentation. All numbers placeholder by doctrine.</summary>
+        public static readonly Dictionary<string, InscriptionDef> Inscriptions = Identify(new Dictionary<string, InscriptionDef>
         {
-            // Starter set drawn from the dives' banner-hook sections. All placeholder.
-            ["firstblood"] = new BannerDef
+            // ---- the five migrated seeds (ADR 0017's working names) ----
+            ["firstblood"] = new InscriptionDef
             {
-                Name = "Banner of the First Hour", // when an enemy falls, the warband surges
+                Name = "The First Bell",       // death → tempo: when an enemy falls, the warband surges
                 TeamTriggers = { On(EventKind.Death, W(TgtAlly(not: true)),
                     Status(StatusKind.Haste, 200, Allies(99, exSelf: false), ticks: 30)) },
             },
-            ["leapstun"] = new BannerDef
+            ["leapstun"] = new InscriptionDef
             {
-                Name = "Banner of the Held Line",  // heroes.md's original example: Leaps answered
+                Name = "The Closed Gate",      // heroes.md's original example: Leaps answered
                 TeamTriggers = { On(EventKind.Leap, W(SrcEnemy),
                     Status(StatusKind.Stun, 0, EvSrc, ticks: 8)) },
             },
-            ["brand"] = new BannerDef
+            ["brand"] = new InscriptionDef
             {
-                Name = "Banner of the Brand",      // allies' attacks apply Burn (Pyro amplifier)
+                Name = "Cinder Law",           // Burn foundation: allied attacks apply Burn
                 TeamTriggers = { On(EventKind.DamageDealt, W(ByAttack, SrcAlly, RootEv),
                     Status(StatusKind.Burn, 1, EvTgt)) },
             },
-            ["bronzehour"] = new BannerDef
+            ["bronzehour"] = new InscriptionDef
             {
-                Name = "Banner of the Bronze Hour", // the muster holds: opening shields
+                Name = "Bronze Testament",     // defensive opener: the muster holds
                 TeamTriggers = { AtStart(Shield(Allies(99, exSelf: false), 20)) },
             },
-            ["chorus"] = new BannerDef
+            ["chorus"] = new InscriptionDef
             {
-                Name = "Banner of the Chorus",     // every ally cast rings a small shield
+                Name = "Chorus of Hours",      // cast → Shield bridge: every allied cast rings
                 TeamTriggers = { On(EventKind.Cast, W(SrcAlly), Shield(EvSrc, 5)) },
+            },
+
+            // ---- the vocabulary proof (ADR 0026 #6–12) ----
+            ["tithe"] = new InscriptionDef
+            {
+                Name = "Tithe of Hours",       // heal → Mana bridge: the Cleric engine pays the casters
+                TeamTriggers = { On(EventKind.Heal, W(TgtAllied), Mana(EvTgt, 10)) },
+            },
+            ["woundclock"] = new InscriptionDef
+            {
+                // Doubles the innate hit-Mana rate (Battle.ManaPerHitTaken is 5) — an amplifier of
+                // an existing engine, not a new verb. Storm excluded exactly like the innate, or
+                // overtime becomes a mana geyser.
+                Name = "The Wound Clock",      // struck allies wind faster
+                TeamTriggers = { On(EventKind.DamageDealt, W(TgtAllied, ByNot(Cause.Storm)),
+                    Mana(EvTgt, 5)) },
+            },
+            ["thirdchime"] = new InscriptionDef
+            {
+                Name = "The Third Chime",      // counter: every third allied cast, the warband quickens
+                TeamTriggers = { On(EventKind.Cast, W(SrcAlly),
+                    Status(StatusKind.Haste, 200, Allies(99, exSelf: false), ticks: 30)).Every(3) },
+            },
+            ["ashbequest"] = new InscriptionDef
+            {
+                Name = "The Ash Bequest",      // Burn payoff: a Burning corpse wills its fire onward
+                TeamTriggers = { On(EventKind.Death, W(TgtAlly(not: true), TgtHas(StatusKind.Burn)),
+                    PassStack(StatusKind.Burn, Enemies(2, atVictim: true, exAnchor: true))) },
+            },
+            ["stilledbell"] = new InscriptionDef
+            {
+                Name = "The Stilled Bell",     // item 17: the Silence answer the bosses advertise
+                TeamTriggers = { On(EventKind.Cast, W(SrcEnemy),
+                    Status(StatusKind.Silence, 0, EvSrc, ticks: 30)) },
+            },
+            ["shoulder"] = new InscriptionDef
+            {
+                Name = "Shoulder to Shoulder", // formation opener: mustered pairs strike harder
+                TeamTriggers = { AtStart(Status(StatusKind.AttackUp, 5,
+                    Allies(99, exSelf: false, besideAlly: true))) },
+            },
+            ["bloodless"] = new InscriptionDef
+            {
+                Name = "The Bloodless Hour",   // PARADOX: healing becomes Shield; HP never returns
+                Paradox = true,
+                TeamTriggers = { AtStart(Status(StatusKind.HealToShield, 1,
+                    Allies(99, exSelf: false))) },
             },
         });
 
@@ -137,11 +195,14 @@ namespace Warband.Content
             foreach (string id in Sorted(Weapons.All.Keys)) { h.Add(id); h.AddWeapon(Weapons.All[id]); }
             foreach (string id in Sorted(Trinkets.Keys)) { h.Add(id); h.AddTrinket(Trinkets[id]); }
             foreach (string id in Sorted(Kits.Nodes.Keys)) { h.Add(id); h.AddNode(Kits.Nodes[id]); }
-            foreach (string id in Sorted(Banners.Keys))
+            foreach (string id in Sorted(Inscriptions.Keys))
             {
                 h.Add(id);
-                h.AddTriggers(Banners[id].TeamTriggers);
-                h.Add(Banners[id].Name);
+                h.AddTriggers(Inscriptions[id].TeamTriggers);
+                h.Add(Inscriptions[id].Name);
+                // Paradox gating decides which SURFACES can offer the entry, so it changes what a
+                // run can reach — hashed for the same reason the spec offer pools are.
+                h.Add(Inscriptions[id].Paradox);
             }
 
             // The spec offer pools decide which nodes a run can even reach, so a changed offer
@@ -193,18 +254,18 @@ namespace Warband.Content
         /// way a node enters a run.</summary>
         public SpecNode Node(string id) =>
             Kits.Nodes.TryGetValue(id, out var node) ? node : Kits.CandidateNodes[id];
-        BannerDef IRunContent.Banner(string id) => Banners[id];
+        InscriptionDef IRunContent.Inscription(string id) => Inscriptions[id];
 
         private static readonly List<string> HeroIds = new List<string>
             { "cleric", "bulwark", "shade", "sharpshot", "pyromancer", "berserker", "phalanx", "banneret" };
         private static readonly List<string> WeaponIds = new List<string>(Weapons.All.Keys);
         private static readonly List<string> TrinketIds = new List<string>(Trinkets.Keys);
-        private static readonly List<string> BannerIds = new List<string>(Banners.Keys);
+        private static readonly List<string> InscriptionIds = new List<string>(Inscriptions.Keys);
 
         public IReadOnlyList<string> HeroPool(int act) => HeroIds;
         public IReadOnlyList<string> WeaponPool(int act) => WeaponIds;
         public IReadOnlyList<string> TrinketPool(int act) => TrinketIds;
-        public IReadOnlyList<string> BannerPool(int act) => BannerIds;
+        public IReadOnlyList<string> InscriptionPool(int act) => InscriptionIds;
 
         /// <summary>
         /// Opt in to authored-but-unreachable content (<see cref="Kits.CandidateNodes"/>). Sweep

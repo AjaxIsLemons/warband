@@ -44,6 +44,7 @@ internal sealed class RunShellActions
     // Menu
     public Action NewRun = () => { };
     public Action ContinueRun = () => { };
+    public Action OpenOptions = () => { };
     public Action Quit = () => { };
 
     // Recruit
@@ -71,6 +72,7 @@ internal sealed class RunShellActions
     // Shell-owned Warband Bar. Stable identities are mandatory because roster indices move.
     public Action<long> FocusWarbandHero = _ => { };
     public Action<long> ManageWarbandHero = _ => { };
+    public Action<long, bool, int> MoveWarbandHero = (_, __, ___) => { };
     public Action<long, int> SelectWarbandEquipment = (_, __) => { };
     public Action<long, int, long> TransferWarbandEquipment = (_, __, ___) => { };
     public Action<long, int> UnequipWarbandEquipment = (_, __) => { };
