@@ -43,10 +43,7 @@ internal sealed class ShopView : IRunScreenView
     private readonly VisualElement _scrim;
     private readonly Label _specHero;
     private readonly Label _specRank;
-    private readonly Label _optionAName;
-    private readonly Label _optionAText;
-    private readonly Label _optionBName;
-    private readonly Label _optionBText;
+    private readonly VisualElement _specOptions;
 
     public RunScreen Screen => RunScreen.Shop;
 
@@ -175,23 +172,9 @@ internal sealed class ShopView : IRunScreenView
         _specHero = MakeLabel("shell-title");
         modal.Add(_specHero);
 
-        var optionA = new Button(() => _actions.ChooseSpec?.Invoke(0));
-        optionA.AddToClassList("btn");
-        optionA.AddToClassList("btn--primary");
-        _optionAName = MakeLabel("card-title");
-        optionA.Add(_optionAName);
-        _optionAText = MakeLabel("card-body");
-        optionA.Add(_optionAText);
-        modal.Add(optionA);
-
-        var optionB = new Button(() => _actions.ChooseSpec?.Invoke(1));
-        optionB.AddToClassList("btn");
-        optionB.AddToClassList("btn--primary");
-        _optionBName = MakeLabel("card-title");
-        optionB.Add(_optionBName);
-        _optionBText = MakeLabel("card-body");
-        optionB.Add(_optionBText);
-        modal.Add(optionB);
+        // Built per-bind, not once: the offer width is decided by the run layer's draw.
+        _specOptions = new VisualElement();
+        modal.Add(_specOptions);
     }
 
     public void Bind(RunShellModel model)
@@ -232,10 +215,22 @@ internal sealed class ShopView : IRunScreenView
 
         _specRank.text = spec.RankLabel;
         _specHero.text = spec.HeroName;
-        _optionAName.text = spec.OptionAName;
-        MechanicPresentation.BindInline(_optionAText, spec.OptionAText);
-        _optionBName.text = spec.OptionBName;
-        MechanicPresentation.BindInline(_optionBText, spec.OptionBText);
+        _specOptions.Clear();
+        for (int i = 0; i < spec.Options.Count; i++)
+        {
+            SpecOptionModel option = spec.Options[i];
+            int index = i;                           // capture per iteration, not the loop variable
+            var button = new Button(() => _actions.ChooseSpec?.Invoke(index));
+            button.AddToClassList("btn");
+            button.AddToClassList("btn--primary");
+            Label name = MakeLabel("card-title");
+            name.text = option.Name;
+            button.Add(name);
+            Label text = MakeLabel("card-body");
+            MechanicPresentation.BindInline(text, option.Text);
+            button.Add(text);
+            _specOptions.Add(button);
+        }
     }
 
     private void RebuildOffers(List<ShopOfferModel> offers)

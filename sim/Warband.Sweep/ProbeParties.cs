@@ -77,6 +77,38 @@ public static class ProbeParties
     };
 
     /// <summary>
+    /// Axes built from CANDIDATE content (Kits.CandidateNodes) — appended only when
+    /// <see cref="IncludeCandidates"/> is set, so the default `--enc` report stays byte-identical
+    /// and every number already committed to the vault stays comparable.
+    ///
+    /// `focus` is deliberately `damage` with one hero swapped (pyromancer → Spotter), because the
+    /// question is not "does a Spotter party win" — it is "is a Spotter worth a body". At act 1 the
+    /// probe takes the first three of each, so the two columns differ by exactly that one hero.
+    /// The rest are high-output bodies on purpose: DamageTakenUp multiplies whatever the party
+    /// already deals, so a support path is only legible beside allies who can spend it.
+    /// </summary>
+    public static readonly (string Axis, (string Chassis, string Node)[] Party)[] CandidateAxes =
+    {
+        ("focus", new[]
+        {
+            ("sharpshot", "sharpshot.spotter"),
+            ("berserker", "berserker.bloodreaver"),
+            ("shade", "shade.reaper"),
+            ("bulwark", "bulwark.juggernaut"),
+        }),
+    };
+
+    /// <summary>Set from `--candidates`. Off by default: the safe failure is measuring less.</summary>
+    public static bool IncludeCandidates;
+
+    private static (string Axis, (string Chassis, string Node)[] Party)[]? _active;
+
+    /// <summary>The axes a probe actually measures. Read this, never <see cref="Axes"/>, so the
+    /// verdict thresholds ("every axis passes") count the columns that were really run.</summary>
+    public static (string Axis, (string Chassis, string Node)[] Party)[] Active =>
+        _active ??= IncludeCandidates ? Axes.Concat(CandidateAxes).ToArray() : Axes;
+
+    /// <summary>
     /// Party size follows the run's own capacity curve. Measuring an act-1 fight against a
     /// four-hero warband describes a game nobody plays: the player meets act 1 with the three they
     /// drafted.
@@ -110,7 +142,11 @@ public static class ProbeParties
         for (int i = 0; i < size; i++)
         {
             var (chassis, node) = party[i];
-            var nodes = act >= 2 ? new[] { Kits.Nodes[node] } : Array.Empty<SpecNode>();
+            // Resolves candidates too, so a proposed path can be probed against the authored
+            // encounters without first being promoted into the live offer table.
+            var nodes = act >= 2
+                ? new[] { Kits.Nodes.TryGetValue(node, out var live) ? live : Kits.CandidateNodes[node] }
+                : Array.Empty<SpecNode>();
             var composed = Loadout.Compose(
                 Kits.Chassis[chassis], nodes: nodes, mastered: true, rankSteps: act - 1);
             units.Add(Loadout.Spawn(id++, 0, composed, slots[i]));

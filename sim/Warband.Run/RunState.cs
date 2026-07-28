@@ -76,8 +76,7 @@ namespace Warband.Run
         public Rank? PreviousRank;
         public Rank? NewRank;
         public long ItemInstanceId;
-        public string PendingOptionA = "";
-        public string PendingOptionB = "";
+        public List<string> PendingOptions = new List<string>();
     }
 
     public sealed class ReforgeResult
@@ -128,14 +127,17 @@ namespace Warband.Run
         public int SandInvested;
     }
 
-    /// <summary>A rank-up's 1-of-2 spec choice, blocking the shop until resolved (ADR 0009).</summary>
+    /// <summary>
+    /// A rank-up's spec choice, blocking the shop until resolved (ADR 0009). Options is the
+    /// drawn offer in presentation order — already narrowed from the authored pool, so nothing
+    /// downstream needs the seed or the pool to render or resolve it.
+    /// </summary>
     public sealed class PendingSpec
     {
         public RosterZone Zone;
         public int Index;
         public Rank ForRank;
-        public string OptionA = "";
-        public string OptionB = "";
+        public List<string> Options = new List<string>();
     }
 
     /// <summary>

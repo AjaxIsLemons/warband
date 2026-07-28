@@ -3,7 +3,8 @@
 # pipeline (Syncthing + official Unity MCP relay over SSH). See CLAUDE.md + docs/vault/.
 
 .PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage baseline enc boss oath \
-        content-version ship ship-preflight release-status launcher-release site-deploy
+        content-version ship ship-preflight release-status launcher-release site-deploy \
+        sfx-lint sfx-bake sfx-sheet sfx-density sfx-serve sfx check-client
 
 WIN_SSH       ?= jwjwi@192.168.1.102
 WIN_KEY       ?= $(HOME)/.ssh/homeserv_to_windows
@@ -34,6 +35,29 @@ scenarios: ## Generate the data-driven scenario replay set (scenarios.json → r
 
 coverage: ## Event-signature coverage of one replay: make coverage F=client/Assets/StreamingAssets/replays/castfest.bytes
 	@dotnet run --project sim/Warband.Viewer -c Release -- --coverage $(F)
+
+check-client: ## Compile the Unity client's C# headlessly (catches API errors before the Syncthing round-trip + Unity lock)
+	@python3 tools/check-client-compile.py
+
+# Audio (Design/audio.md §6). Headless, stdlib Python, never touches Unity or Resources/.
+sfx-lint: ## Gate SHIPPED Resources/ clips on the contract. RED until audio.md step 5 promotes the bake — that is the point, not a broken target.
+	@python3 tools/sfx/sfx.py lint
+
+sfx-bake: ## docs/audio/src → docs/audio/baked: mono, trim to transient, cap, high-pass, normalise
+	@python3 tools/sfx/sfx.py bake
+
+sfx-sheet: ## Write the docs/audio/index.html audition page (waveforms + before/after players)
+	@python3 tools/sfx/sfx.py sheet
+
+sfx-density: ## Sound onsets/sec per replay fixture — the combat voice budget input
+	@python3 tools/sfx/sfx.py density
+
+sfx-serve: ## Serve the audition sheet at http://127.0.0.1:8091 (browsers block file:// media)
+	@echo "→ http://127.0.0.1:8091/index.html   (ctrl-C to stop)"
+	@cd docs/audio && python3 -m http.server 8091 --bind 127.0.0.1
+
+sfx: sfx-bake sfx-sheet ## Re-bake everything and regenerate the audition sheet
+	@python3 tools/sfx/sfx.py lint --dir docs/audio/baked --report-only
 
 baseline: ## Regenerate the committed balance baseline — then read `git diff` to see what your change did
 	@dotnet run --project sim/Warband.Sweep -c Release -- --baseline docs/vault/Projects/balance-baseline.md

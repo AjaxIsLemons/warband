@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Art Pipeline"
+  short_description: "Generate, review, and import placeholder art"
+  default_prompt: "Use $warband-art-pipeline to process this Warband art job through generation, curation, and approval."

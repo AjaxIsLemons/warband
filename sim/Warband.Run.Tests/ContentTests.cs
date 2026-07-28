@@ -23,10 +23,12 @@ namespace Warband.Run.Tests
             foreach (var id in Cat.TrinketPool(1)) Assert.NotNull(Cat.Trinket(id));
             foreach (var id in Cat.BannerPool(1)) Assert.NotNull(((IRunContent)Cat).Banner(id));
 
-            foreach (var (key, pair) in Kits.Offers.Select(kv => (kv.Key, kv.Value)))
+            foreach (var (key, pool) in Kits.Offers.Select(kv => (kv.Key, kv.Value)))
             {
-                Assert.True(Kits.Nodes.ContainsKey(pair.A), $"{key} offers missing node {pair.A}");
-                Assert.True(Kits.Nodes.ContainsKey(pair.B), $"{key} offers missing node {pair.B}");
+                Assert.True(pool.Count >= 2, $"{key} offers fewer than two nodes");
+                Assert.Equal(pool.Count, pool.Distinct().Count());
+                foreach (string node in pool)
+                    Assert.True(Kits.Nodes.ContainsKey(node), $"{key} offers missing node {node}");
             }
 
             var categories = new HashSet<string>(Weapons.All.Values.Select(w => w.Category));
@@ -41,21 +43,32 @@ namespace Warband.Run.Tests
             // C→B→A→S: an offer row must exist for every rank-up a hero can hit,
             // whichever path they took (the "easily changeable" table is TOTAL).
             foreach (var id in Cat.HeroPool(1))
-            {
-                var fork = Cat.ForkRank(id);
-                // Walk both branches of the ladder.
-                foreach (int first in new[] { 0, 1 })
-                {
-                    string? path = null;
-                    var nodes = new List<string>();
-                    foreach (var rank in new[] { Rank.B, Rank.A, Rank.S })
-                    {
-                        var (a, b) = Cat.SpecOptions(id, rank, path);
-                        string chosen = first == 0 ? a : b;
-                        nodes.Add(chosen);
-                        if (rank == fork) path = chosen;
-                    }
+                foreach (var nodes in AllLadders(id))
                     Assert.Equal(3, nodes.Distinct().Count());
+        }
+
+        /// <summary>
+        /// Every C→B→A→S node sequence a hero can actually reach, branching on the real width of
+        /// each rank's authored pool. Widening a pool widens the test rather than leaving the new
+        /// options uncovered.
+        /// </summary>
+        private static List<List<string>> AllLadders(string chassisId)
+        {
+            var ladders = new List<List<string>>();
+            var fork = Cat.ForkRank(chassisId);
+            Walk(null, new List<string>(), 0);
+            return ladders;
+
+            void Walk(string? path, List<string> nodes, int rankIndex)
+            {
+                var ranks = new[] { Rank.B, Rank.A, Rank.S };
+                if (rankIndex == ranks.Length) { ladders.Add(new List<string>(nodes)); return; }
+                var rank = ranks[rankIndex];
+                foreach (string choice in Cat.SpecOptions(chassisId, rank, path))
+                {
+                    nodes.Add(choice);
+                    Walk(rank == fork ? choice : path, nodes, rankIndex + 1);
+                    nodes.RemoveAt(nodes.Count - 1);
                 }
             }
         }
@@ -63,27 +76,13 @@ namespace Warband.Run.Tests
         [Fact]
         public void EveryBuildComposesAndFightsToTermination()
         {
-            // The 64-build sweep-lite: all 8 chassis × both paths × both A × both S at
-            // rank S, thrown against a fixed enemy pair. Broken content = crash or a
-            // fight that hits the safety cap.
+            // The sweep-lite: every chassis × every reachable ladder at rank S, thrown against a
+            // fixed enemy pair. Eight two-wide heroes = the same 64 builds this always covered.
+            // Broken content = crash or a fight that hits the safety cap.
             foreach (var id in Cat.HeroPool(1))
             {
-                var fork = Cat.ForkRank(id);
-                foreach (int pB in new[] { 0, 1 })
-                foreach (int pA in new[] { 0, 1 })
-                foreach (int pS in new[] { 0, 1 })
+                foreach (var nodeIds in AllLadders(id))
                 {
-                    string? path = null;
-                    var nodeIds = new List<string>();
-                    var picks = new Dictionary<Rank, int> { [Rank.B] = pB, [Rank.A] = pA, [Rank.S] = pS };
-                    foreach (var rank in new[] { Rank.B, Rank.A, Rank.S })
-                    {
-                        var (a, b) = Cat.SpecOptions(id, rank, path);
-                        string chosen = picks[rank] == 0 ? a : b;
-                        nodeIds.Add(chosen);
-                        if (rank == fork) path = chosen;
-                    }
-
                     var composed = Loadout.Compose(
                         Cat.Chassis(id),
                         nodes: nodeIds.Select(n => Cat.Node(n)),
@@ -135,10 +134,10 @@ namespace Warband.Run.Tests
         {
             Assert.Equal(Rank.A, Cat.ForkRank("shade"));
             // The B offer is path-agnostic; the A offer is the fork itself.
-            var (b1, b2) = Cat.SpecOptions("shade", Rank.B, null);
-            Assert.Equal(("shade.killerstempo", "shade.opportunist"), (b1, b2));
-            var (a1, a2) = Cat.SpecOptions("shade", Rank.A, null);
-            Assert.Equal(("shade.reaper", "shade.phantom"), (a1, a2));
+            Assert.Equal(new[] { "shade.killerstempo", "shade.opportunist" },
+                         Cat.SpecOptions("shade", Rank.B, null));
+            Assert.Equal(new[] { "shade.reaper", "shade.phantom" },
+                         Cat.SpecOptions("shade", Rank.A, null));
         }
 
         [Fact]

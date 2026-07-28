@@ -79,6 +79,14 @@ internal static class UiPolishSignals
         Route,
         Result,
         Attention,
+        TooltipReveal,
+        TooltipDismiss,
+        Pin,
+        Unpin,
+        DrawerExpand,
+        DrawerCollapse,
+        SocketWake,
+        ProjectedTarget,
         Error,
     }
 

@@ -54,6 +54,7 @@ internal sealed class RunShellActions
     // Persistent Planning workspace
     public Action<int> SetPlanningTab = _ => { };
     public Action<string> SelectPlanningCard = _ => { };
+    public Action<string> SelectComparisonTarget = _ => { };
     public Action OpenInspector = () => { };
     public Action CloseInspector = () => { };
     public Action BuySelectedOffer = () => { };

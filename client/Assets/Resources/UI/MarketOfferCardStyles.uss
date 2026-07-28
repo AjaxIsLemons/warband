@@ -433,7 +433,7 @@
     letter-spacing: 1px;
 }
 
-.layout--compact .hub--market #primary-grid {
+.layout--compact.hub--market #primary-grid {
     justify-content: flex-start;
     padding-left: 8px;
     padding-right: 22px;
@@ -445,7 +445,7 @@
 }
 
 /* Landscape phone is a horizontal card, not a shrunken desktop card. */
-.layout--phone .hub--market #primary-grid {
+.layout--phone.hub--market #primary-grid {
     justify-content: flex-start;
     padding-left: 8px;
     padding-right: 72px;
@@ -688,6 +688,10 @@
 .market-offer-card.decision-card--stock.market-offer-card--selected {
     translate: 0 -4px;
     background-color: rgba(20, 38, 58, 0.998);
+    border-left-color: rgb(242, 191, 85);
+    border-right-color: rgb(242, 191, 85);
+    border-top-color: rgb(242, 191, 85);
+    border-bottom-color: rgb(242, 191, 85);
 }
 
 .layout--compact .market-offer-card.decision-card--stock {
@@ -707,7 +711,7 @@
     min-height: 114px;
 }
 
-.layout--phone .hub--market #primary-grid {
+.layout--phone.hub--market #primary-grid {
     flex-wrap: nowrap;
     padding-left: 8px;
     padding-right: 56px;
@@ -727,6 +731,80 @@
 .layout--phone .market-offer-card.decision-card--stock .market-offer-card__identity {
     width: 100%;
     min-width: 0;
+    height: 164px;
+    min-height: 164px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 94px;
+    min-height: 94px;
+}
+
+/* Stable 3+2 landscape stock grid. The Market is a bounded decision surface, so compact
+   landscape reduces the card profile instead of adding a third row or a scroll range. */
+.market-offer-card.decision-card--stock {
+    width: 31%;
+    min-width: 166px;
+    height: 232px;
+    min-height: 232px;
+    margin-right: 2%;
+    margin-bottom: 8px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__identity {
+    height: 178px;
+    min-height: 178px;
+}
+
+.market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 108px;
+    min-height: 108px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock {
+    width: 31%;
+    min-width: 145px;
+    margin-right: 2%;
+    height: 205px;
+    min-height: 205px;
+    margin-bottom: 8px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock .market-offer-card__identity {
+    height: 151px;
+    min-height: 151px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 81px;
+    min-height: 81px;
+}
+
+.layout--short .market-offer-card.decision-card--stock {
+    height: 190px;
+    min-height: 190px;
+    margin-bottom: 6px;
+}
+
+.layout--short .market-offer-card.decision-card--stock .market-offer-card__identity {
+    height: 136px;
+    min-height: 136px;
+}
+
+.layout--short .market-offer-card.decision-card--stock .market-offer-card__art {
+    height: 66px;
+    min-height: 66px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock {
+    width: 218px;
+    min-width: 218px;
+    height: 218px;
+    min-height: 218px;
+    margin-bottom: 4px;
+}
+
+.layout--phone .market-offer-card.decision-card--stock .market-offer-card__identity {
     height: 164px;
     min-height: 164px;
 }

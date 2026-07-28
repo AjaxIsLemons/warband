@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Warband.Run;
 using Warband.Sim;
@@ -62,7 +63,23 @@ namespace Warband.Content
             },
         };
 
-        public static readonly Dictionary<string, BannerDef> Banners = new Dictionary<string, BannerDef>
+        /// <summary>Stamp each banner's registry key onto the triggers it contributes, so a team
+        /// rule can name itself on the wire like a unit's own passive does. Team triggers never pass
+        /// through <see cref="Loadout.Compose"/> — they are handed straight to Battle by
+        /// RunController and the scenario builder — so without this they would be the one part of
+        /// the engine that stays anonymous, and it is the part ADR 0016's north star lives in
+        /// (these are the legacy Banner form of Inscriptions, item 5a).
+        /// Done once at static init: these are catalog constants, not per-composition state.</summary>
+        private static Dictionary<string, BannerDef> Identify(Dictionary<string, BannerDef> banners)
+        {
+            foreach (var kv in banners)
+                for (int i = 0; i < kv.Value.TeamTriggers.Count; i++)
+                    kv.Value.TeamTriggers[i].RuleId =
+                        i == 0 ? "banner." + kv.Key : "banner." + kv.Key + "#" + (i + 1);
+            return banners;
+        }
+
+        public static readonly Dictionary<string, BannerDef> Banners = Identify(new Dictionary<string, BannerDef>
         {
             // Starter set drawn from the dives' banner-hook sections. All placeholder.
             ["firstblood"] = new BannerDef
@@ -93,7 +110,7 @@ namespace Warband.Content
                 Name = "Banner of the Chorus",     // every ally cast rings a small shield
                 TeamTriggers = { On(EventKind.Cast, W(SrcAlly), Shield(EvSrc, 5)) },
             },
-        };
+        });
 
         /// <summary>
         /// The content fingerprint (ADR 0008's `contentVersion`). Computed once per process from the
@@ -127,12 +144,14 @@ namespace Warband.Content
                 h.Add(Banners[id].Name);
             }
 
-            // The 1-of-2 spec offers decide which nodes a run can even reach, so a changed offer
-            // table changes outcomes as surely as a changed node.
+            // The spec offer pools decide which nodes a run can even reach, so a changed offer
+            // table changes outcomes as surely as a changed node. Folded element-by-element, so a
+            // two-entry pool hashes exactly as the old (A, B) pair did — arity alone is not a
+            // content change.
             foreach (string key in Sorted(Kits.Offers.Keys))
             {
-                var (a, b) = Kits.Offers[key];
-                h.Add(key).Add(a).Add(b);
+                h.Add(key);
+                foreach (string node in Kits.Offers[key]) h.Add(node);
             }
             foreach (string id in Sorted(Kits.ForkRanks.Keys))
                 h.Add(id).Add((int)Kits.ForkRanks[id]);
@@ -169,7 +188,11 @@ namespace Warband.Content
         public ChassisDef Chassis(string id) => Kits.Chassis[id];
         public WeaponDef Weapon(string id) => Weapons.All[id];
         public TrinketDef Trinket(string id) => Trinkets[id];
-        public SpecNode Node(string id) => Kits.Nodes[id];
+        /// <summary>Resolves candidate nodes too — the sweep must be able to compose and fight
+        /// them. Reachability is gated at <see cref="SpecOptions"/>, because an offer is the only
+        /// way a node enters a run.</summary>
+        public SpecNode Node(string id) =>
+            Kits.Nodes.TryGetValue(id, out var node) ? node : Kits.CandidateNodes[id];
         BannerDef IRunContent.Banner(string id) => Banners[id];
 
         private static readonly List<string> HeroIds = new List<string>
@@ -183,8 +206,31 @@ namespace Warband.Content
         public IReadOnlyList<string> TrinketPool(int act) => TrinketIds;
         public IReadOnlyList<string> BannerPool(int act) => BannerIds;
 
-        public (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId) =>
-            Kits.Offers[$"{chassisId}|{rank}|{pathId ?? "-"}"];
+        /// <summary>
+        /// Opt in to authored-but-unreachable content (<see cref="Kits.CandidateNodes"/>). Sweep
+        /// and tests only — a RunController is handed a Catalog with this off, so no candidate can
+        /// ever be offered to a player. Off by default so forgetting to set it is the safe failure.
+        /// </summary>
+        public bool IncludeCandidates;
+
+        public IReadOnlyList<string> SpecOptions(string chassisId, Rank rank, string? pathId)
+        {
+            string key = $"{chassisId}|{rank}|{pathId ?? "-"}";
+            if (!IncludeCandidates)
+            {
+                if (Kits.Offers.TryGetValue(key, out var authored)) return authored;
+                throw new InvalidOperationException(
+                    $"No live specialization offer is authored for '{key}'. " +
+                    "The hero may still owe its prior fork choice.");
+            }
+
+            var merged = new List<string>();
+            if (Kits.Offers.TryGetValue(key, out var live)) merged.AddRange(live);
+            if (Kits.CandidateOffers.TryGetValue(key, out var extra))
+                foreach (string id in extra)
+                    if (!merged.Contains(id)) merged.Add(id);
+            return merged;
+        }
 
         public Rank ForkRank(string chassisId) => Kits.ForkRanks[chassisId];
 

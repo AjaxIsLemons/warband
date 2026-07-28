@@ -87,10 +87,12 @@ namespace Warband.Run
         IReadOnlyList<string> TrinketPool(int act);
         IReadOnlyList<string> BannerPool(int act);
 
-        /// <summary>The 1-of-2 spec choice a rank-up presents. The choice made at
+        /// <summary>The authored POOL a rank-up draws from, in authored order. The choice made at
         /// ForkRank(chassis) is the hero's path; other ranks offer in-path (or
-        /// path-agnostic) nodes. One flat content table = trivially retunable offers.</summary>
-        (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId);
+        /// path-agnostic) nodes. One flat content table = trivially retunable offers.
+        /// This is the pool, NOT the offer — the run layer decides how many of it the player
+        /// sees (RunController.SpecPick).</summary>
+        IReadOnlyList<string> SpecOptions(string chassisId, Rank rank, string? pathId);
 
         /// <summary>Which rank-up IS the fork. B for most classes; A for late-bloomers
         /// (Shade — ADR 0011 late-bloomer law).</summary>

@@ -1,0 +1,145 @@
+{
+    "Active": true,
+    "RunId": "20260727-132716",
+    "Mode": "smoke",
+    "Phase": "load",
+    "Index": 10,
+    "Frames": 0,
+    "CapturePath": "",
+    "OutputDirectory": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716",
+    "OffscreenCapture": true,
+    "Items": [
+        {
+            "Fixture": "market-recruit",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        }
+    ],
+    "Results": [
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (33 > 4.5); wb-inspector__line-copy 1 clips wrapped text (33 > 4.5); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-1280x720-market-recruit.png"
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "1280x720",
+            "ExpandedText": true,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · Market card 1 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (99 > 42); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-1280x720-market-rankup-long-expanded.png"
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-1280x720-armory-full.png"
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-inspector__section 2 escapes decision-body; wb-inspector__section 2 runs behind actions; Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (33 > 1.5); wb-inspector__line-copy 1 clips wrapped text (33 > 1.5); wb-inspector__line-copy 2 clips wrapped text (33 > 1.5); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-1280x720-tooltip-keyword.png"
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-inspector__section 2 escapes decision-body; wb-inspector__section 2 runs behind actions; Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (33 > 1.5); wb-inspector__line-copy 1 clips wrapped text (33 > 1.5); wb-inspector__line-copy 2 clips wrapped text (33 > 1.5); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-1280x720-tooltip-equipment.png"
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-inspector__section 1 escapes decision-body; wb-inspector__section 1 runs behind actions; Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (34.5 > 6.3); wb-inspector__line-copy 1 clips wrapped text (34.5 > 6.3); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-2558x1313-market-recruit.png"
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "2558x1313",
+            "ExpandedText": true,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-choice-preview__rule 0 escapes decision-body; wb-choice-preview__rule 0 runs behind actions; wb-choice-preview__rule 1 escapes decision-body; wb-choice-preview__rule 1 runs behind actions; Market card 1 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (102.8 > 41.6); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-2558x1313-market-rankup-long-expanded.png"
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-2558x1313-armory-full.png"
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-inspector__section 1 escapes decision-body; wb-inspector__section 1 runs behind actions; wb-inspector__section 2 escapes decision-body; wb-inspector__section 2 runs behind actions; Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (34.5 > 6.3); wb-inspector__line-copy 1 clips wrapped text (34.5 > 6.3); wb-inspector__line-copy 2 clips wrapped text (34.5 > 6.3); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-2558x1313-tooltip-keyword.png"
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench QA: FAIL · Workbench: FAIL · wb-inspector__section 1 escapes decision-body; wb-inspector__section 1 runs behind actions; wb-inspector__section 2 escapes decision-body; wb-inspector__section 2 runs behind actions; Market card 0 escapes market-grid; wb-inspector__line-copy 0 clips wrapped text (34.5 > 6.3); wb-inspector__line-copy 1 clips wrapped text (34.5 > 6.3); wb-inspector__line-copy 2 clips wrapped text (34.5 > 6.3); Runtime tooltip: PASS; capture=offscreen-panel-fallback",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-132716\\ui-qa-20260727-132716-2558x1313-tooltip-equipment.png"
+        }
+    ]
+}

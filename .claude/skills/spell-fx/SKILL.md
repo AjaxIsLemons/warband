@@ -9,6 +9,16 @@ You are adding or changing combat FX in warband. **Source of truth:
 `fx-runtime.md` (engine laws). Read the authoring doc first; this skill is the
 operational checklist.
 
+## Generated source art
+
+Use `.claude/skills/warband-art-pipeline/SKILL.md` for generated sigils, masks, sprites,
+decals, flipbooks, status icons, textures, or still effect concepts. Claude prepares a
+`WAITING_FOR_CODEX` job; Codex generates candidates through native imagegen. Do not put
+unreviewed outputs in `Resources`.
+
+Generated art supplies source imagery only. This skill still owns the deterministic runtime
+recipe, tell binding, palette/intensity law, and verification gate.
+
 ## Decide the change tier first
 - **Data** (tuning.json tell rows + F1 knobs): colors, glows, windups, sounds, which
   vfx ids fire. Hot-reload, no recompile. Most spell work lives here.

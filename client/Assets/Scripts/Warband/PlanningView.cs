@@ -289,10 +289,13 @@ internal sealed class PlanningView : IRunScreenView
             _modalEyebrow.text = model.SpecChoice.RankLabel + " AWAKENING";
             _modalTitle.text = model.SpecChoice.HeroName;
             _modalCopy.text = "Choose one path. The rest of Planning waits for this decision.";
-            AddChoiceButton(model.SpecChoice.OptionAName, model.SpecChoice.OptionAText,
-                            () => _actions.ChooseSpec?.Invoke(0));
-            AddChoiceButton(model.SpecChoice.OptionBName, model.SpecChoice.OptionBText,
-                            () => _actions.ChooseSpec?.Invoke(1));
+            for (int i = 0; i < model.SpecChoice.Options.Count; i++)
+            {
+                var option = model.SpecChoice.Options[i];
+                int index = i;                       // capture per iteration, not the loop variable
+                AddChoiceButton(option.Name, option.Text,
+                                () => _actions.ChooseSpec?.Invoke(index));
+            }
             return;
         }
 

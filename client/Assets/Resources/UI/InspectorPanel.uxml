@@ -20,7 +20,37 @@
                     <ui:VisualElement name="stats" class="wb-inspector__stats" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="sections" class="wb-inspector__sections" />
+            <ui:VisualElement name="page-nav" class="wb-inspector__page-nav">
+                <ui:Button name="page-prev" text="‹" class="wb-inspector__page-button wb-inspector__page-button--step" />
+                <ui:Button name="page-details" text="DETAILS" class="wb-inspector__page-button" />
+                <ui:Button name="page-next" text="›" class="wb-inspector__page-button wb-inspector__page-button--step" />
+            </ui:VisualElement>
+            <ui:VisualElement name="rank-up-body" class="wb-rank-up">
+                <ui:VisualElement class="wb-rank-up__tier-row">
+                    <ui:Label text="SELECTED TIERS" class="wb-rank-up__label" />
+                    <ui:VisualElement name="rank-up-ladder" class="wb-rank-up__ladder" />
+                </ui:VisualElement>
+                <ui:VisualElement class="wb-rank-up__choice-heading">
+                    <ui:Label text="SPECIALIZATION PREVIEW · BOTH EXACT OPTIONS" class="wb-rank-up__label wb-rank-up__label--choice" />
+                    <ui:Label text="Choose after purchase" class="wb-rank-up__hint" />
+                </ui:VisualElement>
+                <ui:VisualElement name="rank-up-options" class="wb-rank-up__options" />
+            </ui:VisualElement>
+            <ui:VisualElement name="decision-body" class="wb-inspector__decision-body">
+                <ui:VisualElement name="profile-column" class="wb-inspector__column wb-inspector__column--profile">
+                    <ui:VisualElement name="sections" class="wb-inspector__sections" />
+                </ui:VisualElement>
+                <ui:VisualElement name="secondary-column" class="wb-inspector__column wb-inspector__column--secondary">
+                    <ui:VisualElement name="secondary-sections" class="wb-inspector__sections wb-inspector__sections--secondary" />
+                </ui:VisualElement>
+                <ui:VisualElement name="equipment-preview" class="wb-equipment-preview">
+                    <ui:Label text="PREVIEW ON WARBAND" class="wb-inspector__section-label wb-equipment-preview__label" />
+                    <ui:VisualElement name="recipients" class="wb-equipment-preview__recipients" />
+                    <ui:Label name="comparison-title" class="wb-equipment-preview__title" />
+                    <ui:VisualElement name="comparison-table" class="wb-equipment-preview__comparisons" />
+                    <ui:VisualElement name="rule-deltas" class="wb-equipment-preview__rule-deltas" />
+                </ui:VisualElement>
+            </ui:VisualElement>
             <ui:VisualElement name="tags" class="wb-inspector__tags" />
             <ui:VisualElement name="actions" class="wb-inspector__actions" />
         </ui:VisualElement>

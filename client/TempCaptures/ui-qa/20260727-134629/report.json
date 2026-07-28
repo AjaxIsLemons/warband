@@ -1,0 +1,665 @@
+{
+    "Active": true,
+    "RunId": "20260727-134629",
+    "Mode": "full",
+    "Phase": "load",
+    "Index": 50,
+    "Frames": 0,
+    "CapturePath": "",
+    "OutputDirectory": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-134629",
+    "OffscreenCapture": true,
+    "Items": [
+        {
+            "Fixture": "market-recruit",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-weapon",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-inscription",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-empty",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "rail-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-weapon",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-inscription",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-empty",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "rail-full",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-weapon",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-inscription",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-empty",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "rail-full",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-weapon",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-inscription",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-empty",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "rail-full",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-weapon",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-inscription",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-empty",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "rail-full",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 1920,
+            "Height": 1080,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2560,
+            "Height": 1440,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2560,
+            "Height": 1080,
+            "ExpandedText": true
+        }
+    ],
+    "Results": [
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "1280x720",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-weapon",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-inscription",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-empty",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "rail-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "1920x1080",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-weapon",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-inscription",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-empty",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "rail-full",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1920x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "2558x1313",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-weapon",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-inscription",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-empty",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "rail-full",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "2560x1440",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-weapon",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-inscription",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-empty",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "rail-full",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "2560x1440",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "2560x1080",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-weapon",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-inscription",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-empty",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "rail-full",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "2560x1080",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1280x720",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1920x1080",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2558x1313",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2560x1440",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2560x1080",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · fixture could not be loaded",
+            "Image": ""
+        }
+    ]
+}

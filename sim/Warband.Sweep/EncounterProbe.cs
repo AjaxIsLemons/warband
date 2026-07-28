@@ -69,7 +69,7 @@ public static class EncounterProbe
                     row.Bodies = string.Join(", ", atAct.Enemies
                         .GroupBy(e => e.Def.Name)
                         .Select(g => g.Count() > 1 ? $"{g.Count()}× {g.Key}" : g.Key));
-                row.ByAct[act - 1] = ProbeParties.Axes
+                row.ByAct[act - 1] = ProbeParties.Active
                     .Select(a => ProbeParties.Across(a.Axis,
                         slots => Measure(factory, act, a.Party, slots)))
                     .ToList();
@@ -103,12 +103,13 @@ public static class EncounterProbe
         return line;
     }
 
-    public static void Run()
+    public static void Run(bool includeCandidates = false)
     {
+        ProbeParties.IncludeCandidates = includeCandidates;
         var report = new StringBuilder();
         report.AppendLine("# Encounter probe — authored PvE node pool");
         report.AppendLine();
-        report.AppendLine($"{ProbeParties.Formations.Length} formations × {ProbeParties.Axes.Length} " +
+        report.AppendLine($"{ProbeParties.Formations.Length} formations × {ProbeParties.Active.Length} " +
                           $"answer axes × {SeedsPerArrangement} seeds per act, each party sized and " +
                           "ranked to its act (3 heroes rank C at act 1; forked from act 2). Crit is " +
                           "the sim's only RNG, so seeds are the whole distribution.");
@@ -126,9 +127,9 @@ public static class EncounterProbe
             report.AppendLine();
             report.AppendLine($"Debuts in act {row.DebutAct} — {row.Bodies}.");
             report.AppendLine();
-            report.AppendLine("| act | heroes | " + string.Join(" | ", ProbeParties.Axes.Select(a => a.Axis)) +
+            report.AppendLine("| act | heroes | " + string.Join(" | ", ProbeParties.Active.Select(a => a.Axis)) +
                               " | axes | rule |");
-            report.AppendLine("|---|---|" + string.Concat(ProbeParties.Axes.Select(_ => "---|")) + "---|---|");
+            report.AppendLine("|---|---|" + string.Concat(ProbeParties.Active.Select(_ => "---|")) + "---|---|");
             for (int act = 1; act <= 3; act++)
             {
                 var axes = row.ByAct[act - 1];
@@ -167,7 +168,7 @@ public static class EncounterProbe
         else if (passing.Count == 0)
             yield return $"**PUNISHING** — nothing passes cleanly; best axis peaks at {bestWin:F0}%." +
                          (marginal.Count > 0 ? $" Marginal: {string.Join(", ", marginal)}." : "");
-        else if (passing.Count == ProbeParties.Axes.Length && bestWin > 95 && bestSpread < 10)
+        else if (passing.Count == ProbeParties.Active.Length && bestWin > 95 && bestSpread < 10)
             yield return "**FREE** — every axis wins from every formation. It poses nothing yet.";
         else if (passing.Count == 1)
             yield return $"**PRESCRIBES A BUILD** — only `{passing[0]}` clears it. " +

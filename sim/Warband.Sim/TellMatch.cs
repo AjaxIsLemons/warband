@@ -30,7 +30,8 @@ namespace Warband.Sim
                                    FieldFlavor? flavor = null, bool? ranged = null, int? distance = null,
                                    string? chassis = null, string? sourceChassis = null,
                                    string? ability = null, string? sourceAbility = null,
-                                   string? weapon = null, string? sourceWeapon = null)
+                                   string? weapon = null, string? sourceWeapon = null,
+                                   string? rule = null, string? eventRule = null)
         {
             if (e.Kind != kind) return false;
             if (cause.HasValue && e.Cause != cause.Value) return false;
@@ -79,6 +80,18 @@ namespace Warband.Sim
                     || !string.Equals(weapon, sourceWeapon, System.StringComparison.OrdinalIgnoreCase))
                     return false;
             }
+            if (!string.IsNullOrEmpty(rule))
+            {
+                // The passive filter (Design/passive-legibility.md, law L3). Unlike chassis/ability/
+                // weapon this does NOT come off the source unit — it is resolved from the event's own
+                // Aux index against the battle's rule table, because a team rule (a Banner today, an
+                // Inscription tomorrow) is owned by no unit at all. Same law as the others though: a
+                // rule-specific look must never fire for a rule the view cannot name, so an unnamed
+                // rule falls through to the generic passive tell rather than borrowing someone's art.
+                if (string.IsNullOrEmpty(eventRule)
+                    || !string.Equals(rule, eventRule, System.StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
             return true;
         }
 
@@ -94,12 +107,16 @@ namespace Warband.Sim
         /// there is no truthful ordering between them: a byWeapon row TIES a byChassis row and the
         /// tie falls to registry order. If authoring ever needs weapon to outrank chassis, bump this
         /// consciously and say why — do not discover it from a row that mysteriously lost.</para></summary>
+        /// <para>Rule counts 2, like ability and for the same reason: a rule id names exactly one
+        /// authored passive, so a byRule row is strictly narrower than any chassis- or weapon-scoped
+        /// row it could collide with, and at 1 it would tie and fall to registry order.</para>
         public static int Specificity(Cause? cause, StatusKind? status, FieldFlavor? flavor = null,
                                       bool? ranged = null, string? chassis = null, string? ability = null,
-                                      string? weapon = null)
+                                      string? weapon = null, string? rule = null)
             => (cause.HasValue ? 1 : 0) + (status.HasValue ? 1 : 0) + (flavor.HasValue ? 1 : 0)
                + (ranged.HasValue ? 1 : 0) + (string.IsNullOrEmpty(chassis) ? 0 : 1)
                + (string.IsNullOrEmpty(ability) ? 0 : 2)
-               + (string.IsNullOrEmpty(weapon) ? 0 : 1);
+               + (string.IsNullOrEmpty(weapon) ? 0 : 1)
+               + (string.IsNullOrEmpty(rule) ? 0 : 2);
     }
 }

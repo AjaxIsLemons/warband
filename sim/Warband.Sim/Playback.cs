@@ -20,6 +20,15 @@ namespace Warband.Sim
         /// the StatusExpired event, so it is deliberately outside <see cref="PlaybackState.HashView"/>.</summary>
         public List<(StatusKind Kind, int Mag, int ExpiryTick)> Statuses = new List<(StatusKind, int, int)>();
 
+        /// <summary>Indices into <see cref="PlaybackState.RuleIds"/> for the conditional passives
+        /// currently ONLINE on this unit, rebuilt by the fold from RuleChanged. Like ExpiryTick it
+        /// is deliberately outside <see cref="PlaybackState.HashView"/>: the sim's own projection
+        /// (<see cref="From"/>) cannot fill it — evaluating a StatRule's conditions needs the whole
+        /// battle, which is precisely why the transitions had to become events — so hashing it would
+        /// make the guardrail compare a folded value against a blank one and fail every tick.
+        /// The RuleChanged event is the authority, exactly as StatusExpired is for a countdown.</summary>
+        public List<int> ActiveRules = new List<int>();
+
         // ---- committed step (movement law) ----
         // Pos is where the unit IS. While walking it is also still standing there as far as every
         // rule is concerned; StepTo is where it will be at StepEnd. The renderer interpolates
@@ -43,6 +52,19 @@ namespace Warband.Sim
         public int MoveInterval;
         public int CritChance;
         public bool HealAutos;      // censer law: this unit's swings HEAL allies, not damage enemies
+        /// <summary>The targeting rule — "acquires NEAREST/FARTHEST/LOWEST", and the standoff it
+        /// keeps while its target is inside weapon reach. pve-encounters.md requires targeting to be
+        /// inspectable, and a Sanddrift Gunner whose ENTIRE design is "acquires FARTHEST, holds
+        /// standoff 5" was previously a name and a health number on the board.</summary>
+        public TargetPref TargetPref;
+        public int Standoff;
+
+        /// <summary>This unit's span in the battle's rule table (<see cref="PlaybackState.RuleIds"/>)
+        /// — what passives it HAS, as opposed to <see cref="ActiveRules"/>, which is the subset
+        /// currently live. Together they are the whole "what is this unit and why did it do that"
+        /// answer the in-fight inspector owes the player.</summary>
+        public int TriggerRuleBase = -1, TriggerRuleCount;
+        public int StatRuleBase = -1, StatRuleCount;
 
         // Identity — the stable content keys behind the display Name (which authored encounters
         // rename freely, e.g. "Oathbound Bulwark").
@@ -66,6 +88,9 @@ namespace Warband.Sim
                 Range = u.Def.Range, Attack = u.Def.Attack, AttackInterval = u.Def.AttackInterval,
                 MoveInterval = u.Def.MoveInterval, CritChance = u.Def.CritChance,
                 HealAutos = u.Def.HealAutos,
+                TargetPref = u.Def.TargetPref, Standoff = u.Def.Standoff,
+                TriggerRuleBase = u.TriggerBase, TriggerRuleCount = u.Def.Triggers.Count,
+                StatRuleBase = u.StatRuleBase, StatRuleCount = u.Def.StatRules.Count,
                 ChassisId = u.Def.ChassisId, WeaponName = u.Def.WeaponName,
                 WeaponTier = u.Def.WeaponTier,
                 // Shared, not copied: the guardrail projects every unit EVERY tick, and Traits is
@@ -87,8 +112,12 @@ namespace Warband.Sim
             Mana = Mana, ManaMax = ManaMax, Pos = Pos, Dead = Dead,
             StepTo = StepTo, StepStart = StepStart, StepEnd = StepEnd,
             Statuses = new List<(StatusKind, int, int)>(Statuses),
+            ActiveRules = new List<int>(ActiveRules),
             Range = Range, Attack = Attack, AttackInterval = AttackInterval,
             MoveInterval = MoveInterval, CritChance = CritChance, HealAutos = HealAutos,
+            TargetPref = TargetPref, Standoff = Standoff,
+            TriggerRuleBase = TriggerRuleBase, TriggerRuleCount = TriggerRuleCount,
+            StatRuleBase = StatRuleBase, StatRuleCount = StatRuleCount,
             ChassisId = ChassisId, WeaponName = WeaponName, WeaponTier = WeaponTier,
             Traits = new List<string>(Traits),
         };
@@ -107,11 +136,22 @@ namespace Warband.Sim
         public int Tick;
         private int _next; // index into the event list
 
-        public static PlaybackState From(IEnumerable<PlaybackUnit> initial)
+        /// <summary>The battle's rule-id table (BattleResult.RuleIds), carried so the renderer can
+        /// turn a TriggerFired/RuleChanged Aux index into a name. Empty outside a battle — a
+        /// deployment preview folds no events.</summary>
+        public List<string> RuleIds = new List<string>();
+
+        /// <summary>Index into <see cref="RuleIds"/>, or "" when it names nothing — an unnamed rule
+        /// is legal and falls through to the generic passive tell by design.</summary>
+        public string RuleId(int index) =>
+            index >= 0 && index < RuleIds.Count ? RuleIds[index] : "";
+
+        public static PlaybackState From(IEnumerable<PlaybackUnit> initial, IEnumerable<string>? ruleIds = null)
         {
             var s = new PlaybackState();
             foreach (var u in initial)
                 s.Units.Add(u.Clone());
+            if (ruleIds != null) s.RuleIds.AddRange(ruleIds);
             return s;
         }
 
@@ -233,6 +273,24 @@ namespace Warband.Sim
                             break;
                         }
                     break;
+
+                // A conditional passive's on/off state is persistent, so it belongs in the fold and
+                // not only in the moment (HSBG's lesson: state that can be read at any time beats a
+                // flash you had to be watching for). Scrubbing to tick N therefore reconstructs which
+                // passives are live at tick N, exactly like HP or statuses.
+                case EventKind.RuleChanged:
+                    if (src == null) break;
+                    if (e.Amount != 0)
+                    {
+                        if (!src.ActiveRules.Contains(e.Aux)) src.ActiveRules.Add(e.Aux);
+                    }
+                    else src.ActiveRules.Remove(e.Aux);
+                    break;
+
+                // TriggerFired mutates nothing — it is pure attribution, consumed by the renderer as
+                // it is dispatched. Listed so the switch documents that the omission is deliberate.
+                case EventKind.TriggerFired:
+                    break;
             }
         }
 
@@ -260,6 +318,12 @@ namespace Warband.Sim
                 Mix(u.StepTo.Q); Mix(u.StepTo.R); Mix(u.StepStart); Mix(u.StepEnd);
                 Mix(u.Range); Mix(u.Attack); Mix(u.AttackInterval); Mix(u.MoveInterval);
                 Mix(u.CritChance); Mix(u.HealAutos ? 1 : 0);
+                // The targeting rule and the rule span are SHOWN (the in-fight inspector reads
+                // both), so they are hashed for the same reason the stat block is: it makes the
+                // replay round-trip check the proof that the wire actually carries them.
+                Mix((int)u.TargetPref); Mix(u.Standoff);
+                Mix(u.TriggerRuleBase); Mix(u.TriggerRuleCount);
+                Mix(u.StatRuleBase); Mix(u.StatRuleCount);
                 MixStr(u.Name); MixStr(u.ChassisId); MixStr(u.WeaponName); Mix((int)u.WeaponTier);
                 foreach (var t in u.Traits) MixStr(t); // merge order is meaningful (last override wins)
                 var sorted = new List<(StatusKind Kind, int Mag, int ExpiryTick)>(u.Statuses);

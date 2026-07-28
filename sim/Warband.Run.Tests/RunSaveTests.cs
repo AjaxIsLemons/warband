@@ -388,13 +388,13 @@ namespace Warband.Run.Tests
                 Zone = RosterZone.Field,
                 Index = 0,
                 ForRank = Rank.B,
-                OptionA = "cleric.warpriest",
-                OptionB = "cleric.lifebinder",
+                Options = { "cleric.warpriest", "cleric.lifebinder" },
             };
             var resumed = RunController.Resume(RunSave.Read(RunSave.Write(state)), cat);
 
             Assert.NotNull(resumed.State.PendingSpec);
-            Assert.Equal("cleric.warpriest", resumed.State.PendingSpec!.OptionA);
+            Assert.Equal(new[] { "cleric.warpriest", "cleric.lifebinder" },
+                         resumed.State.PendingSpec!.Options);
             Assert.Equal(Rank.B, resumed.State.PendingSpec.ForRank);
         }
 

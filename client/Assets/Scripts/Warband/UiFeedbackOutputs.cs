@@ -19,209 +19,129 @@ internal sealed class UiFeedbackServices
 }
 
 /// <summary>
-/// Small pooled 2D UI sound player. Authored clips under Resources/UI/SFX replace the compact
-/// synthesized fallback automatically; missing art can never make feedback or a transaction fail.
+/// Cue → family adapter for the Hall's UI audio. All playback, pooling, bus routing and limiting
+/// live in <see cref="SfxPlayer"/> (`Design/audio.md` §5.0) — this type only decides WHICH of the
+/// six families a semantic feedback event belongs to, and pushes tuning changes through.
+///
+/// Two laws are enforced here rather than in the mixer (§5.1):
+///
+/// 1. <b>Clicks only.</b> Hover, focus, tooltip and drag-projection are SILENT. They used to fire
+///    the `preview` family behind a 45 ms cooldown; Jake cut that (2026-07-27) and the cooldown
+///    went with it, because there is nothing left to rate-limit.
+/// 2. <b>Sound is opt-in for cues, automatic for transactions.</b> An unmapped <i>cue</i> is
+///    silent, so a new ambient signal can never start clicking by default. An unmapped
+///    <i>transaction</i> falls back to `commit`, because a transaction is by definition something
+///    the player just committed to and it should always answer.
+///
+/// The synthesized fallbacks are gone. They existed so the Hall made noise before clips were
+/// authored; the clips exist now, and a missing one is a silent no-op inside `SfxPlayer` anyway.
 /// </summary>
 internal sealed class UiAudioDirector : MonoBehaviour, IUiAudioFeedback
 {
-    private const int SourceCount = 4;
-    private readonly List<AudioSource> _sources = new List<AudioSource>(SourceCount);
-    private readonly Dictionary<string, AudioClip[]> _families =
-        new Dictionary<string, AudioClip[]>(StringComparer.Ordinal);
-    private readonly List<AudioClip> _generated = new List<AudioClip>();
+    // A UI `major` (result, reward, rank-up) ducks the board so the payoff lands clean. Depth and
+    // timing per §5.3; the board bus is what steps back, and `Decisive` sits outside it.
+    private const float MajorDuckDb = 4f;
+    private const float MajorDuckHold = 0.15f;
+    private const float MajorDuckRelease = 0.25f;
+
     private HubPresentationConfig _config;
-    private AudioSource _ambienceSource;
-    private int _nextSource;
-    private float _lastPreviewAt = -10f;
-    private float _duckUntil = -10f;
 
     public void Initialize(HubPresentationConfig config)
     {
         _config = config ?? HubPresentationConfig.Load();
-        for (int i = 0; i < SourceCount; i++)
-        {
-            var source = gameObject.AddComponent<AudioSource>();
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            source.dopplerLevel = 0f;
-            _sources.Add(source);
-        }
-        _ambienceSource = gameObject.AddComponent<AudioSource>();
-        _ambienceSource.playOnAwake = false;
-        _ambienceSource.loop = true;
-        _ambienceSource.spatialBlend = 0f;
-        _ambienceSource.dopplerLevel = 0f;
-        _ambienceSource.clip = Resources.Load<AudioClip>("UI/SFX/hall_ambience");
-        if (_ambienceSource.clip == null)
-        {
-            _ambienceSource.clip = SynthesizeAmbience();
-            _generated.Add(_ambienceSource.clip);
-        }
         RefreshTuning();
-
-        Register("preview", 0.055f, 680f, 980f, 0.26f);
-        Register("select", 0.085f, 390f, 760f, 0.38f);
-        Register("route", 0.22f, 210f, 620f, 0.34f);
-        Register("deal", 0.13f, 520f, 310f, 0.32f);
-        Register("purchase", 0.28f, 340f, 820f, 0.46f);
-        Register("seat", 0.18f, 170f, 280f, 0.44f);
-        Register("bind", 0.40f, 310f, 1040f, 0.42f);
-        Register("commit", 0.28f, 260f, 840f, 0.46f);
-        Register("major", 0.42f, 150f, 680f, 0.52f);
-        Register("error", 0.16f, 185f, 92f, 0.42f);
     }
 
-    public void SetHallActive(bool active)
-    {
-        if (_ambienceSource == null) return;
-        RefreshTuning();
-        if (active && _config.audio.enabled)
-        {
-            if (!_ambienceSource.isPlaying) _ambienceSource.Play();
-        }
-        else if (_ambienceSource.isPlaying) _ambienceSource.Stop();
-    }
-
+    /// <summary>Push `HubPresentation.json → audio` into the shared player. Called on load and on
+    /// every hot-reload, so the F1 cockpit retunes audio live like everything else.</summary>
     public void RefreshTuning()
     {
-        if (_ambienceSource == null || _config?.audio == null) return;
-        _ambienceSource.mute = !_config.audio.enabled;
-        _ambienceSource.volume = _config.audio.volume * _config.audio.ambienceVolume;
+        UiAudioTuning a = _config?.audio;
+        if (a == null) return;
+        SfxPlayer.Volume = a.volume;
+        SfxPlayer.PitchVariance = a.pitchVariance;
     }
 
     public void Play(UiFeedbackEvent feedback)
     {
-        if (_config?.audio == null || !_config.audio.enabled || _sources.Count == 0) return;
-
+        // This surface owns its own switch — see the note in SfxPlayer on why there is no shared
+        // global mute.
+        if (_config?.audio == null || !_config.audio.enabled) return;
         string family = Family(feedback);
-        if (family == "preview")
-        {
-            float cooldown = _config.audio.hoverCooldownMs / 1000f;
-            if (Time.unscaledTime - _lastPreviewAt < cooldown) return;
-            _lastPreviewAt = Time.unscaledTime;
-        }
-
-        if (!_families.TryGetValue(family, out AudioClip[] clips) || clips.Length == 0) return;
-        AudioSource source = _sources[_nextSource++ % _sources.Count];
-        source.pitch = 1f + UnityEngine.Random.Range(-_config.audio.pitchVariance,
-            _config.audio.pitchVariance);
-        source.volume = _config.audio.volume;
-        AudioClip clip = clips[UnityEngine.Random.Range(0, clips.Length)];
-        source.PlayOneShot(clip);
-        if (family != "preview" && family != "select" && family != "route" &&
-            family != "deal")
-            _duckUntil = Mathf.Max(_duckUntil,
-                Time.unscaledTime + Mathf.Min(0.52f, clip.length + 0.08f));
+        if (family == null) return;   // silent by law — hover, tooltips, drag projection
+        SfxPlayer.Play(family, SfxBus.Ui);
+        if (family == "major")
+            SfxDucker.Duck(MajorDuckDb, MajorDuckHold, MajorDuckRelease);
     }
 
-    private void Update()
-    {
-        if (_ambienceSource == null || _config?.audio == null) return;
-        float baseVolume = _config.audio.volume * _config.audio.ambienceVolume;
-        float target = Time.unscaledTime < _duckUntil
-            ? baseVolume * _config.audio.commitDuck
-            : baseVolume;
-        _ambienceSource.volume = Mathf.MoveTowards(_ambienceSource.volume, target,
-            Time.unscaledDeltaTime * Mathf.Max(0.05f, baseVolume) * 8f);
-    }
-
-    private void Register(string family, float duration, float startHz, float endHz, float gain)
-    {
-        var authored = new List<AudioClip>();
-        for (int i = 1; i <= 3; i++)
-        {
-            AudioClip clip = Resources.Load<AudioClip>($"UI/SFX/{family}_{i}");
-            if (clip != null) authored.Add(clip);
-        }
-        if (authored.Count > 0)
-        {
-            _families[family] = authored.ToArray();
-            return;
-        }
-
-        AudioClip fallback = Synthesize("ui-" + family, duration, startHz, endHz, gain);
-        _generated.Add(fallback);
-        _families[family] = new[] { fallback };
-    }
-
-    private static AudioClip Synthesize(string name, float duration, float startHz, float endHz,
-                                        float gain)
-    {
-        const int sampleRate = 22050;
-        int count = Mathf.Max(64, Mathf.CeilToInt(duration * sampleRate));
-        var samples = new float[count];
-        float phase = 0f;
-        for (int i = 0; i < count; i++)
-        {
-            float t = i / (float)Mathf.Max(1, count - 1);
-            float hz = Mathf.Lerp(startHz, endHz, t);
-            phase += hz / sampleRate * Mathf.PI * 2f;
-            float envelope = Mathf.Pow(1f - t, 2.4f) * Mathf.SmoothStep(0f, 1f,
-                Mathf.Clamp01(t * 18f));
-            float body = Mathf.Sin(phase) * 0.72f + Mathf.Sin(phase * 2.01f) * 0.20f +
-                         Mathf.Sin(phase * 0.49f) * 0.08f;
-            samples[i] = body * envelope * gain;
-        }
-        AudioClip clip = AudioClip.Create(name, count, 1, sampleRate, false);
-        clip.SetData(samples, 0);
-        return clip;
-    }
-
-    private static AudioClip SynthesizeAmbience()
-    {
-        const int sampleRate = 22050;
-        const float duration = 4f;
-        int count = Mathf.CeilToInt(duration * sampleRate);
-        var samples = new float[count];
-        for (int i = 0; i < count; i++)
-        {
-            float t = i / (float)sampleRate;
-            float breath = 0.72f + 0.28f * Mathf.Sin(t * Mathf.PI * 0.5f);
-            float body = Mathf.Sin(t * Mathf.PI * 2f * 55f) * 0.52f +
-                         Mathf.Sin(t * Mathf.PI * 2f * 110f) * 0.20f +
-                         Mathf.Sin(t * Mathf.PI * 2f * 220f) * 0.06f;
-            samples[i] = body * breath * 0.035f;
-        }
-        AudioClip clip = AudioClip.Create("ui-hall-ambience", count, 1, sampleRate, false);
-        clip.SetData(samples, 0);
-        return clip;
-    }
-
+    /// <summary>Six families (§5.1.5). Returns null for "make no sound".</summary>
     private static string Family(UiFeedbackEvent feedback)
     {
-        if (feedback.Transaction == UiTransactionKind.BuyRank ||
-            feedback.Transaction == UiTransactionKind.RankChoice ||
-            feedback.Transaction == UiTransactionKind.BindInscription)
-            return "bind";
-        if (feedback.Transaction == UiTransactionKind.Equip) return "seat";
-        if (feedback.Transaction == UiTransactionKind.Reforge) return "major";
-        if (feedback.Transaction == UiTransactionKind.BuyWeapon ||
-            feedback.Transaction == UiTransactionKind.BuyTrinket)
-            return "purchase";
-        if (feedback.Cue == UiPolishSignals.Cue.Preview) return "preview";
-        if (feedback.Cue == UiPolishSignals.Cue.Select ||
-            feedback.Cue == UiPolishSignals.Cue.Tab) return "select";
-        if (feedback.Cue == UiPolishSignals.Cue.Route) return "route";
-        if (feedback.Cue == UiPolishSignals.Cue.Reroll ||
-            feedback.Cue == UiPolishSignals.Cue.Reveal) return "deal";
-        if (feedback.Cue == UiPolishSignals.Cue.Purchase) return "purchase";
-        if (feedback.Cue == UiPolishSignals.Cue.Confirm) return "seat";
-        if (feedback.Cue == UiPolishSignals.Cue.RankUp ||
-            feedback.Cue == UiPolishSignals.Cue.Reward &&
-            feedback.TargetId.IndexOf("hourstone", StringComparison.OrdinalIgnoreCase) >= 0)
-            return "bind";
-        if (feedback.Cue == UiPolishSignals.Cue.Error) return "error";
-        if (feedback.Tone == UiFeedbackTone.Major ||
-            feedback.Cue == UiPolishSignals.Cue.Result) return "major";
-        return "commit";
-    }
+        // --- transactions: always a commit of some kind, so always audible ---
+        switch (feedback.Transaction)
+        {
+            case UiTransactionKind.BuyRank:
+            case UiTransactionKind.RankChoice:
+            case UiTransactionKind.BindInscription:
+                return "bind";
+            case UiTransactionKind.Reforge:
+                return "major";
+            case UiTransactionKind.MusterSelect:
+            case UiTransactionKind.MusterDeselect:
+                return "tick";
+            case UiTransactionKind.None:
+                break;
+            default:
+                // BuyRecruit, BuyWeapon, BuyTrinket, BuyCapacity, Equip — and anything added later.
+                return "commit";
+        }
 
-    private void OnDestroy()
-    {
-        foreach (AudioClip clip in _generated)
-            if (clip != null) Destroy(clip);
-        _generated.Clear();
+        // --- cues: opt-in, so an unmapped one stays silent ---
+        switch (feedback.Cue)
+        {
+            // Clicks-only law: these are hover/preview/projection, not actions.
+            case UiPolishSignals.Cue.Preview:
+            case UiPolishSignals.Cue.TooltipReveal:
+            case UiPolishSignals.Cue.TooltipDismiss:
+            case UiPolishSignals.Cue.ProjectedTarget:
+            case UiPolishSignals.Cue.Attention:
+                return null;
+
+            case UiPolishSignals.Cue.Select:
+            case UiPolishSignals.Cue.Tab:
+            case UiPolishSignals.Cue.Pin:
+            case UiPolishSignals.Cue.Unpin:
+            case UiPolishSignals.Cue.SocketWake:
+                return "tick";
+
+            case UiPolishSignals.Cue.Reroll:
+            case UiPolishSignals.Cue.Reveal:
+            case UiPolishSignals.Cue.DrawerExpand:
+            case UiPolishSignals.Cue.DrawerCollapse:
+                return "deal";
+
+            case UiPolishSignals.Cue.Confirm:
+            case UiPolishSignals.Cue.Purchase:
+            case UiPolishSignals.Cue.Route:
+                return "commit";
+
+            case UiPolishSignals.Cue.Error:
+                return "error";
+
+            case UiPolishSignals.Cue.RankUp:
+            case UiPolishSignals.Cue.Result:
+                return "major";
+
+            // An Hourstone reward is a Bind in everything but name; other rewards are a result.
+            case UiPolishSignals.Cue.Reward:
+                return feedback.TargetId != null &&
+                       feedback.TargetId.IndexOf("hourstone", StringComparison.OrdinalIgnoreCase) >= 0
+                    ? "bind"
+                    : "major";
+        }
+
+        // A Major tone on an otherwise-unmapped cue still deserves the ceremony.
+        return feedback.Tone == UiFeedbackTone.Major ? "major" : null;
     }
 }
 

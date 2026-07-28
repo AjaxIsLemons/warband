@@ -16,6 +16,7 @@ internal sealed class ResultGateView
     private readonly Label _heading;
     private readonly Label _summary;
     private readonly VisualElement _stats;
+    private readonly CombatRecapPanel _recap;
     private readonly VisualElement _deaths;
     private readonly Label _recommendation;
     private readonly Button _watchAgain;
@@ -59,6 +60,9 @@ internal sealed class ResultGateView
         _stats.AddToClassList("result-gate__stats");
         _panel.Add(_stats);
 
+        _recap = new CombatRecapPanel();
+        _panel.Add(_recap.Root);
+
         _deaths = new VisualElement();
         _deaths.AddToClassList("result-gate__deaths");
         _panel.Add(_deaths);
@@ -81,7 +85,6 @@ internal sealed class ResultGateView
         actionsRow.Add(_continue);
         _panel.Add(actionsRow);
 
-        Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea());
         Root.style.display = DisplayStyle.None;
     }
 
@@ -111,9 +114,8 @@ internal sealed class ResultGateView
         _watchAgain.SetEnabled(model.CanWatchAgain);
         _watchAgain.style.display = model.CanWatchAgain ? DisplayStyle.Flex : DisplayStyle.None;
         SyncStats(model.Stats, entering && !reducedMotion);
+        _recap.Bind(model.Recap);
         SyncDeaths(model.Deaths, entering && !reducedMotion);
-        ApplySafeArea();
-
         if (!entering) return;
         _wasOpen = true;
         Root.AddToClassList("result-gate--enter");
@@ -136,6 +138,38 @@ internal sealed class ResultGateView
         _wasOpen = false;
         Root.style.display = DisplayStyle.None;
     }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public string EditorResolvedLayoutReport(VisualElement permanentRail = null)
+    {
+        var report = new UiLayoutReport("Result gate");
+        UiLayoutContract.RequireResolved(report, Root, "root");
+        UiLayoutContract.RequireInside(report, _panel, _safe, "result panel");
+        if (permanentRail != null)
+            UiLayoutContract.RequireNoOverlap(
+                report, _panel, permanentRail, "result panel / permanent rail");
+        UiLayoutContract.RequireNoScrollView(report, Root, "Result gate");
+        UiLayoutContract.RequireMinimumHeight(report, Root, "btn", 44f);
+        UiLayoutContract.RequireMinimumFont(report, Root, "result-gate__summary", 16f);
+        UiLayoutContract.RequireMinimumFont(report, Root, "result-stat__label", 13f);
+        UiLayoutContract.RequireMinimumFont(report, Root, "result-gate__death", 16f);
+        UiLayoutContract.RequireMinimumRenderedFont(
+            report, Root, "result-gate__summary", 12.5f);
+        UiLayoutContract.RequireWrappedTextFits(report, Root, "result-gate__summary");
+        UiLayoutContract.RequireWrappedTextFits(report, Root, "result-gate__death");
+
+        // The recap adds three charts to a panel that is contract-bound NOT to scroll, so the
+        // thing most likely to break is height and the second most likely is a clipped number.
+        UiLayoutContract.RequireInside(report, _recap.Root, _panel, "combat recap");
+        UiLayoutContract.RequireClassInside(report, Root, "recap-row", _panel);
+        UiLayoutContract.RequireMinimumFont(report, Root, "recap-row__name", 13f);
+        UiLayoutContract.RequireMinimumFont(report, Root, "recap-row__value", 13f);
+        UiLayoutContract.RequireMinimumFont(report, Root, "recap-key__label", 12f);
+        UiLayoutContract.RequireSingleLineTextFits(report, Root, "recap-row__value");
+        UiLayoutContract.RequireSingleLineTextFits(report, Root, "recap-key__label");
+        return report.ToString();
+    }
+#endif
 
     private void SyncStats(IReadOnlyList<ResultStatModel> models, bool animate)
     {
@@ -297,20 +331,6 @@ internal sealed class ResultGateView
             return int.TryParse(text.Substring(first, length), out value);
         }
         return false;
-    }
-
-    private void ApplySafeArea()
-    {
-        float width = Root.resolvedStyle.width;
-        float height = Root.resolvedStyle.height;
-        if (width <= 0f || height <= 0f) return;
-        Rect safe = Screen.safeArea;
-        float scaleX = width / Mathf.Max(1f, Screen.width);
-        float scaleY = height / Mathf.Max(1f, Screen.height);
-        _safe.style.paddingLeft = safe.xMin * scaleX;
-        _safe.style.paddingRight = (Screen.width - safe.xMax) * scaleX;
-        _safe.style.paddingTop = (Screen.height - safe.yMax) * scaleY;
-        _safe.style.paddingBottom = safe.yMin * scaleY;
     }
 
     private static Label Label(string className)

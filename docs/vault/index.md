@@ -37,6 +37,20 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Design/fx-runtime.md](Design/fx-runtime.md) — engine spec for combat-spectacle: VfxLibrary
   recipes, Director-stepped particles, hand-written URP shader set, ground substrate,
   status icon row, death linger, sim/wire changes (incl. the Burn fold bug), build phases.
+- [Design/sim-render-audit.md](Design/sim-render-audit.md) — **2026-07-27 measurement pass over the
+  sim's outputs and the whole render**: event census (~21 tells/s worst case), the two mechanic
+  classes that emit nothing (`StatRule`/`Trigger` identity), the cast-sigil lifetime bug, exact
+  board/camera geometry (FOV 60, 63 px back rank, 2.95 rows of UI overlap), the rhombus question
+  answered with frame-fill numbers, and ten ranked headlines.
+- [Design/audio.md](Design/audio.md) — **2026-07-27 audio research + plan (roadmap item 23)**: why the muted UI stings
+  are bad (measured onset/length/level over all 35 clips), the ~9.6 sound onsets/s combat density,
+  the two-system/one-substrate architecture (mixer buses, priority, same-clip coalescing, the duck),
+  the missing `sfxlint`/`sfxbake`/audition-sheet tooling, build order, and Jake's five decisions.
+- [Design/passive-legibility.md](Design/passive-legibility.md) — **2026-07-27 BUILT (roadmap item
+  20)**: making the engine visible. Genre grounding (Balatro's sequential per-source callouts,
+  Underlords' threshold-as-event, HSBG persistent state, SAP's ordering failure), the three laws
+  (named source · coming-online is an event · thin executor over the existing tell registry),
+  the `TriggerFired`/`RuleChanged` wire, the onset ration, and the extension story for new content.
 - [Design/authoring-combat-fx.md](Design/authoring-combat-fx.md) — **the how-to** for adding
   spell/weapon/field/status/death visuals: three change tiers, 5-step new-spell workflow,
   verification gates, and the consolidated next-steps ledger. Skill: `.claude/skills/spell-fx`.
@@ -44,6 +58,11 @@ Read this first. One line per page; open only what's relevant. Update on every a
   built**: obsidian Tower instrument + living Sand language, preview/selection/commit grammar,
   reusable motion/feedback/Painter2D FX/audio-haptic seams, live UI FX tuning, mobile/accessibility
   contracts, and remaining P3–P5 slices.
+
+- [Design/ui-responsive-contract.md](Design/ui-responsive-contract.md) — **the UI foundation SOP**:
+  how UI Toolkit's three responsive layers (panel scale / flex / breakpoint classes) actually work,
+  an audit of warband's 14.4k lines of USS against them, and the proposed contract — one classifier,
+  one safe-area frame, one token sheet, a 14px body floor, and the QA viewport matrix that gates it.
 
 - [Design/sauce.md](Design/sauce.md) — PARKED: class-identity sauce noodling (two rounds cold);
   superseded by the "wears different hats" quality bar.

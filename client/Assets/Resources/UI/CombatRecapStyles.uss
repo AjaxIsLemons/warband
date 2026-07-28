@@ -1,0 +1,232 @@
+/* THE COMBAT RECAP (roadmap item 1c) — the three charts on the result gate.
+ *
+ * Palette note: cause colour lives HERE and only here. Sim-side LexKind is deliberately not a
+ * colour (see Lexicon docs — battlefield colour is owned by the signature-matched tells in
+ * tuning.json), so the chart picks its own hues in the UI layer rather than teaching the sim
+ * about paint.
+ *
+ * Height is the binding constraint: the result gate is contract-bound to fit with NO ScrollView
+ * (ResultGateView.EditorResolvedLayoutReport), so every row here is deliberately short. */
+
+.recap {
+    margin-top: 18px;
+}
+
+.recap__section {
+    margin-bottom: 14px;
+}
+
+.recap__title {
+    color: rgb(139, 158, 184);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.recap__empty {
+    color: rgb(120, 136, 160);
+    font-size: 14px;
+}
+
+/* ---- ① contribution ------------------------------------------------------------------ */
+
+.recap-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 3px;
+    height: 22px;
+}
+
+.recap-row__name {
+    width: 132px;
+    flex-shrink: 0;
+    color: rgb(214, 226, 242);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.recap-row--dead .recap-row__name {
+    color: rgb(146, 156, 172);
+}
+
+/* A fallen hero keeps its bar — it earned that damage — but is marked as gone. */
+.recap-row__dagger {
+    width: 14px;
+    flex-shrink: 0;
+    color: rgb(224, 98, 104);
+    font-size: 13px;
+}
+
+.recap-row__track {
+    flex-grow: 1;
+    height: 12px;
+    background-color: rgba(14, 21, 32, 0.9);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(90, 112, 142, 0.35);
+    border-right-color: rgba(90, 112, 142, 0.35);
+    border-top-color: rgba(90, 112, 142, 0.35);
+    border-bottom-color: rgba(90, 112, 142, 0.35);
+}
+
+.recap-row__fill {
+    height: 100%;
+    background-color: rgb(116, 175, 246);
+}
+
+.recap-row--dead .recap-row__fill {
+    background-color: rgb(94, 126, 168);
+}
+
+.recap-row__value {
+    width: 116px;
+    flex-shrink: 0;
+    margin-left: 10px;
+    -unity-text-align: middle-right;
+    color: rgb(239, 244, 251);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.recap-row__sub {
+    width: 96px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    -unity-text-align: middle-right;
+    color: rgb(139, 158, 184);
+    font-size: 12px;
+}
+
+/* ---- ② composition ------------------------------------------------------------------- */
+
+.recap-comp {
+    flex-direction: row;
+    height: 18px;
+    background-color: rgba(14, 21, 32, 0.9);
+}
+
+.recap-comp__seg {
+    height: 100%;
+    background-color: rgb(110, 124, 146);
+}
+
+.recap-comp__legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 7px;
+}
+
+.recap-key {
+    flex-direction: row;
+    align-items: center;
+    margin-right: 16px;
+    margin-bottom: 3px;
+}
+
+.recap-key__swatch {
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    background-color: rgb(110, 124, 146);
+}
+
+.recap-key__label {
+    color: rgb(196, 210, 230);
+    font-size: 13px;
+}
+
+.cause--attack { background-color: rgb(116, 175, 246); }
+.cause--ability { background-color: rgb(178, 138, 246); }
+.cause--dot { background-color: rgb(126, 196, 142); }
+.cause--burn { background-color: rgb(244, 146, 76); }
+.cause--field { background-color: rgb(96, 196, 204); }
+.cause--trigger { background-color: rgb(244, 184, 76); }
+.cause--counter { background-color: rgb(224, 140, 150); }
+.cause--storm { background-color: rgb(150, 166, 190); }
+
+/* ---- ③ timeline ---------------------------------------------------------------------- */
+
+.recap-track {
+    height: 26px;
+    background-color: rgba(14, 21, 32, 0.9);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(90, 112, 142, 0.5);
+}
+
+/* Markers are absolutely placed by percentage, so the track is the fight's clock: ours drop
+ * below the midline, theirs sit above it, and the eye reads the trade at a glance. */
+.recap-mark {
+    position: absolute;
+    width: 3px;
+    height: 11px;
+}
+
+.recap-mark--ours {
+    top: 14px;
+    background-color: rgb(224, 98, 104);
+}
+
+.recap-mark--theirs {
+    top: 1px;
+    background-color: rgb(84, 189, 130);
+}
+
+.recap-track__waning {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 26px;
+    background-color: rgba(244, 146, 76, 0.85);
+}
+
+.recap-track__mid {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(90, 112, 142, 0.35);
+}
+
+.recap-track__axis {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.recap-axis__label {
+    color: rgb(139, 158, 184);
+    font-size: 12px;
+}
+
+.recap-axis__waning {
+    color: rgb(244, 146, 76);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+/* ---- phone: the gate cannot scroll, so the chart gives up width and detail, not rows ---- */
+
+.layout--phone .recap-row__name {
+    width: 92px;
+    font-size: 13px;
+}
+
+.layout--phone .recap-row__value {
+    width: 88px;
+    font-size: 13px;
+}
+
+.layout--phone .recap-row__sub {
+    display: none;
+}
+
+.layout--phone .recap__section {
+    margin-bottom: 10px;
+}

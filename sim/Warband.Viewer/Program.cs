@@ -44,17 +44,19 @@ namespace Warband.Viewer
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(dumpPath))!);
                 using (var fs = File.Create(dumpPath))
-                    Replay.Write(fs, result.InitialUnits, result.Events);
+                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds);
 
                 // Round-trip self-check: re-read and fold to the end; the view the client
                 // will reconstruct must hash-match the live fight (render-contract fidelity).
                 List<PlaybackUnit> rtInitial;
                 List<BattleEvent> rtEvents;
+                List<string> rtRules;
                 using (var fs = File.OpenRead(dumpPath))
-                    (rtInitial, rtEvents) = Replay.Read(fs);
+                    (rtInitial, rtEvents) = Replay.Read(fs, out rtRules);
                 var live = PlaybackState.From(result.InitialUnits); live.AdvanceToTick(result.Events, result.EndTick);
                 var round = PlaybackState.From(rtInitial); round.AdvanceToTick(rtEvents, result.EndTick);
-                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash();
+                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash()
+                          && rtRules.Count == result.RuleIds.Count;
 
                 Console.WriteLine($"wrote replay: {dumpPath} — {result.InitialUnits.Count} units, {result.Events.Count} events, winner {result.Winner}, {result.EndTick} ticks");
                 Console.WriteLine(ok ? "round-trip OK (view hashes match)" : "!! ROUND-TRIP MISMATCH");
@@ -110,15 +112,17 @@ namespace Warband.Viewer
                 var result = Warband.Viewer.Scenarios.Build(s, cat);
                 string outPath = Path.Combine(outDir, s.name + ".bytes");
                 using (var fs = File.Create(outPath))
-                    Replay.Write(fs, result.InitialUnits, result.Events);
+                    Replay.Write(fs, result.InitialUnits, result.Events, result.RuleIds);
 
                 List<PlaybackUnit> rtInitial;
                 List<BattleEvent> rtEvents;
+                List<string> rtRules;
                 using (var fs = File.OpenRead(outPath))
-                    (rtInitial, rtEvents) = Replay.Read(fs);
+                    (rtInitial, rtEvents) = Replay.Read(fs, out rtRules);
                 var live = PlaybackState.From(result.InitialUnits); live.AdvanceToTick(result.Events, result.EndTick);
                 var round = PlaybackState.From(rtInitial); round.AdvanceToTick(rtEvents, result.EndTick);
-                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash();
+                bool ok = rtEvents.Count == result.Events.Count && live.ViewHash() == round.ViewHash()
+                          && rtRules.Count == result.RuleIds.Count;
                 allOk &= ok;
 
                 report.Append(ReplayInspector.Report(

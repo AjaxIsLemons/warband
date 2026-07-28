@@ -69,9 +69,9 @@ namespace Warband.Content
                 // encounter's rule text; the answer is "kill the escorts first", which fights the
                 // player's instinct to focus the biggest threat. Not an immunity — every shared
                 // verb still lands on it, and burst still beats it once the Ward drops.
-                def.Triggers.Add(AtStart(Status(StatusKind.DamageTakenDown, 50, Self)));
+                def.Triggers.Add(AtStart(Status(StatusKind.DamageTakenDown, 50, Self)).Named("enemy.ward"));
                 def.Triggers.Add(On(EventKind.Death, W(TgtAlly()),
-                    Strip(StatusKind.DamageTakenDown, Self)));
+                    Strip(StatusKind.DamageTakenDown, Self)).Named("enemy.ward.break"));
                 def.Traits.Add("Ward");
             }
             return def;
@@ -124,13 +124,13 @@ namespace Warband.Content
                 // THE RITUAL: everything you brought takes the hit, wherever it stands.
                 Signature = { Dmg(Enemies(99), 38), Status(StatusKind.Slow, 200, Enemies(99), ticks: 30) },
                 // It stands where it was placed and channels — a fixed site, not a chaser.
-                Triggers = { AtStart(Status(StatusKind.Root, 0, Self)) },
+                Triggers = { AtStart(Status(StatusKind.Root, 0, Self)).Named("enemy.rooted") },
             };
             if (deathFed)
             {
                 // Same shape as the Crown's bell and the Oath's Bond — On(Death, ally). Proven
                 // grammar, and the player meets it here first at a survivable scale.
-                def.Triggers.Add(On(EventKind.Death, W(TgtAlly()), Mana(Self, 4)));
+                def.Triggers.Add(On(EventKind.Death, W(TgtAlly()), Mana(Self, 4)).Named("enemy.deathfed"));
                 def.Traits.Add("Death-fed");
             }
             return def;
@@ -147,7 +147,7 @@ namespace Warband.Content
             MaxHp = 120, Attack = 30, AttackInterval = 9, Range = 1,
             MoveInterval = 3, ManaMax = 0,
             TargetPref = TargetPref.Farthest,
-            Triggers = { AtStart(Leap(Farthest)) },  // it is in your backline on tick 0
+            Triggers = { AtStart(Leap(Farthest)).Named("enemy.ambush") },  // it is in your backline on tick 0
         };
 
         /// <summary>Every role, for tests and tooling that need to sweep the grammar.</summary>
@@ -196,7 +196,7 @@ namespace Warband.Content
                 Dmg(Farthest, 58),
                 Glyph(Farthest, Ashfall(radius: 1, ticks: 80)),
             },
-            Triggers = { AtStart(Status(StatusKind.Root, 0, Self)) },
+            Triggers = { AtStart(Status(StatusKind.Root, 0, Self)).Named("enemy.emplaced") },
         };
 
         /// <summary>The crater the Bombard leaves. Factional by default (pve-encounters.md):
@@ -233,10 +233,10 @@ namespace Warband.Content
             },
             Triggers =
             {
-                AtStart(Status(StatusKind.Root, 0, Self)),
+                AtStart(Status(StatusKind.Root, 0, Self)).Named("crown.emplaced"),
                 // Every death in its court rings the bell closer. Same shape as the Bond's
                 // On(Death, ally) — proven grammar, new meaning.
-                On(EventKind.Death, W(TgtAlly()), Mana(Self, 4)),
+                On(EventKind.Death, W(TgtAlly()), Mana(Self, 4)).Named("crown.bell"),
             },
         };
 

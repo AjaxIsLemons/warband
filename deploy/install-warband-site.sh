@@ -34,6 +34,16 @@ WARBAND_COOKIE_SECRET=$(head -c 32 /dev/urandom | base64)
 WARBAND_ADDR=127.0.0.1:8092
 WARBAND_BASE_URL=https://warband.inhouseboyz.com
 WARBAND_RELEASES_DIR=/srv/warband-releases
+
+# Dev surfaces (/sfx, the SFX audition sheet) are ADMIN-ONLY and FAIL CLOSED: leave this empty and
+# /sfx 404s for everyone, including you. It is a separate gate from the launcher on purpose —
+# any signed-in Discord account may download the launcher, so "signed in" would show every friend
+# the work-in-progress audio. Comma-separated Discord user ids.
+# To reuse the id already configured for Shoota, without it passing through an agent's context:
+#   sed -n 's/^SHOOTA_ADMIN_IDS=/WARBAND_ADMIN_IDS=/p' ~/.config/shoota-site/env >> ~/.config/warband-site/env
+WARBAND_ADMIN_IDS=
+# Where \`make sfx\` writes the audition sheet. Served read-only, admin-gated.
+WARBAND_SFX_DIR=$HOME/Work/warband/docs/audio
 EOF
 	chmod 600 ~/.config/warband-site/env
 	echo ">> created ~/.config/warband-site/env — fill in the two Discord values, then re-run."

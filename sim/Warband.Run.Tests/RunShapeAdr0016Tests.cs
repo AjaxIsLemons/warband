@@ -45,7 +45,7 @@ namespace Warband.Run.Tests
             public IReadOnlyList<string> WeaponPool(int act) => _inner.WeaponPool(act);
             public IReadOnlyList<string> TrinketPool(int act) => _inner.TrinketPool(act);
             public IReadOnlyList<string> BannerPool(int act) => _inner.BannerPool(act);
-            public (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId)
+            public IReadOnlyList<string> SpecOptions(string chassisId, Rank rank, string? pathId)
                 => _inner.SpecOptions(chassisId, rank, pathId);
             public Rank ForkRank(string chassisId) => _inner.ForkRank(chassisId);
             public List<(UnitDef Def, Hex Pos)> Encounter(int act, int nodeIndex, FightTier tier, Rng rng)

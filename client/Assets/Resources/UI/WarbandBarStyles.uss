@@ -18,8 +18,8 @@
 
 .warband-bar__identity,
 .warband-bar__armory {
-    width: 136px;
-    min-width: 136px;
+    width: 156px;
+    min-width: 156px;
     height: 102px;
     padding-left: 12px;
     padding-right: 10px;
@@ -53,11 +53,15 @@
 }
 
 .warband-bar__manage {
+    width: 100%;
+    min-height: 18px;
     margin-top: 7px;
     color: rgb(217, 164, 58);
     font-size: 10px;
     -unity-font-style: bold;
     letter-spacing: 1px;
+    white-space: normal;
+    overflow: hidden;
 }
 
 .warband-bar__scroll {
@@ -109,11 +113,15 @@
 }
 
 .warband-bar__armory-hint {
+    width: 100%;
+    min-height: 30px;
     margin-top: 6px;
     color: rgb(108, 133, 165);
     font-size: 8px;
     -unity-font-style: bold;
     letter-spacing: 0.8px;
+    white-space: normal;
+    overflow: hidden;
 }
 
 .warband-bar__armory--drop-target {
@@ -394,7 +402,7 @@
 .warband-tooltip__body {
     margin-top: 7px;
     color: rgb(190, 204, 222);
-    font-size: 13px;
+    font-size: var(--ui-type-body);
     white-space: normal;
 }
 
@@ -499,6 +507,14 @@
     bottom: 96px;
 }
 
+.shell-has-warband-bar .wager-screen {
+    bottom: 96px;
+}
+
+.shell-has-warband-bar .result-gate {
+    bottom: 96px;
+}
+
 .warband-bar--compact {
     height: 96px;
     min-height: 96px;
@@ -512,11 +528,11 @@
 }
 
 .warband-bar--compact .warband-bar__scroll {
-    width: 620px;
-    max-width: 62%;
+    width: auto;
+    max-width: none;
     height: 82px;
     min-height: 82px;
-    flex-grow: 0;
+    flex-grow: 1;
     margin-left: 0;
     margin-right: 18px;
 }
@@ -601,11 +617,11 @@
     right: 6px;
     top: 12px;
     bottom: auto;
-    height: 18px;
+    height: 22px;
     padding-top: 1px;
     color: rgb(231, 235, 241);
     background-color: rgba(0, 0, 0, 0);
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
     letter-spacing: 0.5px;
     -unity-text-align: middle-left;
 }
@@ -648,8 +664,9 @@
 }
 
 .layout--compact .warband-bar--compact .warband-bar__scroll {
-    width: 530px;
-    max-width: 58%;
+    width: auto;
+    max-width: none;
+    flex-grow: 1;
 }
 
 .layout--compact .warband-bar--compact .warband-bar__identity {
@@ -663,6 +680,14 @@
 }
 
 .layout--phone.shell-has-warband-bar .hub-safe-frame {
+    bottom: 88px;
+}
+
+.layout--phone.shell-has-warband-bar .wager-screen {
+    bottom: 88px;
+}
+
+.layout--phone.shell-has-warband-bar .result-gate {
     bottom: 88px;
 }
 
@@ -696,7 +721,7 @@
 }
 
 .layout--phone .warband-bar--compact .warband-bar__manage {
-    font-size: 10px;
+    font-size: var(--ui-type-meta);
 }
 
 .layout--phone .warband-bar--compact .warband-hero {
@@ -712,7 +737,7 @@
 
 .layout--phone .warband-bar--compact .warband-hero__class {
     left: 75px;
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
 }
 
 .layout--phone .warband-bar--compact .warband-hero__gear {

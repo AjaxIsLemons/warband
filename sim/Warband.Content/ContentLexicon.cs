@@ -220,5 +220,94 @@ namespace Warband.Content
                 ["banneret.warcaller.lastmarch"] = new LexEntry("Last March",
                     "The whole warband counts as his Company.", LexKind.Utility),
             };
+
+        /// <summary>
+        /// Display copy for a RULE id — the render identity Loadout.Compose stamps onto every
+        /// Trigger and StatRule (Design/passive-legibility.md). This is the one place that knows how
+        /// to read the id shapes the composer produces, so a new source of rules is handled here and
+        /// nowhere else:
+        ///
+        /// <list type="bullet">
+        /// <item>spec node — "berserker.bloodreaver.redharvest" → the Nodes table</item>
+        /// <item>chassis innate — "berserker" → the Chassis table</item>
+        /// <item>weapon — "Greataxe" is already display text, by the same law that keeps weapons
+        ///       out of the Nodes table above</item>
+        /// <item>mastery rider — "Greataxe/mastery"</item>
+        /// <item>team rule — "banner.chorus" → the Banner registry (these become Inscriptions)</item>
+        /// <item>authored enemy/boss rule — "crown.bell", named in Enemies.cs/Encounters.cs</item>
+        /// <item>the "#2" suffix a source with several rules gets</item>
+        /// </list>
+        ///
+        /// Never throws and never returns empty: an unrecognised id degrades to its raw text, which
+        /// is readable-but-obviously-placeholder — the same contract as <see cref="Lexicon.Fallback"/>.
+        /// That is what lets a passive be authored today and named properly later.
+        /// </summary>
+        public static LexEntry Rule(string ruleId)
+        {
+            if (string.IsNullOrEmpty(ruleId)) return Lexicon.Fallback("Passive");
+
+            // "#2" marks the second rule from one source; resolve the source, then say which.
+            string id = ruleId;
+            string ordinal = "";
+            int hash = id.LastIndexOf('#');
+            if (hash > 0)
+            {
+                ordinal = " " + id.Substring(hash + 1);
+                id = id.Substring(0, hash);
+            }
+
+            var entry = Resolve(id);
+            return ordinal.Length == 0
+                ? entry
+                : new LexEntry(entry.Name + ordinal, entry.Text, entry.Kind);
+        }
+
+        private static LexEntry Resolve(string id)
+        {
+            if (id.EndsWith("/mastery", System.StringComparison.Ordinal))
+            {
+                string weapon = id.Substring(0, id.Length - "/mastery".Length);
+                return new LexEntry(weapon + " mastery",
+                    "The weapon's latent rider — live for specialists, and for everyone at Relic temper.",
+                    LexKind.Utility);
+            }
+            if (id.StartsWith("banner.", System.StringComparison.Ordinal))
+            {
+                string key = id.Substring("banner.".Length);
+                return Catalog.Banners.TryGetValue(key, out var banner)
+                    ? new LexEntry(banner.Name, "A run-long rule carried by the whole warband.", LexKind.Utility)
+                    : Lexicon.Fallback(key);
+            }
+            if (Nodes.TryGetValue(id, out var node)) return node;
+            if (Chassis_.TryGetValue(id, out var chassis)) return chassis;
+            if (Authored.TryGetValue(id, out var authored)) return authored;
+            // A weapon name, a trinket name, or something not yet authored: the id IS the copy.
+            return Lexicon.Fallback(id);
+        }
+
+        /// <summary>Rules authored directly onto enemy and boss bodies rather than composed from a
+        /// kit. ADR 0024's disclosure contract promises the player these by name, so they get one.</summary>
+        public static readonly IReadOnlyDictionary<string, LexEntry> Authored =
+            new Dictionary<string, LexEntry>
+            {
+                ["enemy.ward"] = new LexEntry("Ward",
+                    "Its escorts are holding the damage off it. Kill them and the Ward drops.", LexKind.Ward),
+                ["enemy.ward.break"] = new LexEntry("Ward Broken",
+                    "An escort fell — the Ward is gone.", LexKind.Ward),
+                ["enemy.deathfed"] = new LexEntry("Death-fed",
+                    "Every death in its court advances the ritual — including the ones you cause.", LexKind.Utility),
+                ["enemy.rooted"] = new LexEntry("Channelling",
+                    "It stands where it was placed and channels. It will not come to you.", LexKind.Control),
+                ["enemy.emplaced"] = new LexEntry("Emplaced",
+                    "A fixed battery. It never advances.", LexKind.Control),
+                ["enemy.ambush"] = new LexEntry("Ambush",
+                    "It opens the fight already in your backline.", LexKind.Utility),
+                ["oath.bond"] = new LexEntry("The Bond",
+                    "When its sworn partner falls, the survivor is enraged.", LexKind.Tempo),
+                ["crown.emplaced"] = new LexEntry("Emplaced",
+                    "The Crown does not move. The fight comes to it.", LexKind.Control),
+                ["crown.bell"] = new LexEntry("The Bell",
+                    "Every death in its court rings the bell closer — yours included.", LexKind.Utility),
+            };
     }
 }

@@ -2162,3 +2162,852 @@
     min-height: 58px;
     margin-left: -84px;
 }
+
+/* Inbox Market redesign: one command ribbon, one decision workspace, one compact party rail. */
+.hub-command-ribbon {
+    height: 72px;
+    min-height: 72px;
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: stretch;
+    padding-left: 12px;
+    padding-right: 12px;
+    background-color: rgba(5, 9, 15, 0.995);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(84, 106, 135, 0.70);
+}
+
+.hub-command-ribbon__identity {
+    width: 300px;
+    min-width: 300px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.hub-command-ribbon .hub-back {
+    width: 80px;
+    min-width: 80px;
+    min-height: 46px;
+    margin-right: 10px;
+}
+
+.hub-command-ribbon .management-brand {
+    width: auto;
+    min-width: 0;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.management-brand__context {
+    flex-direction: row;
+    align-items: center;
+}
+
+.hub-command-ribbon .management-brand__name {
+    margin-right: 8px;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+}
+
+.hub-command-ribbon .management-brand__act {
+    font-size: 10px;
+}
+
+.management-brand__page {
+    min-width: 0;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.hub-command-ribbon .hub-workspace__title {
+    max-width: 194px;
+    margin-right: 8px;
+    font-size: 21px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.hub-command-ribbon .hub-workspace__eyebrow {
+    color: rgb(228, 177, 66);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.hub-command-ribbon .management-track {
+    width: 240px;
+    min-width: 176px;
+    flex-grow: 0;
+    flex-shrink: 1;
+    justify-content: center;
+}
+
+.hub-command-ribbon .hub-anchor-rail {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    width: auto;
+    min-width: 344px;
+    height: 100%;
+    min-height: 0;
+    margin-left: auto;
+    margin-right: 8px;
+    flex-grow: 0;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+.hub-command-ribbon .hub-anchor {
+    width: 86px;
+    min-width: 86px;
+    height: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 5px;
+    padding-right: 5px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-left-width: 1px;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 3px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.hub-command-ribbon .hub-anchor__sigil {
+    width: 24px;
+    height: 24px;
+    margin-right: 4px;
+}
+
+.hub-command-ribbon .hub-anchor__label {
+    display: flex;
+    font-size: 8px;
+    -unity-font-style: bold;
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+
+.hub-command-ribbon .management-continue {
+    min-width: 150px;
+    height: 46px;
+    min-height: 46px;
+    align-self: center;
+    margin-right: 8px;
+    color: rgb(233, 185, 79);
+    background-color: rgba(16, 23, 33, 0.98);
+    border-left-color: rgba(217, 164, 58, 0.88);
+    border-right-color: rgba(217, 164, 58, 0.88);
+    border-top-color: rgba(217, 164, 58, 0.88);
+    border-bottom-color: rgba(217, 164, 58, 0.88);
+    font-size: 10px;
+}
+
+.hub-command-ribbon .management-resources {
+    min-width: 64px;
+    width: 64px;
+}
+
+.hub-command-ribbon .management-resource--sand {
+    min-width: 58px;
+    min-height: 46px;
+    padding-left: 6px;
+    padding-right: 6px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(12, 19, 28, 0.96);
+}
+
+.hub-command-ribbon .management-resource__value--sand .currency-amount__value {
+    font-size: 20px;
+}
+
+.hub-command-ribbon .management-resource__value--sand .currency-amount__icon {
+    width: 22px;
+    height: 22px;
+}
+
+.hub--overview .hub-command-ribbon .hub-back,
+.hub--overview .hub-command-ribbon .hub-anchor-rail,
+.hub--overview .hub-command-ribbon .management-continue {
+    display: none;
+}
+
+.hub--overview .hub-command-ribbon__identity {
+    width: 320px;
+}
+
+.hub--overview .hub-command-ribbon .management-track {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hub-workspace__body {
+    flex-grow: 1;
+}
+
+.hub-collection {
+    width: 42%;
+    min-width: 0;
+}
+
+.hub-inspector-scrim {
+    width: 58%;
+}
+
+.hub--market .hub-section-label,
+.hub--market .market-offer-page {
+    display: none;
+}
+
+.hub-collection__footer {
+    min-height: 22px;
+    flex-shrink: 0;
+    padding-left: 18px;
+    padding-right: 14px;
+    padding-top: 4px;
+    color: rgb(112, 130, 153);
+    background-color: rgba(6, 10, 16, 0.96);
+    font-size: 10px;
+}
+
+.hub-inspector-close {
+    display: flex;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 16px;
+}
+
+.wb-inspector__overview {
+    min-height: 176px;
+}
+
+.wb-inspector--hub .wb-inspector__portrait {
+    min-width: 184px;
+    height: 176px;
+    min-height: 176px;
+}
+
+.wb-inspector--hub .wb-inspector__heading {
+    padding-top: 10px;
+    padding-right: 54px;
+}
+
+.wb-inspector__decision-body {
+    min-width: 0;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.wb-inspector__column {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-inspector__column--secondary {
+    display: none;
+    width: 50%;
+    border-left-width: 1px;
+    border-left-color: rgba(67, 86, 112, 0.58);
+}
+
+.wb-inspector--recruit .wb-inspector__column--profile,
+.wb-inspector--recruit .wb-inspector__column--secondary {
+    width: 50%;
+    flex-basis: 0;
+}
+
+.wb-equipment-preview {
+    width: 58%;
+    min-width: 360px;
+    flex-shrink: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 9px;
+    border-left-width: 1px;
+    border-left-color: rgba(67, 86, 112, 0.72);
+    background-color: rgba(8, 14, 22, 0.86);
+}
+
+.wb-equipment-preview__label {
+    margin-bottom: 5px;
+}
+
+.wb-equipment-preview__recipients {
+    min-height: 46px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.wb-recipient {
+    position: relative;
+    width: 31%;
+    min-width: 126px;
+    height: 44px;
+    min-height: 44px;
+    margin-right: 6px;
+    margin-bottom: 5px;
+    padding-left: 43px;
+    padding-right: 7px;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: hidden;
+    background-color: rgba(16, 25, 37, 0.98);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(72, 94, 122, 0.82);
+    border-right-color: rgba(72, 94, 122, 0.82);
+    border-top-color: rgba(72, 94, 122, 0.82);
+    border-bottom-color: rgba(72, 94, 122, 0.82);
+}
+
+.wb-recipient:focus {
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+}
+
+.wb-recipient--selected {
+    background-color: rgba(38, 35, 24, 0.99);
+    border-left-color: rgb(217, 164, 58);
+    border-right-color: rgb(217, 164, 58);
+    border-top-color: rgb(217, 164, 58);
+    border-bottom-color: rgb(217, 164, 58);
+}
+
+.wb-recipient__portrait {
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.wb-recipient__fallback {
+    font-size: 10px;
+}
+
+.wb-recipient__rank {
+    color: rgb(217, 164, 58);
+    font-size: 8px;
+}
+
+.wb-recipient__name {
+    max-width: 100%;
+    margin-top: 2px;
+    color: rgb(230, 235, 242);
+    font-size: 11px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.wb-equipment-preview__title {
+    min-height: 28px;
+    margin-top: 2px;
+    padding-top: 6px;
+    color: rgb(205, 215, 228);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(15, 23, 34, 0.96);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(75, 96, 124, 0.54);
+}
+
+.wb-equipment-preview__comparisons {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.wb-equipment-preview__comparisons .wb-comparison {
+    width: 50%;
+    min-width: 0;
+    min-height: 29px;
+    margin-top: 0;
+    padding-left: 36px;
+    padding-right: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(54, 70, 92, 0.46);
+}
+
+.wb-equipment-preview__comparisons .wb-comparison__label {
+    width: 82px;
+    min-width: 0;
+    flex-shrink: 1;
+    letter-spacing: 0.5px;
+}
+
+.wb-equipment-preview__comparisons .wb-comparison__before,
+.wb-equipment-preview__comparisons .wb-comparison__after {
+    min-width: 54px;
+    flex-shrink: 1;
+    font-size: 14px;
+}
+
+.wb-equipment-preview__comparisons .wb-comparison__arrow {
+    width: 22px;
+    min-width: 22px;
+}
+
+.wb-comparison__direction {
+    width: 18px;
+    min-width: 18px;
+    color: rgb(148, 164, 184);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.wb-comparison--good .wb-comparison__direction {
+    color: rgb(105, 216, 154);
+}
+
+.wb-comparison--bad .wb-comparison__direction {
+    color: rgb(224, 119, 108);
+}
+
+.wb-comparison--contextual .wb-comparison__direction {
+    color: rgb(231, 185, 84);
+}
+
+.wb-equipment-preview__rule-deltas {
+    margin-top: 5px;
+    flex-direction: row;
+}
+
+.wb-rule-delta {
+    min-width: 0;
+    min-height: 42px;
+    flex-basis: 0;
+    flex-grow: 1;
+    margin-right: 6px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 5px;
+    background-color: rgba(13, 21, 31, 0.96);
+    border-left-width: 2px;
+}
+
+.wb-rule-delta--loss {
+    border-left-color: rgb(210, 91, 78);
+}
+
+.wb-rule-delta--gain {
+    border-left-color: rgb(93, 194, 137);
+}
+
+.wb-rule-delta--inactive {
+    opacity: 0.68;
+    border-left-color: rgb(217, 164, 58);
+}
+
+.wb-rule-delta--inactive .wb-rule-delta__label {
+    color: rgb(231, 185, 84);
+}
+
+.wb-rule-delta__label {
+    color: rgb(151, 169, 191);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 0.7px;
+}
+
+.wb-rule-delta--loss .wb-rule-delta__label {
+    color: rgb(231, 112, 96);
+}
+
+.wb-rule-delta--gain .wb-rule-delta__label {
+    color: rgb(111, 213, 158);
+}
+
+.wb-rule-delta__copy {
+    margin-top: 3px;
+    color: rgb(196, 207, 221);
+    font-size: 11px;
+    white-space: normal;
+}
+
+.wb-comparison--contextual .wb-comparison__after {
+    color: rgb(231, 185, 84);
+}
+
+.warband-shelf {
+    height: 84px;
+    min-height: 84px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.warband-shelf__identity,
+.warband-shelf__armory {
+    height: 70px;
+}
+
+.warband-shelf__slots {
+    height: 72px;
+}
+
+.warband-shelf__reserve {
+    height: 72px;
+}
+
+.party-slot {
+    height: 68px;
+}
+
+.party-slot--previewed {
+    background-color: rgba(43, 37, 22, 0.99);
+    border-left-color: rgb(217, 164, 58);
+    border-right-color: rgb(217, 164, 58);
+    border-top-color: rgb(217, 164, 58);
+    border-bottom-color: rgb(217, 164, 58);
+}
+
+.layout--compact .hub-command-ribbon__identity {
+    width: 252px;
+    min-width: 252px;
+}
+
+.layout--compact .hub-command-ribbon .management-track {
+    width: 172px;
+    min-width: 150px;
+}
+
+.layout--compact .hub-command-ribbon .hub-anchor-rail {
+    min-width: 328px;
+}
+
+.layout--compact .hub-command-ribbon .hub-anchor {
+    width: 82px;
+    min-width: 82px;
+}
+
+.layout--compact .hub-command-ribbon .hub-anchor__label {
+    display: flex;
+}
+
+.layout--compact .hub-command-ribbon .management-continue {
+    min-width: 116px;
+}
+
+.layout--compact .hub-collection {
+    width: 43%;
+    min-width: 0;
+}
+
+.layout--compact .hub-inspector-scrim {
+    width: 57%;
+}
+
+.layout--compact .wb-equipment-preview {
+    width: 62%;
+    min-width: 320px;
+}
+
+.hub--market .hub-collection__toolbar {
+    height: 58px;
+    min-height: 58px;
+    padding-left: 14px;
+    padding-right: 12px;
+}
+
+.hub--market .management-secondary {
+    min-width: 150px;
+    min-height: 42px;
+    font-size: 11px;
+}
+
+.hub--market .hub-collection__scroll {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 10px;
+    padding-bottom: 8px;
+    overflow: hidden;
+}
+
+.hub--market .hub-inspector-scroll {
+    overflow: hidden;
+}
+
+.hub--market .hub-inspector-slot {
+    flex-grow: 0;
+}
+
+.hub--market .wb-inspector--hub {
+    height: auto;
+    min-height: 0;
+    padding-bottom: 0;
+}
+
+.hub--market .wb-inspector__content {
+    flex-grow: 0;
+}
+
+.hub--market .wb-inspector--hub .wb-inspector__section {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 8px;
+    padding-top: 8px;
+}
+
+.hub--market .wb-inspector--hub .wb-inspector__line-icon {
+    width: 34px;
+    height: 34px;
+    margin-right: 10px;
+}
+
+.hub--market .wb-inspector--hub .wb-inspector__line-title {
+    font-size: 16px;
+}
+
+.hub--market .wb-inspector--hub .wb-inspector__line-copy {
+    font-size: 14px;
+}
+
+.hub--market .wb-inspector__tags {
+    margin-top: 0;
+}
+
+.hub--market .hub-inspector-action-dock .wb-inspector__actions {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 9px;
+}
+
+.hub--market .hub-inspector-action-dock .wb-inspector__actions .btn {
+    min-height: 46px;
+    font-size: 12px;
+}
+
+.layout--compact .hub-command-ribbon {
+    height: 68px;
+    min-height: 68px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.layout--compact .hub-command-ribbon .hub-back {
+    width: 72px;
+    min-width: 72px;
+    margin-right: 7px;
+    font-size: 9px;
+}
+
+.layout--compact .hub-command-ribbon .hub-workspace__title {
+    max-width: 164px;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+}
+
+.layout--compact .hub-command-ribbon .hub-anchor__sigil {
+    width: 21px;
+    height: 21px;
+}
+
+.layout--compact .hub-command-ribbon .hub-anchor__label {
+    font-size: 7px;
+    letter-spacing: 0;
+}
+
+.layout--compact .hub-command-ribbon .management-resources {
+    min-width: 58px;
+    width: 58px;
+}
+
+.layout--compact.hub--market .hub-collection__toolbar {
+    height: 50px;
+    min-height: 50px;
+}
+
+.layout--compact.hub--market .management-secondary {
+    min-width: 126px;
+    min-height: 38px;
+}
+
+.layout--compact.hub--market .hub-collection__scroll {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+}
+
+.layout--compact.hub--market .hub-collection__footer {
+    min-height: 20px;
+    padding-left: 10px;
+    padding-top: 3px;
+    font-size: 9px;
+}
+
+.layout--compact.hub--market .wb-inspector__overview {
+    min-height: 158px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector__portrait {
+    min-width: 160px;
+    height: 158px;
+    min-height: 158px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector__title {
+    font-size: 25px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector-stat {
+    min-width: 76px;
+    min-height: 44px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector-stat__value {
+    font-size: 17px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector__section {
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-bottom: 6px;
+    padding-top: 6px;
+}
+
+.layout--compact.hub--market .wb-inspector--hub .wb-inspector__line-copy {
+    font-size: 13px;
+}
+
+.layout--compact.hub--market .wb-equipment-preview {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 7px;
+    padding-bottom: 6px;
+}
+
+.layout--compact.hub--market .hub-inspector-action-dock .wb-inspector__actions {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 4px;
+    padding-bottom: 5px;
+}
+
+.layout--compact.hub--market .hub-inspector-action-dock {
+    height: 56px;
+    min-height: 56px;
+    max-height: 56px;
+}
+
+.layout--compact.hub--market .hub-inspector-action-dock .wb-inspector__actions .btn {
+    min-height: 42px;
+}
+
+.layout--compact .warband-shelf {
+    height: 78px;
+    min-height: 78px;
+}
+
+.layout--compact .warband-shelf__identity,
+.layout--compact .warband-shelf__armory {
+    height: 64px;
+}
+
+.layout--compact .warband-shelf__slots,
+.layout--compact .warband-shelf__reserve {
+    height: 66px;
+}
+
+.layout--compact .party-slot {
+    height: 62px;
+}
+
+.layout--short .hub-command-ribbon {
+    height: 64px;
+    min-height: 64px;
+}
+
+.layout--short .hub-workspace__body {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.layout--short.hub--market .hub-collection__toolbar {
+    height: 46px;
+    min-height: 46px;
+}
+
+.layout--short.hub--market .management-secondary {
+    min-height: 36px;
+}
+
+.layout--short.hub--market .wb-inspector__overview {
+    min-height: 148px;
+}
+
+.layout--short.hub--market .wb-inspector--hub .wb-inspector__portrait {
+    height: 148px;
+    min-height: 148px;
+}
+
+.layout--short .warband-shelf {
+    height: 70px;
+    min-height: 70px;
+}
+
+.layout--short .warband-shelf__identity,
+.layout--short .warband-shelf__armory {
+    height: 58px;
+}
+
+.layout--short .warband-shelf__slots,
+.layout--short .warband-shelf__reserve {
+    height: 60px;
+}
+
+.layout--short .party-slot {
+    height: 56px;
+}
+
+.layout--phone .hub-command-ribbon {
+    height: 62px;
+    min-height: 62px;
+}
+
+.layout--phone .hub-command-ribbon .hub-anchor-rail,
+.layout--phone .hub-command-ribbon .management-continue {
+    display: none;
+}
+
+.layout--phone.hub--market .hub-inspector-slot {
+    flex-grow: 1;
+}
+
+.layout--phone.hub--market .wb-inspector--hub {
+    height: 100%;
+}
+
+.layout--phone.hub--market .wb-inspector__content {
+    flex-grow: 1;
+}

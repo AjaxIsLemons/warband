@@ -157,6 +157,8 @@ namespace Warband.Sim
             bool mastered = false,
             int rankSteps = 0)
         {
+            // See AddRules — every rule that reaches a UnitDef goes through it, so identity is a
+            // property of composition rather than of authoring.
             var w = weapon ?? chassis.StarterWeapon;
             int scale = TierScale(tier);
             var def = new UnitDef
@@ -182,17 +184,14 @@ namespace Warband.Sim
             // Cloned, not shared: node patches mutate this list in place, and the chassis'
             // own Signature is a static catalog instance reused by every later composition.
             foreach (var e in chassis.Signature) def.Signature.Add(e.Clone());
-            def.Triggers.AddRange(chassis.Passives);
-            def.Triggers.AddRange(w.Triggers);
-            def.StatRules.AddRange(chassis.StatRules);
-            def.StatRules.AddRange(w.StatRules);
+            AddRules(def, chassis.Passives, chassis.StatRules, chassis.Id);
+            AddRules(def, w.Triggers, w.StatRules, w.Name);
 
             bool riderLive = mastered || tier == WeaponTier.Relic;
             int riderCopies = (mastered && tier == WeaponTier.Relic) ? 2 : riderLive ? 1 : 0;
             for (int i = 0; i < riderCopies; i++)
             {
-                def.Triggers.AddRange(w.MasteryTriggers);
-                def.StatRules.AddRange(w.MasteryStatRules);
+                AddRules(def, w.MasteryTriggers, w.MasteryStatRules, w.Name + "/mastery");
                 def.Range += w.MasteryRangeBonus;
             }
 
@@ -203,8 +202,7 @@ namespace Warband.Sim
                 {
                     def.MaxHp += t.HpBonus;
                     def.ManaMax += t.ManaMaxDelta;
-                    def.Triggers.AddRange(t.Triggers);
-                    def.StatRules.AddRange(t.StatRules);
+                    AddRules(def, t.Triggers, t.StatRules, t.Name);
                     def.Traits.Add(t.Name);
                     foreach (var (kind, mag) in t.SpawnStatuses)
                         result.SpawnStatuses.Add(new Status { Kind = kind, Mag = mag, TicksLeft = -1 });
@@ -215,8 +213,7 @@ namespace Warband.Sim
                 {
                     def.MaxHp += n.HpBonus;
                     def.CleavePct += n.CleaveBonusPct;
-                    def.Triggers.AddRange(n.Triggers);
-                    def.StatRules.AddRange(n.StatRules);
+                    AddRules(def, n.Triggers, n.StatRules, n.Name);
                     def.Traits.Add(n.Name);
                     if (n.TargetPref.HasValue) def.TargetPref = n.TargetPref.Value;
                     if (n.Standoff.HasValue) def.Standoff = n.Standoff.Value;
@@ -244,6 +241,38 @@ namespace Warband.Sim
         /// (that is exactly what <see cref="SpecNode.SignatureOverride"/> is for). That split is
         /// what keeps "the same thing, bigger" a one-liner and "a different thing" explicit.
         /// </summary>
+        /// <summary>
+        /// The ONE door every rule walks through on its way into a <see cref="UnitDef"/>, so that
+        /// render identity is a property of composition and never of authoring
+        /// (Design/passive-legibility.md, law L1). A new spec node or trinket is identified the day
+        /// it is written, with no extra field to remember and nothing to keep in sync.
+        ///
+        /// <para>CLONES, always. The catalog hands out the SAME Trigger/StatRule instance to every
+        /// composition — stamping in place would rewrite the kit for every later one in the process,
+        /// which is exactly the bug the Signature clone above exists to prevent.</para>
+        ///
+        /// <para>Ids: the first rule a source contributes takes the bare source id, later ones get
+        /// <c>#2</c>, <c>#3</c>. That ordering matters — appending a SECOND passive to a chassis must
+        /// not rename the first and silently orphan its authored tell row. Triggers and StatRules
+        /// count separately and may share an id: they arrive as different EventKinds, so a tell row
+        /// is already unambiguous, and "this node's passive" reads better as one name than two.</para>
+        /// </summary>
+        private static void AddRules(UnitDef def, List<Trigger> triggers, List<StatRule> rules, string source)
+        {
+            for (int i = 0; i < triggers.Count; i++)
+            {
+                var t = triggers[i].CloneForComposition();
+                t.RuleId = i == 0 ? source : source + "#" + (i + 1);
+                def.Triggers.Add(t);
+            }
+            for (int i = 0; i < rules.Count; i++)
+            {
+                var r = rules[i].CloneForComposition();
+                r.RuleId = i == 0 ? source : source + "#" + (i + 1);
+                def.StatRules.Add(r);
+            }
+        }
+
         private static void ApplyPatch(List<EffectDef> sig, SignaturePatch p)
         {
             foreach (var e in sig)

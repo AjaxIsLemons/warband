@@ -1,0 +1,104 @@
+{
+  "_doc": [
+    "The SFX contract — Design/audio.md §5.1/§5.2 as data. `sfx.py lint` fails on violation;",
+    "`sfx.py bake` uses the same numbers as its processing targets.",
+    "",
+    "maxOnsetMs   — leading silence budget. A UI cue that arrives late reads as input lag.",
+    "maxAudibleMs — onset -> last audible sample. THE number that decides mix density (§3.1).",
+    "targetPeakDb — bake normalises to this; lint allows +/- peakTolDb. Keeps the set one level.",
+    "minCrestDb   — peak-to-RMS. Below this the clip is a compressed drone with no transient and",
+    "               will not cut through the board no matter how loud it is (cast_fire = 9.0 dB).",
+    "highPassHz   — 2-pole HPF. Removes the low mud that makes small cues sound cheap.",
+    "variants     — how many `_1.._n` files the family expects. 0 = single unnumbered file."
+  ],
+
+  "defaults": {
+    "channels": 1,
+    "sampleRate": 44100,
+    "maxOnsetMs": 8,
+    "targetPeakDb": -6.0,
+    "peakTolDb": 1.5,
+    "minCrestDb": 10.0,
+    "highPassHz": 120,
+    "fadeOutMs": 12,
+    "releaseMs": 60
+  },
+
+  "_endings": [
+    "fadeOutMs applies when a clip DECAYED to the threshold on its own — nothing is being removed,",
+    "so 12 ms of linear anti-click is all it needs.",
+    "releaseMs applies when maxAudibleMs TRUNCATED the clip while it was still loud. It is an",
+    "exponential decay and it lives INSIDE the length budget (the clip is cut at maxAudible -",
+    "release), so the density arithmetic in audio.md §3 is unaffected.",
+    "",
+    "Caps are a DENSITY law (§3.1), so they only bind on families that actually overlap: the UI",
+    "cues you click repeatedly, and the board impacts running at ~9.6 onsets/s. A once-per-",
+    "interaction ceremony (bind, major, error) and a one-per-cast windup (riser_*) have no density",
+    "problem at all, and capping them was applying a board law to surfaces that never needed it."
+  ],
+
+  "surfaces": {
+    "ui": {
+      "resources": "client/Assets/Resources/UI/SFX",
+      "_doc": "Clicks only. Hover/focus/tooltip are silent by law (§5.1.1).",
+      "families": {
+        "tick":   { "maxAudibleMs":  80, "variants": 3, "targetPeakDb":  -9.0, "highPassHz": 320,
+                    "_doc": "select, tab, pin, toggle, socket wake — the workhorse" },
+        "commit": { "maxAudibleMs": 180, "variants": 2, "targetPeakDb":  -6.0, "highPassHz": 220,
+                    "_doc": "confirm, purchase, seat, equip, route" },
+        "deal":   { "maxAudibleMs": 200, "variants": 2, "targetPeakDb":  -7.5, "highPassHz": 220,
+                    "_doc": "reroll, reveal, drawer" },
+        "bind":   { "maxAudibleMs": 700, "variants": 2, "targetPeakDb":  -5.0, "highPassHz": 120, "releaseMs": 110,
+                    "_doc": "rank buy, inscription bind — the one ceremony sound" },
+        "error":  { "maxAudibleMs": 400, "variants": 1, "targetPeakDb":  -4.0, "highPassHz": 160, "releaseMs":  90,
+                    "_doc": "rejected action. Never stolen. Was the QUIETEST clip in the old set." },
+        "major":  { "maxAudibleMs": 900, "variants": 1, "targetPeakDb":  -4.0, "highPassHz":  80, "releaseMs": 140,
+                    "_doc": "result, reward, rank-up. Ducks Board -4 dB." }
+      }
+    },
+
+    "board": {
+      "resources": "client/Assets/Resources/Board/SFX",
+      "_doc": "Impacts short (§3.1 — length beats voice management). Risers lead the cast.",
+      "families": {
+        "hit_blade":  { "maxAudibleMs": 250, "variants": 0, "highPassHz": 180,
+                        "_doc": "D3 collapse: sabre, dagger, greataxe" },
+        "hit_blunt":  { "maxAudibleMs": 250, "variants": 0, "highPassHz": 140,
+                        "_doc": "D3 collapse: mace, tower shield, staff, censer" },
+        "hit_pierce": { "maxAudibleMs": 250, "variants": 0, "highPassHz": 180,
+                        "_doc": "D3 collapse: pike, company standard" },
+        "hit_bow":    { "maxAudibleMs": 250, "variants": 0, "highPassHz": 200,
+                        "_doc": "D3 collapse: longbow" },
+        "hit_powder": { "maxAudibleMs": 300, "variants": 0, "highPassHz":  90, "targetPeakDb": -4.0,
+                        "_doc": "D3 collapse: matchlock musket" },
+
+        "crit":       { "maxAudibleMs": 250, "variants": 0, "targetPeakDb": -3.5, "minCrestDb": 12.0,
+                        "_doc": "Decisive bus. Guildrun's reviews name crits explicitly." },
+        "heal":       { "maxAudibleMs": 300, "variants": 0, "targetPeakDb": -8.0,
+                        "_doc": "Riot proportionality: defensives quiet." },
+        "shield":     { "maxAudibleMs": 300, "variants": 0, "targetPeakDb": -8.0 },
+
+        "cast_generic": { "maxAudibleMs": 400, "variants": 0, "targetPeakDb": -7.0, "minCrestDb": 12.0 },
+        "cast_fire":    { "maxAudibleMs": 400, "variants": 0, "targetPeakDb": -7.0, "minCrestDb": 12.0,
+                          "_doc": "Was 9.0 dB crest — fully compressed, no transient." },
+
+        "death":      { "maxAudibleMs": 700, "variants": 0, "targetPeakDb": -4.0, "highPassHz": 70, "releaseMs": 120,
+                        "_doc": "Decisive bus, never stolen." },
+        "cheatdeath": { "maxAudibleMs": 700, "variants": 0, "targetPeakDb": -4.0, "highPassHz": 70, "releaseMs": 120 },
+
+        "riser_banneret":   { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_berserker":  { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_bulwark":    { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_cleric":     { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_phalanx":    { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_pyromancer": { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_shade":      { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+        "riser_sharpshot":  { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 }
+      },
+      "_retired": {
+        "hit_melee": "generic fallback — kept in tuning.json until the D3 rows are repointed",
+        "hit_arrow": "generic fallback — kept in tuning.json until the D3 rows are repointed"
+      }
+    }
+  }
+}

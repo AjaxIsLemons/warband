@@ -29,6 +29,15 @@ namespace Warband.Sim
                 case EventKind.StormTick:
                     return "Storm tick";
 
+                // Rule index, not name: the id table lives on the snapshot (BattleResult.RuleIds),
+                // which this formatter has no handle on. The client resolves it off the fold.
+                case EventKind.TriggerFired:
+                    return $"Trigger: {Nm(e.Source)} rule #{e.Aux} → {Nm(e.Target)}";
+                case EventKind.RuleChanged:
+                    return e.Amount != 0
+                        ? $"Rule ON: {Nm(e.Source)} rule #{e.Aux} ({e.Aux2:+#;-#;0})"
+                        : $"Rule OFF: {Nm(e.Source)} rule #{e.Aux}";
+
                 case EventKind.MoveStart:
                     return $"Step: {Nm(e.Source)} → {Hex(e.Amount, e.Aux)} ({e.Aux2}t)";
                 case EventKind.Move:

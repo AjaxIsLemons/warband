@@ -1,0 +1,287 @@
+{
+    "Active": true,
+    "RunId": "20260727-190151",
+    "Mode": "smoke",
+    "Phase": "load",
+    "Index": 15,
+    "Frames": 0,
+    "CapturePath": "",
+    "OutputDirectory": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151",
+    "OffscreenCapture": true,
+    "PreferOffscreenCapture": true,
+    "LiveRankUpRegression": "PASS · pending B fork safely defers the following A-rank Market preview",
+    "Items": [
+        {
+            "Surface": "workbench",
+            "Fixture": "market-recruit",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-rankup-long",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": true,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "armory-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "rail-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-keyword",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-equipment",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-recruit",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-rankup-long",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": true,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "armory-full",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "rail-full",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-keyword",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-equipment",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "wager",
+            "Fixture": "wager-nominal",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "deploy",
+            "Fixture": "deploy-nominal",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "result",
+            "Fixture": "result-nominal",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        }
+    ],
+    "Results": [
+        {
+            "Surface": "workbench",
+            "Fixture": "market-recruit",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=0",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-market-recruit.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-rankup-long",
+            "Viewport": "1280x720",
+            "ExpandedText": true,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=35.6,170.6,1128.8,180;minArt=97.5;rankUp=True;pager=False;tiers=3;options=2;inlineTraits=0",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-market-rankup-long-expanded.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "armory-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen,workbench--armory-open;market=22.5,18.8,0,0;minArt=0;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-armory-full.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "rail-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=True;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-rail-full.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-tooltip-keyword.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-workbench-tooltip-equipment.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-recruit",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=0",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-market-recruit.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "market-rankup-long",
+            "Viewport": "1600x900",
+            "ExpandedText": true,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=35.6,170.6,1128.8,180;minArt=97.5;rankUp=True;pager=False;tiers=3;options=2;inlineTraits=0",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-market-rankup-long-expanded.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "armory-full",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen,workbench--armory-open;market=22.5,18.8,0,0;minArt=0;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-armory-full.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "rail-full",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=True;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-rail-full.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-tooltip-keyword.png"
+        },
+        {
+            "Surface": "workbench",
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "viewport=1200x900;scale=0.533;classes=workbench-screen;market=26.3,155.6,1147.5,165;minArt=71.3;rankUp=False;pager=False;tiers=0;options=0;inlineTraits=2",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1600x900-workbench-tooltip-equipment.png"
+        },
+        {
+            "Surface": "wager",
+            "Fixture": "wager-nominal",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Wager: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-wager-wager-nominal.png"
+        },
+        {
+            "Surface": "deploy",
+            "Fixture": "deploy-nominal",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Deploy: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-deploy-deploy-nominal.png"
+        },
+        {
+            "Surface": "result",
+            "Fixture": "result-nominal",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Result gate: PASS; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-190151\\ui-qa-20260727-190151-1280x720-result-result-nominal.png"
+        }
+    ]
+}

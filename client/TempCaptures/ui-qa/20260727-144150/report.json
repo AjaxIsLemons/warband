@@ -1,0 +1,145 @@
+{
+    "Active": true,
+    "RunId": "20260727-144150",
+    "Mode": "smoke",
+    "Phase": "load",
+    "Index": 10,
+    "Frames": 0,
+    "CapturePath": "",
+    "OutputDirectory": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260727-144150",
+    "OffscreenCapture": false,
+    "Items": [
+        {
+            "Fixture": "market-recruit",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-recruit",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": true
+        },
+        {
+            "Fixture": "armory-full",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Width": 2558,
+            "Height": 1313,
+            "ExpandedText": false
+        }
+    ],
+    "Results": [
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "1280x720",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-recruit",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "market-rankup-long",
+            "Viewport": "2558x1313",
+            "ExpandedText": true,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "armory-full",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-keyword",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        },
+        {
+            "Fixture": "tooltip-equipment",
+            "Viewport": "2558x1313",
+            "ExpandedText": false,
+            "Layout": "Workbench: FAIL · actual Game View capture timed out",
+            "Image": ""
+        }
+    ]
+}

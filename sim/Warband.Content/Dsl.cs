@@ -43,7 +43,7 @@ namespace Warband.Content
         public static Cond TgtEngaged => new Cond { Kind = CondKind.TargetAdjacentToAllyOfOwner };
         public static Cond NoEnemyWithin(int r) => new Cond { Kind = CondKind.NoEnemyWithinHexesOfOwner, Amount = r };
         public static Cond OwnerHas(StatusKind s, bool not = false) => new Cond { Kind = CondKind.OwnerHasStatus, Status = s, Not = not };
-        public static Cond TgtHas(StatusKind s) => new Cond { Kind = CondKind.TargetHasStatus, Status = s };
+        public static Cond TgtHas(StatusKind s, bool not = false) => new Cond { Kind = CondKind.TargetHasStatus, Status = s, Not = not };
         public static Cond SrcHas(StatusKind s) => new Cond { Kind = CondKind.SourceHasStatus, Status = s };
         public static Cond Nth(int n) => new Cond { Kind = CondKind.EveryNthSwingOfOwner, Amount = n };
         public static Cond StatusIs(StatusKind s) => new Cond { Kind = CondKind.StatusIs, Status = s };
@@ -106,6 +106,16 @@ namespace Warband.Content
             return t;
         }
         public static Trigger AtStart(params EffectDef[] effects) => On(EventKind.BattleStart, new Cond[0], effects);
+
+        /// <summary>Name a rule that is added DIRECTLY to a composed UnitDef rather than through
+        /// Loadout.Compose — authored enemies and encounter bodies (Enemies.cs, Encounters.cs) build
+        /// on top of a composed kit, so they miss the composer's automatic stamping. An unnamed rule
+        /// is not broken (it falls through to the generic passive tell, by design — nothing is ever
+        /// silent), but these are exactly the mechanics ADR 0024's disclosure contract promises the
+        /// player, so they get to say their own name. Mutates in place: these instances are built
+        /// per call by the DSL and never shared with the catalog.</summary>
+        public static Trigger Named(this Trigger t, string ruleId) { t.RuleId = ruleId; return t; }
+        public static StatRule Named(this StatRule r, string ruleId) { r.RuleId = ruleId; return r; }
         public static Cond[] W(params Cond[] c) => c;
         public static StatRule Rule(StatKind stat, int amt, StatScale scale = StatScale.None, params Cond[] when)
         {

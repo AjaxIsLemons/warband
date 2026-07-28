@@ -55,6 +55,36 @@ public static class BuildSweep
 
     private static string Shorten(string nodeId) => nodeId[(nodeId.LastIndexOf('.') + 1)..];
 
+    private static readonly Rank[] SpecRanks = { Rank.B, Rank.A, Rank.S };
+
+    /// <summary>Re-resolve an offer key through the catalog, so the merged (live + candidate)
+    /// pool is what gets compared. Keys are "chassis|rank|path", path "-" meaning none.</summary>
+    private static List<string> PoolFor(Catalog cat, string key)
+    {
+        var parts = key.Split('|');
+        string? path = parts[2] == "-" ? null : parts[2];
+        return new List<string>(cat.SpecOptions(parts[0], Enum.Parse<Rank>(parts[1]), path));
+    }
+
+    /// <summary>Depth-first over C/B/A/S, branching on each rank's authored pool width.</summary>
+    private static void Walk(Catalog cat, string chassis, Rank fork, string? path,
+                             List<string> nodes, int rankIndex,
+                             List<(string Class, string Label, List<string> Nodes)> builds)
+    {
+        if (rankIndex == SpecRanks.Length)
+        {
+            builds.Add((chassis, string.Join("+", nodes.Select(Shorten)), new List<string>(nodes)));
+            return;
+        }
+        var rank = SpecRanks[rankIndex];
+        foreach (string choice in cat.SpecOptions(chassis, rank, path))
+        {
+            nodes.Add(choice);
+            Walk(cat, chassis, fork, rank == fork ? choice : path, nodes, rankIndex + 1, builds);
+            nodes.RemoveAt(nodes.Count - 1);
+        }
+    }
+
     /// <summary>Escorts carry mana + a small signature so support builds (mana-grant, cast-count
     /// texture) aren't structurally starved by the harness itself.</summary>
     private static UnitDef Escort() => new UnitDef
@@ -69,28 +99,13 @@ public static class BuildSweep
     {
         var res = new Result();
 
-        // ---- enumerate the 64 builds -------------------------------------------------
+        // ---- enumerate every reachable build ------------------------------------------
+        // Walks the ACTUAL pool at each rank rather than a hardcoded 0/1, so widening a pool
+        // widens the sweep instead of silently leaving the extra options untested. Eight
+        // two-wide heroes still enumerate the same 64 builds.
         var builds = new List<(string Class, string Label, List<string> Nodes)>();
         foreach (var id in cat.HeroPool(1))
-        {
-            var fork = cat.ForkRank(id);
-            foreach (int pB in new[] { 0, 1 })
-            foreach (int pA in new[] { 0, 1 })
-            foreach (int pS in new[] { 0, 1 })
-            {
-                string? path = null;
-                var nodes = new List<string>();
-                var picks = new Dictionary<Rank, int> { [Rank.B] = pB, [Rank.A] = pA, [Rank.S] = pS };
-                foreach (var rank in new[] { Rank.B, Rank.A, Rank.S })
-                {
-                    var (a, b) = cat.SpecOptions(id, rank, path);
-                    string chosen = picks[rank] == 0 ? a : b;
-                    nodes.Add(chosen);
-                    if (rank == fork) path = chosen;
-                }
-                builds.Add((id, string.Join("+", nodes.Select(Shorten)), nodes));
-            }
-        }
+            Walk(cat, id, cat.ForkRank(id), null, new List<string>(), 0, builds);
 
         UnitDef HeroDef(int b)
         {
@@ -152,17 +167,33 @@ public static class BuildSweep
             if (rates.Min() > 75) res.Flags.Add($"CHASSIS-DOMINANT {cls} (worst build {rates.Min():F0}%)");
         }
 
-        // Per-node: average win% of the 4 builds carrying each node vs its 4 counterparts.
-        foreach (var (_, pair) in Kits.Offers.Select(kv => (kv.Key, kv.Value)))
+        // Per-node: average win% of the builds carrying each node vs each of its pool rivals.
+        // Every unordered pair inside a pool is reported, so a two-wide pool yields the single
+        // A-vs-B delta it always did and a wider pool reports each rivalry rather than only
+        // comparing against whichever option happened to be authored first.
+        // Read the pools THROUGH the catalog so candidate paths are compared against their
+        // siblings too — reading Kits.Offers directly would silently drop exactly the content
+        // --candidates exists to measure.
+        var pools = new List<List<string>>();
+        foreach (var key in Kits.Offers.Keys) pools.Add(PoolFor(cat, key));
+        if (cat.IncludeCandidates)
+            foreach (var key in Kits.CandidateOffers.Keys)
+                if (!Kits.Offers.ContainsKey(key)) pools.Add(PoolFor(cat, key));
+
+        foreach (var pool in pools)
         {
             double RateOf(string node)
             {
                 var idx = res.Builds.Where(b => b.Nodes.Contains(node)).ToList();
                 return idx.Count == 0 ? -1 : idx.Average(b => b.WinPct);
             }
-            double ra = RateOf(pair.A), rb = RateOf(pair.B);
-            if (ra < 0 || rb < 0) continue;
-            res.NodeDeltas.Add(new NodeDelta { Node = pair.A, Rival = pair.B, Delta = ra - rb });
+            for (int i = 0; i < pool.Count; i++)
+            for (int j = i + 1; j < pool.Count; j++)
+            {
+                double ra = RateOf(pool[i]), rb = RateOf(pool[j]);
+                if (ra < 0 || rb < 0) continue;
+                res.NodeDeltas.Add(new NodeDelta { Node = pool[i], Rival = pool[j], Delta = ra - rb });
+            }
         }
         res.NodeDeltas = res.NodeDeltas.OrderByDescending(x => Math.Abs(x.Delta)).ToList();
         foreach (var d in res.NodeDeltas)

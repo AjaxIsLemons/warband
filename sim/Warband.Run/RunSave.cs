@@ -116,8 +116,7 @@ namespace Warband.Run
                 Put(b, "pendingSpec.zone", p.Zone);
                 Put(b, "pendingSpec.index", p.Index);
                 Put(b, "pendingSpec.forRank", p.ForRank);
-                Put(b, "pendingSpec.optionA", Safe(p.OptionA, "spec option"));
-                Put(b, "pendingSpec.optionB", Safe(p.OptionB, "spec option"));
+                Put(b, "pendingSpec.options", Join(p.Options));
             }
 
             return b.ToString();
@@ -275,14 +274,22 @@ namespace Warband.Run
                 });
 
             if (Bool(kv, "pendingSpec.present"))
+            {
                 s.PendingSpec = new PendingSpec
                 {
                     Zone = Enum<RosterZone>(kv, "pendingSpec.zone", RosterZone.Field),
                     Index = Int(kv, "pendingSpec.index"),
                     ForRank = Enum<Rank>(kv, "pendingSpec.forRank", Rank.B),
-                    OptionA = Str(kv, "pendingSpec.optionA"),
-                    OptionB = Str(kv, "pendingSpec.optionB"),
                 };
+                // Saves written before variable-arity offers store the pair as optionA/optionB.
+                // The drawn offer must survive verbatim: re-drawing on resume could hand the
+                // player a different menu than the one they were looking at.
+                s.PendingSpec.Options.AddRange(Split(Str(kv, "pendingSpec.options")));
+                if (s.PendingSpec.Options.Count == 0)
+                    foreach (string legacy in new[] { Str(kv, "pendingSpec.optionA"),
+                                                      Str(kv, "pendingSpec.optionB") })
+                        if (legacy.Length > 0) s.PendingSpec.Options.Add(legacy);
+            }
 
             AssignMissingHeroIdentities(s);
             Validate(s);

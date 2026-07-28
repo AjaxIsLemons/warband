@@ -57,6 +57,8 @@ type config struct {
 	clientSecret string
 	cookieSecret []byte
 	releasesDir  string
+	sfxDir       string
+	adminIDs     []string
 }
 
 var (
@@ -73,6 +75,8 @@ func main() {
 		clientSecret: os.Getenv("WARBAND_DISCORD_CLIENT_SECRET"),
 		cookieSecret: []byte(os.Getenv("WARBAND_COOKIE_SECRET")),
 		releasesDir:  envOr("WARBAND_RELEASES_DIR", "/srv/warband-releases"),
+		sfxDir:       envOr("WARBAND_SFX_DIR", os.ExpandEnv("$HOME/Work/warband/docs/audio")),
+		adminIDs:     splitIDs(os.Getenv("WARBAND_ADMIN_IDS")),
 	}
 	if len(cfg.cookieSecret) < 16 {
 		log.Fatal("WARBAND_COOKIE_SECRET missing or too short (need 16+ chars)")
@@ -94,8 +98,12 @@ func main() {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "ok")
 	})
+	// Dev-only audition surface; admin-gated and fail-closed. See sfx.go.
+	mux.HandleFunc("GET /sfx", handleSfx)
+	mux.HandleFunc("GET /sfx/", handleSfx)
 
-	log.Printf("warband-site on %s (base %s, releases %s)", cfg.addr, cfg.baseURL, cfg.releasesDir)
+	log.Printf("warband-site on %s (base %s, releases %s, sfx %s, %d admin(s))",
+		cfg.addr, cfg.baseURL, cfg.releasesDir, cfg.sfxDir, len(cfg.adminIDs))
 	server := &http.Server{
 		Addr:              cfg.addr,
 		Handler:           mux,
@@ -109,6 +117,18 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// splitIDs parses a comma-separated allowlist, dropping blanks so a trailing comma or an empty
+// value can never widen access.
+func splitIDs(raw string) []string {
+	var out []string
+	for _, part := range strings.Split(raw, ",") {
+		if p := strings.TrimSpace(part); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // --- sessions: value = id|name|exp, signed with HMAC-SHA256 (Shoota's scheme) ---
@@ -335,6 +355,14 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	if _, err := os.Stat(filepath.Join(cfg.releasesDir, launcherName)); err == nil {
 		launcherReady = true
 	}
+	// Dev tools are listed only for admins — friends must never see work-in-progress surfaces.
+	_, admin := isAdmin(r)
+	sheetReady := false
+	if admin {
+		if _, err := os.Stat(filepath.Join(cfg.sfxDir, "index.html")); err == nil {
+			sheetReady = true
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := homeTemplate.Execute(w, map[string]any{
 		"SignedIn":      signedIn,
@@ -342,6 +370,8 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		"HasRelease":    hasRelease,
 		"Release":       release,
 		"LauncherReady": launcherReady,
+		"Admin":         admin,
+		"SheetReady":    sheetReady,
 	}); err != nil {
 		log.Printf("render home: %v", err)
 	}
@@ -366,7 +396,10 @@ var homeTemplate = template.Must(template.New("home").Parse(`<!doctype html>
   a.btn { display:block; text-align:center; text-decoration:none; padding:.85rem 1rem;
           border-radius:8px; font-weight:600; background:#c8a04a; color:#1a1510; }
   a.btn.discord { background:#5865f2; color:#fff; }
+  a.btn.dev { background:#2e2823; color:#e8e2d6; border:1px solid #4a4038; }
   a.btn:hover { filter:brightness(1.08); }
+  code { font-family:ui-monospace,monospace; background:#2e2823; padding:.1em .35em;
+         border-radius:3px; font-size:.9em; }
   dl { display:grid; grid-template-columns:auto 1fr; gap:.3rem .9rem; margin:0; }
   dt { color:#a89e8c; } dd { margin:0; font-variant-numeric:tabular-nums; }
   .muted { color:#8d8375; font-size:.85rem; }
@@ -416,6 +449,19 @@ var homeTemplate = template.Must(template.New("home").Parse(`<!doctype html>
     <li>Placement is the only order you give. Everything else is decided before the fight.</li>
   </ol>
 </div>
+
+{{if .Admin}}
+<div class="card">
+  <h2>Dev</h2>
+  {{if .SheetReady}}
+    <a class="btn dev" href="/sfx/">SFX audition sheet</a>
+    <p class="muted" style="margin:.8rem 0 0">Baked clips vs their sources, with the measured
+    numbers. Regenerate on homeserv with <code>make sfx</code>, then refresh.</p>
+  {{else}}
+    <p class="muted" style="margin:0">No audition sheet built yet — run <code>make sfx</code>.</p>
+  {{end}}
+</div>
+{{end}}
 
 {{if .SignedIn}}<p class="muted"><a href="/logout" style="color:#8d8375">Sign out</a></p>{{end}}
 <footer>Discord sign-in only gates the launcher download. No tracking, no accounts.</footer>

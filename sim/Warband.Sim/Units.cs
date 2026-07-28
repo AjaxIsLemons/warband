@@ -45,6 +45,19 @@ namespace Warband.Sim
         public int Id;               // stable ordering key — ALL iteration is by ascending Id
         public int Team;             // 0 or 1
         public UnitDef Def = null!;
+
+        /// <summary>Where this unit's rules start in the battle-wide rule-id table
+        /// (<see cref="BattleResult.RuleIds"/>). Assigned once at Battle construction so a firing
+        /// rule can name itself with an int on an all-int event. Triggers occupy
+        /// [TriggerBase, TriggerBase + Def.Triggers.Count), StatRules follow at StatRuleBase.
+        /// -1 outside a battle (deployment previews compose UnitStates with no table).</summary>
+        public int TriggerBase = -1;
+        public int StatRuleBase = -1;
+
+        /// <summary>Last sampled on/off state per StatRule — the entire memory behind the
+        /// transition sweep (Battle.SampleStatRules). Presentation-only: nothing reads it to decide
+        /// anything, so it is deliberately outside StateHash.</summary>
+        public bool[]? RuleActive;
         public Hex Pos;
         public int Hp;
         public int Shield;

@@ -14,6 +14,9 @@ namespace Warband.Sim
         public ulong FinalHash;
         public List<PlaybackUnit> InitialUnits = new List<PlaybackUnit>();
         public List<ulong> TickViewHashes = new List<ulong>();  // guardrail: fold must match, every tick
+        /// <summary>The rule-id table TriggerFired/RuleChanged index into (Battle.BuildRuleTable).
+        /// Part of the snapshot, not the event stream — ids are strings and BattleEvent is all ints.</summary>
+        public List<string> RuleIds = new List<string>();
     }
 
     /// <summary>
@@ -76,8 +79,43 @@ namespace Warband.Sim
             _teamTriggers = teamTriggers?.ToList() ?? new List<(int, Trigger)>();
             _initialFields = initialFields?.ToList() ?? new List<(FieldDef, Hex, int)>();
             _rng = new Rng(seed);
+            // BEFORE the initial view: ViewOf projects each unit's rule span, so a table built after
+            // it would leave the tick-0 snapshot at -1 while every later projection carried the real
+            // base — and the fold guardrail would fail on the first tick of every fight.
+            BuildRuleTable();
             _initialView = _units.Select(ViewOf).ToList();
         }
+
+        /// <summary>
+        /// Intern every rule id this battle could name into one flat, ordered table, and record each
+        /// unit's offsets into it. TriggerFired/RuleChanged then carry an INDEX, which is what lets
+        /// a passive name itself on an event model that is deliberately all ints.
+        ///
+        /// <para>One table rather than per-unit lists, because team rules — today's legacy Banners,
+        /// tomorrow's Inscriptions (item 5a) — are owned by no unit and are exactly the layer this
+        /// whole feature exists to make visible. A flat index space covers unit triggers, unit stat
+        /// rules and team rules with one lookup on the client.</para>
+        ///
+        /// <para>Order is (unit id, triggers, stat rules) then team triggers in declaration order —
+        /// deterministic, and derived from `_units` which is already sorted by id.</para>
+        /// </summary>
+        private void BuildRuleTable()
+        {
+            foreach (var u in _units)
+            {
+                u.TriggerBase = RuleIds.Count;
+                foreach (var t in u.Def.Triggers) RuleIds.Add(t.RuleId ?? "");
+                u.StatRuleBase = RuleIds.Count;
+                foreach (var r in u.Def.StatRules) RuleIds.Add(r.RuleId ?? "");
+            }
+            _teamRuleBase = RuleIds.Count;
+            foreach (var (_, t) in _teamTriggers) RuleIds.Add(t.RuleId ?? "");
+        }
+
+        /// <summary>The battle-wide rule-id table — see <see cref="BuildRuleTable"/>. Rides the
+        /// replay so the client can resolve an index to a name without the sim.</summary>
+        public List<string> RuleIds { get; } = new List<string>();
+        private int _teamRuleBase;
 
         public static bool InBounds(Hex h) =>
             h.Row >= 0 && h.Row < BoardRows && h.Col >= 0 && h.Col < BoardCols;
@@ -151,6 +189,7 @@ namespace Warband.Sim
                         FinalHash = StateHash(),
                         InitialUnits = _initialView,
                         TickViewHashes = _tickViewHashes,
+                        RuleIds = RuleIds,
                     };
                     _log.Add(new BattleEvent { Tick = _tick, Kind = EventKind.End, Amount = (int)result.Winner });
                     return result;
@@ -415,8 +454,48 @@ namespace Warband.Sim
 
             Drain();
             DeathPhase();
+            SampleStatRules();
+            Drain();   // log the transitions; they fire no triggers, so this is a no-op otherwise
             _tickViewHashes.Add(PlaybackState.HashView(_units.Select(ViewOf).ToList(), FieldViews()));
             _tick++;
+        }
+
+        /// <summary>
+        /// The StatRule transition sweep — the reason a conditional passive can be seen at all.
+        ///
+        /// <para>A StatRule is a read-time predicate ("while below half HP: +6 attack"), evaluated
+        /// fresh at every stat read and never cached, so there is no activation moment to hook and
+        /// nothing ever reached the wire. The client may not evaluate the condition itself
+        /// (render-contract law #1: it runs zero combat logic, ever), so the sim samples every rule
+        /// once per tick and emits the EDGES. This is Underlords' "make the threshold a discrete
+        /// event" applied to passives — see Design/passive-legibility.md.</para>
+        ///
+        /// <para>Runs after DeathPhase so a corpse's rules go offline in the same tick it dies.
+        /// Order is (ascending unit id, declaration order), matching every other iteration here.
+        /// Uses the SAME <see cref="CondsOk"/> call <see cref="RuleBonus"/> makes, so the badge and
+        /// the damage number can never disagree about whether a rule is live.</para>
+        /// </summary>
+        private void SampleStatRules()
+        {
+            foreach (var u in _units)
+            {
+                var rules = u.Def.StatRules;
+                if (rules.Count == 0) continue;
+                if (u.RuleActive == null || u.RuleActive.Length != rules.Count)
+                    u.RuleActive = new bool[rules.Count];
+                for (int i = 0; i < rules.Count; i++)
+                {
+                    bool now = u.Alive && CondsOk(u, rules[i].When, NullEvent);
+                    if (now == u.RuleActive[i]) continue;
+                    u.RuleActive[i] = now;
+                    Emit(new BattleEvent
+                    {
+                        Kind = EventKind.RuleChanged, Source = u.Id,
+                        Aux = u.StatRuleBase + i, Amount = now ? 1 : 0,
+                        Aux2 = now ? RuleValue(u, rules[i]) : 0,
+                    });
+                }
+            }
         }
 
         private List<PlaybackField> FieldViews()
@@ -584,26 +663,45 @@ namespace Warband.Sim
             {
                 var ev = _queue.Dequeue();
                 _log.Add(ev);
+                // Presentation-only events are logged and then dropped: they fire no triggers AND
+                // spend no cascade budget. That second half is the load-bearing one — without it,
+                // announcing a passive would consume MaxEventsPerDrain faster than before and could,
+                // in a deep enough cascade, change which triggers still got to fire. This feature
+                // must be provably incapable of altering a fight's outcome, and this is where that
+                // is enforced. Gate: `make baseline` byte-identical.
+                if (ev.Kind == EventKind.TriggerFired || ev.Kind == EventKind.RuleChanged) continue;
                 if (budget-- <= 0 || ev.Depth >= MaxCascadeDepth) continue; // logged, no further triggers
 
                 foreach (var owner in _units)
                 {
                     if (!owner.Alive) continue;
-                    foreach (var trig in owner.Def.Triggers)
-                        FireIfMatch(owner, trig, ev);
+                    for (int i = 0; i < owner.Def.Triggers.Count; i++)
+                        FireIfMatch(owner, owner.Def.Triggers[i], ev, owner.TriggerBase + i);
                 }
                 for (int team = 0; team <= 1; team++)
-                    foreach (var (t, trig) in _teamTriggers)
-                        if (t == team)
-                            foreach (var owner in _units)
-                                if (owner.Alive && owner.Team == team)
-                                { FireIfMatch(owner, trig, ev); break; } // once per team, lowest-id rep
+                    for (int i = 0; i < _teamTriggers.Count; i++)
+                    {
+                        var (t, trig) = _teamTriggers[i];
+                        if (t != team) continue;
+                        foreach (var owner in _units)
+                            if (owner.Alive && owner.Team == team)
+                            { FireIfMatch(owner, trig, ev, _teamRuleBase + i); break; } // once per team, lowest-id rep
+                    }
             }
         }
 
-        private void FireIfMatch(UnitState owner, Trigger trig, BattleEvent ev)
+        private void FireIfMatch(UnitState owner, Trigger trig, BattleEvent ev, int ruleIndex)
         {
             if (trig.On != ev.Kind || !CondsOk(owner, trig.When, ev)) return;
+            // Announce the passive BEFORE its effects, so the tell is the cause of the children that
+            // follow it in drain order rather than an afterthought behind them. Target is what the
+            // triggering event was about, which is the far end of the attribution spark-link.
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.TriggerFired, Source = owner.Id,
+                Target = ev.Target >= 0 ? ev.Target : ev.Source,
+                Aux = ruleIndex, Depth = ev.Depth + 1, Root = owner.Id,
+            });
             foreach (var eff in trig.Do)
                 ApplyEffectDef(owner, eff, ev, Cause.Trigger, ev.Depth + 1, owner.Id);
         }
@@ -616,27 +714,34 @@ namespace Warband.Sim
             int total = 0;
             foreach (var rule in u.Def.StatRules)
                 if (rule.Stat == stat && CondsOk(u, rule.When, NullEvent))
-                {
-                    int mult = 1;
-                    if (rule.ScaleBy == StatScale.DistanceToTarget)
-                    {
-                        // Full Draw (Sharpshot): the gradient innate — per hex to target.
-                        var t = ById(u.TargetId);
-                        mult = t == null ? 0 : Hex.Distance(u.Pos, t.Pos);
-                    }
-                    else if (rule.ScaleBy == StatScale.MissingHpPct10)
-                    {
-                        // Burning Hours (Berserker): per 10% of max HP missing.
-                        mult = (u.Def.MaxHp - u.Hp) * 100 / u.Def.MaxHp / 10;
-                    }
-                    else if (rule.ScaleBy == StatScale.ShieldPer10)
-                    {
-                        // Grudgekeeper (Bulwark): the wall swings with its own weight.
-                        mult = u.Shield / 10;
-                    }
-                    total += rule.Amount * mult;
-                }
+                    total += RuleValue(u, rule);
             return total;
+        }
+
+        /// <summary>A single StatRule's contribution right now, conditions ASSUMED already checked.
+        /// Split out of <see cref="RuleBonus"/> so <see cref="SampleStatRules"/> can put the same
+        /// number on the wire that the stat read will use — one implementation, so the badge and the
+        /// damage it explains cannot drift apart.</summary>
+        private int RuleValue(UnitState u, StatRule rule)
+        {
+            int mult = 1;
+            if (rule.ScaleBy == StatScale.DistanceToTarget)
+            {
+                // Full Draw (Sharpshot): the gradient innate — per hex to target.
+                var t = ById(u.TargetId);
+                mult = t == null ? 0 : Hex.Distance(u.Pos, t.Pos);
+            }
+            else if (rule.ScaleBy == StatScale.MissingHpPct10)
+            {
+                // Burning Hours (Berserker): per 10% of max HP missing.
+                mult = (u.Def.MaxHp - u.Hp) * 100 / u.Def.MaxHp / 10;
+            }
+            else if (rule.ScaleBy == StatScale.ShieldPer10)
+            {
+                // Grudgekeeper (Bulwark): the wall swings with its own weight.
+                mult = u.Shield / 10;
+            }
+            return rule.Amount * mult;
         }
 
         private bool CondsOk(UnitState owner, List<Cond> when, BattleEvent ev)

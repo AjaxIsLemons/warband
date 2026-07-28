@@ -1,0 +1,85 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="workbench" class="workbench-screen">
+        <ui:VisualElement class="workbench-screen__wash" />
+        <ui:VisualElement name="safe-frame" class="workbench-safe">
+            <ui:VisualElement name="header" class="workbench-header">
+                <ui:VisualElement class="workbench-header__identity">
+                    <ui:Label name="act" class="workbench-header__act" />
+                    <ui:Label text="WORKBENCH" class="workbench-header__title" />
+                </ui:VisualElement>
+                <ui:VisualElement class="workbench-header__beat">
+                    <ui:Label name="beat" class="workbench-header__beat-label" />
+                    <ui:Label name="brief" class="workbench-header__brief" />
+                </ui:VisualElement>
+                <ui:VisualElement class="workbench-header__commands">
+                    <ui:VisualElement name="hourstone-host" class="workbench-header__hourstone" />
+                    <ui:Button name="continue" class="btn btn--primary workbench-header__continue" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="market" class="workbench-market">
+                <ui:VisualElement class="workbench-section-heading">
+                    <ui:VisualElement>
+                        <ui:Label text="LIVE MARKET" class="workbench-section-heading__title" />
+                        <ui:Label name="market-status" class="workbench-section-heading__meta" />
+                    </ui:VisualElement>
+                    <ui:Button name="reroll" class="btn btn--ghost workbench-market__reroll" />
+                </ui:VisualElement>
+                <ui:VisualElement name="market-grid" class="workbench-market__grid" />
+            </ui:VisualElement>
+
+            <ui:Button name="market-collapsed" class="workbench-market-collapsed">
+                <ui:VisualElement class="workbench-market-collapsed__copy">
+                    <ui:Label text="LIVE MARKET" class="workbench-market-collapsed__title" />
+                    <ui:Label name="market-collapsed-status" class="workbench-market-collapsed__meta" />
+                </ui:VisualElement>
+                <ui:Label text="RETURN TO MARKET  ↑" class="workbench-market-collapsed__action" />
+            </ui:Button>
+
+            <ui:VisualElement name="body" class="workbench-body">
+                <ui:VisualElement name="dossier-frame" class="workbench-dossier">
+                    <ui:VisualElement name="inspector-slot" class="workbench-dossier__slot" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="armory" class="workbench-armory">
+                    <ui:VisualElement class="workbench-armory__heading">
+                        <ui:VisualElement>
+                            <ui:Label text="ARMORY" class="workbench-section-heading__title" />
+                            <ui:Label name="armory-status" class="workbench-section-heading__meta" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="workbench-armory__heading-actions">
+                            <ui:Button name="armory-prev" text="‹" class="workbench-page-button" />
+                            <ui:Label name="armory-page" class="workbench-armory__page" />
+                            <ui:Button name="armory-next" text="›" class="workbench-page-button" />
+                            <ui:Button name="armory-close" text="COLLAPSE  ×" class="btn btn--ghost workbench-armory__close" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="armory-grid" class="workbench-armory__grid" />
+                    <ui:VisualElement name="armory-empty" class="workbench-armory__empty">
+                        <ui:Label text="◇" class="workbench-armory__empty-mark" />
+                        <ui:Label text="No unequipped items." class="workbench-armory__empty-title" />
+                        <ui:Label text="Purchased weapons and trinkets arrive here." class="workbench-armory__empty-copy" />
+                    </ui:VisualElement>
+                    <ui:Label text="Select an item, then choose a matching weapon or trinket socket in the permanent unit rail." class="workbench-armory__instruction" />
+                </ui:VisualElement>
+
+                <ui:Button name="armory-open" class="workbench-armory-handle">
+                    <ui:Label text="ARMORY" class="workbench-armory-handle__title" />
+                    <ui:Label name="armory-handle-count" class="workbench-armory-handle__count" />
+                    <ui:Label text="OPEN DRAWER  →" class="workbench-armory-handle__action" />
+                </ui:Button>
+            </ui:VisualElement>
+
+            <ui:Label name="feedback" class="workbench-feedback" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="choice-scrim" class="workbench-choice-scrim">
+            <ui:VisualElement class="workbench-choice">
+                <ui:Label name="choice-eyebrow" class="workbench-choice__eyebrow" />
+                <ui:Label name="choice-title" class="workbench-choice__title" />
+                <ui:Label name="choice-copy" class="workbench-choice__copy" />
+                <ui:VisualElement name="choice-options" class="workbench-choice__options" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -62,8 +62,16 @@ namespace Warband.Run.Tests
         public IReadOnlyList<string> TrinketPool(int act) => Trinkets;
         public IReadOnlyList<string> BannerPool(int act) => Banners;
 
-        public (string A, string B) SpecOptions(string chassisId, Rank rank, string? pathId) =>
-            ($"{pathId ?? chassisId}-{rank}-a", $"{pathId ?? chassisId}-{rank}-b");
+        /// <summary>How wide every authored spec pool is. 2 = the pre-variable-arity shape.</summary>
+        public int SpecPoolWidth = 2;
+
+        public IReadOnlyList<string> SpecOptions(string chassisId, Rank rank, string? pathId)
+        {
+            var pool = new List<string>();
+            for (int i = 0; i < SpecPoolWidth; i++)
+                pool.Add($"{pathId ?? chassisId}-{rank}-{(char)('a' + i)}");
+            return pool;
+        }
 
         public Rank ForkRank(string chassisId) => Rank.B;
 

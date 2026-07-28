@@ -15,8 +15,8 @@ using Warband.Content;
 switch (args.FirstOrDefault())
 {
     case "--oath": OathProbe.Run(); return;
-    case "--enc": EncounterProbe.Run(); return;
-    case "--boss": BossProbe.Run(); return;
+    case "--enc": EncounterProbe.Run(args.Contains("--candidates")); return;
+    case "--boss": BossProbe.Run(args.Contains("--candidates")); return;
     case "--baseline": Baseline.Run(args.Skip(1).FirstOrDefault()); return;
     // Printable so the value computed here can be compared against the one the Unity build
     // computes — if those ever differ, every save made on one machine refuses to load on the
@@ -24,10 +24,17 @@ switch (args.FirstOrDefault())
     case "--version": Console.WriteLine(new Catalog().ContentVersion); return;
 }
 
-var cat = new Catalog();
+// --candidates includes authored-but-unreachable content (Kits.CandidateNodes) so a proposed
+// path can be measured against its siblings BEFORE anyone argues about promoting it. It cannot
+// leak into a run: RunController is handed a Catalog with this off.
+bool includeCandidates = args.Contains("--candidates");
+
+var cat = new Catalog { IncludeCandidates = includeCandidates };
 var sweep = BuildSweep.Run(cat);
 var report = new StringBuilder();
 report.AppendLine($"# Outlier sweep — {args.FirstOrDefault() ?? "undated"}");
+if (includeCandidates)
+    report.AppendLine("\n**Candidate content INCLUDED** — unreachable in a real run; measured here only.");
 report.AppendLine();
 
 report.AppendLine($"## Build round-robin ({sweep.Builds.Count} builds, hero+2 escorts, rank S, Honed mastered)");

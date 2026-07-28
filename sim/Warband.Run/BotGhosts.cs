@@ -62,8 +62,8 @@ namespace Warband.Run
                 if (eligible.Count == 0) break;
                 var hero = eligible[rng.Next(eligible.Count)];
                 hero.Rank++;
-                var (a, b) = content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
-                string chosen = rng.Next(2) == 0 ? a : b;
+                var specPool = content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
+                string chosen = specPool[rng.Next(specPool.Count)];
                 hero.SpecNodeIds.Add(chosen);
                 if (hero.Rank == content.ForkRank(hero.ChassisId)) hero.PathId = chosen;
             }

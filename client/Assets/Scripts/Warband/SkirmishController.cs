@@ -111,10 +111,7 @@ public sealed class SkirmishController : MonoBehaviour
         _panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
         var theme = Resources.Load<ThemeStyleSheet>("DebugTheme");
         if (theme != null) _panelSettings.themeStyleSheet = theme;
-        _panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-        _panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-        _panelSettings.match = 0.5f;
-        _panelSettings.sortingOrder = 800;
+        UiPanelProfile.ConfigureShipping(_panelSettings, 800);
         document.panelSettings = _panelSettings;
         document.sortingOrder = 800;
 

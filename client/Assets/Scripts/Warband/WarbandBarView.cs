@@ -81,7 +81,7 @@ internal sealed class WarbandBarView : IDisposable
     private readonly Button _manage;
     private readonly Label _manageLabel;
     private readonly Label _capacity;
-    private readonly ScrollView _scroll;
+    private readonly VisualElement _scroll;
     private readonly VisualElement _field;
     private readonly VisualElement _reserveGroup;
     private readonly VisualElement _reserve;
@@ -91,7 +91,7 @@ internal sealed class WarbandBarView : IDisposable
     private readonly VisualElement _dragGhost;
     private readonly Label _dragGhostIcon;
     private readonly Label _dragGhostName;
-    private readonly RuntimeWarbandTooltip _tooltip;
+    private readonly RuntimeTooltipService _tooltip;
     private readonly Dictionary<long, HeroTile> _tiles = new Dictionary<long, HeroTile>();
     private readonly List<VisualElement> _gearTargets = new List<VisualElement>();
     private readonly Dictionary<string, Texture2D> _portraitCache =
@@ -107,10 +107,12 @@ internal sealed class WarbandBarView : IDisposable
     private bool _dragging;
     private long _selectedSourceHeroId;
     private int _selectedKind = -1;
+    private long _lastArmedInventoryItemInstanceId;
 
     public VisualElement Root => _root;
 
-    public WarbandBarView(RunShellActions actions, VisualElement shellRoot)
+    public WarbandBarView(RunShellActions actions, VisualElement shellRoot,
+                          RuntimeTooltipService tooltip)
     {
         _actions = actions;
         _shellRoot = shellRoot;
@@ -133,10 +135,8 @@ internal sealed class WarbandBarView : IDisposable
         _manage.Add(_manageLabel);
         _root.Add(_manage);
 
-        _scroll = new ScrollView(ScrollViewMode.Horizontal);
+        _scroll = new VisualElement();
         _scroll.AddToClassList("warband-bar__scroll");
-        _scroll.horizontalScrollerVisibility = ScrollerVisibility.Auto;
-        _scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;
         var strip = new VisualElement();
         strip.AddToClassList("warband-bar__strip");
         _field = new VisualElement();
@@ -181,13 +181,19 @@ internal sealed class WarbandBarView : IDisposable
         _shellRoot.Add(_dragGhost);
         SetDisplayed(_dragGhost, false);
 
-        _tooltip = new RuntimeWarbandTooltip(_shellRoot);
+        _tooltip = tooltip ?? throw new ArgumentNullException(nameof(tooltip));
         SetDisplayed(_root, false);
     }
 
     public void Bind(WarbandBarModel model)
     {
         _model = model ?? new WarbandBarModel();
+        if (_model.ArmedInventoryItemInstanceId > 0 &&
+            _model.ArmedInventoryItemInstanceId != _lastArmedInventoryItemInstanceId)
+            UiPolishSignals.Emit(UiPolishSignals.Cue.SocketWake,
+                sourceId: "workbench-armory", targetId: "workbench-dossier",
+                tone: UiFeedbackTone.Positive);
+        _lastArmedInventoryItemInstanceId = _model.ArmedInventoryItemInstanceId;
         bool shown = _model.Mode != WarbandBarMode.Hidden;
         SetDisplayed(_root, shown);
         _shellRoot.EnableInClassList("shell-has-warband-bar", shown);
@@ -236,6 +242,32 @@ internal sealed class WarbandBarView : IDisposable
         _armory.EnableInClassList("warband-bar__armory--drop-target",
             _model.CanEdit && HasSelectedEquipment());
     }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public string EditorResolvedLayoutReport()
+    {
+        var report = new UiLayoutReport("Permanent warband rail");
+        UiLayoutContract.RequireResolved(report, _root, "root");
+        UiLayoutContract.RequireInside(report, _manage, _root, "warband command", 4f);
+        UiLayoutContract.RequireInside(report, _scroll, _root, "warband strip", 4f);
+        if (_armory.resolvedStyle.display != DisplayStyle.None)
+            UiLayoutContract.RequireInside(report, _armory, _root, "armory command", 4f);
+        UiLayoutContract.RequireClassInside(
+            report, _root, "warband-hero", _scroll, tolerance: 5f);
+        UiLayoutContract.RequireNoScrollView(report, _root, "Permanent warband rail");
+        UiLayoutContract.RequireMinimumFont(report, _root, "warband-hero__class", 13f);
+        UiLayoutContract.RequireMinimumFont(report, _root, "warband-bar__manage", 13f);
+        UiLayoutContract.RequireMinimumRenderedFont(
+            report, _root, "warband-hero__class", 10f);
+        UiLayoutContract.RequireSingleLineTextFits(
+            report, _root, "warband-hero__class", 3f);
+        UiLayoutContract.RequireWrappedTextFits(
+            report, _root, "warband-bar__manage", 3f);
+        UiLayoutContract.RequireWrappedTextFits(
+            report, _root, "warband-bar__armory-hint", 3f);
+        return report.ToString();
+    }
+#endif
 
     private void RebuildTiles()
     {
@@ -338,11 +370,15 @@ internal sealed class WarbandBarView : IDisposable
                 badge.AddToClassList("accent--" + spec.Accent);
                 badge.focusable = true;
                 badge.tabIndex = 0;
-                AttachTooltip(badge, () => new TooltipCopy
+                AttachTooltip(badge, () => new RuntimeTooltipModel
                 {
+                    Kind = RuntimeTooltipKind.General,
+                    Family = MechanicPresentation.Family(spec.Name),
                     Eyebrow = $"RANK {spec.Rank} SPECIALIZATION",
                     Title = spec.Name,
+                    Domain = "SPECIALIZATION",
                     Body = spec.Rule,
+                    Context = tile.Model.ClassName,
                 });
                 tile.Specs.Add(badge);
             }
@@ -446,6 +482,10 @@ internal sealed class WarbandBarView : IDisposable
         if (_model.ArmedInventoryItemInstanceId > 0 &&
             _model.ArmedInventoryKind == kind)
         {
+            UiPolishSignals.Emit(UiPolishSignals.Cue.ProjectedTarget,
+                sourceId: "workbench-armory", targetId: "workbench-dossier",
+                tone: UiFeedbackTone.Positive,
+                transaction: UiTransactionKind.Equip);
             _actions.EquipSelectedWarbandItem?.Invoke(tile.Model.HeroInstanceId);
             return;
         }
@@ -457,7 +497,12 @@ internal sealed class WarbandBarView : IDisposable
             return;
         }
         if (gear.Transferable)
+        {
+            UiPolishSignals.Emit(
+                gear.Selected ? UiPolishSignals.Cue.Unpin : UiPolishSignals.Cue.Pin,
+                targetId: "workbench-dossier", tone: UiFeedbackTone.Preview);
             _actions.SelectWarbandEquipment?.Invoke(tile.Model.HeroInstanceId, kind);
+        }
     }
 
     private GearTarget PickTarget(Vector2 panelPosition)
@@ -526,15 +571,10 @@ internal sealed class WarbandBarView : IDisposable
         return loaded;
     }
 
-    private void AttachTooltip(VisualElement anchor, Func<TooltipCopy> copy)
-    {
-        anchor.RegisterCallback<PointerEnterEvent>(_ => _tooltip.Show(copy(), anchor));
-        anchor.RegisterCallback<PointerLeaveEvent>(_ => _tooltip.Hide());
-        anchor.RegisterCallback<FocusInEvent>(_ => _tooltip.Show(copy(), anchor));
-        anchor.RegisterCallback<FocusOutEvent>(_ => _tooltip.Hide());
-    }
+    private void AttachTooltip(VisualElement anchor, Func<RuntimeTooltipModel> copy) =>
+        _tooltip.Attach(anchor, copy);
 
-    private static TooltipCopy HeroTooltip(WarbandHeroModel hero)
+    private static RuntimeTooltipModel HeroTooltip(WarbandHeroModel hero)
     {
         var body = new StringBuilder();
         body.Append(hero.Role);
@@ -549,25 +589,35 @@ internal sealed class WarbandBarView : IDisposable
                 body.Append(hero.Specs[i].Name);
             }
         }
-        return new TooltipCopy
+        return new RuntimeTooltipModel
         {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(hero.Role),
             Eyebrow = $"RANK {hero.Rank} · {hero.Role}",
             Title = hero.ClassName,
+            Domain = "CHAMPION",
             Body = body.ToString(),
+            Footer = "Select for full dossier",
         };
     }
 
-    private static TooltipCopy GearTooltip(WarbandHeroModel hero, int kind)
+    private static RuntimeTooltipModel GearTooltip(WarbandHeroModel hero, int kind)
     {
         WarbandEquipmentModel gear = kind == 0 ? hero.Weapon : hero.Trinket;
-        return new TooltipCopy
-        {
-            Eyebrow = kind == 0
+        RuntimeTooltipModel tooltip = RuntimeTooltipModel.Equipment(
+            kind == 0
                 ? (gear.Starter ? "CHASSIS STARTER" : $"{gear.Tier} WEAPON")
                 : "TRINKET",
-            Title = gear.Empty ? "Empty socket" : gear.Name,
-            Body = gear.Empty ? "No trinket equipped." : gear.Rule,
-        };
+            gear.Empty ? "Empty socket" : gear.Name,
+            gear.Empty ? "No trinket equipped." : gear.Rule,
+            gear.Facts,
+            gear.Empty
+                ? $"{hero.ClassName} · EMPTY"
+                : $"{hero.ClassName} · EQUIPPED · ACTIVE");
+        tooltip.Footer = gear.Empty
+            ? "Open Armory to assign a compatible item."
+            : "Select to pin the full dossier · Drag to transfer";
+        return tooltip;
     }
 
     private static string LayoutSignature(WarbandBarModel model)
@@ -601,75 +651,22 @@ internal sealed class WarbandBarView : IDisposable
     public void Dispose()
     {
         CancelDrag();
-        _tooltip.Dispose();
         _dragGhost.RemoveFromHierarchy();
     }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public bool EditorShowFirstEquipmentTooltip()
+    {
+        foreach (HeroTile tile in _tiles.Values)
+        {
+            if (tile.Model?.HeroInstanceId <= 0) continue;
+            _tooltip.EditorShow(tile.Weapon, GearTooltip(tile.Model, 0));
+            return true;
+        }
+        return false;
+    }
+#endif
+
     private static void SetDisplayed(VisualElement element, bool shown) =>
         element.style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
-}
-
-internal sealed class TooltipCopy
-{
-    public string Eyebrow = "";
-    public string Title = "";
-    public string Body = "";
-}
-
-/// <summary>Runtime tooltip/popover shared by every focusable element in the Warband Bar.</summary>
-internal sealed class RuntimeWarbandTooltip : IDisposable
-{
-    private readonly VisualElement _host;
-    private readonly VisualElement _root;
-    private readonly Label _eyebrow;
-    private readonly Label _title;
-    private readonly Label _body;
-
-    public RuntimeWarbandTooltip(VisualElement host)
-    {
-        _host = host;
-        _root = new VisualElement();
-        _root.AddToClassList("warband-tooltip");
-        _root.pickingMode = PickingMode.Ignore;
-        _eyebrow = new Label();
-        _eyebrow.AddToClassList("warband-tooltip__eyebrow");
-        _title = new Label();
-        _title.AddToClassList("warband-tooltip__title");
-        _body = new Label();
-        _body.AddToClassList("warband-tooltip__body");
-        _root.Add(_eyebrow);
-        _root.Add(_title);
-        _root.Add(_body);
-        _host.Add(_root);
-        Hide();
-    }
-
-    public void Show(TooltipCopy copy, VisualElement anchor)
-    {
-        if (copy == null || anchor == null) return;
-        _eyebrow.text = copy.Eyebrow;
-        _title.text = copy.Title;
-        MechanicPresentation.BindInline(_body, copy.Body);
-        _root.style.display = DisplayStyle.Flex;
-        _root.schedule.Execute(() => Position(anchor));
-    }
-
-    private void Position(VisualElement anchor)
-    {
-        if (_root.style.display != DisplayStyle.Flex) return;
-        Rect host = _host.worldBound;
-        Rect target = anchor.worldBound;
-        float width = Mathf.Max(300f, _root.resolvedStyle.width);
-        float height = Mathf.Max(120f, _root.resolvedStyle.height);
-        float left = target.xMin - host.xMin;
-        left = Mathf.Clamp(left, 16f, Mathf.Max(16f, host.width - width - 16f));
-        float top = target.yMin - host.yMin - height - 12f;
-        if (top < 16f) top = target.yMax - host.yMin + 12f;
-        _root.style.left = left;
-        _root.style.top = top;
-    }
-
-    public void Hide() => _root.style.display = DisplayStyle.None;
-
-    public void Dispose() => _root.RemoveFromHierarchy();
 }

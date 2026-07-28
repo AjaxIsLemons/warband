@@ -196,6 +196,14 @@
     white-space: nowrap;
 }
 
+.currency-action__suffix {
+    margin-left: 5px;
+    color: rgb(239, 244, 250);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
 .currency-action__amount {
     margin-left: 9px;
 }

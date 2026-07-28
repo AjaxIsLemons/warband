@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Warband.Sim;
@@ -68,7 +66,23 @@ public static class RenderShots
     [MenuItem("Warband/MCP/Enter Play Mode")]
     public static void McpEnterPlayMode()
     {
+        KeepPlayModeBackgrounded();
         if (!EditorApplication.isPlaying) EditorApplication.isPlaying = true;
+    }
+
+    private static void KeepPlayModeBackgrounded()
+    {
+        // Unity 6 stores Play Focused/Maximized/Unfocused on each internal PlayModeView. Set every
+        // existing Game/Simulator view to PlayUnfocused without opening or selecting a window.
+        Type playModeViewType = Type.GetType("UnityEditor.PlayModeView,UnityEditor");
+        PropertyInfo behavior = playModeViewType?.GetProperty(
+            "enterPlayModeBehavior",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (playModeViewType == null || behavior == null) return;
+
+        object unfocused = Enum.Parse(behavior.PropertyType, "PlayUnfocused");
+        foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(playModeViewType))
+            behavior.SetValue(view, unfocused);
     }
 
     [MenuItem("Warband/MCP/Advance Skirmish")]
@@ -267,73 +281,26 @@ public static class RenderShots
     }
 
     /// <summary>
-    /// Bring the Windows Editor and Game View forward before a synchronous verification capture.
-    /// ScreenCapture requires a live end-of-frame, which unattended remote editors do not always
-    /// provide; this keeps a deterministic fallback without reaching through remote desktop pixels.
+    /// Compatibility seam for older MCP scripts. Foreground focus is intentionally disabled:
+    /// verification must not interrupt whoever is using the Windows desktop.
     /// </summary>
     public static bool McpFocusEditor()
     {
-        bool focused = true;
-#if UNITY_EDITOR_WIN
-        IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-        IntPtr foreground = GetForegroundWindow();
-        uint foregroundThread = GetWindowThreadProcessId(foreground, out _);
-        uint editorThread = GetCurrentThreadId();
-        bool attached = foregroundThread != 0 && foregroundThread != editorThread &&
-                        AttachThreadInput(editorThread, foregroundThread, true);
-        if (handle != IntPtr.Zero)
-        {
-            ShowWindow(handle, 9);
-            BringWindowToTop(handle);
-            SetFocus(handle);
-        }
-        focused = handle != IntPtr.Zero && SetForegroundWindow(handle);
-        if (attached) AttachThreadInput(editorThread, foregroundThread, false);
-#endif
-        var gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
-        var gameView = gameViewType == null
-            ? null
-            : EditorWindow.GetWindow(gameViewType, false, "Game");
-        gameView?.Focus();
-        gameView?.Repaint();
-        EditorApplication.QueuePlayerLoopUpdate();
-        return focused;
+        RepaintGameViewOnce();
+        Debug.LogWarning(
+            "[WarbandMCP] foreground focus is disabled; use background-safe capture or inspection");
+        return false;
     }
 
     /// <summary>
-    /// Capture the visible Game View editor window synchronously. Call McpFocusEditor immediately
-    /// beforehand and allow the OS compositor to present the window before pixels are read.
+    /// Compatibility seam for the old foreground-only window capture. Reading compositor pixels is
+    /// disabled because it requires stealing desktop focus; use McpCaptureGameView instead.
     /// </summary>
     public static string McpCaptureGameViewWindow(string label)
     {
-        var gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
-        var gameView = gameViewType == null
-            ? null
-            : EditorWindow.GetWindow(gameViewType, false, "Game");
-        if (gameView == null)
-        {
-            Debug.LogError("[WarbandMCP] no Game View window");
-            return "";
-        }
-
-        Rect rect = gameView.position;
-        int width = Mathf.Max(1, Mathf.RoundToInt(rect.width));
-        int height = Mathf.Max(1, Mathf.RoundToInt(rect.height));
-        Color[] pixels =
-            InternalEditorUtility.ReadScreenPixel(new Vector2(rect.x, rect.y), width, height);
-        var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
-        texture.SetPixels(pixels);
-        texture.Apply();
-
-        string safe = string.IsNullOrWhiteSpace(label) ? "capture" : label;
-        foreach (char c in Path.GetInvalidFileNameChars()) safe = safe.Replace(c, '_');
-        string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../McpCaptures"));
-        Directory.CreateDirectory(outDir);
-        string outPath = Path.Combine(outDir, safe + ".png");
-        File.WriteAllBytes(outPath, texture.EncodeToPNG());
-        UnityEngine.Object.DestroyImmediate(texture);
-        Debug.Log($"[WarbandMCP] wrote synchronous Game View capture: {outPath}");
-        return outPath;
+        Debug.LogError(
+            "[WarbandMCP] foreground Game View capture is disabled; use McpCaptureGameView");
+        return "";
     }
 
     private static void QueueGameViewFrame()
@@ -349,10 +316,13 @@ public static class RenderShots
     {
         EditorApplication.QueuePlayerLoopUpdate();
         var gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
-        if (gameViewType != null)
-            // Focus matters on the headless remote workstation: WaitForEndOfFrame does not complete
-            // while an unfocused Game View is dormant, even though ordinary Update keeps ticking.
-            EditorWindow.GetWindow(gameViewType, false, "Game")?.Repaint();
+        if (gameViewType == null) return;
+
+        // Repaint an existing Game View without GetWindow/Focus: opening or selecting Editor
+        // windows from an unattended MCP session must never disturb the active desktop.
+        UnityEngine.Object[] gameViews = Resources.FindObjectsOfTypeAll(gameViewType);
+        if (gameViews.Length > 0 && gameViews[0] is EditorWindow gameView)
+            gameView.Repaint();
     }
 
     private static void RenderTo(Camera cam, string path, int w, int h)
@@ -380,31 +350,6 @@ public static class RenderShots
         }
     }
 
-#if UNITY_EDITOR_WIN
-    [DllImport("user32.dll")]
-    private static extern bool SetForegroundWindow(IntPtr handle);
-
-    [DllImport("user32.dll")]
-    private static extern bool ShowWindow(IntPtr handle, int command);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll")]
-    private static extern uint GetWindowThreadProcessId(IntPtr handle, out uint processId);
-
-    [DllImport("user32.dll")]
-    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
-
-    [DllImport("user32.dll")]
-    private static extern bool BringWindowToTop(IntPtr handle);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr SetFocus(IntPtr handle);
-
-    [DllImport("kernel32.dll")]
-    private static extern uint GetCurrentThreadId();
-#endif
 }
 
 /// <summary>Ephemeral Play Mode writer used by RenderShots.McpCaptureGameView.</summary>

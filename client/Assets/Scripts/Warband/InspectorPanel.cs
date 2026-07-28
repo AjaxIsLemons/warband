@@ -6,9 +6,23 @@ using UnityEngine.UIElements;
 /// <summary>Reusable progressive-disclosure panel for whichever card currently owns focus.</summary>
 internal sealed class InspectorPanel
 {
+    private static readonly DecisionDetailKind[] DetailKinds =
+    {
+        DecisionDetailKind.Champion,
+        DecisionDetailKind.Recruit,
+        DecisionDetailKind.RankUp,
+        DecisionDetailKind.Weapon,
+        DecisionDetailKind.Trinket,
+        DecisionDetailKind.Inscription,
+        DecisionDetailKind.Capacity,
+        DecisionDetailKind.Combatant,
+    };
+
     private static VisualTreeAsset s_template;
 
     private readonly Action<HallActionId> _onAction;
+    private readonly Action<string> _onRecipient;
+    private readonly RuntimeTooltipService _tooltips;
     private readonly Label _empty;
     private readonly VisualElement _content;
     private readonly VisualElement _portrait;
@@ -19,18 +33,45 @@ internal sealed class InspectorPanel
     private readonly VisualElement _economy;
     private readonly Label _price;
     private readonly HourstoneAmount _currencyPrice;
-    private readonly HourstoneBalanceComparison _balance;
     private readonly VisualElement _stats;
+    private readonly VisualElement _pageNav;
+    private readonly Button _pagePrev;
+    private readonly Button _pageDetails;
+    private readonly Button _pageNext;
+    private readonly VisualElement _rankUpBody;
+    private readonly VisualElement _rankUpLadder;
+    private readonly VisualElement _rankUpOptions;
+    private readonly VisualElement _decisionBody;
     private readonly VisualElement _sections;
+    private readonly VisualElement _secondarySections;
+    private readonly VisualElement _secondaryColumn;
+    private readonly VisualElement _equipmentPreview;
+    private readonly VisualElement _recipients;
+    private readonly Label _comparisonTitle;
+    private readonly VisualElement _comparisonTable;
+    private readonly VisualElement _ruleDeltas;
     private readonly VisualElement _tags;
     private readonly VisualElement _actions;
+    private readonly List<VisualElement> _detailSections = new List<VisualElement>();
+    private readonly List<int> _detailOwners = new List<int>();
+    private readonly List<string> _detailLabels = new List<string>();
+    private int _detailPageIndex;
+    private float _resolvedWidth;
+    private bool _paginateDetails;
+    private bool _secondaryDefaultVisible;
+    private bool _hasEquipmentPreview;
+    private DecisionDetailKind _boundKind;
+    private string _boundSignature = "";
 
     public VisualElement Root { get; }
     public VisualElement ActionsRoot => _actions;
 
-    public InspectorPanel(Action<HallActionId> onAction)
+    public InspectorPanel(Action<HallActionId> onAction, Action<string> onRecipient = null,
+                          RuntimeTooltipService tooltips = null)
     {
         _onAction = onAction;
+        _onRecipient = onRecipient;
+        _tooltips = tooltips;
         if (s_template == null)
             s_template = Resources.Load<VisualTreeAsset>("UI/InspectorPanel");
         if (s_template == null)
@@ -52,13 +93,29 @@ internal sealed class InspectorPanel
         _economy = Required<VisualElement>(Root, "economy");
         _price = Required<Label>(Root, "price");
         _currencyPrice = new HourstoneAmount(0, "wb-inspector__currency-price");
-        _balance = new HourstoneBalanceComparison();
         _economy.Add(_currencyPrice);
-        _economy.Add(_balance);
         _stats = Required<VisualElement>(Root, "stats");
+        _pageNav = Required<VisualElement>(Root, "page-nav");
+        _pagePrev = Required<Button>(Root, "page-prev");
+        _pageDetails = Required<Button>(Root, "page-details");
+        _pageNext = Required<Button>(Root, "page-next");
+        _rankUpBody = Required<VisualElement>(Root, "rank-up-body");
+        _rankUpLadder = Required<VisualElement>(Root, "rank-up-ladder");
+        _rankUpOptions = Required<VisualElement>(Root, "rank-up-options");
+        _decisionBody = Required<VisualElement>(Root, "decision-body");
         _sections = Required<VisualElement>(Root, "sections");
+        _secondarySections = Required<VisualElement>(Root, "secondary-sections");
+        _secondaryColumn = Required<VisualElement>(Root, "secondary-column");
+        _equipmentPreview = Required<VisualElement>(Root, "equipment-preview");
+        _recipients = Required<VisualElement>(Root, "recipients");
+        _comparisonTitle = Required<Label>(Root, "comparison-title");
+        _comparisonTable = Required<VisualElement>(Root, "comparison-table");
+        _ruleDeltas = Required<VisualElement>(Root, "rule-deltas");
         _tags = Required<VisualElement>(Root, "tags");
         _actions = Required<VisualElement>(Root, "actions");
+        _pagePrev.clicked += () => StepDetail(-1);
+        _pageNext.clicked += () => StepDetail(1);
+        Root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
     }
 
     public void Bind(InspectorModel model)
@@ -66,12 +123,29 @@ internal sealed class InspectorPanel
         SetDisplayed(_empty, model.Empty);
         SetDisplayed(_content, !model.Empty);
         SetDisplayed(_actions, !model.Empty);
+        foreach (DecisionDetailKind kind in DetailKinds)
+            Root.EnableInClassList("wb-inspector--" +
+                kind.ToString().ToLowerInvariant(), !model.Empty && model.Kind == kind);
+        Root.EnableInClassList(
+            "wb-inspector--equipment-preview",
+            !model.Empty && model.EquipmentPreview != null);
         if (model.Empty)
         {
             // The Hall can present actions in a pinned dock outside this panel's content tree.
             // Clear stale commits before returning so an empty dossier can never retain BUY/EQUIP.
             _actions.Clear();
+            SetDisplayed(_pageNav, false);
+            SetDisplayed(_rankUpBody, false);
             return;
+        }
+        _boundKind = model.Kind;
+        _hasEquipmentPreview = model.EquipmentPreview != null;
+
+        string signature = model.Kind + "|" + model.Title + "|" + model.Subtitle;
+        if (!string.Equals(signature, _boundSignature, StringComparison.Ordinal))
+        {
+            _boundSignature = signature;
+            _detailPageIndex = 0;
         }
 
         _eyebrow.text = model.Eyebrow;
@@ -80,8 +154,6 @@ internal sealed class InspectorPanel
         _price.text = model.Price;
         _currencyPrice.Bind(model.CurrencyCost,
             model.CurrencyBalance < 0 || model.CurrencyBalance >= model.CurrencyCost);
-        if (model.CurrencyCost >= 0)
-            _balance.Bind(model.CurrencyBalance, model.CurrencyCost);
         _portraitFallback.text = model.PortraitFallback;
         WarbandCard.SetAccent(Root, model.Accent);
 
@@ -94,9 +166,10 @@ internal sealed class InspectorPanel
         SetDisplayed(_portraitFallback, texture == null);
         SetDisplayed(_price, model.CurrencyCost < 0 && !string.IsNullOrEmpty(model.Price));
         SetDisplayed(_currencyPrice, model.CurrencyCost >= 0);
-        SetDisplayed(_balance, model.CurrencyCost >= 0 && model.CurrencyBalance >= 0);
         SetDisplayed(_economy, model.CurrencyCost >= 0 || !string.IsNullOrEmpty(model.Price));
         BindSections(model);
+        BindEquipmentPreview(model.EquipmentPreview);
+        BindRankUp(model.RankUpDetail, model.Title);
 
         _stats.Clear();
         foreach (var stat in model.Stats)
@@ -104,6 +177,7 @@ internal sealed class InspectorPanel
             var chip = new MechanicStatTile(
                 "wb-inspector-stat", "wb-inspector-stat");
             chip.Bind(stat);
+            _tooltips?.Attach(chip, () => StatTooltip(stat, model.Title));
             _stats.Add(chip);
         }
 
@@ -114,14 +188,22 @@ internal sealed class InspectorPanel
             label.AddToClassList("wb-tag");
             _tags.Add(label);
         }
-        foreach (var note in model.KeywordNotes)
+        bool typedRankUp = model.RankUpDetail != null;
+        if (typedRankUp)
         {
-            var label = new Label();
-            label.AddToClassList("wb-keyword-note");
-            MechanicPresentation.BindInline(label, note);
-            _tags.Add(label);
+            _paginateDetails = false;
+            SetDisplayed(_pageNav, false);
+            SetDisplayed(_decisionBody, false);
+            SetDisplayed(_tags, false);
+            SetDisplayed(_rankUpBody, true);
+            Root.EnableInClassList("wb-inspector--paged-details", false);
         }
-        SetDisplayed(_tags, model.Tags.Count > 0 || model.KeywordNotes.Count > 0);
+        else
+        {
+            RefreshDetailPagination();
+            SetDisplayed(_pageNav, _paginateDetails);
+            ApplyPage();
+        }
 
         _actions.Clear();
         foreach (var action in model.Actions)
@@ -132,33 +214,131 @@ internal sealed class InspectorPanel
             button.AddToClassList(action.Primary ? "btn--primary" : "btn--ghost");
             if (action.CurrencyCost >= 0)
                 MechanicPresentation.BindCurrencyButton(
-                    button, action.Label, action.CurrencyCost, action.CurrencyGain);
+                    button, action.Label, action.CurrencyCost, action.CurrencyGain,
+                    action.CurrencySuffix);
             else
                 button.text = action.Label;
             button.SetEnabled(action.Enabled);
-            if (!action.Enabled) button.tooltip = action.DisabledReason;
+            if (!action.Enabled)
+            {
+                if (_tooltips == null)
+                    button.tooltip = action.DisabledReason;
+                else
+                    _tooltips.Attach(button, () => new RuntimeTooltipModel
+                    {
+                        Kind = RuntimeTooltipKind.DisabledReason,
+                        Family = MechanicFamily.Neutral,
+                        Eyebrow = "ACTION UNAVAILABLE",
+                        Title = action.Label,
+                        Domain = "REQUIREMENT",
+                        Body = action.DisabledReason,
+                    });
+            }
             _actions.Add(button);
         }
+    }
+
+    private void StepDetail(int delta)
+    {
+        if (_detailSections.Count == 0) return;
+        _detailPageIndex = Mathf.Clamp(
+            _detailPageIndex + delta, 0, _detailSections.Count - 1);
+        ApplyPage();
+        UiPolishSignals.Emit(UiPolishSignals.Cue.Tab,
+            targetId: "workbench-dossier", tone: UiFeedbackTone.Preview);
+    }
+
+    private void ApplyPage()
+    {
+        bool paged = _paginateDetails && _detailSections.Count > 1;
+        _detailPageIndex = Mathf.Clamp(
+            _detailPageIndex, 0, Mathf.Max(0, _detailSections.Count - 1));
+        SetDisplayed(_decisionBody, true);
+        SetDisplayed(_tags, _tags.childCount > 0);
+        _tags.EnableInClassList("wb-inspector__tags--page", false);
+        Root.EnableInClassList("wb-inspector--paged-details", paged);
+        for (int i = 0; i < _detailSections.Count; i++)
+            SetDisplayed(_detailSections[i],
+                !paged || i == _detailPageIndex);
+        bool profileVisible = !paged ||
+            _detailOwners.Count == 0 ||
+            _detailOwners[_detailPageIndex] == 0;
+        bool secondaryVisible = paged
+            ? _detailOwners.Count > _detailPageIndex &&
+              _detailOwners[_detailPageIndex] == 1
+            : _secondaryDefaultVisible;
+        SetDisplayed(_sections.parent, profileVisible);
+        SetDisplayed(_secondaryColumn, secondaryVisible);
+        bool showSteps = paged;
+        SetDisplayed(_pagePrev, showSteps);
+        SetDisplayed(_pageNext, showSteps);
+        _pagePrev.SetEnabled(_detailPageIndex > 0);
+        _pageNext.SetEnabled(_detailPageIndex + 1 < _detailSections.Count);
+        _pageDetails.text = paged && _detailLabels.Count > _detailPageIndex
+            ? _detailLabels[_detailPageIndex].ToUpperInvariant()
+            : "DETAILS";
+        _pageDetails.EnableInClassList("wb-inspector__page-button--active", true);
+    }
+
+    private void OnGeometryChanged(GeometryChangedEvent evt)
+    {
+        if (Mathf.Abs(_resolvedWidth - evt.newRect.width) < 1f) return;
+        _resolvedWidth = evt.newRect.width;
+        bool previous = _paginateDetails;
+        RefreshDetailPagination();
+        if (previous != _paginateDetails)
+            ApplyPage();
+    }
+
+    private void RefreshDetailPagination()
+    {
+        _paginateDetails =
+            !_hasEquipmentPreview &&
+            _detailSections.Count > 1 &&
+            (_boundKind == DecisionDetailKind.RankUp ||
+             (_resolvedWidth > 1f && _resolvedWidth < 1000f));
+    }
+
+    private static RuntimeTooltipModel StatTooltip(StatChipModel stat, string context)
+    {
+        MechanicFamily family = MechanicPresentation.Family(stat?.Id ??
+            PresentationFactId.Unknown);
+        return new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = family,
+            Eyebrow = "UNIT FACT",
+            Title = DecisionCardPresentation.DisplayLabel(stat),
+            Domain = MechanicPresentation.Definition(family).Semantic.ToUpperInvariant(),
+            Body = DecisionCardPresentation.Tooltip(stat),
+            Context = string.IsNullOrWhiteSpace(context)
+                ? ""
+                : "SHOWN ON  " + context.ToUpperInvariant(),
+        };
     }
 
     private void BindSections(InspectorModel model)
     {
         _sections.Clear();
+        _secondarySections.Clear();
+        _detailSections.Clear();
+        _detailOwners.Clear();
+        _detailLabels.Clear();
         var sections = model.Sections.Count > 0
             ? model.Sections
             : LegacySections(model);
-        foreach (var section in sections)
+        for (int i = 0; i < sections.Count; i++)
         {
+            InspectorSectionModel section = sections[i];
             var root = new VisualElement();
             root.AddToClassList("wb-inspector__section");
             root.AddToClassList("wb-inspector__section--" +
                                 section.Kind.ToString().ToLowerInvariant());
-            var label = new Label(section.Label);
-            label.AddToClassList("wb-inspector__section-label");
-            root.Add(label);
+            root.Add(SectionHeading(section));
 
             if (section.Kind == InspectorSectionKind.Rule)
-                root.Add(RuleLine(section));
+                root.Add(RuleLine(
+                    section, model.Traits, model.KeywordNotes, model.Title));
             else if (section.Kind == InspectorSectionKind.Comparison)
             {
                 foreach (var comparison in section.Comparisons)
@@ -174,11 +354,288 @@ internal sealed class InspectorPanel
             }
             else if (section.Kind == InspectorSectionKind.Capacity)
                 root.Add(CapacityDiagram(section));
-            _sections.Add(root);
+            bool secondary =
+                (model.Kind == DecisionDetailKind.Recruit && i >= 2) ||
+                (model.Kind == DecisionDetailKind.RankUp &&
+                 section.Kind == InspectorSectionKind.Choices);
+            (secondary ? _secondarySections : _sections).Add(root);
+            _detailSections.Add(root);
+            _detailOwners.Add(secondary ? 1 : 0);
+            _detailLabels.Add(string.IsNullOrWhiteSpace(section.Label)
+                ? $"DETAIL {i + 1}"
+                : section.Label);
         }
+        _secondaryDefaultVisible =
+            (model.Kind == DecisionDetailKind.Recruit ||
+             model.Kind == DecisionDetailKind.RankUp) &&
+            _secondarySections.childCount > 0;
+        SetDisplayed(_secondaryColumn, _secondaryDefaultVisible);
     }
 
-    private static VisualElement RuleLine(InspectorSectionModel section)
+    private void BindRankUp(RankUpDetailModel model, string context)
+    {
+        _rankUpLadder.Clear();
+        _rankUpOptions.Clear();
+        SetDisplayed(_rankUpBody, model != null);
+        if (model == null) return;
+
+        foreach (RankTierSlotModel tier in model.Tiers)
+            _rankUpLadder.Add(RankTier(tier, context));
+        foreach (ChoicePreviewModel option in model.Options)
+            _rankUpOptions.Add(RankUpOption(option, context));
+    }
+
+    private VisualElement RankTier(RankTierSlotModel model, string context)
+    {
+        var slot = new VisualElement();
+        slot.AddToClassList("wb-rank-tier");
+        slot.AddToClassList("wb-rank-tier--" +
+            model.State.ToString().ToLowerInvariant());
+        if (!string.IsNullOrWhiteSpace(model.Accent))
+            slot.AddToClassList("accent--" + model.Accent);
+        slot.focusable = true;
+        slot.tabIndex = 0;
+        slot.userData = model;
+
+        var rank = new Label(model.Rank);
+        rank.AddToClassList("wb-rank-tier__rank");
+        var icon = new Label(model.Icon);
+        icon.AddToClassList("wb-rank-tier__icon");
+        var name = new Label(model.Name);
+        name.AddToClassList("wb-rank-tier__name");
+        slot.Add(rank);
+        slot.Add(icon);
+        slot.Add(name);
+
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(model.Name),
+            Eyebrow = model.State switch
+            {
+                RankTierSlotState.Selected => $"RANK {model.Rank} SELECTED",
+                RankTierSlotState.Pending => $"RANK {model.Rank} PENDING",
+                _ => $"RANK {model.Rank} LOCKED",
+            },
+            Title = model.Name,
+            Domain = "SPECIALIZATION TIER",
+            Body = model.Rule,
+            Context = context,
+        };
+        if (_tooltips == null) slot.tooltip = model.Rule;
+        else _tooltips.Attach(slot, Tooltip);
+        return slot;
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public bool EditorShowFirstRankTierTooltip()
+    {
+        VisualElement slot =
+            Root.Q<VisualElement>(className: "wb-rank-tier--selected") ??
+            Root.Q<VisualElement>(className: "wb-rank-tier--pending");
+        if (slot?.userData is not RankTierSlotModel model) return false;
+        _tooltips?.EditorShow(slot, new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(model.Name),
+            Eyebrow = $"RANK {model.Rank} " + model.State.ToString().ToUpperInvariant(),
+            Title = model.Name,
+            Domain = "SPECIALIZATION TIER",
+            Body = model.Rule,
+            Context = _title.text,
+        });
+        return _tooltips != null;
+    }
+#endif
+
+    private VisualElement RankUpOption(ChoicePreviewModel model, string context)
+    {
+        var option = new VisualElement();
+        option.AddToClassList("wb-rank-option");
+        if (!string.IsNullOrWhiteSpace(model.Accent))
+            option.AddToClassList("accent--" + model.Accent);
+        option.focusable = true;
+        option.tabIndex = 0;
+
+        var change = new Label(model.Change);
+        change.AddToClassList("wb-rank-option__change");
+        var name = new Label(model.Name);
+        name.AddToClassList("wb-rank-option__name");
+        var rule = new Label();
+        rule.AddToClassList("wb-rank-option__rule");
+        MechanicPresentation.BindInline(rule, model.Rule);
+        option.Add(change);
+        option.Add(name);
+        option.Add(rule);
+
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(model.Name),
+            Eyebrow = "RANK-UP OPTION",
+            Title = model.Name,
+            Domain = string.IsNullOrWhiteSpace(model.Change)
+                ? "SPECIALIZATION"
+                : model.Change,
+            Body = model.Rule,
+            Context = context,
+        };
+        if (_tooltips == null) option.tooltip = model.Rule;
+        else _tooltips.Attach(option, Tooltip);
+        return option;
+    }
+
+    private VisualElement TraitChip(
+        WarbandSpecBadgeModel trait, string context, bool inline = false)
+    {
+        var chip = new VisualElement();
+        chip.AddToClassList("wb-trait-chip");
+        if (inline) chip.AddToClassList("wb-trait-chip--inline");
+        if (!string.IsNullOrWhiteSpace(trait.Accent))
+            chip.AddToClassList("accent--" + trait.Accent);
+        chip.focusable = true;
+        chip.tabIndex = 0;
+
+        if (!inline)
+        {
+            var icon = new Label(trait.Icon);
+            icon.AddToClassList("wb-trait-chip__icon");
+            chip.Add(icon);
+        }
+        var rank = new Label(trait.Rank);
+        rank.AddToClassList("wb-trait-chip__rank");
+        var name = new Label(trait.Name);
+        name.AddToClassList("wb-trait-chip__name");
+        chip.Add(rank);
+        chip.Add(name);
+
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(trait.Name),
+            Eyebrow = $"RANK {trait.Rank} SELECTED TRAIT",
+            Title = trait.Name,
+            Domain = "SPECIALIZATION",
+            Body = trait.Rule,
+            Context = context,
+        };
+        if (_tooltips == null) chip.tooltip = trait.Rule;
+        else _tooltips.Attach(chip, Tooltip);
+        return chip;
+    }
+
+    private static VisualElement SectionHeading(InspectorSectionModel section)
+    {
+        var heading = new VisualElement();
+        heading.AddToClassList("wb-inspector__section-heading");
+        var label = new Label(section.Label);
+        label.AddToClassList("wb-inspector__section-label");
+        heading.Add(label);
+        if (section.LabelGlyph == UiGlyphId.Unknown ||
+            string.IsNullOrWhiteSpace(section.LabelValue))
+            return heading;
+
+        var context = new VisualElement();
+        context.AddToClassList("wb-inspector__section-context");
+        MechanicDefinition definition =
+            MechanicPresentation.Definition(MechanicFamily.Mana);
+        var glyph = new WarbandGlyph(section.LabelGlyph);
+        glyph.SetColor(definition.Color);
+        glyph.AddToClassList("wb-inspector__section-context-glyph");
+        var value = new Label(section.LabelValue);
+        value.AddToClassList("wb-inspector__section-context-value");
+        context.Add(glyph);
+        context.Add(value);
+        heading.Add(context);
+        return heading;
+    }
+
+    private void BindEquipmentPreview(EquipmentPreviewModel model)
+    {
+        bool shown = model != null;
+        SetDisplayed(_equipmentPreview, shown);
+        _recipients.Clear();
+        _comparisonTable.Clear();
+        _ruleDeltas.Clear();
+        if (!shown) return;
+
+        foreach (RecipientPreviewModel recipient in model.Recipients)
+            _recipients.Add(RecipientChip(recipient));
+
+        _comparisonTitle.text =
+            $"{model.CurrentItemName.ToUpperInvariant()}  →  " +
+            model.OfferedItemName.ToUpperInvariant();
+        foreach (StatComparisonModel comparison in model.StatDeltas)
+            _comparisonTable.Add(ComparisonRow(comparison));
+
+        if (model.LostRule != null)
+            _ruleDeltas.Add(RuleDelta("LOSE", model.LostRule, "loss"));
+        if (model.GainedRule != null)
+            _ruleDeltas.Add(RuleDelta("GAIN", model.GainedRule, "gain"));
+    }
+
+    private Button RecipientChip(RecipientPreviewModel model)
+    {
+        var chip = new Button(() =>
+        {
+            if (model.IsEligible) _onRecipient?.Invoke(model.HeroKey);
+        });
+        chip.AddToClassList("wb-recipient");
+        chip.EnableInClassList("wb-recipient--selected", model.IsSelected);
+        chip.EnableInClassList("wb-recipient--invalid", !model.IsEligible);
+        chip.SetEnabled(model.IsEligible);
+
+        var portrait = new VisualElement();
+        portrait.AddToClassList("wb-recipient__portrait");
+        Texture2D texture = string.IsNullOrEmpty(model.PortraitResource)
+            ? null
+            : Resources.Load<Texture2D>(model.PortraitResource);
+        portrait.style.backgroundImage = texture == null
+            ? new StyleBackground(StyleKeyword.None)
+            : new StyleBackground(Background.FromTexture2D(texture));
+        if (texture == null)
+        {
+            var fallback = new Label(model.PortraitFallback);
+            fallback.AddToClassList("wb-recipient__fallback");
+            portrait.Add(fallback);
+        }
+
+        var rank = new Label(model.RankText);
+        rank.AddToClassList("wb-recipient__rank");
+        var name = new Label(model.DisplayName);
+        name.AddToClassList("wb-recipient__name");
+        chip.Add(portrait);
+        chip.Add(rank);
+        chip.Add(name);
+        chip.tooltip = model.IsEligible
+            ? $"{model.DisplayName} · {model.RankText}\nEquipped: {model.CurrentItemName}"
+            : $"{model.DisplayName} · {model.IneligibleReason}";
+        return chip;
+    }
+
+    private static VisualElement RuleDelta(string verb, RuleDeltaModel model, string tone)
+    {
+        var root = new VisualElement();
+        root.AddToClassList("wb-rule-delta");
+        root.AddToClassList("wb-rule-delta--" + tone);
+        root.EnableInClassList("wb-rule-delta--inactive", !model.Applies);
+        var label = new Label(verb + (model.Applies ? "" : " · INACTIVE"));
+        label.AddToClassList("wb-rule-delta__label");
+        var copy = new Label();
+        copy.AddToClassList("wb-rule-delta__copy");
+        MechanicPresentation.BindInline(copy,
+            $"{model.RuleName} · {model.ShortSummary}");
+        root.Add(label);
+        root.Add(copy);
+        root.tooltip = model.FullDescription;
+        return root;
+    }
+
+    private VisualElement RuleLine(
+        InspectorSectionModel section,
+        IReadOnlyList<WarbandSpecBadgeModel> traits,
+        IReadOnlyList<string> keywordNotes,
+        string context)
     {
         var line = new VisualElement();
         line.AddToClassList("wb-inspector__line");
@@ -186,16 +643,60 @@ internal sealed class InspectorPanel
         icon.AddToClassList("wb-inspector__line-icon");
         var copy = new VisualElement();
         copy.AddToClassList("wb-inspector__line-body");
+        var titleRow = new VisualElement();
+        titleRow.AddToClassList("wb-inspector__line-title-row");
         var title = new Label(section.Name);
         title.AddToClassList("wb-inspector__line-title");
         var summary = new Label();
         summary.AddToClassList("wb-inspector__line-copy");
-        MechanicPresentation.BindInline(summary, section.Summary);
-        copy.Add(title);
+        summary.AddToClassList("wb-inspector__semantic-copy");
+        SemanticTextBinding semantic = MechanicPresentation.BindSemantic(
+            summary, section.Summary, keywordNotes, context);
+        _tooltips?.AttachSemantic(summary, semantic);
+        SpecRuleContext ruleContext = SectionContext(section.Label);
+        bool hasContextTraits = false;
+        if (traits != null)
+            foreach (WarbandSpecBadgeModel trait in traits)
+                if (trait.Context == ruleContext)
+                {
+                    hasContextTraits = true;
+                    titleRow.Add(TraitChip(trait, context, inline: true));
+                }
+        bool titleLivesInSentence =
+            semantic.Find(section.Name) != null;
+        if (!hasContextTraits && !titleLivesInSentence) titleRow.Add(title);
+        if (titleRow.childCount > 0) copy.Add(titleRow);
         copy.Add(summary);
         line.Add(icon);
         line.Add(copy);
         return line;
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public bool EditorShowSemanticKeywordTooltip(string preferredKeyword = "")
+    {
+        List<Label> labels =
+            Root.Query<Label>(className: "semantic-text--interactive").ToList();
+        foreach (Label label in labels)
+        {
+            if (label.userData is not SemanticTextBinding binding) continue;
+            SemanticTextToken token = string.IsNullOrWhiteSpace(preferredKeyword)
+                ? binding.Tokens.Count > 0 ? binding.Tokens[0] : null
+                : binding.Find(preferredKeyword);
+            if (token == null) continue;
+            _tooltips?.EditorShow(label, token.Tooltip(binding.Context));
+            return _tooltips != null;
+        }
+        return false;
+    }
+#endif
+
+    private static SpecRuleContext SectionContext(string label)
+    {
+        string value = (label ?? "").ToUpperInvariant();
+        if (value.Contains("BASIC")) return SpecRuleContext.BasicAttack;
+        if (value.Contains("SIGNATURE")) return SpecRuleContext.Signature;
+        return SpecRuleContext.Passive;
     }
 
     private static VisualElement ChoicePreview(ChoicePreviewModel choice)
@@ -263,8 +764,23 @@ internal sealed class InspectorPanel
             });
         }
         Add("BASIC ATTACK", model.WeaponIcon, model.WeaponName, model.WeaponSummary);
-        Add(model.AbilityTrigger, model.AbilityIcon, model.AbilityName, model.AbilitySummary);
-        Add(model.PassiveTrigger, model.PassiveIcon, model.PassiveName, model.PassiveSummary);
+        if (!string.IsNullOrEmpty(model.AbilityName) ||
+            !string.IsNullOrEmpty(model.AbilitySummary))
+            result.Add(new InspectorSectionModel
+            {
+                Label = "SIGNATURE",
+                Icon = model.AbilityIcon,
+                Name = model.AbilityName,
+                Summary = model.AbilitySummary,
+                LabelGlyph = model.AbilityManaCost >= 0
+                    ? UiGlyphId.Mana
+                    : UiGlyphId.Unknown,
+                LabelValue = model.AbilityManaCost >= 0
+                    ? model.AbilityManaCost.ToString()
+                    : "",
+            });
+        Add(PassiveSectionLabel(model.PassiveTrigger), model.PassiveIcon,
+            model.PassiveName, model.PassiveSummary);
         if (model.Comparisons.Count > 0)
             result.Add(new InspectorSectionModel
             {
@@ -280,6 +796,15 @@ internal sealed class InspectorPanel
                 Choices = new List<ChoicePreviewModel>(model.ChoicePreviews),
             });
         return result;
+    }
+
+    private static string PassiveSectionLabel(string trigger)
+    {
+        if (string.IsNullOrWhiteSpace(trigger)) return "PASSIVE";
+        const string always = " · ALWAYS";
+        return trigger.EndsWith(always, StringComparison.OrdinalIgnoreCase)
+            ? trigger.Substring(0, trigger.Length - always.Length)
+            : trigger;
     }
 
     private static T Required<T>(VisualElement root, string name) where T : VisualElement
@@ -299,8 +824,17 @@ internal sealed class InspectorPanel
         PresentationFactId id = DecisionCardPresentation.FactId(comparison.Label);
         DecisionCardPresentation.ApplyFact(row, id);
         DecisionFactDefinition definition = DecisionCardPresentation.Fact(id);
-        row.EnableInClassList("wb-comparison--good", comparison.Tone == "good");
-        row.EnableInClassList("wb-comparison--bad", comparison.Tone == "bad");
+        row.EnableInClassList("wb-comparison--good",
+            comparison.Direction == DeltaDirection.Positive ||
+            comparison.Tone == "good");
+        row.EnableInClassList("wb-comparison--bad",
+            comparison.Direction == DeltaDirection.Negative ||
+            comparison.Tone == "bad");
+        row.EnableInClassList("wb-comparison--contextual",
+            comparison.Direction == DeltaDirection.Contextual);
+        row.tooltip = string.IsNullOrWhiteSpace(comparison.Explanation)
+            ? definition.Tooltip
+            : comparison.Explanation;
         var icon = new WarbandGlyph(definition.Glyph);
         icon.SetColor(definition.Color);
         icon.AddToClassList("wb-comparison__icon");
@@ -314,11 +848,16 @@ internal sealed class InspectorPanel
         arrow.AddToClassList("wb-comparison__arrow");
         var after = new Label(comparison.After);
         after.AddToClassList("wb-comparison__after");
+        var direction = new Label(comparison.Direction == DeltaDirection.Positive ? "+" :
+            comparison.Direction == DeltaDirection.Negative ? "−" :
+            comparison.Direction == DeltaDirection.Contextual ? "◆" : "=");
+        direction.AddToClassList("wb-comparison__direction");
         row.Add(icon);
         row.Add(label);
         row.Add(before);
         row.Add(arrow);
         row.Add(after);
+        row.Add(direction);
         return row;
     }
 }

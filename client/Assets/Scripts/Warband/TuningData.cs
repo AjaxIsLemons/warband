@@ -69,7 +69,16 @@ public class FieldTune
 [Serializable]
 public class NameplateTune
 {
-    public bool show = true;
+    /// <summary>OFF by default since 2026-07-27, on capture evidence rather than taste. A
+    /// nameplate hangs ~2.37 world units above its unit while adjacent rows project only ~0.73
+    /// units apart at the shipped 25° pitch, so each plate covers the units up to THREE rows
+    /// behind it. The first board capture of the session (skirmish, 6 units) shows exactly that:
+    /// six labels colliding, Bulwark's plate lying across the Berserker's body, Cleric floating
+    /// over units two rows away. The status icon row above each unit survives and stays readable —
+    /// the name labels are what turn a cluster into a smear.
+    /// Unit identity is carried by silhouette, the ground disc, and the hover card (item 21).
+    /// One F1 toggle to bring them back; revisit when the camera pitch rises (audit headline A).</summary>
+    public bool show = false;
     [Range(0.005f, 0.2f)] public float characterSize = 0.018f;
     public Color color = new Color(0.88f, 0.88f, 0.82f); // soft off-white — reads on the dark board
 }
@@ -87,6 +96,16 @@ public class StoryTune
     [Range(0.005f, 0.2f)] public float feedSize = 0.02f;
     [Range(0.01f, 0.4f)] public float bannerSize = 0.056f;
     [Range(0f, 15f)] public float endHoldSeconds = 4f;
+    /// <summary>Where the kill/announce feed sits, in hexes out from the board's +X edge and in
+    /// world units above the board plane. Hard-coded at 1.6 / 3.0 until 2026-07-27, and that made
+    /// it a silent veto on every camera experiment: the feed's anchor alone sits 1.17x the board's
+    /// own width out, and its billboarded lines run further still, so the frame has to be wide
+    /// enough for the board PLUS a text column beside it. Narrow the FOV to make units bigger and
+    /// the feed is the first thing off the screen. Negative gap pulls it back over the board's
+    /// top corner, which is where most games in the genre put it. Defaults reproduce the old
+    /// anchor exactly. See Design/sim-render-audit.md §3.</summary>
+    [Range(-6f, 6f)] public float feedGapHexes = 1.6f;
+    [Range(0f, 8f)] public float feedHeight = 3f;
 }
 
 /// <summary>
@@ -141,6 +160,16 @@ public class CameraTune
     [Range(-180f, 180f)] public float yaw = 0f;       // orbit around the board
     [Range(5f, 89f)] public float pitch = 52f;        // elevation angle
     [Range(0.4f, 3f)] public float distance = 1.25f;  // multiple of board span
+    /// <summary>Vertical field of view. Lived ONLY in `Game.unity` until 2026-07-27, which made it
+    /// the one camera number unreachable from F1 — and the one that was furthest wrong: at 60° the
+    /// board covered ~57% of frame width and the enemy back rank rendered ~63 px tall at 1080p,
+    /// three pixels over fight-legibility's own 60 px silhouette gate. Narrowing it is also the
+    /// only lever on the near/far taper (2.29× today: a back-row unit gets 44% of a front-row
+    /// unit's pixels), because taper is set by the camera's DISTANCE and a wide FOV forces it close.
+    /// Shipped at 60 = the scene value, so this is a slider, not a silent re-frame; the value that
+    /// caps how far it can be narrowed is the world-space kill feed's horizontal budget
+    /// (see Design/sim-render-audit.md §3).</summary>
+    [Range(15f, 75f)] public float fov = 60f;
     public Color background = new Color(0.055f, 0.06f, 0.08f);
 }
 
@@ -352,6 +381,16 @@ public class TellDef
     // Flavor := FieldCreated's derived FieldFlavor (Aux3) — a hazard glyph vs a boon glyph.
     public bool byFlavor = false;
     public FieldFlavor flavor = FieldFlavor.Hazard;
+    // Rule := the id of the PASSIVE this TriggerFired/RuleChanged event names, resolved from the
+    // event's Aux index against the battle's rule table ("berserker.bloodreaver.redharvest",
+    // "Greataxe/mastery", "banner.chorus", "crown.bell"). This is the seam the whole passive layer
+    // extends through: a new spec node is identified the day it is authored and matches the
+    // filterless fallback, and giving it a bespoke look is one row here — no code, no recompile,
+    // and art attaches through the vfx fields below. +2 specificity like ability: a rule id names
+    // exactly one authored passive, so it must outrank a chassis- or weapon-scoped row rather than
+    // tie with it. See Design/passive-legibility.md.
+    public bool byRule = false;
+    public string rule = "";
 
     [Newtonsoft.Json.JsonIgnore] public Cause? CauseFilter => byCause ? cause : (Cause?)null;
     [Newtonsoft.Json.JsonIgnore] public StatusKind? StatusFilter => byStatus ? status : (StatusKind?)null;
@@ -360,7 +399,8 @@ public class TellDef
     [Newtonsoft.Json.JsonIgnore] public string AbilityFilter => byAbility && !string.IsNullOrEmpty(ability) ? ability : null;
     [Newtonsoft.Json.JsonIgnore] public string WeaponFilter => byWeapon && !string.IsNullOrEmpty(weapon) ? weapon : null;
     [Newtonsoft.Json.JsonIgnore] public FieldFlavor? FlavorFilter => byFlavor ? flavor : (FieldFlavor?)null;
-    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter, ability: AbilityFilter, weapon: WeaponFilter);
+    [Newtonsoft.Json.JsonIgnore] public string RuleFilter => byRule && !string.IsNullOrEmpty(rule) ? rule : null;
+    [Newtonsoft.Json.JsonIgnore] public int Specificity => TellMatch.Specificity(CauseFilter, StatusFilter, FlavorFilter, RangedFilter, ChassisFilter, ability: AbilityFilter, weapon: WeaponFilter, rule: RuleFilter);
 
     public bool flash = true;
     public Color flashColor = Color.white;
@@ -474,6 +514,33 @@ public class FxTune
     // REAL seconds, not ticks: how fast a feed can be read doesn't change with the battle speed, so
     // a fast-forwarded fight simply announces a smaller fraction of its casts. 0 disables the ration.
     [Range(0f, 20f)] public float announceCooldownSeconds = 6f;
+    /// <summary>How long the caster's era sigil is HELD past the release before it is allowed to
+    /// burn out. combat-spectacle §2 specifies a four-beat cast sentence — windup, release,
+    /// impacts, recovery — but the sigil used to be closed the instant the windup ended, so beats
+    /// 3 and 4 had no sigil at all and the art vanished BEFORE the thing it was announcing landed.
+    /// Worse, the recipe's own alpha ramp is 0.22 s against windups of 0.18-0.55 s: the shortest
+    /// chassis sigils (shade 0.18, bulwark/cleric/phalanx 0.20-0.22) never reached full opacity
+    /// once. Holding here means the ramp finishes, the sigil is lit under the caster while the
+    /// payoff resolves, and the recipe's 0.25 s fade plays the recovery beat.
+    /// Scaled by the same speed factor as windup/motion, so fast-forward compresses it too.
+    /// 0 restores the old release-on-windup behaviour.</summary>
+    [Range(0f, 1.5f)] public float castSigilHoldSeconds = 0.35f;
+    /// <summary>Flash on ONSET, not on refresh. StatusApplied fires every time a status is
+    /// re-applied and on every Burn-pool decay tick, and each one drew a full body flash saying
+    /// exactly what the status icon's own stack count and countdown ring already say. Measured
+    /// across the eleven committed replay fixtures: 512 refreshes + 65 decay re-announces out of
+    /// 6756 tell-bearing events — 8.5% of the whole visual load, and 25.8% of castfest, the
+    /// worst case at ~21 tells a second. The transition is the news; the state belongs on the icon
+    /// (the genre's own lesson — persistent readouts beat transient particles).
+    /// false restores a flash on every application.</summary>
+    public bool statusRefreshQuiet = true;
+    /// <summary>Seconds before the SAME (unit, passive) draws a loud tell again. A passive that
+    /// fires on every swing is the engine running, not news — the same onset-not-refresh law the
+    /// status rows follow. Measured over the eleven committed fixtures, TriggerFired alone runs
+    /// 1.4–7.1 events/s against a ~21/s total visual budget, so without a ration the passive layer
+    /// would cost more legibility than it buys; first-fire rate is 0.1–2.9/s, which is a channel
+    /// that fits. 0 disables the ration and every fire draws. See Design/passive-legibility.md.</summary>
+    [Range(0f, 10f)] public float passiveOnsetSeconds = 2.5f;
 
     // ---- the dress layer (combat-spectacle §7.2 · §7.5 · §7.9) ---------------
     // Deathless (§7.2). The hold is the same channel as the Death hit-stop — REAL seconds of frozen

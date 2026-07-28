@@ -1246,7 +1246,7 @@
 
 .result-stat__label {
     color: rgb(139, 158, 184);
-    font-size: 11px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
@@ -1291,7 +1291,7 @@
     min-width: 220px;
     min-height: 58px;
     margin-left: 10px;
-    font-size: 15px;
+    font-size: var(--ui-type-body);
 }
 
 /* ---- responsive / landscape touch --------------------------------------- */
@@ -1723,7 +1723,7 @@
 
 .layout--phone .result-gate__death {
     min-height: 26px;
-    font-size: 14px;
+    font-size: var(--ui-type-body);
 }
 
 .layout--phone .result-gate__actions {

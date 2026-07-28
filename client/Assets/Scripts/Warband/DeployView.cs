@@ -137,6 +137,38 @@ internal sealed class DeployView : IRunScreenView
         SetDisplayed(_enemyRule, !string.IsNullOrWhiteSpace(d.EncounterRule));
     }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public string EditorResolvedLayoutReport(VisualElement permanentRail = null)
+    {
+        var report = new UiLayoutReport("Deploy");
+        VisualElement header = _root.Q<VisualElement>(className: "deploy-header");
+        VisualElement bar = _root.Q<VisualElement>(className: "deploy-bar");
+        UiLayoutContract.RequireResolved(report, _root, "root");
+        UiLayoutContract.RequireInside(report, header, _root, "deployment guidance");
+        UiLayoutContract.RequireInside(report, _enemyPanel, _root, "enemy preview");
+        UiLayoutContract.RequireInside(report, bar, _root, "deployment commands");
+        if (permanentRail != null)
+        {
+            UiLayoutContract.RequireNoOverlap(
+                report, header, permanentRail, "deployment guidance / permanent rail");
+            UiLayoutContract.RequireNoOverlap(
+                report, _enemyPanel, permanentRail, "enemy preview / permanent rail");
+            UiLayoutContract.RequireNoOverlap(
+                report, bar, permanentRail, "deployment commands / permanent rail");
+        }
+        UiLayoutContract.RequireNoScrollView(report, _root, "Deploy");
+        UiLayoutContract.RequireNonBlocking(report, _feedback, "Deploy feedback");
+        UiLayoutContract.RequireMinimumHeight(report, _root, "btn", 44f);
+        UiLayoutContract.RequireMinimumFont(report, _root, "body-copy", 16f);
+        UiLayoutContract.RequireMinimumFont(report, _root, "card-body", 16f);
+        UiLayoutContract.RequireMinimumRenderedFont(
+            report, _root, "body-copy", 12.5f);
+        UiLayoutContract.RequireWrappedTextFits(report, _root, "body-copy");
+        UiLayoutContract.RequireWrappedTextFits(report, _root, "card-body");
+        return report.ToString();
+    }
+#endif
+
     /// <summary>
     /// The rail is rebuilt wholesale: it is at most a handful of chips, and rebuilding keeps the
     /// click closures bound to the right index without a stale-capture class of bug.

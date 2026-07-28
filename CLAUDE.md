@@ -69,6 +69,11 @@ and rationale: `~/brain/meta/agent-locks.md`.
 - **Clear the Unity console before acting inside a hold.** `GetConsoleLogs` has no session
   attribution, so otherwise you will read someone else's errors (or your own stale mid-edit
   compile) and chase a ghost.
+- **Never steal Windows desktop focus.** MCP work must not foreground, raise, maximize, or focus
+  the Unity Editor, Game View, or a Player window. Keep the Game View on **Play Unfocused** and use
+  semantic inspection, deterministic stepping, camera/RenderTexture captures, or other
+  background-safe checks. If verification truly requires a focused Game View, stop and ask Jake
+  immediately before doing it.
 - The lock does **not** protect files. If another session is live, agree on file/subsystem ownership
   first — `ReplayPlayer.cs` has already been edited by two sessions at once.
 

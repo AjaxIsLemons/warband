@@ -1,0 +1,15 @@
+{
+    "asset": "6bd70e8357e88cc4aa4923d792e9ded4",
+    "fileName": "019fa62b-8cb4-7750-9c08-dc71ecab3daf.wav",
+    "prompt": "A single short heavy blunt weapon impact. A steel mace slamming into a wooden shield and mail armour. Deep percussive thud with a dull metallic edge and a brief wood crack. Dry, close-miked, no reverb, no echo, no music. Immediate attack, fast decay, silence after.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

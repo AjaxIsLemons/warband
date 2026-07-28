@@ -1,15 +1,31 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="management-root" class="management-screen hub">
         <ui:VisualElement name="safe-frame" class="hub-safe-frame">
-            <ui:VisualElement class="management-topbar hub-topbar hub-run-ribbon">
-                <ui:VisualElement class="management-brand">
-                    <ui:Label text="WARBAND" class="management-brand__name" />
-                    <ui:Label name="act" class="management-brand__act" />
+            <ui:VisualElement class="management-topbar hub-topbar hub-command-ribbon">
+                <ui:VisualElement class="hub-command-ribbon__identity">
+                    <ui:Button name="overview-back" text="‹  TABLE" class="btn btn--ghost hub-back" />
+                    <ui:VisualElement class="management-brand">
+                        <ui:VisualElement class="management-brand__context">
+                            <ui:Label text="WARBAND" class="management-brand__name" />
+                            <ui:Label name="act" class="management-brand__act" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="management-brand__page">
+                            <ui:Label name="heading" class="hub-workspace__title" />
+                            <ui:Label name="beat" class="hub-workspace__eyebrow" />
+                            <ui:Label name="brief" class="hub-workspace__brief" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="track" class="management-track" />
+                <ui:VisualElement class="hub-anchor-rail">
+                    <ui:Button name="anchor-market" text="MARKET" class="hub-anchor" />
+                    <ui:Button name="anchor-warband" text="WARBAND" class="hub-anchor" />
+                    <ui:Button name="anchor-armory" text="ARMORY" class="hub-anchor" />
+                    <ui:Button name="anchor-hourstone" text="HOURSTONE" class="hub-anchor" />
+                </ui:VisualElement>
+                <ui:Button name="continue" class="btn btn--ghost management-continue" />
                 <ui:VisualElement class="management-resources">
                     <ui:VisualElement class="management-resource management-resource--sand">
-                        <ui:Label text="SAND" class="management-resource__label" />
                         <ui:Label name="sand" class="management-resource__value management-resource__value--sand" />
                     </ui:VisualElement>
                 </ui:VisualElement>
@@ -88,21 +104,6 @@
             </ui:VisualElement>
 
             <ui:VisualElement name="hub-workspace" class="hub-workspace">
-                <ui:VisualElement class="hub-workspace__header">
-                    <ui:Button name="overview-back" text="‹  TABLE" class="btn btn--ghost hub-back" />
-                    <ui:VisualElement class="hub-workspace__heading">
-                        <ui:Label name="station-eyebrow" class="eyebrow hub-workspace__eyebrow" />
-                        <ui:Label name="heading" class="hub-workspace__title" />
-                        <ui:Label name="brief" class="hub-workspace__brief" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="hub-anchor-rail">
-                        <ui:Button name="anchor-market" text="MARKET" class="hub-anchor" />
-                        <ui:Button name="anchor-warband" text="WARBAND" class="hub-anchor" />
-                        <ui:Button name="anchor-armory" text="ARMORY" class="hub-anchor" />
-                        <ui:Button name="anchor-hourstone" text="HOURSTONE" class="hub-anchor" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
                 <ui:VisualElement class="hub-workspace__body">
                     <ui:VisualElement class="hub-workspace__instrument">
                         <ui:VisualElement class="hub-instrument__rail hub-instrument__rail--left" />
@@ -128,6 +129,7 @@
                             <ui:VisualElement name="secondary-grid" class="hub-card-grid" />
                             <ui:Label name="empty" class="management-empty" />
                         </ui:ScrollView>
+                        <ui:Label name="workspace-hint" class="hub-collection__footer" />
                         <ui:Label name="feedback" class="feedback-label management-feedback" />
                         <ui:VisualElement name="selection-tray" class="hub-selection-tray">
                             <ui:VisualElement class="hub-selection-tray__identity">
@@ -146,11 +148,9 @@
 
                     <ui:VisualElement name="inspector-scrim" class="hub-inspector-scrim">
                         <ui:VisualElement name="inspector-pane" class="hub-inspector-pane">
-                            <ui:VisualElement class="hub-inspector-pane__top">
-                                <ui:Label text="SELECTED CARD" class="hub-inspector-pane__label" />
-                                <ui:Button name="inspector-close" text="EXPAND  ↗" class="btn btn--ghost hub-inspector-close" />
-                            </ui:VisualElement>
+                            <ui:Button name="inspector-close" text="↗" class="btn btn--ghost hub-inspector-close" />
                             <ui:ScrollView
+                                name="inspector-scroll"
                                 mode="Vertical"
                                 horizontal-scroller-visibility="Hidden"
                                 vertical-scroller-visibility="Hidden"
@@ -234,11 +234,6 @@
                         <ui:Label name="shelf-stored-count" class="warband-shelf__stored-count" />
                         <ui:VisualElement name="shelf-stored-icons" class="warband-shelf__stored-icons" />
                     </ui:Button>
-                </ui:VisualElement>
-
-                <ui:VisualElement class="hub-workspace__footer">
-                    <ui:Label name="workspace-hint" class="hub-workspace__hint" />
-                    <ui:Button name="continue" class="btn btn--primary management-continue" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

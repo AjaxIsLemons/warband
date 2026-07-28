@@ -2,6 +2,7 @@
    Loaded after screen styles so this file owns the cohesive material language. */
 
 .management-screen,
+.workbench-screen,
 .result-gate {
     --lh-ink: rgb(7, 11, 17);
     --lh-obsidian: rgb(13, 20, 30);
@@ -23,6 +24,28 @@
     --fact-rank: rgb(207, 218, 232);
     --fact-field: rgb(108, 194, 155);
     --fact-choice: rgb(225, 183, 91);
+}
+
+/* Owned runtime typography. Inter carries rules, facts, buttons, and compact labels; Barlow
+   Condensed is reserved for display identity and card names so hierarchy never depends on merely
+   shrinking the same face. Font assets and OFL notices live beside this stylesheet. */
+.workbench-screen,
+.runtime-tooltip,
+.warband-bar {
+    -unity-font-definition: url("Fonts/Inter-Variable.ttf");
+}
+
+.workbench-header__title,
+.workbench-section-heading__title,
+.workbench-market-collapsed__title,
+.workbench-armory-handle__title,
+.wb-inspector__title,
+.wb-choice-preview__name,
+.workbench-item__title,
+.market-offer-card__title,
+.runtime-tooltip__title,
+.warband-hero__class {
+    -unity-font-definition: url("Fonts/BarlowCondensed-SemiBold.ttf");
 }
 
 .ui-fx-layer {

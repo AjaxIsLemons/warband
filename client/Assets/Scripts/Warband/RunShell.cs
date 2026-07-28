@@ -39,6 +39,10 @@ public sealed class RunShell : MonoBehaviour
     private HallEnvironmentController _hallEnvironment;
     private PanelSettings _panelSettings;
     private VisualElement _root;
+    private VisualElement _safeAreaFrame;
+    private VisualElement _screenHost;
+    private VisualElement _rotationGuard;
+    private UiEnvironment _uiEnvironment;
     private VisualElement _fightOverlay;
     private VisualElement _fightHitSurface;
     private Label _fightHint;
@@ -67,9 +71,7 @@ public sealed class RunShell : MonoBehaviour
     /// <summary>The exact text last written to disk. Autosave compares against it so an idle
     /// Rebuild (a hover, a selection) does not rewrite an unchanged file.</summary>
     private string _savedText = "";
-    /// <summary>Menu-scoped message (a discarded save). Separate from _feedback so a load failure
-    /// cannot leak into the Hall's transaction receipts.</summary>
-    private string _menuNotice = "";
+    private readonly UiNoticeStore _notices = new UiNoticeStore();
     private List<string> _offer = new List<string>();
     private readonly List<string> _picked = new List<string>();
     private FightTier _tier = FightTier.Fraying;
@@ -93,13 +95,14 @@ public sealed class RunShell : MonoBehaviour
     private long _focusedWarbandHeroId;
     private long _selectedWarbandGearHeroId;
     private int _selectedWarbandGearKind = -1;
-    private string _feedback = "";
-    private bool _feedbackIsError;
-    private string _recruitFeedback = "";
-    private bool _recruitFeedbackIsError;
+    private UiNotice HallNotice => _notices.Read(UiNoticeScope.Hall);
+    private UiNotice DeploymentNotice => _notices.Read(UiNoticeScope.Deployment);
+    private bool _started;
 
     private void Start()
     {
+        if (_started) return;
+        _started = true;
         _content = new Catalog();
         _presentation = PresentationCatalog.Load();
         _cfg = new RunConfig();
@@ -125,6 +128,7 @@ public sealed class RunShell : MonoBehaviour
             if (view is IDisposable disposable) disposable.Dispose();
         _warbandBarView?.Dispose();
         _runtimeTooltips?.Dispose();
+        _uiEnvironment?.Dispose();
         if (_hallEnvironment != null) Destroy(_hallEnvironment.gameObject);
         if (_panelSettings != null) Destroy(_panelSettings);
     }
@@ -149,8 +153,7 @@ public sealed class RunShell : MonoBehaviour
         _actions.NewRun = () =>
         {
             _picked.Clear();
-            _recruitFeedback = "";
-            _recruitFeedbackIsError = false;
+            _notices.Clear(UiNoticeScope.Muster);
             _offer = RunSetup.RecruitOffer(_content, _seed);
             Go(RunScreen.Recruit);
         };
@@ -164,11 +167,11 @@ public sealed class RunShell : MonoBehaviour
             var loaded = RunSaveFile.Load(_content, _cfg, out string problem);
             if (loaded == null)
             {
-                _menuNotice = problem;
+                _notices.Set(UiNoticeScope.Menu, problem, UiNoticeTone.Error);
                 Go(RunScreen.Menu);
                 return;
             }
-            _menuNotice = "";
+            _notices.Clear(UiNoticeScope.Menu);
             AdoptResumedRun(loaded);
             OpenHallOverview();
         };
@@ -185,8 +188,7 @@ public sealed class RunShell : MonoBehaviour
         {
             NewSeed();
             _picked.Clear();
-            _recruitFeedback = "";
-            _recruitFeedbackIsError = false;
+            _notices.Clear(UiNoticeScope.Muster);
             _offer = RunSetup.RecruitOffer(_content, _seed);
             Rebuild();
         };
@@ -202,8 +204,7 @@ public sealed class RunShell : MonoBehaviour
                     receipt: "Champion removed from the warband.",
                     transaction: UiTransactionKind.MusterDeselect);
                 _picked.RemoveAt(selectedSlot);
-                _recruitFeedback = "";
-                _recruitFeedbackIsError = false;
+                _notices.Clear(UiNoticeScope.Muster);
             }
             else if (_picked.Count < _cfg.StartingFieldSlots)
             {
@@ -215,18 +216,19 @@ public sealed class RunShell : MonoBehaviour
                     receipt: "Champion added to the warband.",
                     transaction: UiTransactionKind.MusterSelect);
                 _picked.Add(id);
-                _recruitFeedback = "";
-                _recruitFeedbackIsError = false;
+                _notices.Clear(UiNoticeScope.Muster);
             }
             else
             {
-                _recruitFeedback = "Remove one champion first.";
-                _recruitFeedbackIsError = true;
+                UiNotice notice = _notices.Set(
+                    UiNoticeScope.Muster,
+                    "Remove one champion first.",
+                    UiNoticeTone.Error);
                 UiPolishSignals.Emit(UiPolishSignals.Cue.Error,
                     sourceId: "muster:" + id,
                     targetId: "muster:" + id,
                     tone: UiFeedbackTone.Negative,
-                    receipt: _recruitFeedback);
+                    receipt: notice.Text);
             }
             Rebuild();
         };
@@ -237,7 +239,7 @@ public sealed class RunShell : MonoBehaviour
             // player who opens the draft and backs out still has their old run.
             RunSaveFile.Delete();
             _savedText = "";
-            _menuNotice = "";
+            _notices.Clear(UiNoticeScope.Menu);
             _run = RunSetup.Begin(_seed, _content, _picked, _cfg);
             _planningTab = PlanningTab.Market;
             _selectedMarketOffer = _run.State.ShopOffers.FindIndex(o => o != null);
@@ -347,7 +349,7 @@ public sealed class RunShell : MonoBehaviour
                     receipt: "Specialization engraved.",
                     transaction: UiTransactionKind.RankChoice);
             });
-            if (!_feedbackIsError) OpenHallStation(HallStation.Market);
+            if (!HallNotice.IsError) OpenHallStation(HallStation.Market);
         };
         _actions.BuySlot = BuyCapacity;
         _actions.LeaveShop = () => ShopAction(() =>
@@ -359,8 +361,7 @@ public sealed class RunShell : MonoBehaviour
         _actions.SelectForDeploy = i =>
         {
             _deploySelected = _deploySelected == i ? -1 : i;
-            _feedback = "";
-            _feedbackIsError = false;
+            _notices.Clear(UiNoticeScope.Deployment);
             ShowDeploymentOnBoard();
             Rebuild();
         };
@@ -613,7 +614,7 @@ public sealed class RunShell : MonoBehaviour
             return;
         ShopAction(() => _run.TransferEquipment(
             sourceHeroInstanceId, (ItemKind)kind, targetHeroInstanceId));
-        if (!_feedbackIsError)
+        if (!HallNotice.IsError)
         {
             _selectedWarbandGearHeroId = 0;
             _selectedWarbandGearKind = -1;
@@ -626,7 +627,7 @@ public sealed class RunShell : MonoBehaviour
                                   kind != (int)ItemKind.Trinket))
             return;
         ShopAction(() => _run.UnequipItem(heroInstanceId, (ItemKind)kind));
-        if (!_feedbackIsError)
+        if (!HallNotice.IsError)
         {
             _selectedWarbandGearHeroId = 0;
             _selectedWarbandGearKind = -1;
@@ -640,7 +641,7 @@ public sealed class RunShell : MonoBehaviour
             return;
         long itemInstanceId = _run.State.Inventory[_selectedItem].InstanceId;
         ShopAction(() => _run.EquipItem(itemInstanceId, heroInstanceId));
-        if (!_feedbackIsError)
+        if (!HallNotice.IsError)
         {
             _selectedItem = -1;
             _selectedWarbandGearHeroId = 0;
@@ -681,8 +682,7 @@ public sealed class RunShell : MonoBehaviour
         try
         {
             act();
-            _feedback = "";
-            _feedbackIsError = false;
+            _notices.Clear(UiNoticeScope.Hall);
             succeeded = true;
             if (before != null)
             {
@@ -692,8 +692,7 @@ public sealed class RunShell : MonoBehaviour
         }
         catch (Exception ex)
         {
-            _feedback = ex.Message;
-            _feedbackIsError = true;
+            _notices.Set(UiNoticeScope.Hall, ex.Message, UiNoticeTone.Error);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Error, targetId: "feedback",
                 tone: UiFeedbackTone.Negative, receipt: ex.Message);
         }
@@ -724,14 +723,20 @@ public sealed class RunShell : MonoBehaviour
     private void SelectPlanningCard(string key)
     {
         if (_run == null || string.IsNullOrEmpty(key)) return;
+        if (TrySimpleIndex(key, "market", out var offer))
+        {
+            // The Workbench keeps Market and the permanent unit rail visible together. A rail
+            // selection may have made the legacy tab state Warband, but a visible Market card
+            // must still be allowed to take authoritative dossier ownership.
+            _planningTab = PlanningTab.Market;
+            _selectedMarketOffer = offer;
+        }
         _selectedCardKey = key;
         // Selection seats the choice in the Hall action tray. Full rules are progressive
         // disclosure through INSPECT, so choosing never throws a large dossier over the stage.
         _inspectorOpen = false;
         UiPolishSignals.Emit(UiPolishSignals.Cue.Select, sourceId: key,
             tone: UiFeedbackTone.Preview);
-        if (TrySimpleIndex(key, "market", out var offer))
-            _selectedMarketOffer = offer;
         if (TrySimpleIndex(key, "item", out var item))
             _selectedItem = item;
         Rebuild();
@@ -812,11 +817,14 @@ public sealed class RunShell : MonoBehaviour
                     : purchase.Outcome == PurchaseOutcome.Inscription
                         ? "bound to the Hourstone"
                         : "sent to the Armory";
-            _feedback = $"{acquiredName} {result}.";
+            UiNotice notice = _notices.Set(
+                UiNoticeScope.Hall,
+                $"{acquiredName} {result}.",
+                UiNoticeTone.Positive);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Purchase,
                 sourceId: sourceId, targetId: TransactionTarget(purchase),
                 resourceId: "ledger-sand", groupId: "market-offers",
-                amount: -spent, tone: UiFeedbackTone.Sand, receipt: _feedback,
+                amount: -spent, tone: UiFeedbackTone.Sand, receipt: notice.Text,
                 transaction: TransactionFor(purchase.Outcome));
         }
         Rebuild();
@@ -831,12 +839,14 @@ public sealed class RunShell : MonoBehaviour
         if (succeeded)
         {
             int spent = Mathf.Max(0, beforeSand - _run.State.Sand);
-            _feedback =
-                $"Field capacity {beforeCapacity} → {_run.State.FieldSlots}.";
+            UiNotice notice = _notices.Set(
+                UiNoticeScope.Hall,
+                $"Field capacity {beforeCapacity} → {_run.State.FieldSlots}.",
+                UiNoticeTone.Positive);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Purchase,
                 sourceId: _selectedCardKey, targetId: $"shelf-field:{beforeCapacity}",
                 resourceId: "ledger-sand", amount: -spent, tone: UiFeedbackTone.Sand,
-                receipt: _feedback, transaction: UiTransactionKind.BuyCapacity);
+                receipt: notice.Text, transaction: UiTransactionKind.BuyCapacity);
         }
         Rebuild();
     }
@@ -861,7 +871,7 @@ public sealed class RunShell : MonoBehaviour
             _equipNowItemInstanceId = 0;
             _equipNowOfferIndex = -1;
             SelectDefaultForTab();
-            _feedback = "";
+            _notices.Clear(UiNoticeScope.Hall);
             Rebuild();
             return;
         }
@@ -878,7 +888,9 @@ public sealed class RunShell : MonoBehaviour
             OpenHallStation(HallStation.Armory);
             _selectedItem = pinnedIndex;
             _selectedCardKey = $"item:{pinnedIndex}";
-            _feedback = "Item pinned. Choose a champion to preview exact equipment changes.";
+            _notices.Set(
+                UiNoticeScope.Hall,
+                "Item pinned. Choose a champion to preview exact equipment changes.");
             Rebuild();
             return;
         }
@@ -901,8 +913,7 @@ public sealed class RunShell : MonoBehaviour
             {
                 if (inBench) return;
                 _deploySelected = heroIndex;
-                _feedback = "Choose a hex in your half.";
-                _feedbackIsError = false;
+                _notices.Set(UiNoticeScope.Deployment, "Choose a hex in your half.");
                 ShowDeploymentOnBoard();
                 Rebuild();
                 return;
@@ -926,13 +937,15 @@ public sealed class RunShell : MonoBehaviour
                     rebuild: false);
                 if (succeeded)
                 {
-                    _feedback =
-                        $"{forged.WeaponId} forged {forged.PreviousTier} → {forged.NewTier}.";
+                    UiNotice notice = _notices.Set(
+                        UiNoticeScope.Hall,
+                        $"{forged.WeaponId} forged {forged.PreviousTier} → {forged.NewTier}.",
+                        UiNoticeTone.Positive);
                     UiPolishSignals.Emit(UiPolishSignals.Cue.Purchase,
                         sourceId: $"hero:{(inBench ? "bench" : "field")}:{heroIndex}",
                         targetId: $"hero:{(inBench ? "bench" : "field")}:{heroIndex}",
                         resourceId: "ledger-sand", amount: -forged.SandSpent,
-                        tone: UiFeedbackTone.Major, receipt: _feedback,
+                        tone: UiFeedbackTone.Major, receipt: notice.Text,
                         transaction: UiTransactionKind.Reforge);
                 }
                 Rebuild();
@@ -971,14 +984,16 @@ public sealed class RunShell : MonoBehaviour
         try
         {
             var reward = _run.ResolveInterlude(path, option);
-            _feedback = path == InterludePath.Treasury
-                ? "Treasury secured."
-                : $"{RewardName(reward)} secured.";
-            _feedbackIsError = false;
+            UiNotice notice = _notices.Set(
+                UiNoticeScope.Hall,
+                path == InterludePath.Treasury
+                    ? "Treasury secured."
+                    : $"{RewardName(reward)} secured.",
+                UiNoticeTone.Positive);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Reward,
                 targetId: StationTarget(path == InterludePath.Armory ? HallStation.Armory :
                     path == InterludePath.Hourstone ? HallStation.Hourstone : HallStation.Market),
-                amount: reward.Sand, tone: UiFeedbackTone.Positive, receipt: _feedback,
+                amount: reward.Sand, tone: UiFeedbackTone.Positive, receipt: notice.Text,
                 transaction: reward.Kind == OfferKind.Inscription
                     ? UiTransactionKind.BindInscription
                     : UiTransactionKind.None);
@@ -999,8 +1014,7 @@ public sealed class RunShell : MonoBehaviour
         }
         catch (Exception ex)
         {
-            _feedback = ex.Message;
-            _feedbackIsError = true;
+            _notices.Set(UiNoticeScope.Hall, ex.Message, UiNoticeTone.Error);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Error, targetId: "feedback",
                 tone: UiFeedbackTone.Negative, receipt: ex.Message);
             Rebuild();
@@ -1015,11 +1029,13 @@ public sealed class RunShell : MonoBehaviour
         {
             string name = _content.Banner(_run.PreviewBossRewards()[option]).Name;
             _run.ChooseBossReward(option);
-            _feedback = $"{name} bound to the Hourstone.";
-            _feedbackIsError = false;
+            UiNotice notice = _notices.Set(
+                UiNoticeScope.Hall,
+                $"{name} bound to the Hourstone.",
+                UiNoticeTone.Positive);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Reward,
                 targetId: "station-hourstone", tone: UiFeedbackTone.Major,
-                receipt: _feedback, transaction: UiTransactionKind.BindInscription);
+                receipt: notice.Text, transaction: UiTransactionKind.BindInscription);
             var plan = HubFlowPlanner.Plan(before, RunMutationSnapshot.Capture(_run.State));
             RecordHubPlan(plan, navigateBlocking: false);
             _planningTab = PlanningTab.Hourstone;
@@ -1032,8 +1048,7 @@ public sealed class RunShell : MonoBehaviour
         }
         catch (Exception ex)
         {
-            _feedback = ex.Message;
-            _feedbackIsError = true;
+            _notices.Set(UiNoticeScope.Hall, ex.Message, UiNoticeTone.Error);
             UiPolishSignals.Emit(UiPolishSignals.Cue.Error, targetId: "feedback",
                 tone: UiFeedbackTone.Negative, receipt: ex.Message);
             Rebuild();
@@ -1124,8 +1139,7 @@ public sealed class RunShell : MonoBehaviour
         for (int i = 0; i < suggested.Count && i < _run.State.Field.Count; i++)
             _placement[i] = suggested[i];
         _deploySelected = -1;
-        _feedback = "";
-        _feedbackIsError = false;
+        _notices.Clear(UiNoticeScope.Deployment);
         ShowDeploymentOnBoard();
         Go(RunScreen.Deploy);
     }
@@ -1140,8 +1154,10 @@ public sealed class RunShell : MonoBehaviour
             if (kind == NodeKind.Event)
             {
                 int gained = _run.ResolveEvent();
-                _feedback = "Quiet road. The Hourstone reserve grows.";
-                _feedbackIsError = false;
+                _notices.Set(
+                    UiNoticeScope.Hall,
+                    "Quiet road. The Hourstone reserve grows.",
+                    UiNoticeTone.Positive);
                 var plan = HubFlowPlanner.Plan(before, RunMutationSnapshot.Capture(_run.State));
                 RecordHubPlan(plan, navigateBlocking: false);
                 OpenHallStation(plan.RecommendedStation);
@@ -1154,10 +1170,6 @@ public sealed class RunShell : MonoBehaviour
                     ? _run.ResolveBoss(placement)
                     : _run.ResolveFight(_tier, placement);
 
-                _feedback = outcome.Won
-                    ? $"Won — {outcome.EnemiesKilled}/{outcome.EnemyCount} felled."
-                    : "The warband is broken.";
-                _feedbackIsError = !outcome.Won;
                 _lastFightOutcome = outcome;
                 _lastBattle = outcome.Battle;
                 _fightsCompleted++;
@@ -1184,8 +1196,7 @@ public sealed class RunShell : MonoBehaviour
         }
         catch (Exception ex)
         {
-            _feedback = ex.Message;
-            _feedbackIsError = true;
+            _notices.Set(UiNoticeScope.Deployment, ex.Message, UiNoticeTone.Error);
         }
         GoAfterNode();
     }
@@ -1239,7 +1250,11 @@ public sealed class RunShell : MonoBehaviour
         {
             // Nothing held: clicking a placed hero picks them up, so a formation can be
             // rearranged without first hunting for their chip in the rail.
-            if (occupant >= 0) { _deploySelected = occupant; _feedback = ""; }
+            if (occupant >= 0)
+            {
+                _deploySelected = occupant;
+                _notices.Clear(UiNoticeScope.Deployment);
+            }
             else Fail("Choose a champion first.");
             ShowDeploymentOnBoard();
             Rebuild();
@@ -1255,8 +1270,7 @@ public sealed class RunShell : MonoBehaviour
         }
         _placement[_deploySelected] = hex;
         _deploySelected = -1;
-        _feedback = "";
-        _feedbackIsError = false;
+        _notices.Clear(UiNoticeScope.Deployment);
         ShowDeploymentOnBoard();
         Rebuild();
     }
@@ -1270,8 +1284,7 @@ public sealed class RunShell : MonoBehaviour
 
     private void Fail(string why)
     {
-        _feedback = why;
-        _feedbackIsError = true;
+        _notices.Set(UiNoticeScope.Deployment, why, UiNoticeTone.Error);
         Rebuild();
     }
 
@@ -1360,6 +1373,9 @@ public sealed class RunShell : MonoBehaviour
         if (!_resultGateOpen || _run == null) return;
         _resultGateOpen = false;
         _resultGateView?.Hide();
+        // The frozen result gate owns the fight receipt. Workbench feedback is reserved for
+        // transactions and errors local to the player's next decision.
+        _notices.Clear(UiNoticeScope.Hall);
         _tierChosen = false;
         _placement.Clear();
         _inspectorOpen = false;
@@ -1396,27 +1412,21 @@ public sealed class RunShell : MonoBehaviour
         _panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
         var theme = Resources.Load<ThemeStyleSheet>("DebugTheme");
         if (theme != null) _panelSettings.themeStyleSheet = theme;
-        _panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-        _panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-        _panelSettings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-        _panelSettings.match = 0.5f;
-        _panelSettings.sortingOrder = 700;          // under the debug cockpit, over the board
+        UiPanelProfile.ConfigureShipping(_panelSettings, 700);
         document.panelSettings = _panelSettings;
         document.sortingOrder = 700;
 
         _root = document.rootVisualElement;
-        foreach (var sheet in new[]
-                 { "UI/SkirmishStyles", "UI/RunShellStyles", "UI/PlanningWorkspaceStyles",
-                   "UI/RunFlowStyles", "UI/HubStyles", "UI/LastHourTokens",
-                   "UI/HallPhysicalStyles", "UI/MarketOfferCardStyles",
-                   "UI/WarbandBarStyles", "UI/MechanicPresentationStyles",
-                   "UI/WorkbenchStyles" })
-        {
-            var uss = Resources.Load<StyleSheet>(sheet);
-            if (uss != null) _root.styleSheets.Add(uss);
-            else Debug.LogWarning($"[RunShell] stylesheet not found: {sheet}");
-        }
-        _root.RegisterCallback<GeometryChangedEvent>(_ => ApplyShellLayoutClasses());
+        UiStyleCatalog.AttachShipping(_root, "RunShell");
+        _safeAreaFrame = new VisualElement { name = "ui-safe-area-frame" };
+        _safeAreaFrame.AddToClassList("ui-safe-area-frame");
+        _root.Add(_safeAreaFrame);
+        _screenHost = new VisualElement { name = "ui-screen-host" };
+        _screenHost.AddToClassList("ui-screen-host");
+        _safeAreaFrame.Add(_screenHost);
+        _uiEnvironment = new UiEnvironment(
+            _root, _safeAreaFrame, _reducedMotion);
+
         _runtimeTooltips = new RuntimeTooltipService(
             _root, HubPresentationConfig.Load());
 
@@ -1427,13 +1437,31 @@ public sealed class RunShell : MonoBehaviour
         _views.Add(new WagerView(_actions));
         _views.Add(new DeployView(_actions));
         _views.Add(new RunOverView(_actions));
-        foreach (var v in _views) _root.Add(v.Root);
+        foreach (var v in _views) _screenHost.Add(v.Root);
 
         BuildFightOverlay();
-        _warbandBarView = new WarbandBarView(_actions, _root, _runtimeTooltips);
+        _warbandBarView = new WarbandBarView(
+            _actions, _safeAreaFrame, _runtimeTooltips);
+        BuildRotationGuard();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         BuildFlowLab();
 #endif
+        _rotationGuard.BringToFront();
+    }
+
+    private void BuildRotationGuard()
+    {
+        _rotationGuard = new VisualElement { name = "ui-rotation-guard" };
+        _rotationGuard.AddToClassList("ui-rotation-guard");
+        _rotationGuard.pickingMode = PickingMode.Position;
+        var title = new Label("TURN THE DEVICE");
+        title.AddToClassList("ui-rotation-guard__title");
+        var copy = new Label(
+            "Warband’s first playable is built for landscape. Rotate to return to the Tower.");
+        copy.AddToClassList("ui-rotation-guard__copy");
+        _rotationGuard.Add(title);
+        _rotationGuard.Add(copy);
+        _root.Add(_rotationGuard);
     }
 
     /// <summary>
@@ -1492,7 +1520,7 @@ public sealed class RunShell : MonoBehaviour
         _fightOverlay.schedule.Execute(RefreshFightInspector).Every(150);
         _resultGateView = new ResultGateView(_actions);
         _fightOverlay.Add(_resultGateView.Root);
-        _root.Add(_fightOverlay);
+        _screenHost.Add(_fightOverlay);
         CloseFightInspector();
     }
 
@@ -1658,7 +1686,15 @@ public sealed class RunShell : MonoBehaviour
     /// </summary>
     private void Go(RunScreen screen)
     {
-        bool changed = _model.Screen != screen;
+        RunScreen previous = _model.Screen;
+        bool changed = previous != screen;
+        if (changed && previous == RunScreen.Deploy)
+            _notices.Clear(UiNoticeScope.Deployment);
+        if (changed && previous == RunScreen.Management &&
+            screen != RunScreen.Management)
+            _notices.Clear(UiNoticeScope.Hall);
+        if (changed && previous == RunScreen.Recruit)
+            _notices.Clear(UiNoticeScope.Muster);
         _model.Screen = screen;
         if (screen != RunScreen.Fight) CloseFightInspector();
         if (changed && _player != null && screen != RunScreen.Deploy && screen != RunScreen.Fight)
@@ -1706,8 +1742,7 @@ public sealed class RunShell : MonoBehaviour
         _deploySelected = -1;
         _selectedItem = -1;
         _selectedMarketOffer = -1;
-        _feedback = "";
-        _feedbackIsError = false;
+        _notices.ClearAll();
         _savedText = RunSave.Write(run.State);   // already on disk; don't rewrite it immediately
         if (_player != null) _player.Idle();
     }
@@ -1784,28 +1819,10 @@ public sealed class RunShell : MonoBehaviour
 
     private void ApplyShellLayoutClasses()
     {
-        if (_root == null) return;
-        float width = _root.resolvedStyle.width;
-        float height = _root.resolvedStyle.height;
-        if (width <= 0f) width = Screen.width;
-        if (height <= 0f) height = Screen.height;
-
-        bool touch = SystemInfo.deviceType == DeviceType.Handheld || Input.touchSupported;
-        float diagonal = Screen.dpi > 0f
-            ? Mathf.Sqrt(Screen.width * Screen.width + Screen.height * Screen.height) / Screen.dpi
-            : 0f;
-        bool phone = _debugPhoneLayout ||
-                     (SystemInfo.deviceType == DeviceType.Handheld &&
-                      (diagonal <= 0f || diagonal < 8f));
-        bool tablet = SystemInfo.deviceType == DeviceType.Handheld && !phone;
-        bool ultrawide = width / Mathf.Max(1f, height) > 2.05f;
-        _root.EnableInClassList("input--touch", touch);
-        _root.EnableInClassList(
-            "layout--compact", width < 1500f || height < 820f || ultrawide || phone);
-        _root.EnableInClassList("layout--short", height < 760f || phone);
-        _root.EnableInClassList("layout--phone", phone);
-        _root.EnableInClassList("layout--tablet", tablet);
-        _root.EnableInClassList("motion--reduced", _reducedMotion);
+        if (_uiEnvironment == null) return;
+        _uiEnvironment.SetReducedMotion(_reducedMotion);
+        _uiEnvironment.ForcePhoneForDebug(_debugPhoneLayout);
+        _uiEnvironment.Refresh();
     }
 
     // ---- model construction (the only place ids become words) ---------------------
@@ -1995,20 +2012,43 @@ public sealed class RunShell : MonoBehaviour
             };
         }
 
-        for (int i = 0; i < hero.SpecNodeIds.Count; i++)
+        model.Specs.AddRange(BuildSpecBadges(hero.SpecNodeIds));
+        return model;
+    }
+
+    private List<WarbandSpecBadgeModel> BuildSpecBadges(IReadOnlyList<string> nodeIds)
+    {
+        var result = new List<WarbandSpecBadgeModel>();
+        if (nodeIds == null) return result;
+        for (int i = 0; i < nodeIds.Count; i++)
         {
-            string nodeId = hero.SpecNodeIds[i];
+            string nodeId = nodeIds[i];
             var nodeLex = ContentLexicon.Node(nodeId);
-            model.Specs.Add(new WarbandSpecBadgeModel
+            SpecNode node = _content.Node(nodeId);
+            result.Add(new WarbandSpecBadgeModel
             {
                 Rank = ((Rank)Mathf.Clamp(i + 1, (int)Rank.B, (int)Rank.S)).ToString(),
                 Icon = SpecGlyph(nodeLex.Kind),
                 Name = nodeLex.Name,
-                Rule = MechanicalRulePresenter.Node(_content.Node(nodeId)).Full,
+                Rule = MechanicalRulePresenter.Node(node).Full,
                 Accent = SpecAccent(nodeLex.Kind),
+                Context = SpecContext(node),
             });
         }
-        return model;
+        return result;
+    }
+
+    private static SpecRuleContext SpecContext(SpecNode node)
+    {
+        if (node.SignatureOverride != null || node.SignaturePatch != null)
+            return SpecRuleContext.Signature;
+        if (node.CleaveBonusPct != 0 || node.StatRules.Count > 0 ||
+            node.Triggers.Count > 0 &&
+            node.Triggers.All(trigger =>
+                trigger.On == EventKind.Attack ||
+                trigger.On == EventKind.DamageDealt))
+            return SpecRuleContext.BasicAttack;
+        return SpecRuleContext.Passive;
     }
 
     private static string SpecGlyph(LexKind kind) =>
@@ -2049,10 +2089,12 @@ public sealed class RunShell : MonoBehaviour
         result.Open = _resultGateOpen && _lastFightOutcome != null && _lastBattle != null;
         result.Stats = new List<ResultStatModel>();
         result.Deaths = new List<string>();
+        result.Recap = null;
         if (!result.Open) return;
 
         var outcome = _lastFightOutcome;
         var summary = FightSummary.Build(_lastBattle);
+        result.Recap = CombatRecap.Build(summary, team: 0);
         result.Victory = outcome.Won;
         result.Eyebrow = _run != null && _run.State.Over
             ? "RUN CONCLUSION"
@@ -2076,15 +2118,9 @@ public sealed class RunShell : MonoBehaviour
             Tone = outcome.EnemiesKilled == outcome.EnemyCount ? "good" : "",
         });
 
-        UnitSummary top = null;
-        foreach (var unit in summary.Units)
-            if (unit.Team == 0 && (top == null || unit.DamageDealt > top.DamageDealt))
-                top = unit;
-        result.Stats.Add(new ResultStatModel
-        {
-            Label = "TOP DAMAGE",
-            Value = top == null ? "—" : $"{top.Name} · {top.DamageDealt}",
-        });
+        // TOP DAMAGE (one name, one number) used to live here. The contribution chart in the
+        // recap says the same thing about every hero instead of the best one, so the stat row
+        // keeps only what the chart does NOT cover.
 
         foreach (var beat in summary.Beats)
         {
@@ -2178,7 +2214,7 @@ public sealed class RunShell : MonoBehaviour
         _model.Menu.CanContinue = _run != null
             ? !_run.State.Over
             : RunSaveFile.Exists();
-        _model.Menu.Notice = _menuNotice;
+        _model.Menu.Notice = _notices.Read(UiNoticeScope.Menu).Text;
         _model.Menu.VersionLine =
             $"First playable · {_cfg.Acts} acts × {_cfg.NodesPerAct + 1} beats · one loss ends the run";
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -2199,8 +2235,9 @@ public sealed class RunShell : MonoBehaviour
             ? "Choose three champions. Hover a stat or rule for exact mechanics."
             : "Your warband is ready.";
         r.CanBegin = left == 0;
-        r.Feedback = _recruitFeedback;
-        r.FeedbackIsError = _recruitFeedbackIsError;
+        UiNotice musterNotice = _notices.Read(UiNoticeScope.Muster);
+        r.Feedback = musterNotice.Text;
+        r.FeedbackIsError = musterNotice.IsError;
         r.ReducedMotion = _reducedMotion;
         r.OfferGeneration = $"{_seed}|{string.Join("|", _offer)}";
         r.Offer = _offer.Select(id =>
@@ -2248,15 +2285,15 @@ public sealed class RunShell : MonoBehaviour
         p.ActiveStation = TabStation(_planningTab);
         p.ReducedMotion = _reducedMotion;
         p.ForcePhoneLayout = _debugPhoneLayout;
-        p.Feedback = _feedback;
-        p.FeedbackIsError = _feedbackIsError;
+        p.Feedback = HallNotice.Text;
+        p.FeedbackIsError = HallNotice.IsError;
         p.RerollLabel = "REROLL";
         p.RerollCost = _cfg.RerollCost;
         p.CurrencyBalance = s.Sand;
         p.CanReroll = s.Phase == RunPhase.Planning &&
                       s.PendingSpec == null &&
                       s.Sand >= _cfg.RerollCost;
-        p.CommitLabel = _run.AtBoss ? "PREPARE FOR THE BOSS  ›" : "CHOOSE NEXT WAGER  ›";
+        p.CommitLabel = _run.AtBoss ? "PREPARE FOR THE BOSS" : "CHOOSE NEXT WAGER";
         p.CanCommit = s.Phase == RunPhase.Planning &&
                       _run.CurrentNodeKind != NodeKind.Event &&
                       s.Field.Count > 0;
@@ -2593,7 +2630,8 @@ public sealed class RunShell : MonoBehaviour
             Index = (int)entry.Item1,
             Name = entry.Item2,
             Risk = entry.Item3,
-            Reward = $"+{_cfg.FightReward(s.Act, entry.Item1)} SAND ON VICTORY",
+            CurrencyReward = _cfg.FightReward(s.Act, entry.Item1),
+            Reward = $"+{_cfg.FightReward(s.Act, entry.Item1)} ON VICTORY",
             Selected = _tierChosen && entry.Item1 == _tier,
         }).ToList();
         w.CanContinue = _tierChosen;
@@ -2828,7 +2866,7 @@ public sealed class RunShell : MonoBehaviour
             $"RANK {hero.Rank}",
             true);
         card.ContentId = hero.ChassisId;
-        card.Tags = hero.SpecNodeIds.Select(id => ContentLexicon.Node(id).Name).ToList();
+        card.Traits = BuildSpecBadges(hero.SpecNodeIds);
         card.Selected = card.Key == _selectedCardKey;
         return card;
     }
@@ -2860,6 +2898,7 @@ public sealed class RunShell : MonoBehaviour
             AbilityName = presentation.abilityName,
             AbilitySummary = presentation.abilitySummary,
             InspectorAbilitySummary = presentation.abilitySummary,
+            AbilityManaCost = def.ManaMax > 0 ? def.ManaMax : -1,
             PassiveIcon = presentation.passiveIcon,
             PassiveTrigger = presentation.passiveTrigger,
             PassiveName = presentation.passiveName,
@@ -2931,9 +2970,9 @@ public sealed class RunShell : MonoBehaviour
         card.ContentId = offer.Id;
         card.CurrencyCost = offer.Price;
         card.Frozen = offer.Frozen;
-        // Affordability disables BUY, never inspection. The Market card remains selectable so
-        // the player can learn why an offer is worth saving for.
-        card.Disabled = false;
+        // Affordability disables BUY, never inspection. A card is disabled only when its own
+        // state is structurally unavailable (for example, a following rank while the fork choice
+        // is still pending).
         card.Selected = key == _selectedCardKey;
         return card;
     }
@@ -3058,6 +3097,7 @@ public sealed class RunShell : MonoBehaviour
             Selected = detail.Selected,
             Affordable = shortfall == 0,
             Frozen = offer.Frozen,
+            Disabled = detail.Disabled,
             Metrics = metrics,
             Detail = detail,
         };
@@ -3073,12 +3113,21 @@ public sealed class RunShell : MonoBehaviour
     private CardModel RankUpCard(HeroInstance hero, string key)
     {
         UnitDef current = ComposeHero(hero);
+        if (hero.Rank >= Rank.S)
+            return DeferredRankUpCard(
+                hero, current, key, "MAXIMUM RANK",
+                "This champion has already reached Rank S.");
+
         HeroInstance guaranteedHero = hero.Clone();
         guaranteedHero.Rank++;
         UnitDef guaranteed = ComposeHero(guaranteedHero);
         // The DRAWN offer, not the authored pool: a non-fork rank shows a subset, so previewing
         // the pool here would advertise a card the rank-up then refuses to show.
-        var options = _run.PeekSpecOffer(guaranteedHero);
+        if (!_run.TryPeekSpecOffer(guaranteedHero, out var options))
+            return DeferredRankUpCard(
+                hero, current, key, "SPECIALIZATION PENDING",
+                $"Choose {ContentLexicon.Chassis(hero.ChassisId).Name}'s Rank {hero.Rank} " +
+                "specialization before previewing the next rank.");
         var previews = new List<ChoicePreviewModel>();
         foreach (string nodeId in options) previews.Add(RankChoicePreview(guaranteedHero, nodeId));
         string choiceLabel = $"1 OF {options.Count}";
@@ -3108,6 +3157,7 @@ public sealed class RunShell : MonoBehaviour
             PassiveTrigger = $"SPECIALIZATION · CHOOSE {choiceLabel}",
             PassiveName = optionNames,
             PassiveSummary = "Both exact paths are previewed in the dossier before purchase.",
+            Traits = BuildSpecBadges(hero.SpecNodeIds),
             Stats = new List<StatChipModel>
             {
                 new StatChipModel("RANK", $"{hero.Rank} → {guaranteedHero.Rank}", "warn",
@@ -3126,7 +3176,74 @@ public sealed class RunShell : MonoBehaviour
             ChoicePreviews = previews,
             Selected = key == _selectedCardKey,
         };
+        card.RankUpDetail = BuildRankUpDetail(
+            hero.Rank, guaranteedHero.Rank, card.Traits, previews);
         return card;
+    }
+
+    private CardModel DeferredRankUpCard(
+        HeroInstance hero, UnitDef current, string key, string state, string explanation)
+    {
+        var presentation = _presentation.Unit(hero.ChassisId);
+        string title = ContentLexicon.Chassis(hero.ChassisId).Name;
+        return new CardModel
+        {
+            Key = key,
+            ContentId = hero.ChassisId,
+            Eyebrow = "RANK UP · WAITING",
+            Title = title,
+            Subtitle = $"RANK {hero.Rank} · {state}",
+            InspectorSubtitle = explanation,
+            PortraitResource = presentation.portrait,
+            PortraitFallback = Initials(title),
+            RoleIcon = presentation.roleIcon,
+            Accent = presentation.accent,
+            Rank = $"RANK {hero.Rank}",
+            AbilityIcon = "◇",
+            AbilityTrigger = "RANK UP · WAITING",
+            AbilityName = state,
+            AbilitySummary = explanation,
+            Traits = BuildSpecBadges(hero.SpecNodeIds),
+            Stats = StatChips(current),
+            Disabled = true,
+            Selected = key == _selectedCardKey,
+        };
+    }
+
+    private static RankUpDetailModel BuildRankUpDetail(
+        Rank currentRank, Rank nextRank,
+        IReadOnlyList<WarbandSpecBadgeModel> selected,
+        IReadOnlyList<ChoicePreviewModel> options)
+    {
+        var detail = new RankUpDetailModel
+        {
+            CurrentRank = currentRank.ToString(),
+            NextRank = nextRank.ToString(),
+            Options = new List<ChoicePreviewModel>(options),
+        };
+        for (int value = (int)Rank.B; value <= (int)Rank.S; value++)
+        {
+            string rank = ((Rank)value).ToString();
+            WarbandSpecBadgeModel chosen = selected?.FirstOrDefault(
+                trait => string.Equals(trait.Rank, rank, StringComparison.Ordinal));
+            bool pending = value == (int)nextRank;
+            detail.Tiers.Add(new RankTierSlotModel
+            {
+                Rank = rank,
+                State = chosen != null
+                    ? RankTierSlotState.Selected
+                    : pending
+                        ? RankTierSlotState.Pending
+                        : RankTierSlotState.Locked,
+                Icon = chosen?.Icon ?? (pending ? "▲" : "◇"),
+                Name = chosen?.Name ?? (pending ? "CHOOSE 1 OF 2" : "LOCKED"),
+                Rule = chosen?.Rule ?? (pending
+                    ? $"Purchase the rank-up, then choose the Rank {rank} specialization."
+                    : $"Reach Rank {rank} to unlock this specialization tier."),
+                Accent = chosen?.Accent ?? (pending ? "choice" : ""),
+            });
+        }
+        return detail;
     }
 
     private ChoicePreviewModel RankChoicePreview(HeroInstance guaranteedHero, string nodeId)
@@ -3141,6 +3258,7 @@ public sealed class RunShell : MonoBehaviour
             Change = rule.Change.ToString().ToUpperInvariant(),
             Name = ContentLexicon.Node(nodeId).Name,
             Rule = rule.Full,
+            Accent = SpecAccent(ContentLexicon.Node(nodeId).Kind),
             Comparisons = ChangedFacts(before, after),
         };
     }
@@ -3402,11 +3520,13 @@ public sealed class RunShell : MonoBehaviour
             AbilitySummary = string.IsNullOrEmpty(card.InspectorAbilitySummary)
                 ? card.AbilitySummary
                 : card.InspectorAbilitySummary,
+            AbilityManaCost = card.AbilityManaCost,
             Price = card.Price,
             CurrencyCost = card.CurrencyCost,
             CurrencyBalance = card.CurrencyCost >= 0 ? _run.State.Sand : -1,
             Stats = new List<StatChipModel>(card.Stats),
             Tags = new List<string>(card.Tags),
+            Traits = new List<WarbandSpecBadgeModel>(card.Traits),
             KeywordNotes = new List<string>(card.KeywordNotes),
             WeaponName = card.Weapon,
             WeaponSummary = string.IsNullOrEmpty(card.WeaponSummary)
@@ -3415,6 +3535,7 @@ public sealed class RunShell : MonoBehaviour
             ComparisonTitle = card.ComparisonTitle,
             Comparisons = new List<StatComparisonModel>(card.Comparisons),
             ChoicePreviews = new List<ChoicePreviewModel>(card.ChoicePreviews),
+            RankUpDetail = card.RankUpDetail,
         };
 
         if (!string.IsNullOrEmpty(card.PassiveName))
@@ -3439,6 +3560,9 @@ public sealed class RunShell : MonoBehaviour
             {
                 int shortfall = Mathf.Max(0, offer.Price - _run.State.Sand);
                 bool affordable = shortfall == 0;
+                bool actionable = affordable &&
+                                  !card.Disabled &&
+                                  _run.State.PendingSpec == null;
                 inspector.Actions.Add(new InspectorActionModel
                 {
                     Id = HallActionId.Buy,
@@ -3446,10 +3570,12 @@ public sealed class RunShell : MonoBehaviour
                     CurrencyCost = offer.Price,
                     CurrencyBalance = _run.State.Sand,
                     Primary = true,
-                    Enabled = affordable,
-                    DisabledReason = affordable
-                        ? ""
-                        : "Not enough Hourstone.",
+                    Enabled = actionable,
+                    DisabledReason = !affordable
+                        ? "Not enough Hourstone."
+                        : card.Disabled || _run.State.PendingSpec != null
+                            ? "Choose the pending specialization first."
+                            : "",
                 });
                 inspector.Actions.Add(new InspectorActionModel
                 {
@@ -3608,8 +3734,12 @@ public sealed class RunShell : MonoBehaviour
     private void BuildInspectorSections(InspectorModel inspector)
     {
         inspector.Sections.Clear();
+        if (inspector.Kind == DecisionDetailKind.RankUp &&
+            inspector.RankUpDetail != null)
+            return;
 
-        void Rule(string label, string icon, string name, string summary)
+        void Rule(string label, string icon, string name, string summary,
+                  UiGlyphId labelGlyph = UiGlyphId.Unknown, string labelValue = "")
         {
             if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(summary)) return;
             inspector.Sections.Add(new InspectorSectionModel
@@ -3619,6 +3749,8 @@ public sealed class RunShell : MonoBehaviour
                 Icon = icon,
                 Name = name,
                 Summary = summary,
+                LabelGlyph = labelGlyph,
+                LabelValue = labelValue,
             });
         }
 
@@ -3629,9 +3761,14 @@ public sealed class RunShell : MonoBehaviour
             case DecisionDetailKind.Combatant:
                 Rule("BASIC ATTACK", inspector.WeaponIcon, inspector.WeaponName,
                     inspector.WeaponSummary);
-                Rule(inspector.AbilityTrigger, inspector.AbilityIcon, inspector.AbilityName,
-                    inspector.AbilitySummary);
-                Rule(inspector.PassiveTrigger, inspector.PassiveIcon, inspector.PassiveName,
+                Rule("SIGNATURE", inspector.AbilityIcon, inspector.AbilityName,
+                    inspector.AbilitySummary,
+                    inspector.AbilityManaCost >= 0 ? UiGlyphId.Mana : UiGlyphId.Unknown,
+                    inspector.AbilityManaCost >= 0
+                        ? inspector.AbilityManaCost.ToString()
+                        : "");
+                Rule(PassiveSectionLabel(inspector.PassiveTrigger),
+                    inspector.PassiveIcon, inspector.PassiveName,
                     inspector.PassiveSummary);
                 break;
             case DecisionDetailKind.Weapon:
@@ -3682,6 +3819,15 @@ public sealed class RunShell : MonoBehaviour
                 Label = "SPECIALIZATION PREVIEW · CHOOSE 1 OF 2 AFTER RANK-UP",
                 Choices = new List<ChoicePreviewModel>(inspector.ChoicePreviews),
             });
+    }
+
+    private static string PassiveSectionLabel(string trigger)
+    {
+        if (string.IsNullOrWhiteSpace(trigger)) return "PASSIVE";
+        const string always = " · ALWAYS";
+        return trigger.EndsWith(always, StringComparison.OrdinalIgnoreCase)
+            ? trigger.Substring(0, trigger.Length - always.Length)
+            : trigger;
     }
 
     private EquipmentPreviewModel BuildMarketEquipmentPreview(ShopOffer offer)
@@ -4110,8 +4256,8 @@ public sealed class RunShell : MonoBehaviour
         sh.Gold = s.Gold.ToString();
         sh.RerollCost = _cfg.RerollCost.ToString();
         sh.CanReroll = s.Phase == RunPhase.Shop && s.PendingSpec == null && s.Gold >= _cfg.RerollCost;
-        sh.Feedback = _feedback;
-        sh.FeedbackIsError = _feedbackIsError;
+        sh.Feedback = HallNotice.Text;
+        sh.FeedbackIsError = HallNotice.IsError;
         sh.ContinueText = _run.AtBoss ? "MARCH ON" : "LEAVE THE CAMP";
 
         sh.Offers = new List<ShopOfferModel>();
@@ -4198,8 +4344,8 @@ public sealed class RunShell : MonoBehaviour
         d.Placed = _placement.Count;
         d.CanCommit = _placement.Count == s.Field.Count && s.Field.Count > 0;
         d.PrimaryText = "LOCK IN";
-        d.Feedback = _feedback;
-        d.FeedbackIsError = _feedbackIsError;
+        d.Feedback = DeploymentNotice.Text;
+        d.FeedbackIsError = DeploymentNotice.IsError;
 
         d.Instruction = _deploySelected >= 0
             ? "Click a hex in your half to place them. Clicking an occupied hex swaps the two."
@@ -4313,6 +4459,7 @@ public sealed class RunShell : MonoBehaviour
                 : "SIGNATURE",
             AbilityName = presentation.abilityName,
             AbilitySummary = presentation.abilitySummary,
+            AbilityManaCost = unit.ManaMax > 0 ? unit.ManaMax : -1,
             PassiveIcon = presentation.passiveIcon,
             PassiveTrigger = presentation.passiveTrigger,
             PassiveName = presentation.passiveName,
@@ -4673,6 +4820,20 @@ public sealed class RunShell : MonoBehaviour
 #if UNITY_EDITOR
     // Stable Play Mode seams for MCP verification. These call the same intents as the UI; they
     // do not reach into RunController behind the shell's back.
+    /// <summary>
+    /// Editor automation can observe the shell GameObject before Unity invokes Start, especially
+    /// while Boot hands off to Game. Fixture tools must wait for the model dependencies and
+    /// retained view tree rather than calling Rebuild on that half-created component.
+    /// </summary>
+    public bool EditorReadyForFixtures =>
+        _content != null && _cfg != null && _root != null && _views.Count > 0;
+
+    public bool EditorEnsureReadyForFixtures()
+    {
+        if (!_started) Start();
+        return EditorReadyForFixtures;
+    }
+
     public void EditorNewRun() => _actions.NewRun?.Invoke();
 
     /// <summary>
@@ -4713,6 +4874,245 @@ public sealed class RunShell : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Reproduces the live failure reported on 2026-07-27: buy a Sharpshot fork rank while a
+    /// second Sharpshot remains in Market stock, then project that second card during the blocking
+    /// B-rank choice. The card must wait for PathId instead of querying "sharpshot|A|-".
+    /// This uses a temporary controller and never saves or mutates the player's run.
+    /// </summary>
+    public string EditorVerifyPendingForkMarketRebuild()
+    {
+        RunController previousRun = _run;
+        int previousOffer = _selectedMarketOffer;
+        string previousCard = _selectedCardKey;
+        try
+        {
+            var hero = new HeroInstance { ChassisId = "sharpshot" };
+            var temporary = new RunController(0x5A17UL, _content, new[] { hero }, _cfg);
+            while (temporary.State.ShopOffers.Count < 2)
+                temporary.State.ShopOffers.Add(null);
+            temporary.State.Sand = 100;
+            temporary.State.ShopOffers[0] = new ShopOffer
+            {
+                Kind = OfferKind.Hero,
+                Id = "sharpshot",
+                Price = 1,
+            };
+            temporary.State.ShopOffers[1] = new ShopOffer
+            {
+                Kind = OfferKind.Hero,
+                Id = "sharpshot",
+                Price = 1,
+            };
+
+            PurchaseResult purchase = temporary.BuyOffer(0);
+            _run = temporary;
+            _selectedMarketOffer = 1;
+            _selectedCardKey = "market:1";
+            CardModel projected = MarketCard(temporary.State.ShopOffers[1], 1);
+            bool passed =
+                purchase.Outcome == PurchaseOutcome.RankUp &&
+                temporary.State.PendingSpec != null &&
+                temporary.State.Field[0].Rank == Rank.B &&
+                temporary.State.Field[0].PathId == null &&
+                projected.Disabled &&
+                string.Equals(
+                    projected.AbilityName,
+                    "SPECIALIZATION PENDING",
+                    StringComparison.Ordinal);
+            return passed
+                ? "PASS · pending B fork safely defers the following A-rank Market preview"
+                : "FAIL · pending fork projection did not resolve to the waiting card";
+        }
+        finally
+        {
+            _run = previousRun;
+            _selectedMarketOffer = previousOffer;
+            _selectedCardKey = previousCard;
+        }
+    }
+
+    public bool EditorLoadWagerFixture(
+        bool expandedText = false, bool reducedMotion = false)
+    {
+        WorkbenchFixtures.Fixture fixture =
+            WorkbenchFixtures.Build("market-recruit", expandedText, reducedMotion);
+        RunShellModel shell = fixture.Shell;
+        shell.Screen = RunScreen.Wager;
+        shell.Wager = new WagerModel
+        {
+            Act = "ACT II",
+            Beat = "HOUR 6 OF 9",
+            Sand = "31",
+            Heading = "NAME YOUR WAGER",
+            Brief = expandedText
+                ? "Choose the pressure this warband will face. The opposing formation remains " +
+                  "sealed until commitment, while the complete reward curve stays public."
+                : "Choose the pressure this warband will face. The formation is revealed after commitment.",
+            Disclosure = expandedText
+                ? "The next opponent is hidden until lock-in. Risk and victory reward remain " +
+                  "fully disclosed and do not change after your choice."
+                : "Opponent composition is revealed after lock-in. Rewards do not change.",
+            ContinueLabel = "LOCK IN WAGER",
+            CanContinue = true,
+            Track = EditorFixtureTrack(),
+            Risks = new List<TierChoiceModel>
+            {
+                new TierChoiceModel
+                {
+                    Index = 0, Name = "FRAYING", Risk = "Lower enemy pressure",
+                    CurrencyReward = 4,
+                },
+                new TierChoiceModel
+                {
+                    Index = 1, Name = "CONTESTED", Risk = "Matched enemy pressure",
+                    CurrencyReward = 7, Selected = true,
+                },
+                new TierChoiceModel
+                {
+                    Index = 2, Name = "DIRE", Risk = "Greater enemy pressure",
+                    CurrencyReward = 11,
+                },
+            },
+        };
+        shell.WarbandBar.Mode = WarbandBarMode.WagerReadOnly;
+        shell.WarbandBar.Compact = true;
+        shell.WarbandBar.CanEdit = false;
+        return EditorBindFixtureView<WagerView>(shell, HallStation.Breach, reducedMotion);
+    }
+
+    public bool EditorLoadDeployFixture(
+        bool expandedText = false, bool reducedMotion = false)
+    {
+        WorkbenchFixtures.Fixture fixture =
+            WorkbenchFixtures.Build("rail-full", expandedText, reducedMotion);
+        RunShellModel shell = fixture.Shell;
+        shell.Screen = RunScreen.Deploy;
+        shell.Deploy = new DeployModel
+        {
+            Heading = "DEPLOY — CONTESTED BREACH",
+            Instruction = expandedText
+                ? "Select a champion in the permanent rail, then choose a legal hex in your half. " +
+                  "Selecting an occupied hex swaps the formation."
+                : "Select a champion, then choose a legal hex in your half.",
+            Placed = 3,
+            Total = 3,
+            CanCommit = true,
+            PrimaryText = "LOCK IN",
+            EnemyPreview = new List<string>
+            {
+                "Ash Warden · Defender · 188 HP · Reach 1",
+                "Dune Reaver · Striker · 132 HP · Reach 1",
+                "Glass Seer · Controller · 108 HP · Reach 4",
+            },
+            EncounterRule = expandedText
+                ? "The Waning begins after 45 seconds; both formations take increasing damage."
+                : "The Waning begins after 45 seconds.",
+        };
+        shell.WarbandBar.Mode = WarbandBarMode.DeploymentSelect;
+        shell.WarbandBar.Compact = false;
+        shell.WarbandBar.CanEdit = false;
+        shell.WarbandBar.CanManage = false;
+        return EditorBindFixtureView<DeployView>(shell, HallStation.Breach, reducedMotion);
+    }
+
+    public bool EditorLoadResultFixture(
+        bool expandedText = false, bool reducedMotion = false)
+    {
+        WorkbenchFixtures.Fixture fixture =
+            WorkbenchFixtures.Build("rail-full", expandedText, reducedMotion);
+        RunShellModel shell = fixture.Shell;
+        shell.Screen = RunScreen.Fight;
+        shell.Result = new ResultGateModel
+        {
+            Open = true,
+            Victory = true,
+            Eyebrow = "BREACH SECURED",
+            Heading = "VICTORY",
+            Summary = expandedText
+                ? "The warband held through the final exchange and felled all five enemies " +
+                  "without yielding the Hourstone."
+                : "Five enemies felled. The Hourstone remains bound.",
+            ContinueLabel = "RETURN TO THE WORKBENCH",
+            Recommendation = "The Market has new stock.",
+            CanWatchAgain = true,
+            Stats = new List<ResultStatModel>
+            {
+                new ResultStatModel { Label = "ENEMIES FELLED", Value = "5 / 5", Tone = "good" },
+                new ResultStatModel { Label = "HOURSTONE", Value = "+7", Tone = "sand" },
+                new ResultStatModel { Label = "SURVIVORS", Value = "3 / 3", Tone = "good" },
+            },
+            Deaths = new List<string>
+            {
+                "00:18 · Dune Reaver fell to Banneret",
+                "00:27 · Glass Seer fell to Cleric",
+                "00:34 · Ash Warden fell to Sharpshot",
+            },
+            // Without this the recap panel hides itself and the QA capture passes vacuously —
+            // a green "result gate is fine" over a surface whose three charts never rendered.
+            Recap = CombatRecapPanel.EditorFixture(),
+        };
+        shell.WarbandBar.Mode = WarbandBarMode.ResultReadOnly;
+        shell.WarbandBar.Compact = true;
+        shell.WarbandBar.CanEdit = false;
+        shell.WarbandBar.CanManage = false;
+        foreach (IRunScreenView view in _views)
+            view.Root.style.display = DisplayStyle.None;
+        if (_activeView is IRunScreenLifecycle leaving) leaving.OnScreenExited();
+        _activeView = null;
+        _root.AddToClassList("ui-fixture-mode");
+        _runtimeTooltips?.Hide();
+        _reducedMotion = reducedMotion;
+        ApplyShellLayoutClasses();
+        if (_fightOverlay != null) _fightOverlay.style.display = DisplayStyle.Flex;
+        if (_fightHitSurface != null) _fightHitSurface.style.display = DisplayStyle.None;
+        if (_fightHint != null) _fightHint.style.display = DisplayStyle.None;
+        if (_fightSkip != null) _fightSkip.style.display = DisplayStyle.None;
+        _resultGateView?.Bind(shell.Result, reducedMotion);
+        _warbandBarView?.Bind(shell.WarbandBar);
+        _hallEnvironment?.SetVisible(false, HallStation.Breach, reducedMotion);
+        return _resultGateView != null;
+    }
+
+    private bool EditorBindFixtureView<T>(
+        RunShellModel shell, HallStation station, bool reducedMotion)
+        where T : class, IRunScreenView
+    {
+        T target = null;
+        foreach (IRunScreenView view in _views)
+        {
+            bool active = view is T;
+            view.Root.style.display = active ? DisplayStyle.Flex : DisplayStyle.None;
+            if (active) target = (T)view;
+        }
+        if (target == null) return false;
+        if (!ReferenceEquals(_activeView, target))
+        {
+            if (_activeView is IRunScreenLifecycle leaving) leaving.OnScreenExited();
+            _activeView = target;
+            if (_activeView is IRunScreenLifecycle entering) entering.OnScreenEntered();
+        }
+        _root.AddToClassList("ui-fixture-mode");
+        _runtimeTooltips?.Hide();
+        _reducedMotion = reducedMotion;
+        ApplyShellLayoutClasses();
+        target.Bind(shell);
+        _warbandBarView?.Bind(shell.WarbandBar);
+        if (_fightOverlay != null) _fightOverlay.style.display = DisplayStyle.None;
+        _hallEnvironment?.SetVisible(true, station, reducedMotion);
+        return true;
+    }
+
+    private static List<PlanningTrackNodeModel> EditorFixtureTrack() =>
+        new List<PlanningTrackNodeModel>
+        {
+            new PlanningTrackNodeModel { Label = "I", Kind = "Fight", State = "past" },
+            new PlanningTrackNodeModel { Label = "II", Kind = "Fight", State = "past" },
+            new PlanningTrackNodeModel { Label = "III", Kind = "Fight", State = "current" },
+            new PlanningTrackNodeModel { Label = "IV", Kind = "Interlude", State = "future" },
+            new PlanningTrackNodeModel { Label = "V", Kind = "Boss", State = "future" },
+        };
+
     public void EditorClearWorkbenchFixture()
     {
         if (_root == null) return;
@@ -4735,10 +5135,13 @@ public sealed class RunShell : MonoBehaviour
             }
         string tooltipReport = _runtimeTooltips?.EditorResolvedLayoutReport() ??
                                "Runtime tooltip: FAIL · service is missing";
+        string railReport = _warbandBarView?.EditorResolvedLayoutReport() ??
+                            "Permanent warband rail: FAIL · view is missing";
         bool passed = !workbenchReport.Contains(": FAIL") &&
-                      !tooltipReport.Contains(": FAIL");
+                      !tooltipReport.Contains(": FAIL") &&
+                      !railReport.Contains(": FAIL");
         return $"Workbench QA: {(passed ? "PASS" : "FAIL")} · " +
-               $"{workbenchReport}; {tooltipReport}";
+               $"{workbenchReport}; {tooltipReport}; {railReport}";
     }
 
     public bool EditorToggleRecruit(int offerIndex)
@@ -4792,6 +5195,14 @@ public sealed class RunShell : MonoBehaviour
         return true;
     }
 
+    public bool EditorFocusWarbandHero(int fieldIndex)
+    {
+        if (_run == null || fieldIndex < 0 || fieldIndex >= _run.State.Field.Count)
+            return false;
+        _actions.FocusWarbandHero?.Invoke(_run.State.Field[fieldIndex].InstanceId);
+        return true;
+    }
+
     public void EditorUseInspectorAction(string action)
     {
         HallActionId id =
@@ -4834,6 +5245,55 @@ public sealed class RunShell : MonoBehaviour
         return false;
     }
 
+    public string EditorWagerLayoutReport()
+    {
+        foreach (IRunScreenView view in _views)
+            if (view is WagerView wager)
+                return wager.EditorResolvedLayoutReport(
+                    _root?.Q<VisualElement>("persistent-warband-bar"));
+        return "Wager: FAIL · view is missing";
+    }
+
+    public string EditorDeployLayoutReport()
+    {
+        foreach (IRunScreenView view in _views)
+            if (view is DeployView deploy)
+                return deploy.EditorResolvedLayoutReport(
+                    _root?.Q<VisualElement>("persistent-warband-bar"));
+        return "Deploy: FAIL · view is missing";
+    }
+
+    public string EditorResultLayoutReport() =>
+        _resultGateView?.EditorResolvedLayoutReport(
+            _root?.Q<VisualElement>("persistent-warband-bar")) ??
+        "Result gate: FAIL · view is missing";
+
+    public string EditorEnvironmentReport()
+    {
+        if (_uiEnvironment == null) return "UI environment: FAIL · classifier is missing";
+        UiEnvironmentSnapshot value = _uiEnvironment.Current;
+        string classes = string.Join(",", _root.GetClasses());
+        return
+            $"UI environment: PASS · panel={value.PanelSize.x:0.#}×{value.PanelSize.y:0.#}; " +
+            $"scale={value.PixelsPerPoint:0.###}; form={value.FormFactor}; " +
+            $"input={value.InputModality}; safe={value.SafeInsets.Left:0.#}/" +
+            $"{value.SafeInsets.Top:0.#}/{value.SafeInsets.Right:0.#}/" +
+            $"{value.SafeInsets.Bottom:0.#}; classes={classes}";
+    }
+
+    public string EditorRotationGuardReport()
+    {
+        var report = new UiLayoutReport("Rotation guard");
+        UiLayoutContract.RequireResolved(report, _rotationGuard, "guard");
+        UiLayoutContract.RequireInside(report, _rotationGuard, _root, "rotation guard");
+        if (_rotationGuard == null ||
+            _rotationGuard.resolvedStyle.display == DisplayStyle.None)
+            report.Fail("portrait handheld guard is hidden");
+        if (_uiEnvironment == null || !_uiEnvironment.Current.PortraitHandheld)
+            report.Fail("environment did not classify portrait handheld");
+        return report.ToString();
+    }
+
     public void EditorOpenWorkbenchArmory() => _actions.OpenLoadout?.Invoke("");
 
     public bool EditorShowWorkbenchKeywordTooltip()
@@ -4846,6 +5306,22 @@ public sealed class RunShell : MonoBehaviour
 
     public bool EditorShowWorkbenchEquipmentTooltip() =>
         _warbandBarView?.EditorShowFirstEquipmentTooltip() ?? false;
+
+    public bool EditorShowWorkbenchRankTierTooltip()
+    {
+        foreach (var view in _views)
+            if (view is WorkbenchView workbench)
+                return workbench.EditorShowFirstRankTierTooltip();
+        return false;
+    }
+
+    public string EditorWorkbenchSemanticSnapshot()
+    {
+        foreach (var view in _views)
+            if (view is WorkbenchView workbench)
+                return workbench.EditorSemanticLayoutSnapshot();
+        return "workbench=missing";
+    }
 
     public bool EditorValidateMusterLayout()
     {

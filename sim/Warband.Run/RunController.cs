@@ -25,8 +25,12 @@ namespace Warband.Run
     /// </summary>
     public sealed class RunController
     {
-        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltShop = 5,
+        private const ulong SaltMap = 1, SaltEncounter = 2, SaltBattle = 3, SaltSpec = 4, SaltShop = 5,
                             SaltInterlude = 6, SaltBossReward = 7;
+
+        /// <summary>How many options a non-fork rank-up draws from its pool. Deliberately equal
+        /// to the old fixed arity: a third option is variety across runs, not more reading.</summary>
+        private const int SpecChoices = 2;
         private const int EnemyIdBase = 100;     // player heroes are 0..5, so no collision
 
         public RunState State { get; }
@@ -92,10 +96,8 @@ namespace Warband.Run
                 else Resolve(() => _content.Trinket(it.Id), "trinket", it.Id);
             }
             if (State.PendingSpec != null)
-            {
-                Resolve(() => _content.Node(State.PendingSpec.OptionA), "spec node", State.PendingSpec.OptionA);
-                Resolve(() => _content.Node(State.PendingSpec.OptionB), "spec node", State.PendingSpec.OptionB);
-            }
+                foreach (string option in State.PendingSpec.Options)
+                    Resolve(() => _content.Node(option), "spec node", option);
             // The retune guard. Every id above resolved fine, which is exactly the trap: the same
             // ids with different numbers would resume happily and then fight a different army than
             // the save was made against, because encounters derive from the seed at FIGHT time.
@@ -408,18 +410,89 @@ namespace Warband.Run
             offer.Frozen = !offer.Frozen;
         }
 
-        /// <summary>Resolve the pending rank-up choice: 0 = OptionA, 1 = OptionB.</summary>
+        /// <summary>Resolve the pending rank-up choice by index into PendingSpec.Options.</summary>
         public void ChooseSpec(int which)
         {
             Require(State.Phase == RunPhase.Planning && State.PendingSpec != null,
                     "no spec choice pending");
             var p = State.PendingSpec!;
+            Require(which >= 0 && which < p.Options.Count, "spec option out of range");
             var hero = Zone(p.Zone)[p.Index];
-            string chosen = which == 0 ? p.OptionA : p.OptionB;
+            string chosen = p.Options[which];
             hero.SpecNodeIds.Add(chosen);
             if (p.ForRank == _content.ForkRank(hero.ChassisId))
                 hero.PathId = chosen;                        // the fork sets the path (B, or A for late-bloomers)
             State.PendingSpec = null;
+        }
+
+        /// <summary>
+        /// The offer a rank-up actually presents, drawn from the authored pool (Kits.Offers).
+        ///
+        /// **Fork-rank law.** The fork decides what the hero IS (ADR 0011), so its whole pool is
+        /// always offered. Withholding a path there would hide a leg of the hero's identity
+        /// triangle — the player reads the survivors as an arbitrary pair and never learns the
+        /// choice space exists — and it denies an identity they already gambled a draft on.
+        /// Every other rank amplifies a path the hero is already committed to, so drawing a
+        /// subset there is an ordinary roguelike draw: some of the tools for an engine you own.
+        /// That is where run-to-run variety lives, and it costs no extra reading.
+        ///
+        /// The draw is stateless-by-salt over (Seed, hero instance, rank) like every other run
+        /// decision (ADR 0008): stable across save/resume, reproducible in tests, no rng to
+        /// persist and no ordering coupling with shop or encounter rolls. Authored order is
+        /// preserved, so a pool never reorders between runs — only its membership changes.
+        ///
+        /// A pool at or below <see cref="SpecChoices"/> is offered whole, which is why today's
+        /// two-entry pools behave exactly as the old 1-of-2 table did.
+        /// </summary>
+        /// <summary>
+        /// The offer a rank-up WOULD present, for pre-purchase preview. Runs the same draw the
+        /// purchase does — the draw is a pure function of (Seed, hero instance, rank), so the
+        /// preview cannot advertise a card the rank-up then fails to show. Pass a clone with
+        /// Rank already incremented, exactly as the purchase path sees it.
+        /// </summary>
+        public IReadOnlyList<string> PeekSpecOffer(HeroInstance heroAtNextRank) =>
+            SpecPick(heroAtNextRank);
+
+        /// <summary>
+        /// Attempts the same deterministic draw as <see cref="PeekSpecOffer"/>, but recognizes the
+        /// one valid moment where a following-rank preview cannot exist yet: the hero has just
+        /// reached its fork rank and the blocking fork choice has not set <see cref="HeroInstance.PathId"/>.
+        /// The planning UI rebuilds during that choice and may still contain another copy of the
+        /// chassis in Market stock. That stock must wait, not ask content for an impossible
+        /// "{chassis}|{next rank}|-" row.
+        /// </summary>
+        public bool TryPeekSpecOffer(
+            HeroInstance heroAtNextRank, out IReadOnlyList<string> options)
+        {
+            if (heroAtNextRank == null)
+                throw new ArgumentNullException(nameof(heroAtNextRank));
+            if (heroAtNextRank.Rank > _content.ForkRank(heroAtNextRank.ChassisId) &&
+                string.IsNullOrEmpty(heroAtNextRank.PathId))
+            {
+                options = Array.Empty<string>();
+                return false;
+            }
+
+            options = SpecPick(heroAtNextRank);
+            return true;
+        }
+
+        private List<string> SpecPick(HeroInstance hero)
+        {
+            var pool = _content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
+            if (hero.Rank == _content.ForkRank(hero.ChassisId) || pool.Count <= SpecChoices)
+                return new List<string>(pool);
+
+            var indices = new List<int>();
+            for (int i = 0; i < pool.Count; i++) indices.Add(i);
+            var drawn = new List<int>();
+            DrawDistinct(indices, drawn, SpecChoices,
+                         new Rng(Mix(State.Seed, SaltSpec, (ulong)hero.InstanceId, (ulong)hero.Rank)));
+            drawn.Sort();                              // present in authored order, not draw order
+
+            var picked = new List<string>();
+            foreach (int i in drawn) picked.Add(pool[i]);
+            return picked;
         }
 
         public void SellHero(RosterZone zone, int index)
@@ -812,13 +885,12 @@ namespace Warband.Run
                         hero.Rank++;
                         result.NewRank = hero.Rank;
                         hero.GoldSpent += offer.Price;
-                        var (a, b) = _content.SpecOptions(hero.ChassisId, hero.Rank, hero.PathId);
+                        var options = SpecPick(hero);
                         State.PendingSpec = new PendingSpec
                         {
-                            Zone = zone, Index = i, ForRank = hero.Rank, OptionA = a, OptionB = b,
+                            Zone = zone, Index = i, ForRank = hero.Rank, Options = options,
                         };
-                        result.PendingOptionA = a;
-                        result.PendingOptionB = b;
+                        result.PendingOptions = options;
                         return;
                     }
             }

@@ -17,11 +17,52 @@ namespace Warband.Content
     {
         public static readonly Dictionary<string, ChassisDef> Chassis = new Dictionary<string, ChassisDef>();
         public static readonly Dictionary<string, SpecNode> Nodes = new Dictionary<string, SpecNode>();
-        public static readonly Dictionary<string, (string A, string B)> Offers = new Dictionary<string, (string, string)>();
+        /// <summary>
+        /// The authored POOL a rank-up draws from — not necessarily what the player sees.
+        /// The run layer draws from this (RunController.SpecPick): the fork rank always offers
+        /// the whole pool, because withholding a path would hide a leg of the hero's identity
+        /// triangle; every other rank draws a seeded subset, which is where run-to-run variety
+        /// comes from. A pool of two therefore behaves exactly as the old 1-of-2 table did.
+        /// </summary>
+        public static readonly Dictionary<string, List<string>> Offers = new Dictionary<string, List<string>>();
         public static readonly Dictionary<string, Rank> ForkRanks = new Dictionary<string, Rank>();
 
-        private static void Offer(string chassis, Rank rank, string? path, string a, string b) =>
-            Offers[$"{chassis}|{rank}|{path ?? "-"}"] = (a, b);
+        /// <summary>
+        /// CANDIDATE content: authored, testable, sweepable — and unreachable in a real run.
+        ///
+        /// Deliberately held in registries of their own rather than a flag on the live ones, so
+        /// leaking a candidate into a run takes a code change, not a mistake. Two consequences
+        /// that matter:
+        ///
+        /// 1. The content fingerprint (Catalog.ComputeContentVersion) folds `Nodes` and `Offers`
+        ///    ONLY. Content that cannot be reached cannot influence a fight, so it is not part of
+        ///    a run's content identity — which is why authoring candidates does not invalidate
+        ///    saves or replays. The fingerprint moves when a candidate is PROMOTED, correctly.
+        /// 2. `Catalog.Node` still resolves candidates, so the sweep and tests can compose and
+        ///    fight them. Only `SpecOptions` gates them, because offers are the only way a node
+        ///    reaches a run.
+        ///
+        /// Promotion is one edit: move the rows from Candidate* into the live tables.
+        /// Doing so is a CONTENT decision, capped by the first-playable budget (roadmap) and
+        /// gated on playtest #1 — not something to do because the content compiles.
+        /// </summary>
+        public static readonly Dictionary<string, SpecNode> CandidateNodes = new Dictionary<string, SpecNode>();
+        public static readonly Dictionary<string, List<string>> CandidateOffers = new Dictionary<string, List<string>>();
+
+        private static void Offer(string chassis, Rank rank, string? path, params string[] nodes) =>
+            Offers[$"{chassis}|{rank}|{path ?? "-"}"] = new List<string>(nodes);
+
+        /// <summary>Extra pool entries merged onto the live row of the same key when candidates
+        /// are enabled. A key with no live row is candidate-only and simply never resolves.</summary>
+        private static void CandidateOffer(string chassis, Rank rank, string? path, params string[] nodes) =>
+            CandidateOffers[$"{chassis}|{rank}|{path ?? "-"}"] = new List<string>(nodes);
+
+        private static SpecNode Candidate(string id, SpecNode node)
+        {
+            node.Name = id;
+            CandidateNodes[id] = node;
+            return node;
+        }
 
         private static SpecNode Node(string id, SpecNode node) { node.Name = id; Nodes[id] = node; return node; }
 
@@ -342,6 +383,90 @@ namespace Warband.Content
             Node("sharpshot.volleyer.trueflight", new SpecNode // width becomes weight: extras to 100%
             {
                 Triggers = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.MultiShotWindow, 40, Self, swings: 4)) },
+            });
+
+            SharpshotSpotterCandidate();
+        }
+
+        /// <summary>
+        /// CANDIDATE — Sharpshot's third path (unreachable; see <see cref="CandidateNodes"/>).
+        ///
+        /// Why this hero first: ADR 0011's own roster audit flags Sniper and Volleyer as
+        /// **double-DEEPEN** — both are "ranged dps, more so" — which breaks the fork law that at
+        /// least one path per class must ADD or SWAP. Spotter is the missing SWAP: ranged dps →
+        /// support. It is also the only proposed third path that needs no new sim vocabulary,
+        /// because <see cref="StatusKind.DamageTakenUp"/> already exists (Reckless Swing's dial),
+        /// so the Mark's teamwide amplification is a plain debuff every ally reads for free.
+        ///
+        /// DEVIATIONS from `Inbox/warband_roster_expansion_plan.md`, and why. The plan's A/S nodes
+        /// are mostly team-facing ("every third ALLIED attack", "allies at least 3 hexes away",
+        /// "allies that damaged it"), but a SpecNode carries owner-side Triggers only — the
+        /// team-facing layer is Banner/Inscription TeamTriggers. So the nodes below keep the plan's
+        /// INTENT (focus fire, uptime, bounded chain) and express it through what Calamity herself
+        /// does with the Mark. Kill Order pays the warband in Mana rather than tracking damage
+        /// contributors, which would need a per-enemy ledger the sim does not keep.
+        ///
+        /// Numbers are placeholder per ADR 0011's value doctrine — the sweep decides, not this file.
+        /// </summary>
+        private static void SharpshotSpotterCandidate()
+        {
+            // Joins the FORK pool, so the fork-rank law shows all three paths — identity is never
+            // withheld (RunController.SpecPick).
+            CandidateOffer("sharpshot", Rank.B, null, "sharpshot.spotter");
+
+            Candidate("sharpshot.spotter", new SpecNode // the SWAP: her damage moves into the party
+            {
+                // The bolt stops being the payload and becomes the paint: it flies at the farthest
+                // enemy for a fraction of Sniper's weight, and everyone else collects.
+                SignatureOverride = new List<EffectDef>
+                {
+                    Dmg(LineFar(0), 6),
+                    Status(StatusKind.DamageTakenUp, 15, Farthest, ticks: 60),
+                    Status(StatusKind.Mark, 0, Farthest, ticks: 60),   // the tag her tree reads
+                },
+            });
+
+            // A — three amplifiers: uptime · deepen · her own damage back.
+            CandidateOffer("sharpshot", Rank.A, "sharpshot.spotter",
+                "sharpshot.spotter.rangefinder", "sharpshot.spotter.openseason",
+                "sharpshot.spotter.marksmansdue");
+
+            Candidate("sharpshot.spotter.rangefinder", new SpecNode // her autos paint too
+            {
+                Triggers = { On(EventKind.Attack, W(SrcOwner, TgtHas(StatusKind.Mark, not: true), RootEv),
+                    Status(StatusKind.DamageTakenUp, 15, EvTgt, ticks: 30),
+                    Status(StatusKind.Mark, 0, EvTgt, ticks: 30)) },
+            });
+            Candidate("sharpshot.spotter.openseason", new SpecNode // 15% → 25%, paid for in her own weight
+            {
+                SignaturePatch = Patch(amountPct: 60,
+                    add: Status(StatusKind.DamageTakenUp, 10, Farthest, ticks: 60)),
+            });
+            Candidate("sharpshot.spotter.marksmansdue", new SpecNode // she is also an ally of hers
+            {
+                Triggers = { On(EventKind.Attack, W(SrcOwner, TgtHas(StatusKind.Mark), RootEv),
+                    Swing(EvTgt, pct: 50)) },
+            });
+
+            // S — three crowns: bounded chain · permanence · the party payoff.
+            CandidateOffer("sharpshot", Rank.S, "sharpshot.spotter",
+                "sharpshot.spotter.passingthescope", "sharpshot.spotter.longwatch",
+                "sharpshot.spotter.killorder");
+
+            Candidate("sharpshot.spotter.passingthescope", new SpecNode // the mark outlives its target
+            {
+                Triggers = { On(EventKind.Death, W(TgtHas(StatusKind.Mark), TgtAlly(not: true)),
+                    Status(StatusKind.DamageTakenUp, 15, Farthest, ticks: 30),
+                    Status(StatusKind.Mark, 0, Farthest, ticks: 30)) },
+            });
+            Candidate("sharpshot.spotter.longwatch", new SpecNode // the paint never fully washes off
+            {
+                SignaturePatch = Patch(add: Status(StatusKind.DamageTakenUp, 10, Farthest, ticks: -1)),
+            });
+            Candidate("sharpshot.spotter.killorder", new SpecNode // focus fire buys the whole warband tempo
+            {
+                Triggers = { On(EventKind.Death, W(TgtHas(StatusKind.Mark), TgtAlly(not: true)),
+                    Mana(Allies(99, exSelf: false), 8)) },
             });
         }
 

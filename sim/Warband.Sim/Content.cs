@@ -129,6 +129,21 @@ namespace Warband.Sim
         public EventKind On;
         public List<Cond> When = new List<Cond>();   // ANDed; empty = always
         public List<EffectDef> Do = new List<EffectDef>();
+
+        /// <summary>Render identity — WHICH passive this is. Stamped automatically by
+        /// <see cref="Loadout.Compose"/> from the content that contributed the rule (chassis id,
+        /// spec-node name, weapon name, trinket name), so no rule is ever hand-authored with one and
+        /// new content is identified the day it is written. Empty on the static catalog instances;
+        /// only composed clones carry it. Deliberately NOT part of <see cref="ContentHash"/>: the
+        /// fingerprint exists to catch a retune, and an id changes no simulation outcome, so hashing
+        /// it would invalidate every save for a presentation-only edit.</summary>
+        public string RuleId = "";
+
+        /// <summary>Shallow by design: When/Do are read-only to the engine, and the composer only
+        /// ever writes <see cref="RuleId"/>. What must not be shared is the Trigger OBJECT — the
+        /// catalog hands out the same instance to every composition, so stamping in place would
+        /// rewrite the kit for every later one (the bug EffectDef.Clone already exists to prevent).</summary>
+        public Trigger CloneForComposition() => (Trigger)MemberwiseClone();
     }
 
     public enum StatKind { AttackFlat, AttackSpeed }
@@ -147,5 +162,13 @@ namespace Warband.Sim
         public List<Cond> When = new List<Cond>();
         public int Amount;
         public StatScale ScaleBy;  // Amount × distance-to-target / missing-HP decades
+
+        /// <summary>Render identity, same contract as <see cref="Trigger.RuleId"/>. This is the one
+        /// that matters most: a StatRule has no activation moment to hook (it is re-evaluated at
+        /// every stat read and never cached), so without an id AND the per-tick transition sweep in
+        /// Battle, a conditional passive is structurally invisible — see Design/passive-legibility.md.</summary>
+        public string RuleId = "";
+
+        public StatRule CloneForComposition() => (StatRule)MemberwiseClone();
     }
 }

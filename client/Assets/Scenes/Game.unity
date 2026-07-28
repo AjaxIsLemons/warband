@@ -287,7 +287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReplayPlayer
   replayFile: replays/skirmish.bytes
-  ticksPerSecond: 10
+  ticksPerSecond: 5
   loop: 1
   hexSize: 1.15
   previewAdvanceSeconds: 0.12
@@ -399,7 +399,8 @@ MonoBehaviour:
       hexSize: 1.15
       tileScale: 0.9
     playback:
-      ticksPerSecond: 2
+      ticksPerSecond: 5
+      openingHoldSeconds: 0.03
     audio:
       enabled: 0
     fx:
@@ -463,6 +464,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -472,8 +475,8 @@ MonoBehaviour:
       projectileVfx: 
       impactVfx: 
       groundVfx: 
-      hitAnim: 0
-      hitAnimMinT: 0.35
+      hitAnim: 1
+      hitAnimMinT: 0.25
       announce: 0
       pulseGround: 0
       bigImpact: 0
@@ -512,6 +515,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -523,6 +528,159 @@ MonoBehaviour:
       groundVfx: 
       hitAnim: 0
       hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 1
+      bigImpact: 0
+    - eventKind: 3
+      side: 1
+      byCause: 1
+      cause: 6
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.61960787, b: 0.27058825, a: 1}
+      critFlashColor: {r: 1, g: 0.61960787, b: 0.27058825, a: 1}
+      flashSeconds: 0.16
+      punch: 0
+      punchAmount: 0.12
+      punchSeconds: 0.14
+      number: 1
+      numberColor: {r: 1, g: 0.6039216, b: 0.23529412, a: 1}
+      critNumberColor: {r: 1, g: 0.6039216, b: 0.23529412, a: 1}
+      minAmount: 1
+      numberScale: 0.8
+      numberBand: -0.6
+      numberLife: 0.7
+      sound: 
+      critSound: 
+      castSound: 
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 1
+      bigImpact: 0
+    - eventKind: 3
+      side: 1
+      byCause: 1
+      cause: 5
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.8901961, b: 0.72156864, a: 1}
+      critFlashColor: {r: 1, g: 0.8901961, b: 0.72156864, a: 1}
+      flashSeconds: 0.12
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 1
+      numberColor: {r: 1, g: 0.53333336, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.53333336, b: 0.4, a: 1}
+      minAmount: 1
+      numberScale: 0.7
+      numberBand: 0.45
+      numberLife: 0.8
+      sound: 
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.12
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 2.2
+      motionScale: 0.5
+      windupSeconds: 0
+      defer: 0
+      vfx: 
+      projectileVfx: spark-link
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 3
+      side: 1
+      byCause: 1
+      cause: 8
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.1
+      punch: 1
+      punchAmount: 0.26
+      punchSeconds: 0.14
+      number: 1
+      numberColor: {r: 1, g: 0.84705883, b: 0.76862746, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0.15
+      numberLife: 0.9
+      sound: hit_melee
+      critSound: 
+      castSound: 
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 1, b: 1, a: 1}
+      motionGlow: 3
+      motionScale: 0.9
+      windupSeconds: 0
+      defer: 0
+      vfx: 
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 1
+      hitAnimMinT: 0.25
       announce: 0
       pulseGround: 0
       bigImpact: 0
@@ -561,6 +719,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -610,12 +770,14 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.34
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.41568628, b: 0.18039216, a: 1}
       motionGlow: 6
       motionScale: 1.6
       windupSeconds: 0.3
       defer: 1
-      vfx: 
+      vfx: cast-aura
       projectileVfx: 
       impactVfx: 
       groundVfx: 
@@ -659,6 +821,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.3
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 0.54901963, g: 0.9019608, b: 0.6392157, a: 1}
       motionGlow: 3
       motionScale: 1.1
@@ -708,6 +872,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -757,6 +923,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.24
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 0.43137255, g: 0.30980393, b: 0.8156863, a: 1}
       motionGlow: 4
       motionScale: 1.2
@@ -806,6 +974,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -855,6 +1025,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.3
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 0.84705883, g: 0.2509804, b: 0.18039216, a: 1}
       motionGlow: 5
       motionScale: 1.4
@@ -904,6 +1076,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -953,6 +1127,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.42
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 0.72156864, g: 0.8, b: 1, a: 1}
       motionGlow: 3.5
       motionScale: 1.8
@@ -1002,6 +1178,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1051,6 +1229,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.42
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.6156863, b: 0.18039216, a: 1}
       motionGlow: 5
       motionScale: 2.2
@@ -1100,6 +1280,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1149,6 +1331,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1198,6 +1382,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1247,6 +1433,8 @@ MonoBehaviour:
       castSound: 
       motion: 1
       motionSeconds: 0.14
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1296,13 +1484,15 @@ MonoBehaviour:
       castSound: 
       motion: 2
       motionSeconds: 0.16
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
       motionGlow: 3
       motionScale: 1
       windupSeconds: 0
       defer: 1
       vfx: 
-      projectileVfx: 
+      projectileVfx: arrow-streak
       impactVfx: 
       groundVfx: 
       hitAnim: 0
@@ -1345,6 +1535,8 @@ MonoBehaviour:
       castSound: 
       motion: 2
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 0.54901963, g: 0.84705883, b: 1, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1354,8 +1546,8 @@ MonoBehaviour:
       projectileVfx: 
       impactVfx: 
       groundVfx: 
-      hitAnim: 0
-      hitAnimMinT: 0.35
+      hitAnim: 1
+      hitAnimMinT: 0.25
       announce: 0
       pulseGround: 0
       bigImpact: 0
@@ -1394,6 +1586,8 @@ MonoBehaviour:
       castSound: 
       motion: 2
       motionSeconds: 0.12
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
       motionGlow: 2
       motionScale: 0.8
@@ -1443,6 +1637,8 @@ MonoBehaviour:
       castSound: 
       motion: 3
       motionSeconds: 0.35
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.3529412, b: 0.2901961, a: 1}
       motionGlow: 3
       motionScale: 1.6
@@ -1450,13 +1646,13 @@ MonoBehaviour:
       defer: 0
       vfx: 
       projectileVfx: 
-      impactVfx: 
+      impactVfx: death-dissolve-burst
       groundVfx: 
       hitAnim: 0
       hitAnimMinT: 0.35
       announce: 0
       pulseGround: 0
-      bigImpact: 0
+      bigImpact: 1
     - eventKind: 17
       side: 0
       byCause: 0
@@ -1492,6 +1688,8 @@ MonoBehaviour:
       castSound: 
       motion: 4
       motionSeconds: 0.34
+      motionPerHexSeconds: 0.1
+      motionMaxSeconds: 1
       motionColor: {r: 0.61960787, g: 0.54901963, b: 0.84705883, a: 1}
       motionGlow: 2.2
       motionScale: 1
@@ -1541,6 +1739,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1590,6 +1790,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1639,6 +1841,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1686,16 +1890,18 @@ MonoBehaviour:
       sound: cheatdeath
       critSound: 
       castSound: 
-      motion: 3
-      motionSeconds: 0.5
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.85882354, a: 1}
-      motionGlow: 6
-      motionScale: 2
+      motionGlow: 3
+      motionScale: 1
       windupSeconds: 0
       defer: 0
       vfx: 
       projectileVfx: 
-      impactVfx: 
+      impactVfx: deathless-rune
       groundVfx: 
       hitAnim: 0
       hitAnimMinT: 0.35
@@ -1737,6 +1943,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1786,6 +1994,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1835,6 +2045,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1884,6 +2096,8 @@ MonoBehaviour:
       castSound: 
       motion: 0
       motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
       motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
       motionGlow: 3
       motionScale: 1
@@ -1892,6 +2106,1995 @@ MonoBehaviour:
       vfx: 
       projectileVfx: 
       impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: pyromancer
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.5411765, b: 0.23921569, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_fire
+      critSound: 
+      castSound: riser_pyromancer
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.8862745, g: 0.34509805, b: 0.12156863, a: 1}
+      motionGlow: 3
+      motionScale: 1.15
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-pyromancer
+      projectileVfx: 
+      impactVfx: fire-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: pyromancer.inferno
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.5411765, b: 0.23921569, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_fire
+      critSound: 
+      castSound: riser_pyromancer
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.8862745, g: 0.34509805, b: 0.12156863, a: 1}
+      motionGlow: 3.1
+      motionScale: 1.3
+      windupSeconds: 0.44
+      defer: 1
+      vfx: cast-aura-pyromancer
+      projectileVfx: 
+      impactVfx: fire-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: pyromancer.inferno.everburn
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.61960787, b: 0.27058825, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_fire
+      critSound: 
+      castSound: riser_pyromancer
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.8862745, g: 0.34509805, b: 0.12156863, a: 1}
+      motionGlow: 4.8
+      motionScale: 1.45
+      windupSeconds: 0.55
+      defer: 1
+      vfx: cast-aura-pyromancer
+      projectileVfx: 
+      impactVfx: fire-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: pyromancer.starfall
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_fire
+      critSound: 
+      castSound: riser_pyromancer
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.61960787, b: 0.27058825, a: 1}
+      motionGlow: 5
+      motionScale: 1.6
+      windupSeconds: 0.55
+      defer: 1
+      vfx: cast-aura-pyromancer
+      projectileVfx: 
+      impactVfx: fire-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 1
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: cleric
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.7490196, g: 0.9411765, b: 0.78431374, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_cleric
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 3
+      motionScale: 1.1
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-cleric
+      projectileVfx: 
+      impactVfx: holy-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: cleric.warpriest
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_cleric
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 3.4
+      motionScale: 1.35
+      windupSeconds: 0.44
+      defer: 1
+      vfx: cast-aura-cleric
+      projectileVfx: 
+      impactVfx: holy-release
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: cleric.lifebinder
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.6392157, g: 0.827451, b: 0.49411765, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: heal
+      critSound: 
+      castSound: riser_cleric
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.49803922, g: 0.65882355, b: 0.36078432, a: 1}
+      motionGlow: 2.6
+      motionScale: 1
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-cleric
+      projectileVfx: 
+      impactVfx: heal-motes
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: cleric.lifebinder.greatchorus
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.6392157, g: 0.827451, b: 0.49411765, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: heal
+      critSound: 
+      castSound: riser_cleric
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.6392157, g: 0.827451, b: 0.49411765, a: 1}
+      motionGlow: 3
+      motionScale: 1.4
+      windupSeconds: 0.5
+      defer: 1
+      vfx: cast-aura-cleric
+      projectileVfx: 
+      impactVfx: heal-motes
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: bulwark
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_bulwark
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1.15
+      windupSeconds: 0.3
+      defer: 1
+      vfx: cast-aura-bulwark
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: bulwark.juggernaut
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_bulwark
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3.2
+      motionScale: 1.35
+      windupSeconds: 0.34
+      defer: 1
+      vfx: cast-aura-bulwark
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: bulwark.juggernaut.faultline
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_bulwark
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 5
+      motionScale: 1.7
+      windupSeconds: 0.55
+      defer: 1
+      vfx: cast-aura-bulwark
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 1
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: bulwark.warden
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_bulwark
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.48235294, g: 0.41568628, b: 0.5882353, a: 1}
+      motionGlow: 2.2
+      motionScale: 1.5
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-bulwark
+      projectileVfx: 
+      impactVfx: status-pop
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: bulwark.warden.challenge
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_bulwark
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      motionGlow: 2.4
+      motionScale: 1.8
+      windupSeconds: 0.45
+      defer: 1
+      vfx: cast-aura-bulwark
+      projectileVfx: 
+      impactVfx: status-pop
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: shade
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_shade
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.48235294, g: 0.41568628, b: 0.5882353, a: 1}
+      motionGlow: 3.9
+      motionScale: 0.95
+      windupSeconds: 0.28
+      defer: 1
+      vfx: cast-aura-shade
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: sharpshot
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_sharpshot
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1.1
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-sharpshot
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: sharpshot.sniper
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_sharpshot
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 4.8
+      motionScale: 1.35
+      windupSeconds: 0.5
+      defer: 1
+      vfx: cast-aura-sharpshot
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: sharpshot.sniper.overpen
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_sharpshot
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 5
+      motionScale: 1.45
+      windupSeconds: 0.5
+      defer: 1
+      vfx: cast-aura-sharpshot
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: sharpshot.volleyer
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.84705883, g: 0.7764706, b: 0.6039216, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_sharpshot
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.84705883, g: 0.7764706, b: 0.6039216, a: 1}
+      motionGlow: 2.2
+      motionScale: 0.8
+      windupSeconds: 0.25
+      defer: 1
+      vfx: cast-aura-sharpshot
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: berserker
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.8392157, g: 0.27058825, b: 0.18431373, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_berserker
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.8392157, g: 0.27058825, b: 0.18431373, a: 1}
+      motionGlow: 3
+      motionScale: 1.2
+      windupSeconds: 0.36
+      defer: 1
+      vfx: cast-aura-berserker
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: phalanx
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_phalanx
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3.9
+      motionScale: 1.1
+      windupSeconds: 0.38
+      defer: 1
+      vfx: cast-aura-phalanx
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: phalanx.lancer
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 1
+      punchAmount: 0.25
+      punchSeconds: 0.2
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_phalanx
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 4.1
+      motionScale: 1.25
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-phalanx
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: phalanx.lancer.deepthrust
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_phalanx
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 4.7
+      motionScale: 1.45
+      windupSeconds: 0.5
+      defer: 1
+      vfx: cast-aura-phalanx
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: phalanx.lancer.sarissa
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.4
+      punch: 1
+      punchAmount: 0.35
+      punchSeconds: 0.24
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_phalanx
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 4.8
+      motionScale: 1.6
+      windupSeconds: 0.52
+      defer: 1
+      vfx: cast-aura-phalanx
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 1
+      pulseGround: 0
+      bigImpact: 1
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: banneret
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.84705883, g: 0.7764706, b: 0.6039216, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_banneret
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.84705883, g: 0.7764706, b: 0.6039216, a: 1}
+      motionGlow: 2.6
+      motionScale: 1.3
+      windupSeconds: 0.4
+      defer: 1
+      vfx: cast-aura-banneret
+      projectileVfx: 
+      impactVfx: status-pop
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: banneret.herald
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 1, g: 0.90588236, b: 0.65882355, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_banneret
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.90588236, b: 0.65882355, a: 1}
+      motionGlow: 2.8
+      motionScale: 1.45
+      windupSeconds: 0.42
+      defer: 1
+      vfx: cast-aura-banneret
+      projectileVfx: 
+      impactVfx: status-pop
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 5
+      side: 0
+      byCause: 0
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 1
+      ability: banneret.warcaller
+      byWeapon: 0
+      weapon: 
+      byFlavor: 0
+      flavor: 1
+      flash: 1
+      flashColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.3
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: cast_generic
+      critSound: 
+      castSound: riser_banneret
+      motion: 0
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.654902, g: 0.56078434, b: 0.827451, a: 1}
+      motionGlow: 2.8
+      motionScale: 1.5
+      windupSeconds: 0.45
+      defer: 1
+      vfx: cast-aura-banneret
+      projectileVfx: 
+      impactVfx: status-pop
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Twin Daggers
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_dagger
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.1
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 3
+      motionScale: 0.85
+      windupSeconds: 0
+      defer: 1
+      vfx: nick-cross
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Officer's Sabre
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_sabre
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.13
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 3
+      motionScale: 0.95
+      windupSeconds: 0
+      defer: 1
+      vfx: slash-thin
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Temple Mace
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_mace
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.18
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1.1
+      windupSeconds: 0
+      defer: 1
+      vfx: slash-blunt
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Greataxe
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_axe
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.26
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9490196, b: 0.81960785, a: 1}
+      motionGlow: 3
+      motionScale: 1.35
+      windupSeconds: 0.1
+      defer: 1
+      vfx: slash-wide
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Tower Shield
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_shield
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.16
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1.15
+      windupSeconds: 0
+      defer: 1
+      vfx: shield-shove
+      projectileVfx: 
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Pike
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_pike
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 1
+      vfx: thrust-line
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Company Standard
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_standard
+      critSound: 
+      castSound: 
+      motion: 1
+      motionSeconds: 0.17
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.9098039, g: 0.8862745, b: 0.83137256, a: 1}
+      motionGlow: 3
+      motionScale: 1.05
+      windupSeconds: 0
+      defer: 1
+      vfx: pole-swipe
+      projectileVfx: 
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Longbow
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_arrow
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.15
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9529412, b: 0.8156863, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 1
+      vfx: 
+      projectileVfx: arrow-streak
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Matchlock Musket
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_musket
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.04
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.9647059, b: 0.8901961, a: 1}
+      motionGlow: 3
+      motionScale: 1.2
+      windupSeconds: 0
+      defer: 1
+      vfx: muzzle-flash
+      projectileVfx: smoke-line
+      impactVfx: impact-heavy
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Censer
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_censer
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.3
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.90588236, b: 0.65882355, a: 1}
+      motionGlow: 3
+      motionScale: 1
+      windupSeconds: 0
+      defer: 1
+      vfx: 
+      projectileVfx: censer-mote
+      impactVfx: 
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 0
+      chassis: 
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Ashwood Staff
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_staff
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.18
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.84705883, g: 0.7764706, b: 0.6039216, a: 1}
+      motionGlow: 3
+      motionScale: 0.95
+      windupSeconds: 0
+      defer: 1
+      vfx: 
+      projectileVfx: staff-wisp
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 1
+      chassis: pyromancer
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Ashwood Staff
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_staff
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.18
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 0.8862745, g: 0.34509805, b: 0.12156863, a: 1}
+      motionGlow: 3
+      motionScale: 0.95
+      windupSeconds: 0
+      defer: 1
+      vfx: 
+      projectileVfx: staff-wisp
+      impactVfx: impact-spark
+      groundVfx: 
+      hitAnim: 0
+      hitAnimMinT: 0.35
+      announce: 0
+      pulseGround: 0
+      bigImpact: 0
+    - eventKind: 2
+      side: 0
+      byCause: 1
+      cause: 1
+      byStatus: 0
+      status: 10
+      byRanged: 0
+      ranged: 1
+      byChassis: 1
+      chassis: cleric
+      byAbility: 0
+      ability: 
+      byWeapon: 1
+      weapon: Ashwood Staff
+      byFlavor: 0
+      flavor: 1
+      flash: 0
+      flashColor: {r: 1, g: 1, b: 1, a: 1}
+      critFlashColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      flashSeconds: 0.2
+      punch: 0
+      punchAmount: 0.25
+      punchSeconds: 0.18
+      number: 0
+      numberColor: {r: 1, g: 0.5019608, b: 0.4, a: 1}
+      critNumberColor: {r: 1, g: 0.8509804, b: 0.2509804, a: 1}
+      minAmount: 1
+      numberScale: 1
+      numberBand: 0
+      numberLife: 1
+      sound: hit_staff
+      critSound: 
+      castSound: 
+      motion: 2
+      motionSeconds: 0.18
+      motionPerHexSeconds: 0
+      motionMaxSeconds: 0
+      motionColor: {r: 1, g: 0.90588236, b: 0.65882355, a: 1}
+      motionGlow: 3
+      motionScale: 0.95
+      windupSeconds: 0
+      defer: 1
+      vfx: 
+      projectileVfx: staff-wisp
+      impactVfx: impact-spark
       groundVfx: 
       hitAnim: 0
       hitAnimMinT: 0.35

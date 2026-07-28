@@ -5,7 +5,8 @@ public methods instead of rebuilding project-specific logic in dynamic command s
 
 ## Stable bridge
 
-- `McpEnterPlayMode()` — start Play Mode.
+- `McpEnterPlayMode()` — set every existing Game/Simulator view to **Play Unfocused**, then start
+  Play Mode without disturbing the active Windows desktop.
 - `McpInspect()` — return the current skirmish flow/result and replay ending state.
 - `McpAdvanceSkirmish()` — press `BEGIN FIGHT`, or return from Result to Planning.
 - `McpSelectWeapon(heroIndex, weaponId)` — select a hero and issue the real Planning loadout
@@ -48,6 +49,10 @@ Syncthing tree because bulk captures should not travel back into the project.
   committed bridge and call a primitive-typed method.
 - The unattended Game View does not reliably free-run. Use `McpStepPlayMode()` instead of sleeps
   when a result or end-of-frame capture depends on Update.
+- Never foreground, raise, maximize, or focus Unity or its Game View from MCP. Keep the Game View
+  on **Play Unfocused**. The old synchronous compositor-pixel fallback is disabled because it
+  interrupted the active Windows desktop; if a background Game View capture stalls, use semantic
+  inspection or a camera/RenderTexture capture and report the UI screenshot as unverified.
 - Never sync/compile scripts during a Play Mode verification run. A domain reload can preserve
   scene objects while wiping code-built, nonserialized UI state, producing convincing but invalid
   partial captures. Stop Play Mode, refresh, and restart from Preview after any source change.

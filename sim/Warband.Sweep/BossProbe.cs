@@ -35,13 +35,14 @@ public static class BossProbe
     // Formations, answer axes and the party-size curve are shared with `--enc`
     // (ProbeParties) so the two instruments can never describe two different players.
 
-    public static void Run()
+    public static void Run(bool includeCandidates = false)
     {
+        ProbeParties.IncludeCandidates = includeCandidates;
         var report = new StringBuilder();
         report.AppendLine("# Boss probe — the act bosses as strength exams");
         report.AppendLine();
         report.AppendLine($"{ProbeParties.Formations.Length} formations × {SeedsPerArrangement} seeds, " +
-                          $"{ProbeParties.Axes.Length} answer-axis parties, each sized to its act " +
+                          $"{ProbeParties.Active.Length} answer-axis parties, each sized to its act " +
                           "(rank C→A, forked from act 2). " +
                           "Crit is the sim's only RNG, so seeds are the whole distribution.");
         report.AppendLine();
@@ -82,7 +83,7 @@ public static class BossProbe
 
     /// <summary>Every axis measured against one act's boss, once — so the markdown report and the
     /// committed baseline render the same numbers instead of re-running the fights.</summary>
-    public static List<ProbeParties.AxisResult> Collect(int act) => ProbeParties.Axes
+    public static List<ProbeParties.AxisResult> Collect(int act) => ProbeParties.Active
         .Select(a => ProbeParties.Across(a.Axis, slots => Measure(act, a.Party, slots)))
         .ToList();
 

@@ -356,6 +356,7 @@ internal sealed class CardModel
     public string AbilityName = "";
     public string AbilitySummary = "";
     public string InspectorAbilitySummary = "";
+    public int AbilityManaCost = -1;
     public string PassiveIcon = "";
     public string PassiveTrigger = "";
     public string PassiveName = "";
@@ -373,9 +374,11 @@ internal sealed class CardModel
     public bool Frozen;
     public List<StatChipModel> Stats = new List<StatChipModel>();
     public List<string> Tags = new List<string>();
+    public List<WarbandSpecBadgeModel> Traits = new List<WarbandSpecBadgeModel>();
     public string ComparisonTitle = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
     public List<ChoicePreviewModel> ChoicePreviews = new List<ChoicePreviewModel>();
+    public RankUpDetailModel RankUpDetail;
 }
 
 internal enum HallActionId
@@ -399,6 +402,7 @@ internal sealed class InspectorActionModel
     public HallActionId Id;
     public string Label = "";
     public int CurrencyCost = -1;
+    public string CurrencySuffix = "";
     public int CurrencyBalance = -1;
     public bool CurrencyGain;
     public bool Primary;
@@ -437,11 +441,20 @@ internal sealed class InspectorSectionModel
     public string Icon = "";
     public string Name = "";
     public string Summary = "";
+    public UiGlyphId LabelGlyph = UiGlyphId.Unknown;
+    public string LabelValue = "";
     public int CapacityBefore;
     public int CapacityAfter;
     public int CapacityMax;
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
     public List<ChoicePreviewModel> Choices = new List<ChoicePreviewModel>();
+}
+
+internal enum SpecRuleContext
+{
+    Passive,
+    BasicAttack,
+    Signature,
 }
 
 /// <summary>Progressive disclosure for the selected card. Cards compare; this panel explains.</summary>
@@ -460,6 +473,7 @@ internal sealed class InspectorModel
     public string AbilityTrigger = "";
     public string AbilityName = "";
     public string AbilitySummary = "";
+    public int AbilityManaCost = -1;
     public string PassiveIcon = "";
     public string PassiveTrigger = "";
     public string PassiveName = "";
@@ -472,12 +486,53 @@ internal sealed class InspectorModel
     public int CurrencyBalance = -1;
     public List<StatChipModel> Stats = new List<StatChipModel>();
     public List<string> Tags = new List<string>();
+    public List<WarbandSpecBadgeModel> Traits = new List<WarbandSpecBadgeModel>();
     public List<string> KeywordNotes = new List<string>();
     public List<InspectorActionModel> Actions = new List<InspectorActionModel>();
     public string ComparisonTitle = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
     public List<ChoicePreviewModel> ChoicePreviews = new List<ChoicePreviewModel>();
     public List<InspectorSectionModel> Sections = new List<InspectorSectionModel>();
+    public EquipmentPreviewModel EquipmentPreview;
+    public RankUpDetailModel RankUpDetail;
+}
+
+internal enum RankTierSlotState
+{
+    Selected,
+    Pending,
+    Locked,
+}
+
+/// <summary>One durable specialization tier in the C → B → A → S hero progression.</summary>
+internal sealed class RankTierSlotModel
+{
+    public string Rank = "";
+    public RankTierSlotState State = RankTierSlotState.Locked;
+    public string Icon = "◇";
+    public string Name = "";
+    public string Rule = "";
+    public string Accent = "";
+}
+
+/// <summary>
+/// Typed one-page projection for the rank-up decision. The generic dossier section/page model
+/// cannot represent this without splitting one purchase decision into implementation pages.
+/// </summary>
+internal sealed class RankUpDetailModel
+{
+    public string CurrentRank = "";
+    public string NextRank = "";
+    public List<RankTierSlotModel> Tiers = new List<RankTierSlotModel>();
+    public List<ChoicePreviewModel> Options = new List<ChoicePreviewModel>();
+}
+
+internal enum DeltaDirection
+{
+    Positive,
+    Negative,
+    Neutral,
+    Contextual,
 }
 
 internal sealed class StatComparisonModel
@@ -486,6 +541,41 @@ internal sealed class StatComparisonModel
     public string Before = "";
     public string After = "";
     public string Tone = "";
+    public DeltaDirection Direction = DeltaDirection.Neutral;
+    public string Explanation = "";
+}
+
+internal sealed class RuleDeltaModel
+{
+    public string RuleName = "";
+    public string ShortSummary = "";
+    public string FullDescription = "";
+    public string Icon = "◇";
+    public bool Applies = true;
+}
+
+internal sealed class RecipientPreviewModel
+{
+    public string HeroKey = "";
+    public string DisplayName = "";
+    public string PortraitResource = "";
+    public string PortraitFallback = "";
+    public string RankText = "";
+    public string CurrentItemName = "";
+    public bool IsEligible = true;
+    public string IneligibleReason = "";
+    public bool IsSelected;
+}
+
+internal sealed class EquipmentPreviewModel
+{
+    public string OfferedItemName = "";
+    public string SelectedRecipientHeroKey = "";
+    public string CurrentItemName = "";
+    public List<RecipientPreviewModel> Recipients = new List<RecipientPreviewModel>();
+    public List<StatComparisonModel> StatDeltas = new List<StatComparisonModel>();
+    public RuleDeltaModel LostRule;
+    public RuleDeltaModel GainedRule;
 }
 
 internal sealed class ChoicePreviewModel
@@ -493,6 +583,7 @@ internal sealed class ChoicePreviewModel
     public string Change = "";
     public string Name = "";
     public string Rule = "";
+    public string Accent = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
 }
 
@@ -518,6 +609,7 @@ internal sealed class PartySlotModel
     public string Weapon = "";
     public string Trinket = "";
     public bool Focused;
+    public bool Previewed;
 }
 
 internal sealed class StoredItemSummaryModel
@@ -572,6 +664,7 @@ internal sealed class WarbandEquipmentModel
     public bool Transferable;
     public bool Selected;
     public bool ValidTarget;
+    public List<StatChipModel> Facts = new List<StatChipModel>();
 }
 
 internal sealed class WarbandSpecBadgeModel
@@ -581,6 +674,7 @@ internal sealed class WarbandSpecBadgeModel
     public string Name = "";
     public string Rule = "";
     public string Accent = "";
+    public SpecRuleContext Context = SpecRuleContext.Passive;
 }
 
 internal sealed class WarbandHeroModel
@@ -716,6 +810,13 @@ internal sealed class ResultGateModel
     public bool CanWatchAgain;
     public List<ResultStatModel> Stats = new List<ResultStatModel>();
     public List<string> Deaths = new List<string>();
+
+    /// <summary>The post-fight charts. This is the one model here that is a Warband.Sim type,
+    /// and it qualifies for the same reason the rest of this file is plain: CombatRecap IS a
+    /// view-model — a fold over the event log with its strings already hydrated through
+    /// Lexicon — not live battle state. Re-declaring its four rows client-side would move
+    /// tested arithmetic into an untestable assembly. Null until a fight resolves.</summary>
+    public Warband.Sim.CombatRecap Recap;
 }
 
 /// <summary>
@@ -780,6 +881,7 @@ internal sealed class TierChoiceModel
     public string Name = "";
     public string Risk = "";
     public string Reward = "";
+    public int CurrencyReward = -1;
     public bool Selected;
 }
 
@@ -815,21 +917,25 @@ internal sealed class ShopOfferModel
     public bool Sold;
 }
 
-/// <summary>The 1-of-2 rank-up choice. Blocking: while pending, every other shop action is
-/// refused by the run layer, so the view must present it as a modal, not a side panel.</summary>
+/// <summary>One card in a rank-up offer. Index is the argument to RunController.ChooseSpec.</summary>
+internal sealed class SpecOptionModel
+{
+    public string Name = "";
+    public string Text = "";
+    public string Change = "";
+    public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
+}
+
+/// <summary>The rank-up choice. Blocking: while pending, every other shop action is
+/// refused by the run layer, so the view must present it as a modal, not a side panel.
+/// Options is however many the run layer drew — views must render the list, never assume
+/// two, because a non-fork rank draws a subset of a pool that may be wider.</summary>
 internal sealed class SpecChoiceModel
 {
     public bool Pending;
     public string HeroName = "";
     public string RankLabel = "";
-    public string OptionAName = "";
-    public string OptionAText = "";
-    public string OptionAChange = "";
-    public List<StatComparisonModel> OptionAComparisons = new List<StatComparisonModel>();
-    public string OptionBName = "";
-    public string OptionBText = "";
-    public string OptionBChange = "";
-    public List<StatComparisonModel> OptionBComparisons = new List<StatComparisonModel>();
+    public List<SpecOptionModel> Options = new List<SpecOptionModel>();
 }
 
 internal sealed class ShopModel

@@ -602,9 +602,50 @@
     justify-content: space-between;
 }
 
+.wager-topbar > .management-track {
+    min-width: 0;
+}
+
+.wager-topbar__commands {
+    min-width: 500px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.wager-topbar__hourstone {
+    min-width: 104px;
+    min-height: 50px;
+    margin-right: 12px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(45, 34, 16, 0.88);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.62);
+    border-right-color: rgba(217, 164, 58, 0.62);
+    border-top-color: rgba(217, 164, 58, 0.62);
+    border-bottom-color: rgba(217, 164, 58, 0.62);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.wager-topbar__currency .currency-amount__icon {
+    width: 24px;
+    height: 24px;
+}
+
+.wager-topbar__currency .currency-amount__value {
+    font-size: 22px;
+}
+
 .wager-topbar__eyebrow {
     color: rgb(244, 184, 76);
-    font-size: 10px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
@@ -613,14 +654,14 @@
     flex-grow: 1;
     min-height: 0;
     align-items: center;
-    padding-top: 40px;
+    padding-top: 28px;
     padding-left: 60px;
     padding-right: 60px;
 }
 
 .wager-beat {
     color: rgb(116, 175, 246);
-    font-size: 12px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 3px;
 }
@@ -653,7 +694,7 @@
 
 .wager-card {
     width: 400px;
-    height: 380px;
+    height: 340px;
     margin-left: 12px;
     margin-right: 12px;
     padding-left: 26px;
@@ -696,7 +737,7 @@
 
 .wager-card__ordinal {
     color: rgb(131, 150, 176);
-    font-size: 10px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
@@ -717,15 +758,35 @@
 
 .wager-card__reward {
     margin-top: 30px;
+    min-height: 34px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.wager-card__reward-amount .currency-amount__icon {
+    width: 25px;
+    height: 25px;
+}
+
+.wager-card__reward-amount .currency-amount__value,
+.wager-card__reward-copy {
     color: rgb(244, 184, 76);
     font-size: 25px;
     -unity-font-style: bold;
 }
 
+.wager-card__reward-suffix {
+    margin-left: 9px;
+    color: rgb(178, 194, 216);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
 .wager-card__action {
     margin-top: auto;
     color: rgb(127, 181, 247);
-    font-size: 13px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
@@ -752,7 +813,7 @@
 .wager-disclosure__label {
     margin-right: 18px;
     color: rgb(116, 175, 246);
-    font-size: 10px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
@@ -760,37 +821,33 @@
 .wager-disclosure__copy {
     flex-grow: 1;
     color: rgb(179, 195, 217);
-    font-size: 14px;
+    font-size: var(--ui-type-body);
     white-space: normal;
 }
 
-.wager-footer {
-    height: 98px;
-    flex-direction: row;
-    align-items: center;
-    padding-left: 34px;
-    padding-right: 34px;
-    border-top-width: 1px;
-    border-top-color: rgba(83, 103, 133, 0.5);
-    background-color: rgba(11, 16, 24, 0.99);
-}
-
-.wager-footer__hint {
-    flex-grow: 1;
-    -unity-text-align: middle-center;
-    color: rgb(146, 164, 188);
-    font-size: 13px;
-}
-
 .wager-back {
-    min-width: 210px;
+    min-width: 112px;
     min-height: 52px;
+    margin-right: 10px;
 }
 
 .wager-continue {
-    min-width: 300px;
-    min-height: 58px;
-    font-size: 16px;
+    min-width: 260px;
+    min-height: 54px;
+    font-size: var(--ui-type-body);
+}
+
+.layout--narrow .wager-card {
+    width: 31%;
+    min-width: 0;
+    margin-left: 1%;
+    margin-right: 1%;
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.layout--phone .wager-card__risk {
+    min-height: 52px;
 }
 
 /* ---- deployment readability --------------------------------------------- */
@@ -813,12 +870,12 @@
 .deploy-header .body-copy {
     margin-top: 5px;
     color: rgb(203, 214, 230);
-    font-size: 15px;
+    font-size: var(--ui-type-body);
 }
 
 .deploy-header .card-role {
     margin-top: 8px;
-    font-size: 13px;
+    font-size: var(--ui-type-meta);
 }
 
 .deploy-rail {
@@ -851,11 +908,11 @@
 }
 
 .deploy-chip .card-role {
-    font-size: 12px;
+    font-size: var(--ui-type-meta);
 }
 
 .deploy-chip .stat-chip__label {
-    font-size: 8px;
+    font-size: var(--ui-type-meta);
 }
 
 .deploy-chip .stat-chip__value {
@@ -873,19 +930,19 @@
 }
 
 .deploy-enemy .eyebrow {
-    font-size: 12px;
+    font-size: var(--ui-type-meta);
 }
 
 .deploy-enemy .card-body {
     margin-top: 8px;
     color: rgb(209, 219, 233);
-    font-size: 14px;
+    font-size: var(--ui-type-body);
 }
 
 .deploy-enemy .body-copy {
     margin-top: 12px;
     color: rgb(196, 210, 228);
-    font-size: 14px;
+    font-size: var(--ui-type-body);
 }
 
 .deploy-bar {
@@ -934,7 +991,7 @@
     border-top-right-radius: 6px;
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
-    font-size: 12px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
@@ -953,4 +1010,11 @@
 
 .fight-inspector-modal {
     height: 850px;
+}
+
+/* Copy expansion is part of the layout contract, including forced-phone landscape captures.
+   Give the risk line two body-text rows on every form factor instead of relying on card slack. */
+.wager-card__risk {
+    min-height: 52px;
+    flex-shrink: 0;
 }

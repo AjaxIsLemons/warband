@@ -33,15 +33,20 @@ Jake's to judge; the value is one F1 slider away from any other answer.
 tell, render-only, plus an `overtime` fixture so the thing can be seen at all. Root cause was worse
 than "no clock": storm damage inherited a tell row with `minAmount: 5` while the ramp starts at 1,
 so the first 12 s of overtime drew *nothing*. **One edit-mode capture still owed** (see item 11).
+**2b. ~~Sim/render audit — the three cheap wins.~~ BUILT 2026-07-27** (`Design/sim-render-audit.md`,
+items A/C/D of its ranked arc, Jake's selection). `camera.fov` is a tuning field at last · the cast
+sigil now outlives its own payoff instead of closing at it · status flashes fire on ONSET, not on
+every re-application. All three are F1-revertible. **The measurement is the deliverable**: the audit
+also priced the framing question and found the *board shape* caps it, which is item 22.
 **3. JAKE'S VERIFY PASS (item 1). ← NEXT, AND IT IS YOURS.** Both cheap feel wins have landed, so
-the pass now judges a build with the balloon halved and the storm visible.
-**4. Item 1c — THE COMBAT RECAP. ← Jake, 2026-07-27, ranked ABOVE 5a.** A comprehensive, polished
-post-fight report: per-unit contribution bars, the five-way damage composition, and a death
-timeline. The result gate is three stat rows and three death lines today, and there is **no graph
-anywhere in the client** — while the sim already computes and tests a full recap the UI throws away.
-So it is a UI job over existing data. It also precedes 5a for a reason: **a recap that shows why a
-build worked is what makes collecting Inscriptions worth doing** — ship the legibility, then ship
-the engine it explains.
+the pass now judges a build with the balloon halved, the storm visible, the sigils held, and the
+status strobe down ~26% in a cast-heavy fight.
+**4. ~~Item 1c — THE COMBAT RECAP.~~ BUILT 2026-07-27** — contribution bars, damage composition
+and death timeline all ship, folded in `Warband.Sim/CombatRecap.cs` (8 headless tests) and drawn
+by a client that computes nothing. The client's **first graph of any kind**. Composition reads
+every `Cause`, not the harness's five, so Counter and Trigger get slices — that is the
+*"why did my build work"* chart ADR 0016 wants. **Pixels unseen** (Play-Mode-only surface); the
+capture path is one menu command and its fixture no longer passes vacuously. See item 1c.
 **5. Item 5a — the Inscription engine layer. ← SET BY THE 2026-07-27 ROADMAP REVIEW (Jake).**
 The review measured the build against its own budget and found one large gap: **Inscriptions are at
 5 of 24**, and that is the layer ADR 0016's north star — *compounding builds that feel like they
@@ -105,8 +110,61 @@ the launcher are all real; **what is thin is the reason to replay it.**
 1b. **Hall polish slices** — **VERIFY/BUILD.** Foundation built and Unity-verified.
     Four named slices open: final Bind choreography · Rule Preview diagrams · real-device
     safe-area/finger/haptic pass · live audio/motion feel tune. `Design/hall-polish.md`.
-1c. **THE COMBAT RECAP — a comprehensive, polished post-fight report.** — **SPEC'D. RANKED ABOVE 5a
-    BY JAKE, 2026-07-27** (*"a comprehensive and polished combat recap, with graphs and such"*).
+1e. **Responsive Workbench correction pass** — **BUILT + VERIFIED.**
+    Jake's 2556×1317 capture found visible command-text escapes, an art-starved always-compact
+    Market, and Rank Up split across three redundant internal pages despite a 57/57 structural
+    report. Root causes and two one-screen corrections are in
+    `docs/ui-reviews/outbox/responsive-ui-v1/`; `01-one-page-choices-r1.png` approved 2026-07-27.
+    Focused build complete: typed one-page Rank Up, B/A/S tier ladder + tooltips, contextual
+    inline trait labels, visible Market art, independent responsive axes, TextElement/button
+    layout checks, semantic diagnostics, and B/A/S fixtures. The reported pending-fork crash
+    (`sharpshot|A|-`) is guarded in both the run projection and Workbench action state, with an
+    exact live-controller regression. Headless smoke **15/15 PASS** at 1280×720 + 1600×900.
+    Full matrix **82/82 PASS** across 1024/1280/1600/2556/3440, expanded-copy, phone, Armory,
+    tooltip, route, and rotation states; final captures reviewed under
+    `client/TempCaptures/ui-qa/20260727-191233/`. Semantic follow-up complete: authored glossary
+    concepts now become themed hover targets inside their rule sentence (`Gain 1 Riposte`) instead
+    of consuming a detached keyword row. A dedicated Workbench-only full runner keeps this surface
+    independently verifiable; its post-migration matrix is **65/65 PASS** with no scrolling or
+    content/action overlap under `client/TempCaptures/ui-qa/20260727-202843/`.
+1c. **THE COMBAT RECAP — a comprehensive, polished post-fight report.** — **BUILT 2026-07-27,
+    PIXELS UNSEEN.** All three approved charts ship; what is missing is a look at them.
+    **Built:** `Warband.Sim/CombatRecap.cs` — the fold from `FightSummary` to the exact rows,
+    segments and marker positions the panel draws (contribution · composition · timeline), with
+    **8 headless tests** (`CombatRecapTests`). `CombatRecapPanel.cs` + `CombatRecapStyles.uss`
+    draw it and compute nothing; `RunShell` builds it at the existing `FightSummary.Build` call
+    site; TOP DAMAGE is gone, replaced by a bar for every hero.
+    **Why the fold lives in the sim:** a chart fails in arithmetic (shares that don't sum, a bar
+    normalised to the wrong denominator, a zero-tick fight dividing by zero), and arithmetic is
+    testable headlessly while a Unity panel is not.
+    **Two decisions worth keeping:** ① the bar is normalised to the LEADER while the number is
+    the share of the TEAM — six even contributors would otherwise each draw a 17% stub;
+    ② composition reads `UnitSummary.ByCause`, not the harness's five-way split, so **Counter and
+    Trigger get their own slices** — measured on the act-3 boss, the CONTROL axis reads
+    Attack 65 / Ability 19 / **Counter 9 / Trigger 8** where DAMAGE reads Attack 92. That
+    difference IS the "why did my build work" chart.
+    **The cleric case is handled:** a support hero shows `0 · 0%` damage, so the row carries one
+    secondary fact and healing leads it — measured 2093 healed on a real fight, which is the
+    difference between "did nothing" and "kept everyone alive".
+    **Verified:** 485 tests green (268 sim + 217 run) · `make check-client` 0 errors · a second
+    compile with `DEVELOPMENT_BUILD` defined to cover the editor-only fixture · `make baseline`
+    **byte-identical**, fingerprint `3dba11673c26e858` unchanged — the recap changed no fight.
+    Numbers eyeballed end-to-end on real act-3 boss fights across all four probe axes (ASCII
+    render of the same fold).
+    **NOT verified: a single pixel.** The gate only exists in Play Mode. **The path is already
+    built and is one menu command:** `Warband/UI QA/Run Responsive Full Matrix` covers surface
+    `result` at `result-nominal` + `result-phone`. Its fixture carried **no recap**, so it would
+    have passed vacuously — that is now `CombatRecapPanel.EditorFixture()`, deliberately the worst
+    plausible case (a four-digit heal on a zero-damage hero, a name long enough to need its
+    ellipsis, five composition slices, clustered deaths, the Waning on the track) so
+    `UiLayoutContract` gates something real. New contracts added to
+    `ResultGateView.EditorResolvedLayoutReport`; **height on phone is the live risk** — the panel
+    is contract-bound not to scroll.
+    **Deliberately still text:** the three death lines stay under the timeline. The track shows
+    *when* the fight turned, the lines show *what* happened. If that reads as redundant in the
+    play pass, deleting them is one line.
+    **Original spec below.** — **RANKED ABOVE 5a BY JAKE, 2026-07-27**
+    (*"a comprehensive and polished combat recap, with graphs and such"*).
     **Rescoped from "fight comprehension UI"**, which read as a Phase 4 leftover — two words,
     "damage chart" — and would never have produced what was actually asked for.
     **There are TWO post-fight surfaces and the board used to treat them as one:**
@@ -250,9 +308,23 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     tick 900, 7 at tick 1082) and its `M:SS` agrees with the toolchain's own 108.3 s · **all 10
     pre-existing replays regenerated byte-identical**, which also independently proves Codex's
     uncommitted `Scenarios.cs` change is behaviour-preserving.
-    **NOT seen.** `BuildPreview(tick)` routes through `LayoutStory(true)` → `LayoutWaning`, so a
-    capture at tick ~950 verifies the clock in edit mode **without Play Mode** — do that first when
-    the Unity lock frees. The feel (does it read? is it in the way?) is Jake's.
+    **⚠ THE OWED CAPTURE WAS TAKEN 2026-07-27, AND IT FOUND A BUG — in the capture path itself.**
+    The instruction here used to read *"`BuildPreview(tick)` routes through `LayoutStory(true)` →
+    `LayoutWaning`, so a capture at tick ~950 verifies the clock in edit mode"*. **It does not.**
+    `LayoutWaning` reads `Mathf.FloorToInt(_clock)` — the PLAYHEAD, in ticks — and
+    `BuildLoadedPreview` set the fold to the requested tick but **never moved the playhead**. So
+    every frozen capture computed `tick = 0` and drew a flat **`0:00`** no matter what was
+    previewed: at tick 950, fifty ticks into the storm, the clock read `0:00`.
+    Play Mode was always correct (`Update` advances `_clock`); it is the *verification* path that
+    could not tell the truth — which is the path every check in this project runs through, so the
+    blast radius is wider than this one clock.
+    **Fixed:** `_clock = tick` in `BuildLoadedPreview`. Hand-checked against the formula
+    (t=700 → `1:10` · t=800 → `THE WANING IN 0:10` · t=950 → `THE WANING — 2/TICK`).
+    **STILL NOT SEEN.** Unity could not reload assemblies to pick the fix up: Codex's in-flight
+    `Assets/Editor/WarbandMixerTools.cs` fails with `CS0122: 'SfxPlayer' is inaccessible` — the
+    documented Assembly-CSharp-Editor-cannot-see-`internal` trap in this file's own gotcha list —
+    and one failing assembly blocks the whole reload. **Re-run the overtime capture at t=800/950
+    once that compiles; it is now a two-minute job.** The feel is still Jake's.
 
 ### P3 — settled laws the build does not yet keep
 12. **Enemy disclosure stops short of the deep inspector.** — **partly addressed.**
@@ -343,6 +415,199 @@ numbers are load-bearing references, so finished items leave a hole rather than 
     already serialises (item 7) and every fight is re-simulable from (seed, snapshots,
     contentVersion), so a per-run outcome line appended locally is most of it. Settle **what to
     record and how it comes back** before friends play, not after.
+
+### New 2026-07-27 (from the sim/render audit — `Design/sim-render-audit.md`; Jake picked B, E, G, H)
+20. **The passive layer has no renderer** (audit headline **B**) — **BUILT 2026-07-27. VERIFY:
+    machine-gated green, never watched** (Unity lock held by Codex all session).
+    `Design/passive-legibility.md` has the research, the laws and the measured cost.
+    **What it was:** `StatRule` — the read-time conditional stats that ARE the passives (Full Draw,
+    Burning Hours, Grudgekeeper) — emitted **no event, ever**, and `Trigger` emitted anonymous
+    echoes. ADR 0016's north star was the one layer with zero visual representation.
+    **What shipped:** rule identity stamped automatically at composition from the contributing
+    content (`Loadout.AddRules`), so **new content is identified the day it is authored** — plus
+    `D.Named()` for authored enemies/bosses and `Catalog.Identify` for banners. Two appended
+    EventKinds (`TriggerFired`, `RuleChanged`), a per-tick StatRule transition sweep, replay **v6**
+    carrying the rule table, `ActiveRules` on the fold, and a `byRule` tell filter at +2 specificity
+    with two fallback rows. **Zero unnamed rules across every fixture.**
+    **⚠ THE INVARIANT WORTH KEEPING:** presentation events are dropped in the drain loop *before*
+    they spend cascade budget or scan a trigger — so they are **structurally incapable** of changing
+    a fight, not merely tested not to. Proof: `make baseline` byte-identical over 129 metrics and
+    the content fingerprint still `3dba11673c26e858` (no save invalidated — `RuleId` is deliberately
+    NOT hashed, because the fingerprint exists to catch a retune, not a rename).
+    **Cost, measured:** `TriggerFired` runs 1.4–7.1/s raw against a ~21/s budget, so
+    `fx.passiveOnsetSeconds` (2.5 s) rations repeats — a passive firing every swing is the engine
+    running, not news. Net across 11 fixtures **+5.2%**, and it landed where there was room:
+    castfest **20.8 → 18.1/s (−13%)**, wallfort 5.7 → 7.1/s.
+    **Open:** the `RuleChanged` badge is a transition pulse, not yet a persistent rim while live —
+    the fold has the state, so that is a `StatusIconRow`-shaped follow-on best paired with item 21.
+    **Still lands with item 5a** — Inscriptions compile to the same `Trigger` atom, so they are
+    already covered by this and arrive nameable.
+21. **The in-fight hover card is three bars** (audit headline **E**) — **BUILT 2026-07-27. VERIFY:
+    the card exists ONLY in Play Mode, so no session can ever see it — Jake-only, full stop.**
+    The card now carries: the identity line (chassis · signature · weapon + temper) · HP/Shield/Mana
+    · the placement facts (reach, cadence and step in SECONDS, crit, "swings heal") · **the targeting
+    rule** ("Acquires the FARTHEST enemy, holds 5 hexes") · **the passive roster, with conditional
+    ones marked LIVE or idle** off `ActiveRules` · statuses by Lexicon name rather than enum name.
+    **This is where item 20's persistent-state half landed** — a passive coming online is now
+    readable, not just a flash you had to be watching for.
+    **Wire cost:** the item claimed `PlaybackUnit` already carried everything; it did not. Targeting
+    (`TargetPref`/`Standoff`) and each unit's span in the rule table are new → **replay v7**, all 11
+    fixtures regenerated. Both are hashed into `HashView`, which is what makes the round-trip check
+    prove the wire carries them — and that immediately caught a real ordering bug: `BuildRuleTable`
+    ran AFTER the tick-0 snapshot, so every fight's first tick disagreed with the fold.
+    **Copy:** `ContentLexicon.Rule(id)` is the single resolver for every id shape the composer emits
+    (spec node · chassis · weapon · `weapon/mastery` · `banner.*` · authored enemy/boss · `#2`), and
+    `RuleCopyTests` is the CI contract that **no raw id can reach a player-facing card** — 321 rules
+    across all 8 chassis × their nodes at Relic+mastered, positive-controlled.
+    **Closes item 12's "deeper inspector on an enemy"** — enemies use the same card, and their
+    authored rules (Ward, the Bell, the Bond, Death-fed…) are all named.
+    **Open:** an ON-BODY mark for a live passive, so it reads without hovering (the fold has it).
+22. **The board is square, and that is what caps the camera** (audit headline **G**) — **DESIGN.**
+    6 cols × 8 rows is **0.91 : 1**, and a frontally-framed board fills 16:9 only when
+    `width/depth = 1.78 × sin(pitch)` — so 0.91 is optimal at **pitch 31°**, which still stacks
+    ~2.3 rows of unit UI on itself. **The shape mathematically forbids a pitch high enough to be
+    readable**; a pitch/distance sweep found no setting that unstacks the rows without shrinking the
+    units. **8 × 8 at ~45° measures 98% frame fill AND 1.37 rows of overlap** — the only point that
+    does both. Costs +16 hexes: `Battle.InBounds`, `Pathing.Cells`, every authored formation, every
+    deployment fixture. **Justify on framing, measure for balance (`make baseline` before/after) —
+    not the reverse.** The rhombus is NOT the answer: yaw costs frame area (55% at today's 13°
+    vs 83% at yaw 0), it does not buy any.
+    (Audit headline **H** = the combat recap, already ranked as **item 1c** — no new item.)
+
+23. **A whole sensory channel ships at zero — and the tooling that would fix it does not exist**
+    (audit headline **F**) — **BUILD (steps 0–2), researched + planned 2026-07-27 →
+    `Design/audio.md`.** A measurement pass over all 35 clips replaces "the stings were bad" with
+    three separable, measurable defects. **UI:** 14 of 18 clips carry **0.5–1.0 s** of continuous
+    audible content (a click is 40–120 ms; `route_1` is a full second for *moving a resource*), the
+    level spread across the set is **20 dB** (`error_1` at −20.7 dBFS is the quietest thing in it,
+    seating a unit at −0.0 the loudest), and crest runs 13.7→32.9 dB so nothing binds the set into
+    one instrument. `commit_1` starts **157 ms** late — audible input lag. **Board:** 27 sound ids
+    referenced, **17 clips exist** (the whole per-weapon `hit_*` layer is authored and mute),
+    `riser_cleric` starts 156 ms late so the windup cue lands *after* the windup, and
+    `ReplayPlayer.PlaySfx` is **one `AudioSource` + `PlayOneShot`** — unbounded overlap at one
+    priority, so at the measured **~9.6 sound onsets/s** Unity culls a `death` sting *by audibility*
+    in favour of Burn ticks. **No `AudioMixer` asset exists in the project**, so item 9's sliders
+    have nothing to drive. **Root cause is process, not taste:** the gate that "passed structural
+    validation" (`hall-polish`) checked that files *imported* — never onset/length/level/crest — so
+    a regenerated batch has no reason to beat this one. **Headline finding: length beats voice
+    management.** Cutting impacts 0.8 s → 0.2 s takes sustained concurrency ~8 voices → ~2.
+    Plan: two policies over one substrate (ported subset of Shoota's `SfxPlayer`; **no FMOD/Wwise**,
+    **no `AudioRandomContainer`** — it is an editor asset per family and fights JSON hot-reload)
+    plus the missing `sfxlint` / `sfxbake` / audition-sheet tooling.
+    **Jake decided 2026-07-27:** build steps 0–2 now (D5) · **cut** the Hall ambience bed (D1) ·
+    **collapse** the 11 per-weapon impacts to ~5 material families (D3). D2 (re-bake vs regenerate)
+    and D4 (combat bed) answer themselves off the audition sheet.
+    **STEPS 0–2 BUILT 2026-07-27** — `tools/sfx/sfx.py` (measure/lint/bake/sheet/density) +
+    `families.json` + five `make sfx-*` targets. **28/28 clips baked and passing**; UI ticks land at
+    **41–51 ms** with ~1 ms onset, and the set now sits in a **±2 dB** window where it spanned 20 dB
+    (`error` alone went −20.7 → −4.0 dBFS). Only **3** clips are genuinely missing after the D3
+    collapse, down from 10. Working files are under `docs/audio/`, **deliberately outside
+    `client/Assets/`** so Unity never imports them; **`Resources/` was not touched, so the game is
+    bit-identical** — promotion is step 5, with the code change that renames the families.
+    **ENDINGS PASS 2026-07-27** — Jake reviewed: *"much better than before … overall massive
+    improvement"*, one defect: *"some def end really abruptly."* Measured it: **12 of 28 clips were
+    cut while still near full amplitude** (`riser_phalanx` at **−3.0 dB**) with the same 12 ms fade.
+    Two causes — ① one fade served two different endings (natural decay vs cap truncation), now split
+    into `fadeOutMs` 12 ms linear and `releaseMs` 60–160 ms **exponential**, inside the length budget
+    so density is untouched; ② **the caps were a board law applied to surfaces with no density
+    problem** — `bind`/`major`/`error` are once-per-interaction and `riser_*` is a one-per-cast
+    windup that §5.2.3 says *should* be long. Raised those, held every family that repeats. Cost:
+    concurrency 4.9 → 5.5, well inside the per-bus caps. **28/28 pass; every clip now ends ≤ −34 dB.**
+    Two tool bugs found by verifying rather than assuming: truncation detection was a **one-sample
+    coin flip** on zero crossings (`cast_generic` missed by one and shipped gated), and the dead-tail
+    threshold must stay **peak-relative** — the shipped padding is low-level noise, not silence
+    (`select_1`: 820 ms of tail at −34 dB rel., but only 20 ms at −60 dBFS), so an absolute floor
+    would score the worst clip in the set as clean.
+    **STEP 3 BUILT 2026-07-27, compile-verified headless.** `Scripts/Warband/SfxPlayer.cs` — 24-voice
+    pool, five buses (`Ui`/`Decisive`/`Cast`/`Impact`/`State`), priority ladder, **per-bus caps so a
+    dense class steals from itself rather than crowding another**, same-id coalescing ("bigger, not
+    more"), and the duck envelope. Plus `Editor/WarbandMixerTools.cs` →
+    `Warband/Audio/Create Game Mixer`, reflection over the internal `AudioMixerController` because a
+    `.mixer` **cannot be authored through any public API** (approach proven in Shoota). Bus tree puts
+    `Decisive` as a SIBLING of the ducked group, so death/crit ride over the duck — and `Ducked` has
+    to exist as an intermediate bus at all because **a mixer param can only be exposed once**, so
+    `BoardVol` and `BoardDuck` cannot share a group. Both files are NEW (no collision).
+    **Not wired yet — dead code until step 4/5 call it.** Verified by compiling against real Unity
+    reference assemblies on homeserv (0 errors); the editor script is syntax-clean but type-checks
+    only inside Unity.
+    **STEP 4 BUILT 2026-07-27** (once Codex released the lock). `UiAudioDirector` is now a ~90-line
+    cue→family adapter over `SfxPlayer`. Hover/tooltip/projection silent · 10 families → 6 · ambience
+    bed, its duck, both synthesizers and the hover cooldown deleted, with the dead
+    `hoverCooldownMs`/`ambienceVolume`/`commitDuck` config removed from C# *and* `HubPresentation.json`.
+    **New law:** an unmapped *cue* is silent (the old `Family()` fell through to `commit`, so under
+    clicks-only any future ambient signal would have started clicking on its own); unmapped
+    *transactions* still commit. Baked UI clips promoted so the six families resolve.
+    **Caught a silent-wrong-answer trap:** `SfxPlayer` tries `{id}_1..n` before bare `{id}`, so
+    promoting `error.wav`/`major.wav` left the **stale 1.04 s `error_1`/`major_1` shadowing them** —
+    both files exist, both import, both play, no warning. Contract now says `variants: 1` for those
+    two so the promotion overwrites rather than hides. *Verify resolution, not copying.*
+    **VERIFIED:** all 57 client scripts compile headless, 0 errors — new `make check-client`
+    (`tools/check-client-compile.py`) against real Unity reference assemblies, so client changes no
+    longer need a Syncthing round-trip + the Unity lock to find an API error.
+    **MIXER ASSET: self-creating, waiting on ONE Unity domain reload.** `WarbandMixerTools` now
+    carries `[InitializeOnLoadMethod] EnsureMixerOnLoad` (deferred via `delayCall`, guarded by the
+    same existence check as the menu item), so the asset builds itself the next time Unity reloads —
+    **no menu item, no MCP call, no lock needed.** Anything that reloads the domain does it:
+    focusing the Editor, a script edit, a restart.
+    **Why not just call the menu item:** `Unity_RunCommand` is **currently unusable for this**. It
+    compiles into a library, so top-level statements fail `CS8805`, and a class-shaped payload
+    compiles but the harness finds no entry point ("No logs available"). Five shapes tried
+    2026-07-27; `Unity_GetConsoleLogs` also returns `totalCount: 0` for everything (a known trap —
+    see the `unity-mcp-runcommand-quirks` memory, note 6b). Unity's asset watcher DID import the new
+    scripts and clips unattended (their `.meta` synced back), so a reload is the only gap.
+    **Deliberately NOT hand-authoring the `.mixer` YAML** even though Shoota's could be adapted: an
+    untestable hand-built asset that resolves no groups fails *identically* to having no asset, but
+    leaves something in the repo that looks correct. Letting Unity's own API build it keeps the
+    self-check (`FindMatchingGroups` on all five buses, logged) meaningful.
+    Until it lands, `SfxPlayer` plays unrouted with one warning (no buses, no duck, no volume
+    params) — degraded by design, not broken. `audio.enabled` is still `false` regardless.
+    **MIXER LANDED 2026-07-27** — the self-healing loader fired on Unity's next reload and built
+    `Resources/Audio/GameMixer.mixer`, which synced back. Verified structurally, not just by
+    presence: all 5 buses resolve, all 4 params exposed, and **`Decisive` serialises as a SIBLING of
+    `Ducked`, not a child** — the one thing that had to be right, or death and crit would duck
+    themselves.
+    **STEP 5 BUILT 2026-07-27.** 17 board clips promoted · **16 tell rows repointed** onto the 5 D3
+    families (dangling ids 12 → 3) · `ReplayPlayer` routes through `SfxPlayer` with a bus per event
+    class and ducks the board −6 dB on a Decisive onset · chip-damage silence law added (guarded on
+    `Amount != 0`, or a Cast reporting 0 would be silenced by a threshold of 1 — the status-refresh
+    half was already free from item 2b's onset filter).
+    **AUDIO IS ON.** `audio.enabled: true` in both `tuning.json` (board, live under F1) and
+    `HubPresentation.json` (Hall UI, hot-reloadable). Those two values are the mute until item 9.
+    **Design bug caught before it shipped:** a global `SfxPlayer.Muted` written by `UiAudioDirector`
+    made the board depend on the Hall initialising — in a fight scene with no Hall it would have been
+    silent forever with no clue why. Each surface owns its own switch now.
+    **STEP 6 DONE 2026-07-27** — `hit_blunt`/`hit_pierce`/`hit_powder` generated
+    (`elevenlabs-sound-effects-v2`, Jake consented) and baked through the same contract. **The gate
+    proved itself on first contact:** the raw batch returned the *identical* pathology as the
+    original one — all padded to 1.045 s with a **23 dB level spread** — so generating without it
+    would have reproduced the exact defect this pass exists to fix. Baked: ±2 dB, 98–232 ms.
+    **`make sfx-lint` PASSES against shipped `Resources/`: 0 violations, 20/20 board ids resolve, no
+    silent weapons, all 6 UI families present.** First clean end-to-end run.
+    **Swept 3.49 MB of dead weight** — 15 superseded clips deleted from `Resources/`, which ships
+    everything it contains regardless of references (`hall_ambience` alone was 1.4 MB of a bed D1
+    cut). UI 11 clips/360 KB · board 20 clips/1.1 MB.
+    **ONLY STEP 7 LEFT, and it is not an audio job:** the mixer params exist and
+    `SfxPlayer.SetBusVolume` drives them, so wiring Master/Ui/Board sliders is a screen — it belongs
+    to **item 9**.
+    **CAPS PRICED + A ROUTING BUG FOUND 2026-07-27.** `make sfx-density` now also reports per-bus
+    pressure against every fixture. Building it exposed that **the per-weapon hit sounds sit on
+    `EventKind.Attack` (the swing), not `DamageDealt`** — `Damage/Attack` has no sound row at all —
+    so `BusFor` was filing **every weapon hit in the game** under `State`: lowest priority, smallest
+    cap, first stolen. `Cast` bodies and `CheatDeath` were mis-filed the same way. Fixed and
+    re-priced: peak pressure Cast 1.7/4 · State 1.6/3 · Impact 1.0/6 · Decisive 0.2/4 — **no bus
+    steals from itself on any committed fixture**, so nothing silently vanishes. Found by measuring,
+    not by reading the code.
+    **⇒ NOW IT WANTS EARS, NOT ARCHITECTURE.** Re-audition clips at
+    `https://warband.inhouseboyz.com/sfx/`; judge the MIX in motion during the item 1 verify pass. (or `make sfx-serve` locally) — before/after players, absolute-scale
+    waveforms, pass/fail. Answer **D2** per family. Steps 3–7 are client work and wait on that.
+    The route is `site/sfx.go`: **admin-gated and fail-closed** (`WARBAND_ADMIN_IDS`; unset = 404
+    for everyone), which is deliberately NOT the launcher's gate — that one is open to any signed-in
+    Discord account, so "signed in" would show every friend the WIP audio.
+    **Two findings worth keeping:** ① the density pass says the worst case is **`overtime`, not
+    `castfest`** — 9.6 onsets/s sustained for **3.6 minutes**, so THE WANING is the fixture board
+    audio must be judged against; ② `lint` caught a real defect in `bake` on its first run (tail
+    trimmed before filtering left up to 105 ms of dead tail, which holds a pooled voice open), which
+    is the whole argument for the gate.
 
 ### Laws pages (keep their numbers — ADRs and design docs reference them by name)
 5. **PvE-first playable loop** — **LAWS PAGE, not a work item** (dissolved 2026-07-26). ADR 0016
@@ -502,9 +767,22 @@ content doctrine until playtest #1.
   axis (its disclosed answer never happens) · `reach` cannot clear the act-1 boss at all.
 
 ## Done — one line each; full detail in `roadmap-done-archive.md`
+- **2026-07-27** — Responsive UI foundation: shared 1600×900 height-locked panel profile, root-owned safe area + portrait guard, independent geometry/form-factor/input/motion classes, semantic type/spacing/hit tokens, route-scoped notices, responsive dossier pages, and a deterministic 57-case Play Mode matrix across Workbench/Wager/Deployment/Result; 57/57 structural contracts PASS. **Uncommitted.**
+- **2026-07-27** — Item 21, the in-fight inspector (476 tests, replay v7): identity line, placement
+  facts, targeting rule, and the passive roster with live conditionals — plus `ContentLexicon.Rule`
+  and a CI contract that no raw content id can reach a player-facing card. Closes item 12's enemy
+  inspector. **Play-Mode-only surface — Jake-only verification.**
+- **2026-07-27** — Item 20, the passive layer's renderer (`Design/passive-legibility.md`, 471 tests):
+  auto-stamped rule identity, `TriggerFired`/`RuleChanged`, replay v6, `byRule` tells + fallbacks.
+  Baseline byte-identical and fingerprint unchanged — presentation cannot move the sim. **Unwatched.**
+- **2026-07-27** — Sim/render audit (`Design/sim-render-audit.md`) + its three cheap wins (A/C/D):
+  `camera.fov` + tunable feed anchor, `castSigilHoldSeconds` (sigils outlive their payoff, full-alpha
+  0.03–0.33s → 0.38–0.68s), `statusRefreshQuiet` (onset-not-refresh, −25.8% of castfest's tells).
+  460 tests, client compile negative-controlled. **Not watched — Unity lock held by Codex.**
 - **2026-07-27** — Workbench overhaul (Market Recruit R5, Armory Mode R4, keyword + equipment
-  tooltips R6): object-centric Workbench, live dossiers, permanent equipment rail, paged Armory,
-  runtime tooltip layer, no scrolling; 50-case viewport/copy matrix PASS. **Uncommitted.**
+  tooltips R6): object-centric Workbench, live dossiers, selected-trait ribbon, permanent equipment
+  rail, paged Armory, runtime tooltip layer, and rail-safe Wager command band; no scrolling.
+  Initial 50-case matrix plus correction-pass 1280×720/2558×1313 contracts PASS. **Uncommitted.**
 - **2026-07-26** — Candidate content + first third path (Sharpshot Spotter), authored but unreachable;
   `Kits.Candidate*` registries, `IncludeCandidates` default false, fingerprint provably unchanged.
 - **2026-07-26** — Inbox Market UI redesign + equipment preview (455 tests).

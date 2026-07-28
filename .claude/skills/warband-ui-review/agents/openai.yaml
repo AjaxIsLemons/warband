@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband UI Review"
+  short_description: "Generate UI concepts and gate implementation"
+  default_prompt: "Use $warband-ui-review to turn this UI request into reviewable concepts before implementation."

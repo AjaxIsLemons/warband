@@ -43,6 +43,76 @@ internal sealed class MechanicDefinition
 }
 
 /// <summary>
+/// One glossary concept embedded in ordinary rule prose. The rule text remains the visual source
+/// of truth; this only associates an authored phrase with the definition already carried by the
+/// card model.
+/// </summary>
+internal sealed class SemanticTextToken
+{
+    private readonly Regex _pattern;
+
+    public string LinkId { get; }
+    public string Label { get; }
+    public string Note { get; }
+    public MechanicFamily Family { get; }
+
+    public SemanticTextToken(
+        string linkId, string label, string note, MechanicFamily family)
+    {
+        LinkId = linkId ?? "";
+        Label = label ?? "";
+        Note = note ?? "";
+        Family = family;
+        _pattern = new Regex(
+            $@"(?<![\p{{L}}\p{{N}}]){Regex.Escape(Label)}(?![\p{{L}}\p{{N}}])",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
+    public Match Match(string text, int startAt) =>
+        _pattern.Match(text ?? "", Mathf.Max(0, startAt));
+
+    public RuntimeTooltipModel Tooltip(string context) =>
+        RuntimeTooltipModel.Keyword(Note, context);
+}
+
+/// <summary>
+/// Resolved semantic runs for one Label. Link ids stay local to the label, which keeps rebuilds
+/// deterministic and lets the tooltip layer respond to the exact word under the pointer.
+/// </summary>
+internal sealed class SemanticTextBinding
+{
+    private readonly Dictionary<string, SemanticTextToken> _byLinkId =
+        new Dictionary<string, SemanticTextToken>(StringComparer.Ordinal);
+
+    public string Text { get; }
+    public string Context { get; }
+    public IReadOnlyList<SemanticTextToken> Tokens { get; }
+    public bool HasTokens => Tokens.Count > 0;
+
+    public SemanticTextBinding(
+        string text, string context, IReadOnlyList<SemanticTextToken> tokens)
+    {
+        Text = text ?? "";
+        Context = context ?? "";
+        Tokens = tokens ?? Array.Empty<SemanticTextToken>();
+        foreach (SemanticTextToken token in Tokens)
+            if (token != null && !string.IsNullOrWhiteSpace(token.LinkId))
+                _byLinkId[token.LinkId] = token;
+    }
+
+    public bool TryToken(string linkId, out SemanticTextToken token) =>
+        _byLinkId.TryGetValue(linkId ?? "", out token);
+
+    public SemanticTextToken Find(string label)
+    {
+        foreach (SemanticTextToken token in Tokens)
+            if (string.Equals(token.Label, label, StringComparison.OrdinalIgnoreCase))
+                return token;
+        return null;
+    }
+}
+
+/// <summary>
 /// One source of truth for mechanic icon, color, tinted surface class, and inline-text color.
 /// Views ask for meaning; they never choose their own red/blue/purple interpretation.
 /// </summary>
@@ -161,8 +231,91 @@ internal static class MechanicPresentation
         label.text = FormatInline(text);
     }
 
+    /// <summary>
+    /// Binds ordinary wrapped prose while promoting every glossary word actually present in that
+    /// prose into a rich-text link. Unused notes do not create detached chips elsewhere.
+    /// </summary>
+    public static SemanticTextBinding BindSemantic(
+        Label label, string text, IReadOnlyList<string> notes, string context = "")
+    {
+        var tokens = new List<SemanticTextToken>();
+        if (!string.IsNullOrWhiteSpace(text) && notes != null)
+        {
+            for (int i = 0; i < notes.Count; i++)
+            {
+                string note = notes[i];
+                RuntimeTooltipModel tooltip = RuntimeTooltipModel.Keyword(note, context);
+                if (string.IsNullOrWhiteSpace(tooltip.Title)) continue;
+                var candidate = new SemanticTextToken(
+                    $"keyword:{i}", tooltip.Title, note, tooltip.Family);
+                if (!candidate.Match(text, 0).Success) continue;
+                tokens.Add(candidate);
+            }
+        }
+
+        var binding = new SemanticTextBinding(text, context, tokens);
+        if (label == null) return binding;
+        label.enableRichText = true;
+        label.text = FormatSemantic(binding);
+        label.userData = binding;
+        label.EnableInClassList("semantic-text--interactive", binding.HasTokens);
+        label.focusable = binding.HasTokens;
+        label.tabIndex = binding.HasTokens ? 0 : -1;
+        if (binding.HasTokens)
+            label.AddToClassList("semantic-text");
+        return binding;
+    }
+
+    private static string FormatSemantic(SemanticTextBinding binding)
+    {
+        if (binding == null || !binding.HasTokens)
+            return FormatInline(binding?.Text ?? "");
+
+        string text = binding.Text;
+        var output = new System.Text.StringBuilder(text.Length + 96);
+        int cursor = 0;
+        while (cursor < text.Length)
+        {
+            SemanticTextToken nextToken = null;
+            Match nextMatch = null;
+            foreach (SemanticTextToken token in binding.Tokens)
+            {
+                Match match = token.Match(text, cursor);
+                if (!match.Success) continue;
+                if (nextMatch == null ||
+                    match.Index < nextMatch.Index ||
+                    match.Index == nextMatch.Index && match.Length > nextMatch.Length)
+                {
+                    nextToken = token;
+                    nextMatch = match;
+                }
+            }
+
+            if (nextMatch == null)
+            {
+                output.Append(FormatInline(text.Substring(cursor)));
+                break;
+            }
+
+            if (nextMatch.Index > cursor)
+                output.Append(FormatInline(
+                    text.Substring(cursor, nextMatch.Index - cursor)));
+            string hex = ColorUtility.ToHtmlStringRGB(
+                Definition(nextToken.Family).Color);
+            output.Append("<link=\"")
+                .Append(nextToken.LinkId)
+                .Append("\"><color=#")
+                .Append(hex)
+                .Append("><b><u>")
+                .Append(nextMatch.Value)
+                .Append("</u></b></color></link>");
+            cursor = nextMatch.Index + nextMatch.Length;
+        }
+        return output.ToString();
+    }
+
     public static void BindCurrencyButton(Button button, string action, int amount,
-                                          bool gain = false)
+                                          bool gain = false, string suffix = "")
     {
         if (button == null) return;
         button.text = "";
@@ -175,8 +328,17 @@ internal static class MechanicPresentation
         verb.pickingMode = PickingMode.Ignore;
         content.Add(verb);
         content.Add(new HourstoneAmount(amount, "currency-action__amount"));
+        if (!string.IsNullOrEmpty(suffix))
+        {
+            var tail = new Label(suffix);
+            tail.AddToClassList("currency-action__suffix");
+            tail.pickingMode = PickingMode.Ignore;
+            content.Add(tail);
+        }
         button.Add(content);
-        button.tooltip = $"{action}. {(gain ? "Returns" : "Costs")} {amount} Hourstone.";
+        button.tooltip = string.IsNullOrEmpty(suffix)
+            ? $"{action}. {(gain ? "Returns" : "Costs")} {amount} Hourstone."
+            : $"{action} {amount} Hourstone {suffix}.";
     }
 
     public static void Validate()

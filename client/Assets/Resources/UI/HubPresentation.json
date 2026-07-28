@@ -1,362 +1,453 @@
 {
-    "effectsEnabled": true,
-    "ambientMotion": true,
+  "effectsEnabled": true,
+  "ambientMotion": true,
+  "reducedFadeMs": 80,
+  "press": {
+    "durationMs": 70,
+    "settleMs": 75,
+    "distancePx": 0.0,
+    "scale": 0.9819999933242798,
+    "startOpacity": 1.0,
+    "particles": 0,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "hover": {
+    "durationMs": 90,
+    "settleMs": 90,
+    "distancePx": 3.0,
+    "scale": 1.0119999647140503,
+    "startOpacity": 1.0,
+    "particles": 0,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "focus": {
+    "durationMs": 120,
+    "settleMs": 90,
+    "distancePx": 2.0,
+    "scale": 1.0140000581741333,
+    "startOpacity": 1.0,
+    "particles": 2,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "select": {
+    "durationMs": 145,
+    "settleMs": 110,
+    "distancePx": 5.0,
+    "scale": 1.0449999570846558,
+    "startOpacity": 1.0,
+    "particles": 5,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "reveal": {
+    "durationMs": 230,
+    "settleMs": 80,
+    "distancePx": 18.0,
+    "scale": 0.9750000238418579,
+    "startOpacity": 0.0,
+    "particles": 2,
+    "staggerMs": 42,
+    "staggerCapMs": 210
+  },
+  "detailSwap": {
+    "durationMs": 165,
+    "settleMs": 70,
+    "distancePx": 12.0,
+    "scale": 0.9919999837875366,
+    "startOpacity": 0.18000000715255737,
+    "particles": 0,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "shelfExpand": {
+    "durationMs": 180,
+    "settleMs": 70,
+    "distancePx": 28.0,
+    "scale": 0.9900000095367432,
+    "startOpacity": 0.07999999821186066,
+    "particles": 3,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "shelfCollapse": {
+    "durationMs": 150,
+    "settleMs": 50,
+    "distancePx": 22.0,
+    "scale": 0.9900000095367432,
+    "startOpacity": 1.0,
+    "particles": 0,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "shelfFocus": {
+    "durationMs": 120,
+    "settleMs": 80,
+    "distancePx": 3.0,
+    "scale": 1.034999966621399,
+    "startOpacity": 1.0,
+    "particles": 2,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "route": {
+    "durationMs": 260,
+    "settleMs": 90,
+    "distancePx": 30.0,
+    "scale": 0.9900000095367432,
+    "startOpacity": 0.18000000715255737,
+    "particles": 7,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "attention": {
+    "durationMs": 280,
+    "settleMs": 130,
+    "distancePx": 3.0,
+    "scale": 1.034999966621399,
+    "startOpacity": 1.0,
+    "particles": 4,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "commit": {
+    "durationMs": 340,
+    "settleMs": 120,
+    "distancePx": 10.0,
+    "scale": 1.0549999475479126,
+    "startOpacity": 1.0,
+    "particles": 9,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "error": {
+    "durationMs": 155,
+    "settleMs": 90,
+    "distancePx": 5.0,
+    "scale": 1.0,
+    "startOpacity": 1.0,
+    "particles": 3,
+    "staggerMs": 0,
+    "staggerCapMs": 0
+  },
+  "result": {
+    "durationMs": 450,
+    "settleMs": 120,
+    "distancePx": 22.0,
+    "scale": 0.9800000190734863,
+    "startOpacity": 0.0,
+    "particles": 8,
+    "staggerMs": 45,
+    "staggerCapMs": 180
+  },
+  "boss": {
+    "durationMs": 750,
+    "settleMs": 180,
+    "distancePx": 28.0,
+    "scale": 0.9700000286102295,
+    "startOpacity": 0.0,
+    "particles": 12,
+    "staggerMs": 60,
+    "staggerCapMs": 240
+  },
+  "muster": {
+    "lensInitialDelayMs": 220,
+    "lensReshowMs": 70,
+    "lensCloseMs": 90,
+    "revealInfoDelayMs": 70,
+    "slotCompactMs": 120,
     "reducedFadeMs": 80,
-    "press": {
-        "durationMs": 70,
-        "settleMs": 75,
-        "distancePx": 0.0,
-        "scale": 0.9819999933242798,
-        "startOpacity": 1.0,
-        "particles": 0,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "hover": {
-        "durationMs": 90,
-        "settleMs": 90,
-        "distancePx": 3.0,
-        "scale": 1.0119999647140504,
-        "startOpacity": 1.0,
-        "particles": 0,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "focus": {
-        "durationMs": 120,
-        "settleMs": 90,
-        "distancePx": 2.0,
-        "scale": 1.0140000581741334,
-        "startOpacity": 1.0,
-        "particles": 2,
-        "staggerMs": 0,
-        "staggerCapMs": 0
+    "reveal": {
+      "durationMs": 240,
+      "settleMs": 90,
+      "distancePx": 18.0,
+      "scale": 0.9850000143051147,
+      "startOpacity": 0.0,
+      "particles": 0,
+      "staggerMs": 55,
+      "staggerCapMs": 220
     },
     "select": {
-        "durationMs": 145,
-        "settleMs": 110,
-        "distancePx": 5.0,
-        "scale": 1.0449999570846558,
-        "startOpacity": 1.0,
-        "particles": 5,
-        "staggerMs": 0,
-        "staggerCapMs": 0
+      "durationMs": 220,
+      "settleMs": 160,
+      "distancePx": 8.0,
+      "scale": 1.0449999570846558,
+      "startOpacity": 1.0,
+      "particles": 7,
+      "staggerMs": 0,
+      "staggerCapMs": 0
     },
-    "reveal": {
-        "durationMs": 230,
-        "settleMs": 80,
-        "distancePx": 18.0,
-        "scale": 0.9750000238418579,
-        "startOpacity": 0.0,
-        "particles": 2,
-        "staggerMs": 42,
-        "staggerCapMs": 210
+    "deselect": {
+      "durationMs": 160,
+      "settleMs": 120,
+      "distancePx": 6.0,
+      "scale": 1.024999976158142,
+      "startOpacity": 1.0,
+      "particles": 4,
+      "staggerMs": 0,
+      "staggerCapMs": 0
     },
-    "detailSwap": {
-        "durationMs": 165,
-        "settleMs": 70,
-        "distancePx": 12.0,
-        "scale": 0.9919999837875366,
-        "startOpacity": 0.18000000715255738,
-        "particles": 0,
-        "staggerMs": 0,
-        "staggerCapMs": 0
+    "blocked": {
+      "durationMs": 155,
+      "settleMs": 90,
+      "distancePx": 5.0,
+      "scale": 1.0,
+      "startOpacity": 1.0,
+      "particles": 3,
+      "staggerMs": 0,
+      "staggerCapMs": 0
     },
-    "shelfExpand": {
-        "durationMs": 180,
-        "settleMs": 70,
-        "distancePx": 28.0,
-        "scale": 0.9900000095367432,
-        "startOpacity": 0.07999999821186066,
-        "particles": 3,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "shelfCollapse": {
-        "durationMs": 150,
-        "settleMs": 50,
-        "distancePx": 22.0,
-        "scale": 0.9900000095367432,
-        "startOpacity": 1.0,
-        "particles": 0,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "shelfFocus": {
-        "durationMs": 120,
-        "settleMs": 80,
-        "distancePx": 3.0,
-        "scale": 1.034999966621399,
-        "startOpacity": 1.0,
-        "particles": 2,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "route": {
-        "durationMs": 260,
-        "settleMs": 90,
-        "distancePx": 30.0,
-        "scale": 0.9900000095367432,
-        "startOpacity": 0.18000000715255738,
-        "particles": 7,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "attention": {
-        "durationMs": 280,
-        "settleMs": 130,
-        "distancePx": 3.0,
-        "scale": 1.034999966621399,
-        "startOpacity": 1.0,
-        "particles": 4,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "commit": {
-        "durationMs": 340,
-        "settleMs": 120,
-        "distancePx": 10.0,
-        "scale": 1.0549999475479127,
-        "startOpacity": 1.0,
-        "particles": 9,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "error": {
-        "durationMs": 155,
-        "settleMs": 90,
-        "distancePx": 5.0,
-        "scale": 1.0,
-        "startOpacity": 1.0,
-        "particles": 3,
-        "staggerMs": 0,
-        "staggerCapMs": 0
-    },
-    "result": {
-        "durationMs": 450,
-        "settleMs": 120,
-        "distancePx": 22.0,
-        "scale": 0.9800000190734863,
-        "startOpacity": 0.0,
-        "particles": 8,
-        "staggerMs": 45,
-        "staggerCapMs": 180
-    },
-    "boss": {
-        "durationMs": 750,
-        "settleMs": 180,
-        "distancePx": 28.0,
-        "scale": 0.9700000286102295,
-        "startOpacity": 0.0,
-        "particles": 12,
-        "staggerMs": 60,
-        "staggerCapMs": 240
-    },
-    "muster": {
-        "lensInitialDelayMs": 220,
-        "lensReshowMs": 70,
-        "lensCloseMs": 90,
-        "revealInfoDelayMs": 70,
-        "slotCompactMs": 120,
-        "reducedFadeMs": 80,
-        "reveal": {
-            "durationMs": 240,
-            "settleMs": 90,
-            "distancePx": 18.0,
-            "scale": 0.9850000143051148,
-            "startOpacity": 0.0,
-            "particles": 0,
-            "staggerMs": 55,
-            "staggerCapMs": 220
-        },
-        "select": {
-            "durationMs": 220,
-            "settleMs": 160,
-            "distancePx": 8.0,
-            "scale": 1.0449999570846558,
-            "startOpacity": 1.0,
-            "particles": 7,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "deselect": {
-            "durationMs": 160,
-            "settleMs": 120,
-            "distancePx": 6.0,
-            "scale": 1.024999976158142,
-            "startOpacity": 1.0,
-            "particles": 4,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "blocked": {
-            "durationMs": 155,
-            "settleMs": 90,
-            "distancePx": 5.0,
-            "scale": 1.0,
-            "startOpacity": 1.0,
-            "particles": 3,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "ready": {
-            "durationMs": 220,
-            "settleMs": 120,
-            "distancePx": 2.0,
-            "scale": 1.024999976158142,
-            "startOpacity": 1.0,
-            "particles": 4,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        }
-    },
-    "transactions": {
-        "recruit": {
-            "durationMs": 410,
-            "settleMs": 150,
-            "distancePx": 12.0,
-            "scale": 1.065000057220459,
-            "startOpacity": 1.0,
-            "particles": 12,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "rank": {
-            "durationMs": 480,
-            "settleMs": 170,
-            "distancePx": 14.0,
-            "scale": 1.0750000476837159,
-            "startOpacity": 1.0,
-            "particles": 14,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "weapon": {
-            "durationMs": 360,
-            "settleMs": 120,
-            "distancePx": 9.0,
-            "scale": 1.0449999570846558,
-            "startOpacity": 1.0,
-            "particles": 8,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "trinket": {
-            "durationMs": 390,
-            "settleMs": 130,
-            "distancePx": 10.0,
-            "scale": 1.0499999523162842,
-            "startOpacity": 1.0,
-            "particles": 10,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "inscription": {
-            "durationMs": 520,
-            "settleMs": 180,
-            "distancePx": 15.0,
-            "scale": 1.0700000524520875,
-            "startOpacity": 1.0,
-            "particles": 16,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "capacity": {
-            "durationMs": 440,
-            "settleMs": 150,
-            "distancePx": 12.0,
-            "scale": 1.059999942779541,
-            "startOpacity": 1.0,
-            "particles": 12,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "rankChoice": {
-            "durationMs": 560,
-            "settleMs": 190,
-            "distancePx": 16.0,
-            "scale": 1.0800000429153443,
-            "startOpacity": 1.0,
-            "particles": 18,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "equip": {
-            "durationMs": 300,
-            "settleMs": 110,
-            "distancePx": 8.0,
-            "scale": 1.0399999618530274,
-            "startOpacity": 1.0,
-            "particles": 7,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        },
-        "reforge": {
-            "durationMs": 620,
-            "settleMs": 210,
-            "distancePx": 18.0,
-            "scale": 1.0850000381469727,
-            "startOpacity": 1.0,
-            "particles": 20,
-            "staggerMs": 0,
-            "staggerCapMs": 0
-        }
-    },
-    "fx": {
-        "lineWidth": 2.0,
-        "arcHeight": 64.0,
-        "grainSize": 3.5,
-        "maxEffects": 24,
-        "trailOpacity": 0.41999998688697817,
-        "previewColor": {
-            "r": 0.4099999964237213,
-            "g": 0.6499999761581421,
-            "b": 0.9100000262260437,
-            "a": 1.0
-        },
-        "sandColor": {
-            "r": 0.8500000238418579,
-            "g": 0.6399999856948853,
-            "b": 0.23000000417232514,
-            "a": 1.0
-        },
-        "positiveColor": {
-            "r": 0.4000000059604645,
-            "g": 0.7900000214576721,
-            "b": 0.6000000238418579,
-            "a": 1.0
-        },
-        "negativeColor": {
-            "r": 0.7099999785423279,
-            "g": 0.30000001192092898,
-            "b": 0.25999999046325686,
-            "a": 1.0
-        }
-    },
-    "environment": {
-        "enabled": true,
-        "highQuality": true,
-        "cameraDurationMs": 280,
-        "cameraOvershoot": 0.07999999821186066,
-        "parallax": 0.550000011920929,
-        "ambientRingDegreesPerSecond": 1.7999999523162842,
-        "ambientPulse": 0.2199999988079071,
-        "routePulse": 1.25,
-        "ambientMotes": 24,
-        "transactionMotes": 12
-    },
-    "audio": {
-        "enabled": false,
-        "volume": 0.7200000286102295,
-        "pitchVariance": 0.02500000037252903,
-        "hoverCooldownMs": 45,
-        "ambienceVolume": 0.18000000715255738,
-        "commitDuck": 0.550000011920929
-    },
-    "haptics": {
-        "enabled": true,
-        "selectMs": 8,
-        "successMs": 18,
-        "errorMs": 24
+    "ready": {
+      "durationMs": 220,
+      "settleMs": 120,
+      "distancePx": 2.0,
+      "scale": 1.024999976158142,
+      "startOpacity": 1.0,
+      "particles": 4,
+      "staggerMs": 0,
+      "staggerCapMs": 0
     }
+  },
+  "transactions": {
+    "recruit": {
+      "durationMs": 410,
+      "settleMs": 150,
+      "distancePx": 12.0,
+      "scale": 1.065000057220459,
+      "startOpacity": 1.0,
+      "particles": 12,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "rank": {
+      "durationMs": 480,
+      "settleMs": 170,
+      "distancePx": 14.0,
+      "scale": 1.0750000476837158,
+      "startOpacity": 1.0,
+      "particles": 14,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "weapon": {
+      "durationMs": 360,
+      "settleMs": 120,
+      "distancePx": 9.0,
+      "scale": 1.0449999570846558,
+      "startOpacity": 1.0,
+      "particles": 8,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "trinket": {
+      "durationMs": 390,
+      "settleMs": 130,
+      "distancePx": 10.0,
+      "scale": 1.0499999523162842,
+      "startOpacity": 1.0,
+      "particles": 10,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "inscription": {
+      "durationMs": 520,
+      "settleMs": 180,
+      "distancePx": 15.0,
+      "scale": 1.0700000524520874,
+      "startOpacity": 1.0,
+      "particles": 16,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "capacity": {
+      "durationMs": 440,
+      "settleMs": 150,
+      "distancePx": 12.0,
+      "scale": 1.059999942779541,
+      "startOpacity": 1.0,
+      "particles": 12,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "rankChoice": {
+      "durationMs": 560,
+      "settleMs": 190,
+      "distancePx": 16.0,
+      "scale": 1.0800000429153442,
+      "startOpacity": 1.0,
+      "particles": 18,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "equip": {
+      "durationMs": 300,
+      "settleMs": 110,
+      "distancePx": 8.0,
+      "scale": 1.0399999618530273,
+      "startOpacity": 1.0,
+      "particles": 7,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "reforge": {
+      "durationMs": 620,
+      "settleMs": 210,
+      "distancePx": 18.0,
+      "scale": 1.0850000381469727,
+      "startOpacity": 1.0,
+      "particles": 20,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    }
+  },
+  "fx": {
+    "lineWidth": 2.0,
+    "arcHeight": 64.0,
+    "grainSize": 3.5,
+    "maxEffects": 24,
+    "trailOpacity": 0.41999998688697815,
+    "previewColor": {
+      "r": 0.4099999964237213,
+      "g": 0.6499999761581421,
+      "b": 0.9100000262260437,
+      "a": 1.0
+    },
+    "sandColor": {
+      "r": 0.8500000238418579,
+      "g": 0.6399999856948853,
+      "b": 0.23000000417232513,
+      "a": 1.0
+    },
+    "positiveColor": {
+      "r": 0.4000000059604645,
+      "g": 0.7900000214576721,
+      "b": 0.6000000238418579,
+      "a": 1.0
+    },
+    "negativeColor": {
+      "r": 0.7099999785423279,
+      "g": 0.30000001192092896,
+      "b": 0.25999999046325684,
+      "a": 1.0
+    }
+  },
+  "environment": {
+    "enabled": true,
+    "highQuality": true,
+    "cameraDurationMs": 280,
+    "cameraOvershoot": 0.07999999821186066,
+    "parallax": 0.550000011920929,
+    "ambientRingDegreesPerSecond": 1.7999999523162842,
+    "ambientPulse": 0.2199999988079071,
+    "routePulse": 1.25,
+    "ambientMotes": 24,
+    "transactionMotes": 12
+  },
+  "audio": {
+    "enabled": true,
+    "volume": 0.7200000286102295,
+    "pitchVariance": 0.02500000037252903
+  },
+  "haptics": {
+    "enabled": true,
+    "selectMs": 8,
+    "successMs": 18,
+    "errorMs": 24
+  },
+  "tooltip": {
+    "pointerDelayMs": 280,
+    "focusDelayMs": 220,
+    "reshowDelayMs": 80,
+    "closeDelayMs": 100,
+    "revealMs": 130,
+    "dismissMs": 85,
+    "offsetPx": 12.0,
+    "safeMarginPx": 16.0,
+    "maxWidthPx": 360.0,
+    "equipmentMaxWidthPx": 390.0
+  },
+  "interactions": {
+    "tooltipReveal": {
+      "durationMs": 130,
+      "settleMs": 45,
+      "distancePx": 7.0,
+      "scale": 0.99,
+      "startOpacity": 0.0,
+      "particles": 0,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "tooltipDismiss": {
+      "durationMs": 85,
+      "settleMs": 20,
+      "distancePx": 4.0,
+      "scale": 0.995,
+      "startOpacity": 1.0,
+      "particles": 0,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "pin": {
+      "durationMs": 180,
+      "settleMs": 100,
+      "distancePx": 5.0,
+      "scale": 1.035,
+      "startOpacity": 1.0,
+      "particles": 4,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "unpin": {
+      "durationMs": 130,
+      "settleMs": 60,
+      "distancePx": 4.0,
+      "scale": 1.015,
+      "startOpacity": 1.0,
+      "particles": 0,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "drawerExpand": {
+      "durationMs": 190,
+      "settleMs": 70,
+      "distancePx": 28.0,
+      "scale": 0.99,
+      "startOpacity": 0.06,
+      "particles": 3,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "drawerCollapse": {
+      "durationMs": 150,
+      "settleMs": 50,
+      "distancePx": 22.0,
+      "scale": 0.995,
+      "startOpacity": 0.12,
+      "particles": 0,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "socketWake": {
+      "durationMs": 210,
+      "settleMs": 100,
+      "distancePx": 3.0,
+      "scale": 1.04,
+      "startOpacity": 1.0,
+      "particles": 5,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    },
+    "projectedTarget": {
+      "durationMs": 260,
+      "settleMs": 110,
+      "distancePx": 8.0,
+      "scale": 1.045,
+      "startOpacity": 1.0,
+      "particles": 7,
+      "staggerMs": 0,
+      "staggerCapMs": 0
+    }
+  }
 }

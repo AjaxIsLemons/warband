@@ -1,0 +1,2130 @@
+/* Workbench: one bounded out-of-combat instrument.
+   All dimensions are authored against the shell's 1600×900 reference resolution so the
+   1280×720 floor retains readable type without introducing a scroll region. */
+
+.workbench-screen {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    color: rgb(232, 238, 246);
+    background-color: rgba(5, 9, 15, 0.96);
+}
+
+.workbench-screen__wash {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(11, 19, 29, 0.88);
+    border-left-width: 54px;
+    border-right-width: 54px;
+    border-left-color: rgba(10, 28, 42, 0.58);
+    border-right-color: rgba(10, 28, 42, 0.58);
+}
+
+.workbench-safe {
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    top: 18px;
+    bottom: 146px;
+    overflow: hidden;
+}
+
+.workbench-header {
+    height: 88px;
+    min-height: 88px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 22px;
+    padding-right: 14px;
+    background-color: rgba(8, 14, 22, 0.985);
+    border-left-width: 4px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(217, 164, 58);
+    border-bottom-color: rgba(91, 126, 169, 0.72);
+}
+
+.workbench-header__identity {
+    width: 250px;
+    min-width: 250px;
+    justify-content: center;
+}
+
+.workbench-header__act,
+.workbench-section-heading__meta,
+.workbench-market-collapsed__meta,
+.workbench-armory__page,
+.workbench-dossier__hint {
+    color: rgb(133, 158, 188);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1.2px;
+}
+
+.workbench-header__title {
+    margin-top: 4px;
+    color: rgb(242, 238, 224);
+    font-size: 26px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+}
+
+.workbench-header__beat {
+    min-width: 0;
+    flex-grow: 1;
+    justify-content: center;
+    padding-left: 24px;
+    padding-right: 30px;
+    border-left-width: 1px;
+    border-left-color: rgba(91, 126, 169, 0.42);
+}
+
+.workbench-header__beat-label {
+    color: rgb(223, 178, 75);
+    font-size: 15px;
+    -unity-font-style: bold;
+    letter-spacing: 1.4px;
+}
+
+.workbench-header__brief {
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    flex-shrink: 0;
+    margin-top: 4px;
+    overflow: hidden;
+    color: rgb(166, 184, 207);
+    font-size: 14px;
+    white-space: normal;
+}
+
+.workbench-header__commands {
+    min-width: 420px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.workbench-header__hourstone {
+    min-width: 112px;
+    height: 54px;
+    margin-right: 12px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(45, 34, 16, 0.88);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.62);
+    border-right-color: rgba(217, 164, 58, 0.62);
+    border-top-color: rgba(217, 164, 58, 0.62);
+    border-bottom-color: rgba(217, 164, 58, 0.62);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.workbench-header__currency .currency-amount__icon {
+    width: 27px;
+    height: 27px;
+}
+
+.workbench-header__currency .currency-amount__value {
+    font-size: 25px;
+}
+
+.workbench-header__continue {
+    width: 252px;
+    height: 54px;
+    font-size: 15px;
+}
+
+.workbench-market {
+    height: 244px;
+    min-height: 244px;
+    margin-top: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 9px;
+    padding-bottom: 8px;
+    background-color: rgba(8, 14, 22, 0.96);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgba(91, 126, 169, 0.58);
+    border-bottom-color: rgba(91, 126, 169, 0.58);
+}
+
+.workbench-section-heading {
+    height: 44px;
+    min-height: 44px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.workbench-section-heading__title,
+.workbench-market-collapsed__title {
+    color: rgb(229, 234, 241);
+    font-size: 16px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.workbench-section-heading__meta {
+    margin-top: 2px;
+    font-size: 10px;
+}
+
+.workbench-market__reroll {
+    width: 176px;
+    height: 38px;
+}
+
+.workbench-market__grid {
+    min-width: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--workbench {
+    width: 226px;
+    min-width: 226px;
+    height: 190px;
+    min-height: 190px;
+    margin-left: 7px;
+    margin-right: 7px;
+    margin-bottom: 0;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__identity {
+    height: 146px;
+    min-height: 146px;
+    padding-top: 6px;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__title {
+    height: 26px;
+    min-height: 26px;
+    font-size: 17px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__art {
+    height: 96px;
+    min-height: 96px;
+    flex-shrink: 0;
+}
+
+.market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__commerce {
+    height: 44px;
+    min-height: 44px;
+}
+
+.workbench-market-collapsed {
+    height: 54px;
+    min-height: 54px;
+    margin-top: 10px;
+    padding-left: 18px;
+    padding-right: 18px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(9, 17, 26, 0.98);
+    border-left-width: 3px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(217, 164, 58);
+    border-bottom-color: rgba(91, 126, 169, 0.62);
+}
+
+.workbench-market-collapsed__copy {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+}
+
+.workbench-market-collapsed__meta {
+    margin-left: 18px;
+    font-size: 10px;
+}
+
+.workbench-market-collapsed__action {
+    color: rgb(104, 165, 231);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.workbench-body {
+    min-height: 0;
+    flex-grow: 1;
+    margin-top: 10px;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.workbench-dossier {
+    position: relative;
+    min-width: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: rgba(7, 12, 19, 0.985);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(74, 99, 129, 0.72);
+    border-right-color: rgba(74, 99, 129, 0.72);
+    border-top-color: rgba(74, 99, 129, 0.72);
+    border-bottom-color: rgba(74, 99, 129, 0.72);
+}
+
+.workbench-dossier__heading {
+    height: 38px;
+    min-height: 38px;
+    padding-left: 14px;
+    padding-right: 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(15, 25, 38, 0.92);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(74, 99, 129, 0.55);
+}
+
+.workbench-dossier__label {
+    color: rgb(194, 207, 224);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.workbench-dossier__hint {
+    font-size: 9px;
+}
+
+.workbench-dossier__slot {
+    min-height: 0;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 12px;
+    padding-bottom: 10px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.wb-inspector--workbench .wb-inspector__content {
+    min-height: 0;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__overview {
+    height: 158px;
+    min-height: 158px;
+    flex-direction: row;
+}
+
+.wb-inspector--workbench .wb-inspector__portrait {
+    width: 214px;
+    min-width: 214px;
+    height: 150px;
+    min-height: 150px;
+    margin-right: 16px;
+}
+
+.wb-inspector--workbench .wb-inspector__summary {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-inspector--workbench .wb-inspector__heading {
+    min-height: 58px;
+}
+
+.wb-inspector--workbench .wb-inspector__title {
+    font-size: 27px;
+}
+
+.wb-inspector--workbench .wb-inspector__subtitle {
+    max-height: 32px;
+    font-size: 12px;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__stats {
+    min-height: 66px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__page-nav {
+    height: 38px;
+    min-height: 38px;
+    flex-shrink: 0;
+}
+
+.wb-inspector--workbench .wb-inspector-stat {
+    min-width: 108px;
+    height: 54px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.wb-inspector--workbench .wb-inspector__decision-body {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__column {
+    min-width: 0;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__section {
+    min-height: 64px;
+    margin-bottom: 6px;
+    padding-left: 11px;
+    padding-right: 11px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__section-label {
+    font-size: 11px;
+    letter-spacing: 0.9px;
+}
+
+.wb-inspector--workbench .wb-inspector__line-copy {
+    max-height: 42px;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.wb-inspector--workbench .wb-inspector__line-title {
+    font-size: 15px;
+}
+
+/* Rank Up is the Workbench's densest dossier: guaranteed chassis gains plus two exact
+   specialization paths. Treat those as three parallel reads instead of stacking them beneath
+   a hero-sized overview, which previously let the comparison/choice sections run behind the
+   pinned action tray at the live 2558×1313 Game View size. */
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__overview {
+    height: 96px;
+    min-height: 96px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__portrait {
+    width: 150px;
+    min-width: 150px;
+    height: 88px;
+    min-height: 88px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__heading {
+    min-height: 48px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__title {
+    font-size: 24px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__subtitle {
+    display: none;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__stats {
+    min-height: 52px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector-stat {
+    height: 44px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__column--profile {
+    width: 40%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__column--secondary {
+    width: 60%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    border-left-width: 1px;
+    border-left-color: rgba(74, 99, 129, 0.55);
+}
+
+.wb-inspector--workbench.wb-inspector--rankup
+    .wb-inspector__column--profile .wb-inspector__sections {
+    height: 100%;
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: row;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup
+    .wb-inspector__column--profile .wb-inspector__section {
+    width: 50%;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+    margin-left: 6px;
+    margin-right: 6px;
+    margin-bottom: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 5px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup
+    .wb-inspector__column--secondary .wb-inspector__sections {
+    height: 100%;
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__section--choices {
+    height: 100%;
+    min-height: 0;
+    margin-left: 6px;
+    margin-right: 6px;
+    margin-bottom: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 5px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup
+    .wb-inspector__choice-preview-options {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    margin-top: 3px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview {
+    min-width: 0;
+    flex-basis: 0;
+    margin-right: 6px;
+    margin-bottom: 0;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 7px;
+    padding-bottom: 6px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__change {
+    font-size: 9px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__name {
+    margin-top: 2px;
+    font-size: 15px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__rule {
+    max-height: 58px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    overflow: hidden;
+    font-size: 11px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-comparison {
+    min-height: 30px;
+    margin-top: 3px;
+    padding-left: 32px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-comparison__icon {
+    left: 8px;
+    top: 7px;
+    width: 15px;
+    height: 15px;
+}
+
+/* Typed Rank Up golden slice: one decision, one page. */
+.wb-rank-up {
+    display: none;
+    min-height: 0;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.wb-rank-up__tier-row {
+    height: 44px;
+    min-height: 44px;
+    flex-direction: row;
+    align-items: stretch;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgba(74, 99, 129, 0.55);
+    border-bottom-color: rgba(74, 99, 129, 0.55);
+}
+
+.wb-rank-up__label {
+    width: 160px;
+    min-width: 160px;
+    padding-left: 2px;
+    color: rgb(104, 165, 231);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1.2px;
+    -unity-text-align: middle-left;
+}
+
+.wb-rank-up__ladder {
+    min-width: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+}
+
+.wb-rank-tier {
+    position: relative;
+    height: 38px;
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 5px;
+    padding-left: 54px;
+    padding-right: 8px;
+    justify-content: center;
+    overflow: hidden;
+    background-color: rgba(17, 28, 42, 0.98);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(91, 126, 169, 0.72);
+    border-right-color: rgba(74, 99, 129, 0.62);
+    border-top-color: rgba(74, 99, 129, 0.62);
+    border-bottom-color: rgba(74, 99, 129, 0.62);
+    transition-property: translate, background-color, border-left-color;
+    transition-duration: 90ms;
+}
+
+.wb-rank-tier:hover,
+.wb-rank-tier:focus {
+    translate: 0 -2px;
+    background-color: rgba(27, 43, 63, 1);
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-rank-tier__rank {
+    position: absolute;
+    left: 8px;
+    top: 5px;
+    width: 22px;
+    color: rgb(217, 164, 58);
+    font-size: 17px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.wb-rank-tier__icon {
+    position: absolute;
+    left: 31px;
+    top: 7px;
+    width: 18px;
+    color: rgb(217, 164, 58);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.wb-rank-tier__name {
+    max-height: 36px;
+    color: rgb(226, 233, 242);
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.wb-rank-tier--pending {
+    background-color: rgba(35, 31, 23, 0.98);
+    border-left-color: rgb(217, 164, 58);
+}
+
+.wb-rank-tier--locked {
+    opacity: 0.55;
+}
+
+.wb-rank-up__choice-heading {
+    height: 20px;
+    min-height: 20px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wb-rank-up__label--choice {
+    width: auto;
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-rank-up__hint {
+    color: rgb(137, 157, 183);
+    font-size: var(--ui-type-meta);
+}
+
+.wb-rank-up__options {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.wb-rank-option {
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 8px;
+    overflow: hidden;
+    background-color: rgba(18, 31, 47, 0.98);
+    border-left-width: 3px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgba(74, 99, 129, 0.66);
+    border-top-color: rgba(74, 99, 129, 0.66);
+    border-bottom-color: rgba(74, 99, 129, 0.66);
+    transition-property: translate, background-color, border-left-color;
+    transition-duration: 90ms;
+}
+
+.wb-rank-option:hover,
+.wb-rank-option:focus {
+    translate: 0 -2px;
+    background-color: rgba(26, 43, 63, 1);
+    border-left-color: rgb(217, 164, 58);
+}
+
+.wb-rank-option__change {
+    min-height: 18px;
+    color: rgb(156, 178, 205);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.wb-rank-option__name {
+    min-height: 26px;
+    margin-top: 2px;
+    color: rgb(239, 243, 248);
+    font-size: 19px;
+    -unity-font-style: bold;
+}
+
+.wb-rank-option__rule {
+    min-height: 0;
+    flex-grow: 1;
+    margin-top: 5px;
+    color: rgb(205, 216, 230);
+    font-size: var(--ui-type-body);
+    white-space: normal;
+    overflow: hidden;
+}
+
+.motion--reduced .wb-rank-tier,
+.motion--reduced .wb-rank-option {
+    transition-duration: 0ms;
+}
+
+/* Equipment projections can carry three or four stat rows. Keep the comparison rhythm dense
+   enough that the final row remains above the fixed action tray at the live 2558×1313 viewport. */
+.wb-inspector--workbench.wb-inspector--equipment-preview .wb-comparison,
+.wb-inspector--workbench.wb-inspector--weapon .wb-comparison {
+    min-height: 29px;
+    margin-top: 2px;
+    padding-left: 34px;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview .wb-comparison__icon,
+.wb-inspector--workbench.wb-inspector--weapon .wb-comparison__icon {
+    left: 8px;
+    top: 6px;
+    width: 15px;
+    height: 15px;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview .wb-inspector__overview,
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__overview {
+    height: 158px;
+    min-height: 158px;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait {
+    height: 150px;
+    min-height: 150px;
+}
+
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__heading {
+    padding-top: 2px;
+    padding-bottom: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__stats {
+    padding-bottom: 2px;
+}
+
+.wb-inspector--workbench .wb-equipment-preview {
+    display: none;
+}
+
+.wb-inspector--workbench .wb-inspector__tags {
+    min-height: 30px;
+    max-height: 42px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__tags--page {
+    min-height: 0;
+    max-height: none;
+    flex-grow: 1;
+    align-content: flex-start;
+}
+
+.wb-traits-label {
+    min-height: 28px;
+    margin-right: 8px;
+    padding-top: 7px;
+    color: rgb(138, 158, 184);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.wb-trait-chip {
+    position: relative;
+    min-width: 132px;
+    min-height: 28px;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    padding-left: 31px;
+    padding-right: 9px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(28, 38, 53, 0.96);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.56);
+    border-right-color: rgba(217, 164, 58, 0.56);
+    border-bottom-color: rgba(217, 164, 58, 0.56);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    transition-property: translate, background-color;
+    transition-duration: 90ms;
+}
+
+.wb-trait-chip:hover,
+.wb-trait-chip:focus {
+    translate: 0 -2px;
+    background-color: rgba(45, 55, 72, 1);
+}
+
+.wb-trait-chip__icon {
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    color: rgb(217, 164, 58);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.wb-trait-chip__rank {
+    margin-right: 6px;
+    color: rgb(217, 164, 58);
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.wb-trait-chip__name {
+    color: rgb(224, 230, 239);
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.wb-inspector__line-title-row {
+    min-width: 0;
+    min-height: 24px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.wb-trait-chip--inline {
+    min-width: 0;
+    height: 22px;
+    min-height: 22px;
+    max-height: 22px;
+    margin-left: 4px;
+    margin-right: 0;
+    margin-bottom: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-top-width: 1px;
+    border-top-color: rgba(217, 164, 58, 0.56);
+}
+
+.wb-trait-chip--inline .wb-trait-chip__rank {
+    margin-right: 5px;
+    font-size: 10px;
+}
+
+.wb-trait-chip--inline .wb-trait-chip__name {
+    font-size: 13px;
+}
+
+.wb-inspector--workbench .wb-inspector__actions {
+    height: 48px;
+    min-height: 48px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+.wb-inspector--workbench .wb-inspector__actions .btn {
+    min-width: 164px;
+    height: 42px;
+    margin-left: 7px;
+}
+
+.workbench-armory-handle {
+    width: 190px;
+    min-width: 190px;
+    margin-left: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(12, 24, 36, 0.98);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgba(74, 99, 129, 0.7);
+    border-top-color: rgba(74, 99, 129, 0.7);
+    border-bottom-color: rgba(74, 99, 129, 0.7);
+}
+
+.workbench-armory-handle:hover,
+.workbench-armory-handle:focus {
+    background-color: rgba(24, 47, 68, 1);
+}
+
+.workbench-armory-handle__title {
+    color: rgb(232, 238, 246);
+    font-size: 19px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.workbench-armory-handle__count {
+    margin-top: 7px;
+    color: rgb(217, 164, 58);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.workbench-armory-handle__action {
+    margin-top: 18px;
+    color: rgb(104, 165, 231);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.workbench-armory {
+    width: 790px;
+    min-width: 790px;
+    margin-left: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    overflow: hidden;
+    background-color: rgba(8, 15, 23, 0.99);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgba(74, 99, 129, 0.72);
+    border-top-color: rgba(74, 99, 129, 0.72);
+    border-bottom-color: rgba(74, 99, 129, 0.72);
+}
+
+.workbench-armory__heading {
+    height: 48px;
+    min-height: 48px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.workbench-armory__heading-actions {
+    flex-direction: row;
+    align-items: center;
+}
+
+.workbench-armory__page {
+    min-width: 48px;
+    -unity-text-align: middle-center;
+}
+
+.workbench-page-button {
+    width: 38px;
+    height: 34px;
+    margin-left: 3px;
+    margin-right: 3px;
+    color: rgb(185, 205, 230);
+    font-size: 21px;
+    background-color: rgba(21, 35, 52, 0.96);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(91, 126, 169, 0.7);
+    border-right-color: rgba(91, 126, 169, 0.7);
+    border-top-color: rgba(91, 126, 169, 0.7);
+    border-bottom-color: rgba(91, 126, 169, 0.7);
+}
+
+.workbench-armory__close {
+    width: 138px;
+    height: 34px;
+    margin-left: 9px;
+    font-size: 9px;
+}
+
+.workbench-armory__grid {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: stretch;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.workbench-item {
+    position: relative;
+    width: 48.8%;
+    height: 30.8%;
+    margin-bottom: 2.5%;
+    padding-left: 72px;
+    padding-right: 10px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+    overflow: hidden;
+    background-color: rgba(14, 24, 36, 0.98);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(76, 102, 134, 0.88);
+    border-right-color: rgba(76, 102, 134, 0.7);
+    border-top-color: rgba(76, 102, 134, 0.76);
+    border-bottom-color: rgba(76, 102, 134, 0.7);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.workbench-item:hover,
+.workbench-item:focus,
+.workbench-item--selected {
+    background-color: rgba(24, 41, 59, 1);
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+}
+
+.workbench-item--selected {
+    border-left-width: 5px;
+}
+
+.workbench-item__classification {
+    height: 18px;
+    color: rgb(135, 159, 190);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.workbench-item__icon {
+    position: absolute;
+    left: 12px;
+    top: 34px;
+    width: 46px;
+    height: 46px;
+    color: rgb(219, 178, 84);
+    font-size: 30px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(6, 11, 18, 0.9);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 164, 58, 0.58);
+    border-right-color: rgba(217, 164, 58, 0.58);
+    border-top-color: rgba(217, 164, 58, 0.58);
+    border-bottom-color: rgba(217, 164, 58, 0.58);
+}
+
+.workbench-item__title {
+    height: 42px;
+    color: rgb(238, 242, 247);
+    font-size: 17px;
+    -unity-font-style: bold;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.workbench-item__facts {
+    min-height: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.workbench-item-fact {
+    min-width: 82px;
+    height: 48px;
+    margin-right: 4px;
+}
+
+.workbench-item-fact__label {
+    font-size: 8px;
+}
+
+.workbench-item-fact__value {
+    font-size: 13px;
+}
+
+.workbench-armory__instruction {
+    height: 32px;
+    min-height: 32px;
+    padding-top: 8px;
+    color: rgb(129, 153, 184);
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    border-top-width: 1px;
+    border-top-color: rgba(74, 99, 129, 0.45);
+}
+
+.workbench-armory__empty {
+    min-height: 0;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.workbench-armory__empty-mark {
+    color: rgb(104, 165, 231);
+    font-size: 42px;
+}
+
+.workbench-armory__empty-title {
+    margin-top: 8px;
+    color: rgb(221, 229, 239);
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+
+.workbench-armory__empty-copy {
+    margin-top: 4px;
+    color: rgb(133, 158, 188);
+    font-size: 11px;
+}
+
+.workbench-feedback {
+    position: absolute;
+    left: 26px;
+    right: 26px;
+    bottom: 10px;
+    height: 34px;
+    padding-top: 8px;
+    color: rgb(129, 221, 177);
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 0.6px;
+    background-color: rgba(13, 40, 32, 0.96);
+    -unity-text-align: middle-center;
+}
+
+.workbench-feedback--error {
+    color: rgb(235, 144, 136);
+    background-color: rgba(53, 24, 26, 0.96);
+}
+
+/* Shared semantic runtime tooltip. The service changes only semantic classes and content. */
+.runtime-tooltip {
+    position: absolute;
+    width: 360px;
+    max-width: 390px;
+    min-height: 118px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+    opacity: 0;
+    translate: 0 7px;
+    overflow: hidden;
+    color: rgb(232, 238, 246);
+    background-color: rgba(7, 12, 19, 0.995);
+    border-left-width: 3px;
+    border-right-width: 1px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgba(118, 148, 183, 0.82);
+    border-top-color: rgba(118, 148, 183, 0.82);
+    border-bottom-color: rgba(118, 148, 183, 0.82);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    transition-property: opacity, translate;
+    transition-duration: 130ms;
+    transition-timing-function: ease-out;
+}
+
+.runtime-tooltip--visible {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.runtime-tooltip--keyword {
+    border-left-width: 5px;
+}
+
+.runtime-tooltip--equipment {
+    width: 390px;
+    border-left-color: rgb(217, 164, 58);
+}
+
+.runtime-tooltip--disabledreason {
+    border-left-color: rgb(210, 102, 97);
+}
+
+.runtime-tooltip__heading {
+    min-height: 44px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.runtime-tooltip__glyph {
+    width: 31px;
+    height: 31px;
+    margin-right: 11px;
+}
+
+.runtime-tooltip__heading-copy {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.runtime-tooltip__eyebrow {
+    color: rgb(139, 164, 194);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 1.3px;
+}
+
+.runtime-tooltip__title {
+    margin-top: 2px;
+    color: rgb(241, 244, 248);
+    font-size: 20px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.runtime-tooltip__domain {
+    min-height: 25px;
+    margin-top: 8px;
+    padding-left: 9px;
+    padding-top: 5px;
+    color: rgb(174, 200, 228);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    background-color: rgba(23, 38, 55, 0.94);
+    border-left-width: 2px;
+    border-left-color: rgb(104, 165, 231);
+}
+
+.runtime-tooltip__body {
+    margin-top: 9px;
+    color: rgb(196, 208, 224);
+    font-size: 12px;
+    white-space: normal;
+}
+
+.runtime-tooltip__facts {
+    margin-top: 9px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.runtime-tooltip-fact {
+    width: 112px;
+    min-width: 112px;
+    height: 50px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.runtime-tooltip-fact__label {
+    font-size: 8px;
+}
+
+.runtime-tooltip-fact__value {
+    font-size: 14px;
+}
+
+.runtime-tooltip__context {
+    margin-top: 9px;
+    padding-top: 7px;
+    color: rgb(157, 181, 211);
+    font-size: 9px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+    border-top-width: 1px;
+    border-top-color: rgba(97, 125, 158, 0.55);
+}
+
+.runtime-tooltip__footer {
+    margin-top: 7px;
+    color: rgb(118, 143, 174);
+    font-size: 9px;
+    letter-spacing: 0.4px;
+}
+
+.runtime-tooltip.motion--reduced {
+    transition-duration: 0ms;
+    translate: 0 0;
+}
+
+/* Blocking rewards remain modal and functional inside the new shell. */
+.workbench-choice-scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(3, 6, 11, 0.88);
+}
+
+.workbench-choice {
+    width: 1180px;
+    min-height: 480px;
+    max-height: 820px;
+    padding-left: 34px;
+    padding-right: 34px;
+    padding-top: 28px;
+    padding-bottom: 30px;
+    background-color: rgba(9, 16, 25, 0.998);
+    border-left-width: 3px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(217, 164, 58);
+    border-right-color: rgba(102, 132, 168, 0.8);
+    border-top-color: rgba(102, 132, 168, 0.8);
+    border-bottom-color: rgba(102, 132, 168, 0.8);
+}
+
+.workbench-choice__eyebrow {
+    color: rgb(217, 164, 58);
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.workbench-choice__title {
+    margin-top: 7px;
+    color: rgb(241, 244, 248);
+    font-size: 34px;
+    -unity-font-style: bold;
+}
+
+.workbench-choice__copy {
+    margin-top: 9px;
+    color: rgb(163, 183, 208);
+    font-size: 14px;
+}
+
+.workbench-choice__options {
+    min-height: 0;
+    flex-grow: 1;
+    margin-top: 24px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.workbench-choice-card {
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 8px;
+    margin-right: 8px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    align-items: flex-start;
+    background-color: rgba(18, 30, 45, 0.98);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(83, 112, 148, 0.8);
+    border-right-color: rgba(83, 112, 148, 0.8);
+    border-top-color: rgba(83, 112, 148, 0.8);
+    border-bottom-color: rgba(83, 112, 148, 0.8);
+}
+
+.workbench-choice-card:hover,
+.workbench-choice-card:focus {
+    background-color: rgba(29, 49, 70, 1);
+    border-left-color: rgb(104, 165, 231);
+    border-right-color: rgb(104, 165, 231);
+    border-top-color: rgb(104, 165, 231);
+    border-bottom-color: rgb(104, 165, 231);
+}
+
+.workbench-choice-card__eyebrow {
+    color: rgb(217, 164, 58);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.workbench-choice-card__title {
+    margin-top: 7px;
+    color: rgb(239, 243, 248);
+    font-size: 22px;
+    -unity-font-style: bold;
+}
+
+.workbench-choice-card__copy {
+    margin-top: 12px;
+    color: rgb(180, 197, 218);
+    font-size: 12px;
+    white-space: normal;
+}
+
+.workbench-choice-card__delta {
+    width: 100%;
+    min-height: 31px;
+    margin-top: 8px;
+    padding-left: 9px;
+    padding-top: 7px;
+    color: rgb(139, 211, 177);
+    font-size: 10px;
+    -unity-font-style: bold;
+    background-color: rgba(16, 45, 36, 0.9);
+}
+
+/* Eight fixed addresses fit in one permanent row. The rail spends enough height for portraits,
+   class, and two sockets, but never competes with the dossier for a fifth of the viewport. */
+.warband-bar--editable {
+    height: 146px;
+    min-height: 146px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(4, 8, 13, 0.998);
+    border-top-width: 3px;
+}
+
+.warband-bar--editable .warband-bar__identity,
+.warband-bar--editable .warband-bar__armory {
+    width: 120px;
+    min-width: 120px;
+    height: 126px;
+}
+
+.warband-bar--editable .warband-bar__scroll {
+    height: 130px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.warband-bar--editable .warband-bar__strip,
+.warband-bar--editable .warband-bar__slots,
+.warband-bar--editable .warband-bar__reserve {
+    height: 126px;
+}
+
+.warband-bar--editable .warband-bar__strip {
+    width: 100%;
+    justify-content: center;
+}
+
+.warband-bar--editable .warband-hero {
+    width: 100px;
+    min-width: 100px;
+    height: 118px;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.warband-bar--editable .warband-hero--locked,
+.warband-bar--editable .warband-hero--empty {
+    width: 76px;
+    min-width: 76px;
+}
+
+.warband-bar--editable .warband-hero__portrait {
+    bottom: 44px;
+}
+
+.warband-bar--editable .warband-hero__class {
+    bottom: 39px;
+    height: 19px;
+    font-size: 10px;
+}
+
+.warband-bar--editable .warband-hero__gear {
+    height: 38px;
+}
+
+.warband-bar--editable .warband-bar__reserve {
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+}
+
+.warband-bar--editable .warband-bar__reserve .warband-bar__section {
+    width: 64px;
+    min-width: 64px;
+    margin-left: 0;
+    margin-right: 4px;
+    white-space: normal;
+}
+
+.warband-bar--editable .warband-tooltip {
+    display: none;
+}
+
+/* Readability floor for the Workbench slice. These are semantic roles, not per-screen guesses:
+   display 28+, title 20+, body 16+, metadata 13+. Geometry yields before text. */
+.workbench-header__title {
+    font-size: 30px;
+}
+
+.workbench-header__act,
+.workbench-section-heading__meta,
+.workbench-market-collapsed__meta,
+.workbench-armory__page,
+.workbench-dossier__hint {
+    font-size: var(--ui-type-meta);
+}
+
+.workbench-header__beat-label,
+.workbench-header__continue,
+.workbench-section-heading__title,
+.workbench-market-collapsed__title {
+    font-size: 16px;
+}
+
+.workbench-header__brief {
+    font-size: var(--ui-type-body);
+}
+
+.workbench-dossier__label,
+.workbench-market-collapsed__action,
+.workbench-armory-handle__action,
+.workbench-armory__close,
+.workbench-armory__instruction,
+.workbench-feedback {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench .wb-inspector__subtitle,
+.wb-inspector--workbench .wb-inspector__section-label {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench .wb-inspector__section-heading {
+    min-height: 22px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context {
+    min-height: 22px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context-glyph {
+    width: 16px;
+    height: 16px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context-value {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench .wb-inspector__line-copy {
+    min-height: 64px;
+    max-height: 90px;
+    font-size: var(--ui-type-body);
+}
+
+.wb-inspector--workbench .wb-inspector__line-title {
+    min-height: 22px;
+    font-size: 17px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__change {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__name {
+    font-size: 18px;
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-choice-preview__rule {
+    min-height: 80px;
+    max-height: 84px;
+    margin-top: 1px;
+    margin-bottom: 0;
+    font-size: var(--ui-type-body);
+}
+
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__line-copy {
+    width: 100%;
+    min-width: 0;
+    min-height: 80px;
+    max-height: 90px;
+}
+
+.wb-inspector--workbench .wb-inspector__page-button {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__decision-body,
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__column,
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__sections,
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__section {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__sections {
+    flex-direction: column;
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__line-copy,
+.wb-inspector--workbench.wb-inspector--paged-details .wb-choice-preview__rule {
+    width: 100%;
+    max-height: none;
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__overview {
+    height: 190px;
+    min-height: 190px;
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__portrait {
+    width: 160px;
+    min-width: 160px;
+    height: 182px;
+    min-height: 182px;
+}
+
+.wb-inspector--workbench.wb-inspector--paged-details .wb-inspector-stat {
+    min-width: 96px;
+    height: 50px;
+}
+
+.wb-inspector--workbench .wb-inspector__actions .btn {
+    font-size: var(--ui-type-body);
+}
+
+.workbench-item__classification,
+.workbench-item-fact__label {
+    font-size: var(--ui-type-meta);
+}
+
+.workbench-item__title {
+    font-size: 20px;
+}
+
+.workbench-item-fact__value,
+.workbench-armory__empty-copy {
+    font-size: var(--ui-type-body);
+}
+
+.runtime-tooltip__eyebrow,
+.runtime-tooltip__domain,
+.runtime-tooltip-fact__label,
+.runtime-tooltip__context,
+.runtime-tooltip__footer {
+    font-size: var(--ui-type-meta);
+}
+
+.runtime-tooltip__title {
+    font-size: 24px;
+}
+
+.runtime-tooltip__body,
+.runtime-tooltip-fact__value {
+    font-size: var(--ui-type-body);
+}
+
+.runtime-tooltip-fact {
+    height: 54px;
+}
+
+.workbench-choice-card__eyebrow,
+.workbench-choice-card__delta {
+    font-size: var(--ui-type-meta);
+}
+
+.workbench-choice-card__copy {
+    font-size: var(--ui-type-body);
+}
+
+.warband-bar--editable .warband-bar__eyebrow,
+.warband-bar--editable .warband-bar__section,
+.warband-bar--editable .warband-bar__manage,
+.warband-bar--editable .warband-bar__armory-hint {
+    font-size: var(--ui-type-meta);
+}
+
+.warband-bar--editable .warband-hero__class {
+    height: 22px;
+    bottom: 39px;
+    font-size: var(--ui-type-meta);
+}
+
+.warband-bar--editable .warband-gear__tier {
+    font-size: 11px;
+}
+
+/* Compact desktop composition trades ornament and art height before rule text. */
+.layout--compact .workbench-safe {
+    left: 14px;
+    right: 14px;
+    top: 12px;
+}
+
+.layout--compact .workbench-header__identity {
+    width: 210px;
+    min-width: 210px;
+}
+
+.layout--compact .workbench-header__commands {
+    min-width: 360px;
+}
+
+.layout--compact .workbench-header__continue {
+    width: 220px;
+}
+
+/* Ultrawide viewports have ample horizontal room but less logical height after panel scaling.
+   The market yields display art before the dossier or permanent warband rail yields information. */
+.layout--compact .workbench-market {
+    height: 218px;
+    min-height: 218px;
+    padding-top: 7px;
+    padding-bottom: 6px;
+}
+
+.layout--compact .workbench-section-heading {
+    height: 36px;
+    min-height: 36px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench {
+    height: 166px;
+    min-height: 166px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__identity {
+    height: 122px;
+    min-height: 122px;
+    padding-top: 4px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__title {
+    height: 22px;
+    min-height: 22px;
+}
+
+.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__art {
+    height: 72px;
+    min-height: 72px;
+    flex-shrink: 0;
+}
+
+.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
+    .market-offer-card__commerce {
+    height: 44px;
+    min-height: 44px;
+}
+
+.layout--compact .workbench-dossier__heading {
+    height: 34px;
+    min-height: 34px;
+}
+
+.layout--compact .workbench-armory {
+    width: 690px;
+    min-width: 690px;
+}
+
+.layout--narrow .market-offer-card.decision-card--stock.market-offer-card--workbench {
+    width: 18%;
+    min-width: 0;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.layout--narrow .workbench-armory {
+    width: 54%;
+    min-width: 0;
+}
+
+.layout--phone .warband-bar--editable {
+    height: 146px;
+    min-height: 146px;
+}
+
+.layout--compact .workbench-item {
+    height: 30%;
+    margin-bottom: 2%;
+}
+
+.layout--compact .wb-inspector--workbench .wb-inspector__overview {
+    height: 158px;
+    min-height: 158px;
+}
+
+.layout--compact .wb-inspector--workbench .wb-inspector__portrait {
+    width: 184px;
+    min-width: 184px;
+    height: 150px;
+    min-height: 150px;
+}
+
+.layout--compact .wb-inspector--workbench.wb-inspector--rankup .wb-inspector__overview {
+    height: 96px;
+    min-height: 96px;
+}
+
+.layout--compact .wb-inspector--workbench.wb-inspector--rankup .wb-inspector__portrait {
+    width: 148px;
+    min-width: 148px;
+    height: 88px;
+    min-height: 88px;
+}
+
+.layout--compact .wb-inspector--workbench.wb-inspector--weapon .wb-inspector__overview {
+    height: 136px;
+    min-height: 136px;
+}
+
+.layout--compact .wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait {
+    height: 128px;
+    min-height: 128px;
+}
+
+.layout--compact .wb-inspector--workbench.wb-inspector--weapon
+    .wb-inspector__subtitle {
+    display: none;
+}
+
+/* Fixed dossier pages use the available width before stacking. The old vertical section list
+   left only a few pixels for exact rule copy at the 720p floor even though most of the dossier
+   was horizontally empty. */
+.wb-inspector--workbench.wb-inspector--champion .wb-inspector__column--profile {
+    width: 100%;
+}
+
+.wb-inspector--workbench.wb-inspector--champion
+    .wb-inspector__column--profile .wb-inspector__sections {
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: row;
+}
+
+.wb-inspector--workbench.wb-inspector--champion
+    .wb-inspector__column--profile .wb-inspector__section {
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0;
+    padding-top: 3px;
+    padding-bottom: 4px;
+}
+
+.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__column--profile,
+.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__column--secondary {
+    width: 50%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__column--profile .wb-inspector__sections {
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: row;
+}
+
+.wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__column--profile .wb-inspector__section {
+    width: 50%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__column--secondary .wb-inspector__sections,
+.wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__column--secondary .wb-inspector__section {
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--weapon
+    .wb-inspector__column--profile .wb-inspector__sections,
+.wb-inspector--workbench.wb-inspector--trinket
+    .wb-inspector__column--profile .wb-inspector__sections,
+.wb-inspector--workbench.wb-inspector--inscription
+    .wb-inspector__column--profile .wb-inspector__sections {
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: row;
+}
+
+.wb-inspector--workbench.wb-inspector--weapon
+    .wb-inspector__column--profile .wb-inspector__section,
+.wb-inspector--workbench.wb-inspector--trinket
+    .wb-inspector__column--profile .wb-inspector__section,
+.wb-inspector--workbench.wb-inspector--inscription
+    .wb-inspector__column--profile .wb-inspector__section {
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0;
+}
+
+.wb-inspector--workbench.wb-inspector--champion .wb-inspector__line-copy,
+.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__line-copy,
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__line-copy,
+.wb-inspector--workbench.wb-inspector--trinket .wb-inspector__line-copy,
+.wb-inspector--workbench.wb-inspector--inscription .wb-inspector__line-copy {
+    width: 100%;
+    min-width: 0;
+}
+
+/* A champion dossier already gives each rule its own equal-height column. Let the semantic copy
+   hug its wrapped text instead of reserving the global 64px prose floor; that artificial floor
+   can extend an otherwise visible two-line rule behind the pinned action tray at 720p. */
+.wb-inspector--workbench.wb-inspector--champion .wb-inspector__line-copy {
+    min-height: 0;
+    max-height: none;
+}
+
+.wb-inspector--workbench.wb-inspector--inscription .wb-inspector__line-copy {
+    min-height: 0;
+    max-height: none;
+}
+
+/* Equipment projection is a deliberate BUILD composition: the left column names the active
+   attack/signature/passive, while the right column owns recipient legality and exact item deltas.
+   Full rule bodies remain available from the unit/keyword tooltips instead of being silently
+   cropped beneath the comparison table. */
+.wb-inspector--workbench.wb-inspector--equipment-preview
+    .wb-inspector__line-copy {
+    display: none;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview
+    .wb-inspector__column--profile .wb-inspector__sections {
+    flex-direction: column;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview
+    .wb-inspector__column--profile .wb-inspector__section {
+    width: auto;
+    flex-basis: 0;
+    margin-left: 0;
+    margin-right: 5px;
+    margin-bottom: 4px;
+}
+
+.wb-inspector--workbench.wb-inspector--equipment-preview
+    .wb-equipment-preview__rule-deltas {
+    display: none;
+}
+
+/* 4:3 is the horizontal squeeze case under the height-locked panel profile. Preserve every
+   address and every authored item name by yielding a few pixels of rail/card ornament. */
+.layout--narrow .warband-bar--editable .warband-hero {
+    width: 98px;
+    min-width: 98px;
+}
+
+.layout--narrow .workbench-item {
+    width: 100%;
+    height: 15.3%;
+    margin-bottom: 1.3%;
+    padding-left: 60px;
+    padding-right: 8px;
+    padding-top: 7px;
+    padding-bottom: 5px;
+}
+
+.layout--narrow .workbench-item__icon {
+    left: 10px;
+    top: 13px;
+    width: 38px;
+    height: 38px;
+    font-size: 26px;
+}
+
+.layout--narrow .workbench-item__classification {
+    height: 18px;
+    min-height: 18px;
+    flex-shrink: 0;
+}
+
+.layout--narrow .workbench-item__title {
+    height: 34px;
+    min-height: 34px;
+    flex-shrink: 0;
+}
+
+.layout--narrow .workbench-item__facts {
+    display: none;
+}
+
+/* Compact defaults intentionally shrink the overview. A paged narrow dossier has only one
+   rule section below it, so it can instead reserve enough height for a two-row stat grid. */
+.layout--narrow
+    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__overview {
+    height: 190px;
+    min-height: 190px;
+}
+
+.layout--narrow
+    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__portrait {
+    width: 154px;
+    min-width: 154px;
+    height: 182px;
+    min-height: 182px;
+}
+
+.layout--narrow
+    .wb-inspector--workbench.wb-inspector--paged-details .wb-inspector__stats {
+    margin-top: 4px;
+}

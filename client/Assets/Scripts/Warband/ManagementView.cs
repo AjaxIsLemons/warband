@@ -177,10 +177,9 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly VisualElement _workspace;
     private readonly Label _act;
     private readonly Label _beat;
-    private readonly Label _sand;
+    private readonly HourstoneAmount _sand;
     private readonly Label _heading;
     private readonly Label _brief;
-    private readonly Label _stationEyebrow;
     private readonly Label _overviewCopy;
     private readonly Label _recommendation;
     private readonly Label _breachAction;
@@ -203,6 +202,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private readonly Button _selectionTrayInspect;
     private readonly VisualElement _inspectorScrim;
     private readonly VisualElement _inspectorPane;
+    private readonly ScrollView _inspectorScroll;
     private readonly VisualElement _inspectorActionDock;
     private readonly Button _inspectorExpand;
     private readonly Button _secondary;
@@ -260,12 +260,14 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     private string _choiceSignature = "";
     private readonly List<string> _trayTargetIds = new List<string>();
     private IVisualElementScheduledItem _marketScrollAnimation;
+    private IVisualElementScheduledItem _marketLayoutLock;
     private int _marketScrollGeneration;
     private bool _routePending;
     private bool _reducedMotion;
     private string _lastMarketSelectionKey = "";
     private string _lastDetailKey = "";
     private bool _lastLoadoutOpen;
+    private bool _marketHasOffers;
     private string _lastLoadoutHeroKey = "";
     private string _partyShelfSignature = "";
     private readonly Dictionary<string, VisualElement> _shelfTargets =
@@ -291,11 +293,14 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _overview.usageHints |= UsageHints.GroupTransform;
         _workspace.usageHints |= UsageHints.GroupTransform;
         _act = Required<Label>(_root, "act");
-        _beat = Required<Label>(_root, "station-eyebrow");
-        _sand = Required<Label>(_root, "sand");
+        _beat = Required<Label>(_root, "beat");
+        Label legacySand = Required<Label>(_root, "sand");
+        VisualElement sandHost = legacySand.parent;
+        legacySand.RemoveFromHierarchy();
+        _sand = new HourstoneAmount(0, "management-resource__value--sand");
+        sandHost.Add(_sand);
         _heading = Required<Label>(_root, "heading");
         _brief = Required<Label>(_root, "brief");
-        _stationEyebrow = Required<Label>(_root, "station-eyebrow");
         _overviewCopy = Required<Label>(_root, "overview-copy");
         _recommendation = Required<Label>(_root, "recommendation");
         _breachAction = Required<Label>(_root, "breach-action");
@@ -319,6 +324,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _selectionTrayInspect = Required<Button>(_root, "selection-tray-inspect");
         _inspectorScrim = Required<VisualElement>(_root, "inspector-scrim");
         _inspectorPane = Required<VisualElement>(_root, "inspector-pane");
+        _inspectorScroll = Required<ScrollView>(_root, "inspector-scroll");
         _inspectorActionDock = Required<VisualElement>(_root, "inspector-action-dock");
         _inspectorExpand = Required<Button>(_root, "inspector-close");
         _secondary = Required<Button>(_root, "secondary");
@@ -344,7 +350,9 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _loadoutStoredCount = Required<Label>(_root, "loadout-stored-count");
         _loadoutClose = Required<Button>(_root, "loadout-close");
 
-        _inspector = new InspectorPanel(id => _actions.InspectorAction?.Invoke(id));
+        _inspector = new InspectorPanel(
+            id => _actions.InspectorAction?.Invoke(id),
+            key => _actions.SelectComparisonTarget?.Invoke(key));
         _inspector.Root.AddToClassList("wb-inspector--hub");
         Required<VisualElement>(_root, "inspector-slot").Add(_inspector.Root);
         // Hall decisions should never hide their commit below dossier content. The reusable
@@ -425,6 +433,10 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _continue.clicked += () => _actions.Advance?.Invoke();
         _root.RegisterCallback<KeyDownEvent>(OnKeyDown, TrickleDown.TrickleDown);
         _root.RegisterCallback<GeometryChangedEvent>(_ => ApplyResponsiveLayout());
+        _contentScroll.RegisterCallback<WheelEvent>(
+            PreventMarketDesktopScroll, TrickleDown.TrickleDown);
+        _inspectorScroll.RegisterCallback<WheelEvent>(
+            PreventMarketDesktopScroll, TrickleDown.TrickleDown);
 
         _director = new HubFlowDirector(_overview, _workspace, _presentation);
     }
@@ -442,10 +454,11 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _reducedMotion = model.ReducedMotion;
 
         _act.text = model.Act;
-        _sand.text = model.Sand;
+        _sand.Bind(int.TryParse(model.Sand, out int balance) ? balance : 0);
         _overviewCopy.text = $"{model.Beat}. The Table keeps every service in one remembered place.";
         _recommendation.text = StationName(model.RecommendedStation) + "  ›";
         _root.EnableInClassList("motion--reduced", model.ReducedMotion);
+        _root.EnableInClassList("hub--overview", model.HallOverview);
         SetStationClass(model.ActiveStation);
         _polish.SetReducedMotion(model.ReducedMotion);
 
@@ -473,6 +486,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         BindPartyShelf(model.PartyShelf);
         BindBlockingChoice(model);
         ApplyResponsiveLayout();
+        StabilizeMarketDesktopLayout();
         FollowMarketSelection(model, routeChanged);
 
         if (model.HallOverview)
@@ -562,7 +576,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
     private void BindWorkspace(PlanningModel model)
     {
-        _stationEyebrow.text = model.Beat;
+        _beat.text = model.Beat;
         _heading.text = model.Heading;
         _brief.text = model.Brief;
         _feedback.text = model.Feedback;
@@ -583,8 +597,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
                 _primaryLabel.text = "LIVE STOCK";
                 _secondaryLabel.text = "";
                 _tabNote.text = model.SlotOfferOpen
-                    ? model.SlotOfferText
-                    : "Tap or focus an offer to compare it. Buying is always a separate action.";
+                    ? $"LIVE STOCK  ·  {model.MarketOffers.Count} OFFERS  ·  FIELD PLACE READY"
+                    : $"LIVE STOCK  ·  {model.MarketOffers.Count} OFFERS";
                 _workspaceHint.text = "Stock refreshes after a resolved beat. Held stock survives a refresh.";
                 break;
             case HallStation.Armory:
@@ -634,7 +648,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
                      secondary.Count == 0;
         _empty.text = EmptyCopy(model.ActiveStation);
         SetDisplayed(_empty, empty);
-        SetDisplayed(_primaryLabel, !empty);
+        SetDisplayed(_primaryLabel, !empty && !market);
         SetDisplayed(_secondaryLabel, secondary.Count > 0);
         BindMarketPage(model);
 
@@ -649,8 +663,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _continue.SetEnabled(model.CanCommit);
         bool showContinue = model.BeatKind == PlanningBeat.Fight ||
                             model.BeatKind == PlanningBeat.Boss;
-        SetDisplayed(_continue, showContinue);
-        SetDisplayed(_continue.parent, showContinue);
+        SetDisplayed(_continue, showContinue && !model.HallOverview);
 
         _inspector.Bind(model.Inspector);
         BindSelectionTray(model);
@@ -660,7 +673,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         SetDisplayed(_inspectorPane, true);
         _inspectorScrim.EnableInClassList("hub-inspector-scrim--expanded",
             model.InspectorOpen && !model.Inspector.Empty);
-        _inspectorExpand.text = model.InspectorOpen ? "CLOSE  ×" : "EXPAND  ↗";
+        _inspectorExpand.text = model.InspectorOpen ? "×" : "↗";
         _inspectorExpand.tooltip = model.InspectorOpen
             ? "Return to the split-stage view."
             : "Open the selected card as a full dossier.";
@@ -804,7 +817,8 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             AppendSignatureText(signature, slot.Accent);
             AppendSignatureText(signature, slot.Weapon);
             AppendSignatureText(signature, slot.Trinket);
-            signature.Append(slot.Focused ? '1' : '0').Append('|');
+            signature.Append(slot.Focused ? '1' : '0').Append('|')
+                .Append(slot.Previewed ? '1' : '0').Append('|');
         }
     }
 
@@ -827,6 +841,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         button.EnableInClassList("party-slot--locked",
             model.State == PartySlotState.Locked);
         button.EnableInClassList("party-slot--focused", model.Focused);
+        button.EnableInClassList("party-slot--previewed", model.Previewed);
         button.userData = model.Key;
 
         string baseTargetId = model.State == PartySlotState.Occupied
@@ -908,10 +923,10 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
 
     private void BindMarketPage(PlanningModel model)
     {
-        bool shown = model.ActiveStation == HallStation.Market &&
-                     model.MarketOffers.Count > 0;
-        SetDisplayed(_marketPage, shown);
-        if (!shown) return;
+        _marketHasOffers = model.ActiveStation == HallStation.Market &&
+                           model.MarketOffers.Count > 0;
+        SetDisplayed(_marketPage, _marketHasOffers && _phone);
+        if (!_marketHasOffers) return;
 
         int selected = 0;
         for (int i = 0; i < model.MarketOffers.Count; i++)
@@ -996,17 +1011,18 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         if (spec)
         {
             signature = "spec|" + model.SpecChoice.HeroName + "|" +
-                        model.SpecChoice.OptionAName + "|" + model.SpecChoice.OptionBName;
+                        string.Join("|", model.SpecChoice.Options.ConvertAll(o => o.Name));
             _choiceEyebrow.text = model.SpecChoice.RankLabel + " AWAKENING";
             _choiceTitle.text = model.SpecChoice.HeroName;
             MechanicPresentation.BindInline(_choiceCopy,
                 "Choose one path before making another management decision.");
-            reveals.Add(AddChoice(model.SpecChoice.OptionAName, model.SpecChoice.OptionAText,
-                () => _actions.ChooseSpec?.Invoke(0), model.SpecChoice.OptionAChange,
-                model.SpecChoice.OptionAComparisons));
-            reveals.Add(AddChoice(model.SpecChoice.OptionBName, model.SpecChoice.OptionBText,
-                () => _actions.ChooseSpec?.Invoke(1), model.SpecChoice.OptionBChange,
-                model.SpecChoice.OptionBComparisons));
+            for (int i = 0; i < model.SpecChoice.Options.Count; i++)
+            {
+                var option = model.SpecChoice.Options[i];
+                int index = i;                       // capture per iteration, not the loop variable
+                reveals.Add(AddChoice(option.Name, option.Text,
+                    () => _actions.ChooseSpec?.Invoke(index), option.Change, option.Comparisons));
+            }
         }
         else
         {
@@ -1090,8 +1106,61 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
     public void Dispose()
     {
         CancelMarketScroll();
+        CancelMarketLayoutLock();
         _director.Cancel();
         _polish.Dispose();
+    }
+
+    private void PreventMarketDesktopScroll(WheelEvent evt)
+    {
+        if (_activeStation != HallStation.Market || _hallOverview || _phone) return;
+        ResetMarketDesktopScroll();
+        evt.StopImmediatePropagation();
+    }
+
+    /// <summary>
+    /// Market is a bounded desktop decision surface, not a document. Rebinding the inspector can
+    /// leave its ScrollView with the previous content extent until Yoga completes another layout
+    /// pass, so reset across two retained-layout frames as well as immediately.
+    /// </summary>
+    private void StabilizeMarketDesktopLayout()
+    {
+        CancelMarketLayoutLock();
+        if (_activeStation != HallStation.Market || _hallOverview || _phone) return;
+
+        ResetMarketDesktopScroll();
+        int remainingPasses = 2;
+        IVisualElementScheduledItem layoutLock = null;
+        layoutLock = _root.schedule.Execute(() =>
+        {
+            if (_activeStation != HallStation.Market || _hallOverview || _phone ||
+                _root.panel == null)
+            {
+                layoutLock?.Pause();
+                if (ReferenceEquals(_marketLayoutLock, layoutLock))
+                    _marketLayoutLock = null;
+                return;
+            }
+
+            ResetMarketDesktopScroll();
+            if (--remainingPasses > 0) return;
+            layoutLock?.Pause();
+            if (ReferenceEquals(_marketLayoutLock, layoutLock))
+                _marketLayoutLock = null;
+        }).Every(16);
+        _marketLayoutLock = layoutLock;
+    }
+
+    private void ResetMarketDesktopScroll()
+    {
+        _contentScroll.scrollOffset = Vector2.zero;
+        _inspectorScroll.scrollOffset = Vector2.zero;
+    }
+
+    private void CancelMarketLayoutLock()
+    {
+        _marketLayoutLock?.Pause();
+        _marketLayoutLock = null;
     }
 
     /// <summary>
@@ -1220,6 +1289,57 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             collection.worldBound.xMax > _inspectorScrim.worldBound.xMin + 0.75f)
             return false;
 
+        if (!_phone)
+        {
+            const float tolerance = 1.25f;
+            if (Mathf.Max(0f, _contentScroll.verticalScroller.highValue) > tolerance ||
+                Mathf.Max(0f, _inspectorScroll.verticalScroller.highValue) > tolerance ||
+                Mathf.Abs(_contentScroll.scrollOffset.y) > tolerance ||
+                Mathf.Abs(_inspectorScroll.scrollOffset.y) > tolerance)
+                return false;
+            if (_primaryLabel.resolvedStyle.display != DisplayStyle.None ||
+                _marketPage.resolvedStyle.display != DisplayStyle.None)
+                return false;
+
+            Rect stockViewport = _contentScroll.contentViewport.worldBound;
+            Rect detailViewport = _inspectorScroll.contentViewport.worldBound;
+            if (_contentScroll.contentContainer.worldBound.yMax >
+                    stockViewport.yMax + tolerance ||
+                _inspectorScroll.contentContainer.worldBound.yMax >
+                    detailViewport.yMax + tolerance ||
+                _inspectorActionDock.worldBound.yMax >
+                    _inspectorPane.worldBound.yMax + tolerance)
+                return false;
+
+            VisualElement ribbon =
+                _root.Q<VisualElement>(className: "hub-command-ribbon");
+            VisualElement anchorRail =
+                _root.Q<VisualElement>(className: "hub-anchor-rail");
+            List<Button> anchors =
+                _root.Query<Button>(className: "hub-anchor").ToList();
+            if (ribbon == null || anchorRail == null || anchors.Count != 4 ||
+                anchorRail.worldBound.xMin < ribbon.worldBound.xMin - tolerance ||
+                anchorRail.worldBound.xMax > ribbon.worldBound.xMax + tolerance)
+                return false;
+
+            float previousRight = anchorRail.worldBound.xMin;
+            foreach (Button anchor in anchors)
+            {
+                Label label = anchor.Q<Label>(className: "hub-anchor__label");
+                if (label == null || label.resolvedStyle.display == DisplayStyle.None ||
+                    anchor.worldBound.xMin < previousRight - tolerance ||
+                    anchor.worldBound.xMin < anchorRail.worldBound.xMin - tolerance ||
+                    anchor.worldBound.xMax > anchorRail.worldBound.xMax + tolerance)
+                    return false;
+                previousRight = anchor.worldBound.xMax;
+            }
+
+            if (_continue.resolvedStyle.display != DisplayStyle.None &&
+                anchorRail.worldBound.xMax > _continue.worldBound.xMin + tolerance)
+                return false;
+        }
+
+        Rect cardViewport = _contentScroll.contentViewport.worldBound;
         foreach (VisualElement card in cards)
         {
             VisualElement main =
@@ -1254,6 +1374,12 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
             if (title.worldBound.xMin < card.worldBound.xMin - 0.75f ||
                 title.worldBound.xMax > card.worldBound.xMax + 0.75f)
                 return false;
+            if (!_phone &&
+                (card.worldBound.xMin < cardViewport.xMin - 0.75f ||
+                 card.worldBound.xMax > cardViewport.xMax + 0.75f ||
+                 card.worldBound.yMin < cardViewport.yMin - 5f ||
+                 card.worldBound.yMax > cardViewport.yMax + 0.75f))
+                return false;
         }
         return true;
     }
@@ -1286,6 +1412,7 @@ internal sealed class ManagementView : IRunScreenView, IDisposable
         _contentScroll.mode = _phone
             ? ScrollViewMode.Horizontal
             : ScrollViewMode.Vertical;
+        SetDisplayed(_marketPage, _marketHasOffers && _phone);
         if (_phone && !_inspectorOpen)
             SetDisplayed(_inspectorScrim, false);
 

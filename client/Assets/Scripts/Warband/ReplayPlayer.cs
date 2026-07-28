@@ -31,6 +31,9 @@ public class ReplayPlayer : MonoBehaviour
 
     private List<PlaybackUnit> _initial = new List<PlaybackUnit>();
     private List<BattleEvent> _events = new List<BattleEvent>();
+    /// <summary>The battle's rule-id table (replay v6). Every fold is built WITH it — a fold without
+    /// it resolves every passive to "" and the whole layer silently degrades to the generic tell.</summary>
+    private List<string> _ruleIds = new List<string>();
     private PlaybackState _fold;
     private int _endTick, _fxCursor, _lastPreviewTick = 60;
     private float _clock;
@@ -231,7 +234,7 @@ public class ReplayPlayer : MonoBehaviour
         private readonly ImpactTune _impact;
         private readonly NumberTune _numbers;
         private readonly FxTune _fx;
-        private readonly Action<string> _playSfx;
+        private readonly Action<string, SfxBus> _playSfx;
         // Motion/windup times are authored at 10 ticks/s; compress on fast-forward so tells stay
         // crisp instead of smearing (flash/punch stay real-seconds, decayed in ReplayPlayer.Update).
         private readonly float _speedScale;
@@ -244,6 +247,10 @@ public class ReplayPlayer : MonoBehaviour
             public Vector3 SourcePos, TargetPos; // ground-level world endpoints, captured at handle
             public float StartAt, Windup, Motion; // director-clock start + scaled phase durations
             public bool MotionStarted, Fired;
+            // The motion has run out and the body is back on its hex. Separate from removal because
+            // a sustained sigil now outlives the motion (FxTune.castSigilHoldSeconds) and the entry
+            // has to survive to close it — see the retire block.
+            public bool Landed;
             // KayKit combat clip fired at StartAt with Animator.speed fitted so the swing fills
             // exactly the windup+motion gap (render-contract §4: the renderer fits its swing
             // animation into the sim's gap). Null on primitives / non-origin tells.
@@ -294,6 +301,16 @@ public class ReplayPlayer : MonoBehaviour
         // Director-clock time each caster last named itself in the feed — the announce ration's
         // whole state (FxTune.announceCooldownSeconds). Dropped on Reset with everything else.
         private readonly Dictionary<int, float> _announcedAt = new Dictionary<int, float>();
+        // Which (unit, status) pairs are currently SHOWING. The entire state behind the onset-vs-
+        // refresh rule in Handle; the fold cannot answer it because it has already applied the
+        // event by dispatch time. Dropped on Reset like every other ration.
+        private readonly HashSet<(int Unit, StatusKind Kind)> _held = new HashSet<(int, StatusKind)>();
+        // Director-clock time each (unit, rule) pair last drew a tell — the passive ration's whole
+        // state, same shape as the announce cooldown above and dropped by Reset for the same reason.
+        private readonly Dictionary<(int Unit, int Rule), float> _ruleFiredAt =
+            new Dictionary<(int, int), float>();
+        // Rule index → authored id, off the fold's table (Design/passive-legibility.md).
+        private readonly Func<int, string> _ruleId;
         // Director-clock time the camera last shook — the ENTIRE state of the shake ration
         // (FxTune.shakeRationSeconds). Same shape as the announce cooldown above, and dropped by
         // Reset for the same reason: a loop-wrap's first Faultline is news again.
@@ -308,17 +325,18 @@ public class ReplayPlayer : MonoBehaviour
                                 Func<NumberSpawn, FloatingNumber> spawnNumber,
                                 Action<FloatingNumber> recycleNumber,
                                 Func<int, PlaybackUnit> unitById, Func<Hex, Vector3> hexToWorld,
+                                Func<int, string> ruleId,
                                 Func<Tracer> getTracer, Action<Tracer> recycleTracer,
                                 Func<Burst> getBurst, Action<Burst> recycleBurst,
                                 Func<VfxDef, VfxInstance> getVfx, Action<VfxInstance> recycleVfx,
                                 Func<Quaternion> billboard, Action<Hex> pulseGround,
                                 Action<int, string> announce, Action<int> strike,
                                 Action<float, float> cameraKick, Action<int> deathless,
-                                float ticksPerSecond, Action<string> playSfx = null)
+                                float ticksPerSecond, Action<string, SfxBus> playSfx = null)
         {
             _strike = strike; _cameraKick = cameraKick; _deathless = deathless;
             _views = views; _spawnNumber = spawnNumber; _recycleNumber = recycleNumber;
-            _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx;
+            _unitById = unitById; _hexToWorld = hexToWorld; _playSfx = playSfx; _ruleId = ruleId;
             _getTracer = getTracer; _recycleTracer = recycleTracer;
             _getBurst = getBurst; _recycleBurst = recycleBurst;
             _getVfx = getVfx; _recycleVfx = recycleVfx; _billboard = billboard;
@@ -332,6 +350,35 @@ public class ReplayPlayer : MonoBehaviour
 
         public void Handle(BattleEvent e, float delay = 0f)
         {
+            // A passive that fires every swing is the engine RUNNING, not news — the same law the
+            // status rows follow one block down. First fire of a (unit, rule) is the moment worth a
+            // loud tell; repeats inside the ration keep only the quiet one. Measured over the eleven
+            // fixtures, TriggerFired alone runs 1.4–7.1 events/s against a ~21/s total budget, so
+            // without this the passive layer would cost more legibility than it buys.
+            if (e.Kind == EventKind.TriggerFired && _fx.passiveOnsetSeconds > 0f)
+            {
+                var ruleKey = (e.Source, e.Aux);
+                bool onset = !_ruleFiredAt.TryGetValue(ruleKey, out float last)
+                             || _clock - last >= _fx.passiveOnsetSeconds;
+                _ruleFiredAt[ruleKey] = _clock;
+                if (!onset) return;   // 0 disables the ration and every fire draws
+            }
+
+            // Onset vs refresh. StatusApplied fires on every re-application (a Pyromancer's every
+            // swing re-stokes the same merged Burn pool) and on every decay tick, and the Director
+            // cannot ask the fold which it is — the fold is already advanced by dispatch time — so
+            // it keeps its own record of what is currently showing. Suppressing the refresh flash
+            // is the whole point: the icon's stack count and countdown ring already carry the
+            // state, and the flash was repeating it 8.5% of all tell-bearing events across the
+            // fixtures (25.8% of castfest). The TRANSITION is the news.
+            if (e.Kind == EventKind.StatusApplied)
+            {
+                bool onset = _held.Add((e.Target, (StatusKind)e.Aux));
+                if (!onset && _fx.statusRefreshQuiet) return;
+            }
+            else if (e.Kind == EventKind.StatusExpired)
+                _held.Remove((e.Target, (StatusKind)e.Aux));
+
             // Ranged is a VIEW fact: the hex distance between the two endpoints at fold-dispatch time.
             // Null when either endpoint is absent from the fold — a ranged-filtered rule then can't
             // match, so a melee lunge and a projectile tracer never fall back to each other.
@@ -344,6 +391,12 @@ public class ReplayPlayer : MonoBehaviour
             // disagree about what "pyro.starfall" means. Null context never matches a byAbility rule.
             string srcAbility = AbilityOf(e.Source, su);
 
+            // The passive's name, resolved off the fold's rule table. Unlike chassis/ability/weapon
+            // this is NOT a property of the source unit: a team rule (Banner today, Inscription
+            // tomorrow) belongs to no unit, so the index on the event is the only handle.
+            string eventRule = (e.Kind == EventKind.TriggerFired || e.Kind == EventKind.RuleChanged)
+                ? _ruleId(e.Aux) : null;
+
             TellDef best = null;
             int bestSpec = -1;
             foreach (var def in _tells)
@@ -351,7 +404,8 @@ public class ReplayPlayer : MonoBehaviour
                 if (!TellMatch.Matches(e, def.eventKind, def.CauseFilter, def.StatusFilter, def.FlavorFilter,
                                        def.RangedFilter, distance, def.ChassisFilter, su?.ChassisId,
                                        ability: def.AbilityFilter, sourceAbility: srcAbility,
-                                       weapon: def.WeaponFilter, sourceWeapon: su?.WeaponName)) continue;
+                                       weapon: def.WeaponFilter, sourceWeapon: su?.WeaponName,
+                                       rule: def.RuleFilter, eventRule: eventRule)) continue;
                 if (def.Specificity > bestSpec) { best = def; bestSpec = def.Specificity; }
             }
             if (best == null) return;
@@ -531,7 +585,10 @@ public class ReplayPlayer : MonoBehaviour
                     pt.FxStarted = true;
                     pt.Sustained = StartSourceVfx(pt);
                     StartGroundVfx(pt);
-                    if (!string.IsNullOrEmpty(pt.Def.castSound)) _playSfx?.Invoke(pt.Def.castSound);
+                    // The riser rides the Cast bus: it is the windup cue Riot's law requires AHEAD
+                    // of the payoff, so it must not be stolen by the impacts it is announcing.
+                    if (!string.IsNullOrEmpty(pt.Def.castSound))
+                        _playSfx?.Invoke(pt.Def.castSound, SfxBus.Cast);
                     if (pt.Def.announce) TryAnnounce(in pt);
                 }
 
@@ -555,16 +612,27 @@ public class ReplayPlayer : MonoBehaviour
                 if (!pt.MotionStarted && local >= pt.Windup)
                 {
                     pt.MotionStarted = true;
-                    // The windup is over: a sustained source recipe (the cast aura) stops here and
-                    // runs out its fade, which IS the release beat of the cast sentence.
-                    if (pt.Sustained != null) { pt.Sustained.EndSustain(); pt.Sustained = null; }
                     SpawnMotion(pt);
                 }
 
-                if (pt.Def.motion == MotionKind.Lunge)
-                    DriveLunge(pt, local);
-                else if (pt.Def.motion == MotionKind.Arc)
-                    DriveArc(pt, local);
+                // Beat 4 of the cast sentence. The sigil used to close HERE, at the windup — which
+                // meant the caster's era sigil was gone before its own payoff landed, and the short
+                // windups never finished the recipe's 0.22 s alpha ramp at all. It now holds through
+                // the release and the impacts, and the recipe's fade plays the burn-out.
+                if (pt.Sustained != null
+                    && local >= pt.Windup + _fx.castSigilHoldSeconds * _speedScale)
+                {
+                    pt.Sustained.EndSustain();
+                    pt.Sustained = null;
+                }
+
+                // Landed is the guard, not removal: an entry that is still holding a sigil outlives
+                // its own motion, and re-driving a finished lunge would fight the zeroed offset.
+                if (!pt.Landed)
+                {
+                    if (pt.Def.motion == MotionKind.Lunge) DriveLunge(pt, local);
+                    else if (pt.Def.motion == MotionKind.Arc) DriveArc(pt, local);
+                }
 
                 float contact = pt.Windup + ContactOffset(pt.Def, pt.Motion);
                 if (!pt.Fired && local >= contact)
@@ -575,17 +643,23 @@ public class ReplayPlayer : MonoBehaviour
 
                 if (pt.Fired && local >= pt.Windup + pt.Motion)
                 {
-                    if ((pt.Def.motion == MotionKind.Lunge || pt.Def.motion == MotionKind.Arc)
-                        && _views.TryGetValue(pt.Event.Source, out var sv))
-                        sv.MotionOffset = Vector3.zero; // land exactly back on the hex
-                    if (pt.Def.motion == MotionKind.Arc)  // touchdown puff, at the hex it landed on
+                    if (!pt.Landed)
                     {
-                        _arcing.Remove(pt.Event.Source);
-                        PlayBurst(pt.TargetPos + Vector3.up * 0.15f, pt.Def.motionColor,
-                                  pt.Def.motionGlow, pt.Def.motionScale * 0.55f, 0.18f);
+                        pt.Landed = true;
+                        if ((pt.Def.motion == MotionKind.Lunge || pt.Def.motion == MotionKind.Arc)
+                            && _views.TryGetValue(pt.Event.Source, out var sv))
+                            sv.MotionOffset = Vector3.zero; // land exactly back on the hex
+                        if (pt.Def.motion == MotionKind.Arc)  // touchdown puff, at the hex it landed on
+                        {
+                            _arcing.Remove(pt.Event.Source);
+                            PlayBurst(pt.TargetPos + Vector3.up * 0.15f, pt.Def.motionColor,
+                                      pt.Def.motionGlow, pt.Def.motionScale * 0.55f, 0.18f);
+                        }
                     }
-                    _pending.RemoveAt(i);
-                    continue;
+                    // Retire only once the sigil has been closed. A sustained recipe never expires
+                    // on its own, so dropping the entry while it still held one would strand the
+                    // effect under the caster until the next Reset.
+                    if (pt.Sustained == null) { _pending.RemoveAt(i); continue; }
                 }
                 _pending[i] = pt;
             }
@@ -756,6 +830,25 @@ public class ReplayPlayer : MonoBehaviour
 
         /// <summary>The impact payload — flash/punch/number on the tell's side unit, unchanged from
         /// the pre-motion behavior; motion-None tells with no latch fire it the same frame as before.</summary>
+        /// <summary>Which bus an impact-time sound rides (`Design/audio.md` §5.0/§5.3).
+        ///
+        /// Deaths, cheat-deaths and crits are DECISIVE: never ducked, never stolen — the classes
+        /// Guildrun's reviews single out. Weapon and ability contact is IMPACT. Cast bodies join
+        /// their own riser on CAST. Everything else — statuses, shields, fields — is STATE, first to
+        /// go when the pool is full, because it is the one layer a player can also read off icons.
+        ///
+        /// <b>`Attack` belongs on Impact, and that is not obvious.</b> The per-weapon hit sounds are
+        /// authored on `EventKind.Attack` (the swing), not `DamageDealt` — a hit is heard when the
+        /// weapon lands, and `Damage/Attack` carries no sound row at all. Routing only `DamageDealt`
+        /// to Impact therefore put **every weapon hit in the game** on STATE: lowest priority,
+        /// smallest cap, first thing stolen. Found by pricing the caps against real fixtures rather
+        /// than by reading the code (`make sfx-density`), which is why that report exists.</summary>
+        private static SfxBus BusFor(in BattleEvent e) =>
+            e.Crit || e.Kind == EventKind.Death || e.Kind == EventKind.CheatDeath ? SfxBus.Decisive
+            : e.Kind == EventKind.Attack || e.Kind == EventKind.DamageDealt ? SfxBus.Impact
+            : e.Kind == EventKind.Cast ? SfxBus.Cast
+            : SfxBus.State;
+
         private void ApplyImpact(in PendingTell pt)
         {
             var def = pt.Def;
@@ -767,7 +860,19 @@ public class ReplayPlayer : MonoBehaviour
             float t = _impact.Intensity(e.Amount);
 
             if (!string.IsNullOrEmpty(def.sound) || !string.IsNullOrEmpty(def.critSound))
-                _playSfx?.Invoke(e.Crit && !string.IsNullOrEmpty(def.critSound) ? def.critSound : def.sound);
+            {
+                // Silence law (audio.md §5.2.2): chip damage under the row's own threshold makes no
+                // sound, using the same `minAmount` that already suppresses its floating number.
+                // Guarded on `Amount != 0` so it only ever judges events that CARRY a magnitude —
+                // a Cast or a status onset reports 0 and must not be silenced by a threshold of 1.
+                // (The other half of the law — a Burn re-application — is already handled upstream:
+                // the onset filter `return`s before reaching any tell at all.)
+                bool tooSmall = e.Amount != 0 && Mathf.Abs(e.Amount) < def.minAmount;
+                if (!tooSmall)
+                    _playSfx?.Invoke(
+                        e.Crit && !string.IsNullOrEmpty(def.critSound) ? def.critSound : def.sound,
+                        BusFor(in e));
+            }
             if (def.flash) { v.FlashColor = e.Crit ? def.critFlashColor : def.flashColor; v.FlashT = 1f; v.FlashDur = def.flashSeconds; }
             if (def.punch) { v.PunchT = 1f; v.PunchDur = def.punchSeconds; v.PunchAmt = def.punchAmount * (1f + _impact.punchBoost * t) * _impact.punchScale; }
             // The icon pops at the moment the status LANDS, not when the fold gained it — same law
@@ -908,6 +1013,8 @@ public class ReplayPlayer : MonoBehaviour
             _laneFreeAt.Clear(); // stale lane reservations would hold the next fight's first numbers
             _abilityById.Clear(); // a scenario switch brings different units under the same ids
             _announcedAt.Clear(); // ditto the ration: a loop-wrap's first cast is news again
+            _ruleFiredAt.Clear(); // ...and a loop-wrap's first Grudgekeeper is an onset again
+            _held.Clear();        // ...and a loop-wrap's first Burn is an onset again, not a refresh
             _shookAt = float.NegativeInfinity; // ...and the camera's, or the next fight opens unshakeable
             foreach (var v in _views.Values) v.MotionOffset = Vector3.zero;
             foreach (var tr in _activeTracers) _recycleTracer(tr);
@@ -1083,7 +1190,7 @@ public class ReplayPlayer : MonoBehaviour
             if (!_ending) BeginEnding();
             _endHold += Time.deltaTime;
             if (loop && _endHold >= _data.story.endHoldSeconds)
-            { _clock = 0f; _fold = PlaybackState.From(_initial); _fxCursor = 0; _waningStage = 0; ResetAnim(); }
+            { _clock = 0f; _fold = PlaybackState.From(_initial, _ruleIds); _fxCursor = 0; _waningStage = 0; ResetAnim(); }
         }
         int tick = Mathf.FloorToInt(_clock);
         ApplyFold(tick, _clock);
@@ -1417,7 +1524,15 @@ public class ReplayPlayer : MonoBehaviour
     {
         _playing = false;
         _lastPreviewTick = tick;
-        _fold = PlaybackState.From(_initial);
+        // Park the PLAYHEAD at the previewed tick, not just the fold. _clock is the playhead in
+        // ticks, and LayoutWaning reads it to decide whether the Hour is running, warning, or in
+        // the storm — so leaving it at 0 made every frozen capture report "0:00" no matter which
+        // tick was previewed. Found 2026-07-27 by taking the exact overtime capture item 11 owed:
+        // at tick 950, fifty ticks into the Waning, the clock still read 0:00. Play Mode was always
+        // correct (Update advances _clock); it is the capture path that could not tell the truth,
+        // which is precisely the path every verification in this project runs through.
+        _clock = tick;
+        _fold = PlaybackState.From(_initial, _ruleIds);
         _director = MakeDirector();
         Build();
         // Reset BEFORE the fold, not after: ResetAnim drops every decorative object the last scrub
@@ -1472,6 +1587,10 @@ public class ReplayPlayer : MonoBehaviour
             _director?.Reset();   // recycle in-flight FX + clear offsets before swapping the Director
             _director = MakeDirector();
             ApplyBoardTune();     // hexSize/tileScale live: tiles rebuild, units re-place via ApplyFold
+            // Unconditionally, not just when hexSize moved (ApplyBoardTune's own call is inside that
+            // branch): the feed anchor is now tunable in its own right, and a slider that only takes
+            // effect when you also happen to change the board size is not a slider.
+            RecomputeStoryAnchors();
             FrameCamera(); ApplyPost();
         }
         else BuildPreview(_lastPreviewTick);
@@ -1527,7 +1646,7 @@ public class ReplayPlayer : MonoBehaviour
         string path = Path.Combine(Application.streamingAssetsPath, replayFile);
         if (!File.Exists(path)) { Debug.LogError($"[ReplayPlayer] replay not found: {path}"); return false; }
         using (var fs = File.OpenRead(path))
-            (_initial, _events) = Replay.Read(fs);
+            (_initial, _events) = Replay.Read(fs, out _ruleIds);
         _endTick = _events.Count > 0 ? _events[_events.Count - 1].Tick : 0;
         PrepareLoadedData();
         return true;
@@ -1535,7 +1654,7 @@ public class ReplayPlayer : MonoBehaviour
 
     private void PrepareLoadedData()
     {
-        _fold = PlaybackState.From(_initial);
+        _fold = PlaybackState.From(_initial, _ruleIds);
         _fieldBornAt.Clear();
         foreach (var e in _events)
             if (e.Kind == EventKind.FieldCreated) _fieldBornAt[e.Target] = e.Tick;
@@ -1744,31 +1863,37 @@ public class ReplayPlayer : MonoBehaviour
     private FeedbackDirector MakeDirector() => new FeedbackDirector(
         _views, _data, SpawnNumber, RecycleNumber,
         id => _fold.ById(id), HexToWorld,
+        i => _fold != null ? _fold.RuleId(i) : "",
         GetTracer, RecycleTracer, GetBurst, RecycleBurst,
         GetVfx, RecycleVfx, () => _numberFace, PulseFieldsAt, PushAnnounce, StrikeDeath,
         CameraKick, BeginDeathless,
         ticksPerSecond, PlaySfx);
 
     // ---- combat SFX (fight-legibility: audio is the only free channel) ---------
-    private AudioSource _audio;
-    private readonly Dictionary<string, AudioClip> _sfxCache = new Dictionary<string, AudioClip>();
 
-    /// <summary>One-shot sting by clip name under Resources/Board/SFX. Missing clip = silent no-op,
-    /// so tells can be authored before audio exists. Single source + PlayOneShot handles overlap.</summary>
-    private void PlaySfx(string name)
+    // A DECISIVE onset pulls the ducked board group down so the moment that matters lands clean.
+    // Depth/timing per audio.md §5.3; `Decisive` sits OUTSIDE the ducked group, so a death never
+    // ducks itself.
+    private const float DecisiveDuckDb = 6f;
+    private const float DecisiveDuckHold = 0.10f;
+    private const float DecisiveDuckRelease = 0.25f;
+
+    /// <summary>One-shot sting by clip id under Resources/Board/SFX, on the bus its event class
+    /// earned. Everything real — pooling, per-bus caps, priority stealing, same-id coalescing —
+    /// lives in <see cref="SfxPlayer"/>; this only owns the board's enable switch and the duck.
+    ///
+    /// This replaced a single lazily-created <c>AudioSource</c> calling <c>PlayOneShot</c>, which
+    /// layered without limit at one priority and one volume. At the measured ~9.6 sound onsets/s
+    /// (audio.md §3) that meant Unity culled by AUDIBILITY past 32 voices — a death sting could lose
+    /// to four Burn ticks that happened to be louder. Nothing about that was a decision.</summary>
+    private void PlaySfx(string name, SfxBus bus)
     {
-        if (!Application.isPlaying || _data?.audio?.enabled != true || string.IsNullOrEmpty(name)) return;
-        if (!_sfxCache.TryGetValue(name, out var clip))
-            _sfxCache[name] = clip = Resources.Load<AudioClip>("Board/SFX/" + name);
-        if (clip == null) return;
-        if (_audio == null)
-        {
-            var go = new GameObject("~sfx");
-            go.transform.SetParent(transform, false);
-            _audio = go.AddComponent<AudioSource>();
-            _audio.playOnAwake = false; _audio.spatialBlend = 0f;
-        }
-        _audio.PlayOneShot(clip, 0.85f);
+        // The board owns its own switch (tuning.json → audio.enabled, live under F1) — see the note
+        // in SfxPlayer on why there is no shared global mute.
+        if (!Application.isPlaying || _data?.audio?.enabled != true) return;
+        SfxPlayer.Play(name, bus);
+        if (bus == SfxBus.Decisive)
+            SfxDucker.Duck(DecisiveDuckDb, DecisiveDuckHold, DecisiveDuckRelease);
     }
 
     private Tracer GetTracer() => _tracerPool.Count > 0 ? _tracerPool.Pop() : Tracer.Create(_generated);
@@ -1816,7 +1941,10 @@ public class ReplayPlayer : MonoBehaviour
         Vector3 min = HexToWorld(new Hex(0, 0));
         Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
         Vector3 center = (min + max) * 0.5f;
-        _feedAnchor = new Vector3(max.x + 1.6f * hexSize, 3.0f, center.z);  // to the board's +X side
+        var st = _data != null && _data.story != null ? _data.story : new StoryTune();
+        // Beside the board by default; tunable because this anchor sets the frame's horizontal
+        // budget and so caps how far the camera can be tightened (StoryTune.feedGapHexes).
+        _feedAnchor = new Vector3(max.x + st.feedGapHexes * hexSize, st.feedHeight, center.z);
         _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
         _readoutAnchor = new Vector3(center.x, 2.7f, center.z);            // just under the banner
         _clockAnchor = new Vector3(center.x, 0f, center.z);                 // height applied per frame
@@ -2068,6 +2196,11 @@ public class ReplayPlayer : MonoBehaviour
         if (_readoutText != null) _readoutText.gameObject.SetActive(false);
         if (_clockText != null) _clockText.gameObject.SetActive(false);
     }
+
+    /// <summary>The authored id at a rule-table index, or "" — the Tooltip's window into which
+    /// passives a unit carries. Resolving the id to display copy is ContentLexicon.Rule's job, not
+    /// this class's: the board owns geometry and dispatch, the content assembly owns words.</summary>
+    public string RuleIdAt(int index) => _fold != null ? _fold.RuleId(index) : "";
 
     /// <summary>Screen-space nearest live unit within <paramref name="maxPixels"/> of a screen point,
     /// or null — the Tooltip's only window into the fold. Null in edit mode, without a camera, during
@@ -2607,6 +2740,10 @@ public class ReplayPlayer : MonoBehaviour
         cam.transform.LookAt(center);
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = _data.camera.background;
+        // FOV is framing, so it belongs with the rest of the framing rather than in the scene file.
+        // Clamped rather than trusted: a hand-edited 0 would collapse the projection, and the F1
+        // cockpit hands the raw field straight to a slider.
+        cam.fieldOfView = Mathf.Clamp(_data.camera.fov, 15f, 75f);
         _numberFace = cam.transform.rotation;
         // The framed position IS the camera's rest state — the dress layer's punch/shake are offsets
         // from it and restore to it exactly. The push axis is the view axis, so a punch reads as

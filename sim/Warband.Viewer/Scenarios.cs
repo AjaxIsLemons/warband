@@ -156,8 +156,12 @@ namespace Warband.Viewer
             var ranks = new[] { Rank.B, Rank.A, Rank.S };
             for (int i = 0; i < 3; i++)
             {
-                var (a, b) = cat.SpecOptions(spec.chassis, ranks[i], path);
-                string chosen = picks[i] == 0 ? a : b;
+                var pool = cat.SpecOptions(spec.chassis, ranks[i], path);
+                if (picks[i] < 0 || picks[i] >= pool.Count)
+                    throw new InvalidOperationException(
+                        $"scenario '{spec.chassis}' picks[{i}]={picks[i]} is outside the "
+                        + $"{pool.Count}-wide pool at rank {ranks[i]}");
+                string chosen = pool[picks[i]];
                 nodes.Add(cat.Node(chosen));
                 if (ranks[i] == fork) path = chosen;
             }

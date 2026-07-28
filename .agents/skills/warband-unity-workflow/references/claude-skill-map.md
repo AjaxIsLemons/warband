@@ -4,6 +4,8 @@ Read only the source skills that match the task. Paths are relative to the Warba
 
 | Task | Source skill |
 |---|---|
+| Generated portraits, icons, weapon art, VFX source images, textures, and art curation | `.claude/skills/warband-art-pipeline/SKILL.md` |
+| UI concepts, generated mockups, inbox/outbox review, approval before implementation | `.claude/skills/warband-ui-review/SKILL.md` |
 | C# runtime scripts, MonoBehaviour, coroutines, ScriptableObjects | `.claude/skills/unity-scripting/SKILL.md` |
 | Unity components, prefabs, GameObjects, core project structure | `.claude/skills/unity-foundations/SKILL.md` |
 | Scene, prefab, Addressables, or generated asset architecture | `.claude/skills/unity-scene-assets/SKILL.md` |

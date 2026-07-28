@@ -1,0 +1,148 @@
+{
+  "_doc": [
+    "Provenance for docs/audio/src/. Maps each NEW family variant to the shipped clip it came",
+    "from, so the bake is traceable and re-runnable. Choices are driven by the measurements in",
+    "Design/audio.md \u00a72 \u2014 where several old clips collapse into one new family, the sources with",
+    "the strongest transient (highest crest) win, because everything gets capped and normalised",
+    "anyway and only the attack survives that.",
+    "",
+    "`null` = no source exists. Those are the authoring work-list; `sfx.py lint` reports them as",
+    "MISSING, which is the point."
+  ],
+  "ui": {
+    "tick_1": {
+      "from": "select_2",
+      "why": "49 ms audible \u2014 the only correctly-short clip in the shipped set"
+    },
+    "tick_2": {
+      "from": "select_1",
+      "why": "crest 22.8 dB, caps cleanly from 211 ms"
+    },
+    "tick_3": {
+      "from": "preview_2",
+      "why": "102 ms clean single spike; reused off the deleted hover family"
+    },
+    "commit_1": {
+      "from": "seat_1",
+      "why": "crest 23.1 dB \u2014 best transient among the commit-class clips"
+    },
+    "commit_2": {
+      "from": "commit_1",
+      "why": "crest 26.0 dB, the highest in the set; 157 ms onset is trimmed away"
+    },
+    "deal_1": {
+      "from": "deal_1",
+      "why": "direct"
+    },
+    "deal_2": {
+      "from": "deal_2",
+      "why": "direct"
+    },
+    "bind_1": {
+      "from": "bind_1",
+      "why": "direct"
+    },
+    "bind_2": {
+      "from": "bind_2",
+      "why": "direct"
+    },
+    "error_1": {
+      "from": "error_1",
+      "why": "direct; was -20.7 dBFS, the quietest clip in the set"
+    },
+    "major_1": {
+      "from": "major_1",
+      "why": "direct"
+    }
+  },
+  "board": {
+    "hit_blade": {
+      "from": "hit_melee",
+      "why": "D3 collapse; 218 ms, crest 15.3 dB"
+    },
+    "hit_bow": {
+      "from": "hit_arrow",
+      "why": "D3 collapse; 341 ms, crest 14.5 dB"
+    },
+    "hit_blunt": {
+      "from": "generated:elevenlabs-sound-effects-v2",
+      "why": "mace into shield+mail; deep thud, dull metallic edge. Generated 2026-07-27 (Jake consented)."
+    },
+    "hit_pierce": {
+      "from": "generated:elevenlabs-sound-effects-v2",
+      "why": "spear point through plate; tight metallic crack + brief scrape. Generated 2026-07-27."
+    },
+    "hit_powder": {
+      "from": "generated:elevenlabs-sound-effects-v2",
+      "why": "matchlock muzzle blast over a powder thump. Generated 2026-07-27."
+    },
+    "crit": {
+      "from": "crit",
+      "why": "direct"
+    },
+    "heal": {
+      "from": "heal",
+      "why": "direct"
+    },
+    "shield": {
+      "from": "shield",
+      "why": "direct"
+    },
+    "cast_generic": {
+      "from": "cast_generic",
+      "why": "direct"
+    },
+    "cast_fire": {
+      "from": "cast_fire",
+      "why": "direct; crest 9.0 dB \u2014 expected to FAIL the transient check"
+    },
+    "death": {
+      "from": "death",
+      "why": "direct"
+    },
+    "cheatdeath": {
+      "from": "cheatdeath",
+      "why": "direct"
+    },
+    "riser_banneret": {
+      "from": "riser_banneret",
+      "why": "direct"
+    },
+    "riser_berserker": {
+      "from": "riser_berserker",
+      "why": "direct"
+    },
+    "riser_bulwark": {
+      "from": "riser_bulwark",
+      "why": "direct"
+    },
+    "riser_cleric": {
+      "from": "riser_cleric",
+      "why": "direct; 156 ms late onset is trimmed away"
+    },
+    "riser_phalanx": {
+      "from": "riser_phalanx",
+      "why": "direct"
+    },
+    "riser_pyromancer": {
+      "from": "riser_pyromancer",
+      "why": "direct"
+    },
+    "riser_shade": {
+      "from": "riser_shade",
+      "why": "direct"
+    },
+    "riser_sharpshot": {
+      "from": "riser_sharpshot",
+      "why": "direct"
+    }
+  },
+  "_dropped": {
+    "preview_1": "hover is silent by law (\u00a75.1.1) \u2014 the family is deleted, not re-baked",
+    "hall_ambience": "D1: Jake cut the Hall ambience bed 2026-07-27",
+    "route_1": "1.001 s of continuous sound for moving a resource; commit_2 covers the slot",
+    "purchase_1": "crest 14.8 dB, sustained \u2014 loses the commit slot to two better transients",
+    "purchase_2": "crest 17.8 dB over 920 ms \u2014 same",
+    "seat_2": "crest 15.2 dB \u2014 same"
+  }
+}

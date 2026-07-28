@@ -439,7 +439,7 @@ namespace Warband.Content
 
         private static Trigger BondEnrage() =>
             On(EventKind.Death, W(TgtAlly()),
-                Status(StatusKind.Haste, BondHaste, Self));
+                Status(StatusKind.Haste, BondHaste, Self)).Named("oath.bond");
 
         // ---- act bosses (2026-07-26, ADR 0024) --------------------------------------
         // Until tonight `Catalog.Boss` returned the act-scaled Last Oath for EVERY act, so a

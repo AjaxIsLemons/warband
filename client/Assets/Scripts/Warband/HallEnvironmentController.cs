@@ -87,7 +87,6 @@ internal sealed class HallEnvironmentController : MonoBehaviour
         _visible = visible && _config.environment.enabled;
         _environment.SetActive(_visible);
         _camera.enabled = _visible;
-        _audio?.SetHallActive(_visible);
         if (_boardCamera != null) _boardCamera.enabled = !_visible;
 
         if (!_visible) return;

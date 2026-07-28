@@ -163,6 +163,7 @@ internal sealed class RecruitView : IRunScreenView, IRunScreenLifecycle, IDispos
         _footerHint.AddToClassList("recruit-footer__hint");
         _feedback = new Label();
         _feedback.AddToClassList("recruit-feedback");
+        _feedback.pickingMode = PickingMode.Ignore;
         footerCopy.Add(_footerHint);
         footerCopy.Add(_feedback);
         _footer.Add(footerCopy);
@@ -257,6 +258,26 @@ internal sealed class RecruitView : IRunScreenView, IRunScreenLifecycle, IDispos
         bool valid = true;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         foreach (MusterCard card in _cards) valid &= card.ValidateResolvedLayout();
+        var report = new UiLayoutReport("Muster");
+        UiLayoutContract.RequireResolved(report, _root, "root");
+        UiLayoutContract.RequireNoScrollView(report, _root, "Muster");
+        UiLayoutContract.RequireNonBlocking(report, _feedback, "Muster feedback");
+        UiLayoutContract.RequireAbove(report, _grid, _footer, "card rail / selection footer");
+        UiLayoutContract.RequireMinimumFont(
+            report, _root, "recruit-footer__hint", 16f);
+        UiLayoutContract.RequireMinimumFont(
+            report, _root, "muster-lens__body", 16f);
+        UiLayoutContract.RequireMinimumFont(
+            report, _root, "muster-card__class", 13f);
+        UiLayoutContract.RequireMinimumRenderedFont(
+            report, _root, "recruit-footer__hint", 12.5f);
+        UiLayoutContract.RequireWrappedTextFits(
+            report, _root, "recruit-footer__hint");
+        if (!report.Passed)
+        {
+            Debug.LogError("[Muster Layout] " + report);
+            valid = false;
+        }
         const float epsilon = 0.75f;
         if (_grid.panel != null)
         {

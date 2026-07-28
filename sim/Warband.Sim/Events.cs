@@ -21,6 +21,19 @@ namespace Warband.Sim
                         // unit's position stays put until then. A Move with no preceding MoveStart is a
                         // teleport (Leap) — that distinction is the renderer's whole slide-vs-blink rule.
                         // Appended, never inserted: the ordinal is the wire encoding (Replay).
+        TriggerFired,   // Source=owner, Aux=index into BattleResult.RuleIds, Target=the unit the
+                        // triggering event was about (for the attribution spark-link), Root/Depth
+                        // inherited. Emitted when a Trigger's conditions pass and BEFORE its effects
+                        // resolve, so drain order reads cause-then-consequence (render-contract §5).
+                        // WHY THIS EXISTS: a Trigger's effects were always on the wire, but nothing
+                        // said WHICH passive produced them — the engine was invisible and only its
+                        // exhaust was visible. See Design/passive-legibility.md.
+        RuleChanged,    // Source=owner, Aux=index into BattleResult.RuleIds, Amount=1 came online /
+                        // 0 went offline, Aux2=the rule's contribution at that moment.
+                        // A StatRule is a read-time predicate with no activation moment to hook, so
+                        // the sim SAMPLES every rule once per tick and emits transitions only. The
+                        // client may not evaluate a condition itself (render-contract law #1), so
+                        // this event is the only way a conditional passive can ever be seen.
     }
 
     public enum Cause

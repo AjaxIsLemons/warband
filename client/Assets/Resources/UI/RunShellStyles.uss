@@ -1556,3 +1556,39 @@
 .deploy-chip--placed {
     opacity: 0.72;
 }
+
+/* Shipping type floor. Recruit is a decision surface, so its explanatory copy uses the shared
+   body role and its labels use the shared metadata role. Decorative glyphs keep their authored
+   sizes; information never drops below these tokens at compact breakpoints. */
+.recruit-seed,
+.recruit-progress .stat-chip__label,
+.muster-card__role-badge-text,
+.muster-card__class,
+.muster-rule__trigger,
+.muster-rule__keyword-text,
+.muster-rule__tier,
+.muster-rule__context,
+.muster-lens__eyebrow,
+.muster-lens__domain,
+.muster-card__selection-label,
+.muster-slot__eyebrow,
+.muster-slot__name,
+.recruit-feedback,
+.section-heading,
+.card-role,
+.stat-chip__label,
+.stat-chip__value,
+.trait-pill {
+    font-size: var(--ui-type-meta);
+}
+
+.rules-popover__body,
+.rules-popover__copy,
+.recruit-footer__hint,
+.muster-lens__body,
+.muster-lens__keyword-copy,
+.card-body,
+.empty-note,
+.btn {
+    font-size: var(--ui-type-body);
+}

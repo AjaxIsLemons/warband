@@ -12,16 +12,28 @@ namespace Warband.Sim
     public static class Replay
     {
         private const uint Magic = 0x57425250; // "WBRP"
-        private const int Version = 5;   // v5: + PlaybackUnit status ExpiryTick (countdown rings)
+        private const int Version = 7;   // v7: + PlaybackUnit targeting rule (TargetPref/Standoff) and
+                                         //     its span in the rule table — the in-fight inspector
+                                         // v6: + the battle's rule-id table (TriggerFired/RuleChanged
+                                         //     carry an index into it — passive legibility, item 20)
+                                         // v5: + PlaybackUnit status ExpiryTick (countdown rings)
                                          // v4: + PlaybackUnit committed step (StepTo/StepStart/StepEnd)
                                          // v3: + PlaybackUnit stat/identity block (range, weapon, traits)
                                          // v2: + BattleEvent.Aux3 (FieldCreated carries FieldFlavor)
 
-        public static void Write(Stream stream, IReadOnlyList<PlaybackUnit> initial, IReadOnlyList<BattleEvent> events)
+        public static void Write(Stream stream, IReadOnlyList<PlaybackUnit> initial,
+                                 IReadOnlyList<BattleEvent> events, IReadOnlyList<string>? ruleIds = null)
         {
             using var w = new BinaryWriter(stream);
             w.Write(Magic);
             w.Write(Version);
+
+            // The rule-id table, before the units: TriggerFired/RuleChanged carry an int index into
+            // it because BattleEvent is all ints by design. Null is written as an empty table, which
+            // is the honest degradation — every index then resolves to "" and every passive falls
+            // through to the generic tell instead of naming itself.
+            w.Write(ruleIds?.Count ?? 0);
+            if (ruleIds != null) foreach (var id in ruleIds) w.Write(id ?? "");
 
             w.Write(initial.Count);
             foreach (var u in initial)
@@ -33,6 +45,9 @@ namespace Warband.Sim
                 w.Write(u.StepTo.Q); w.Write(u.StepTo.R); w.Write(u.StepStart); w.Write(u.StepEnd);
                 w.Write(u.Range); w.Write(u.Attack); w.Write(u.AttackInterval);
                 w.Write(u.MoveInterval); w.Write(u.CritChance); w.Write(u.HealAutos);
+                w.Write((int)u.TargetPref); w.Write(u.Standoff);
+                w.Write(u.TriggerRuleBase); w.Write(u.TriggerRuleCount);
+                w.Write(u.StatRuleBase); w.Write(u.StatRuleCount);
                 w.Write(u.ChassisId ?? ""); w.Write(u.WeaponName ?? ""); w.Write((int)u.WeaponTier);
                 w.Write(u.Traits.Count);
                 foreach (var t in u.Traits) w.Write(t ?? "");
@@ -50,12 +65,23 @@ namespace Warband.Sim
             }
         }
 
-        public static (List<PlaybackUnit> Initial, List<BattleEvent> Events) Read(Stream stream)
+        /// <summary>Read a replay, discarding the rule-id table. Kept so the dozen existing call
+        /// sites that only want (units, events) stay untouched; anything that renders passives uses
+        /// the overload below.</summary>
+        public static (List<PlaybackUnit> Initial, List<BattleEvent> Events) Read(Stream stream) =>
+            Read(stream, out _);
+
+        public static (List<PlaybackUnit> Initial, List<BattleEvent> Events) Read(
+            Stream stream, out List<string> ruleIds)
         {
             using var r = new BinaryReader(stream);
             if (r.ReadUInt32() != Magic) throw new InvalidDataException("Not a warband replay (bad magic).");
             int version = r.ReadInt32();
             if (version != Version) throw new InvalidDataException($"Unsupported replay version {version}.");
+
+            int ruleCount = r.ReadInt32();
+            ruleIds = new List<string>(ruleCount);
+            for (int i = 0; i < ruleCount; i++) ruleIds.Add(r.ReadString());
 
             int unitCount = r.ReadInt32();
             var initial = new List<PlaybackUnit>(unitCount);
@@ -73,6 +99,9 @@ namespace Warband.Sim
                     StepStart = r.ReadInt32(), StepEnd = r.ReadInt32(),
                     Range = r.ReadInt32(), Attack = r.ReadInt32(), AttackInterval = r.ReadInt32(),
                     MoveInterval = r.ReadInt32(), CritChance = r.ReadInt32(), HealAutos = r.ReadBoolean(),
+                    TargetPref = (TargetPref)r.ReadInt32(), Standoff = r.ReadInt32(),
+                    TriggerRuleBase = r.ReadInt32(), TriggerRuleCount = r.ReadInt32(),
+                    StatRuleBase = r.ReadInt32(), StatRuleCount = r.ReadInt32(),
                     ChassisId = r.ReadString(), WeaponName = r.ReadString(),
                     WeaponTier = (WeaponTier)r.ReadInt32(),
                 };

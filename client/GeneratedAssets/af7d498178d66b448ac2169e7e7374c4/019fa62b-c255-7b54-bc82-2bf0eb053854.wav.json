@@ -1,0 +1,15 @@
+{
+    "asset": "af7d498178d66b448ac2169e7e7374c4",
+    "fileName": "019fa62b-c255-7b54-bc82-2bf0eb053854.wav",
+    "prompt": "A single short piercing weapon impact. An iron spear point punching through plate armour. Tight bright metallic crack followed by a very brief scraping ring. Dry, close-miked, no reverb, no echo, no music. Immediate attack, fast decay, silence after.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

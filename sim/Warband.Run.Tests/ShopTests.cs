@@ -141,8 +141,8 @@ namespace Warband.Run.Tests
             Assert.Equal(PurchaseOutcome.RankUp, rank.Outcome);
             Assert.Equal(Rank.C, rank.PreviousRank);
             Assert.Equal(Rank.B, rank.NewRank);
-            Assert.False(string.IsNullOrWhiteSpace(rank.PendingOptionA));
-            Assert.False(string.IsNullOrWhiteSpace(rank.PendingOptionB));
+            Assert.Equal(2, rank.PendingOptions.Count);
+            Assert.All(rank.PendingOptions, o => Assert.False(string.IsNullOrWhiteSpace(o)));
             run.ChooseSpec(0);
 
             int weaponSlot;

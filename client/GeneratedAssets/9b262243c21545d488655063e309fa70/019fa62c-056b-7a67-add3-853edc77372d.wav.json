@@ -1,0 +1,15 @@
+{
+    "asset": "9b262243c21545d488655063e309fa70",
+    "fileName": "019fa62c-056b-7a67-add3-853edc77372d.wav",
+    "prompt": "A single matchlock musket firing. Sharp cracking muzzle blast over a low black powder thump. Dry outdoor close perspective, no echo, no reverb tail, no music, no reloading sounds. Immediate attack, fast decay, silence after.",
+    "negativePrompt": "",
+    "model": "elevenlabs-sound-effects-v2",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "duration": 1.0,
+    "autoTrim": false,
+    "hasReference": false,
+    "voice": ""
+}

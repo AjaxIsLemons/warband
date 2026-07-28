@@ -93,9 +93,9 @@ internal sealed class UiAudioTuning
     public bool enabled = false;
     [Range(0f, 1f)] public float volume = 0.72f;
     [Range(0f, 0.2f)] public float pitchVariance = 0.025f;
-    [Min(0)] public int hoverCooldownMs = 45;
-    [Range(0f, 1f)] public float ambienceVolume = 0.18f;
-    [Range(0f, 1f)] public float commitDuck = 0.55f;
+    // hoverCooldownMs / ambienceVolume / commitDuck retired 2026-07-27: hover is silent by law and
+    // the Hall ambience bed is cut (D1), so there is nothing left to rate-limit or duck against.
+    // The board duck now lives on the mixer (`SfxDucker`), not on an ambience source.
 }
 
 [Serializable]
@@ -105,6 +105,66 @@ internal sealed class UiHapticTuning
     [Range(1, 60)] public int selectMs = 8;
     [Range(1, 120)] public int successMs = 18;
     [Range(1, 120)] public int errorMs = 24;
+}
+
+[Serializable]
+internal sealed class UiTooltipTuning
+{
+    [Min(0)] public int pointerDelayMs = 280;
+    [Min(0)] public int focusDelayMs = 220;
+    [Min(0)] public int reshowDelayMs = 80;
+    [Min(0)] public int closeDelayMs = 100;
+    [Min(0)] public int revealMs = 130;
+    [Min(0)] public int dismissMs = 85;
+    [Min(0f)] public float offsetPx = 12f;
+    [Min(0f)] public float safeMarginPx = 16f;
+    [Min(220f)] public float maxWidthPx = 360f;
+    [Min(240f)] public float equipmentMaxWidthPx = 390f;
+}
+
+[Serializable]
+internal sealed class UiInteractionRecipes
+{
+    public UiMotionRecipe tooltipReveal = new UiMotionRecipe
+    {
+        durationMs = 130, settleMs = 45, distancePx = 7f, scale = 0.99f,
+        startOpacity = 0f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe tooltipDismiss = new UiMotionRecipe
+    {
+        durationMs = 85, settleMs = 20, distancePx = 4f, scale = 0.995f,
+        startOpacity = 1f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe pin = new UiMotionRecipe
+    {
+        durationMs = 180, settleMs = 100, distancePx = 5f, scale = 1.035f,
+        startOpacity = 1f, particles = 4, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe unpin = new UiMotionRecipe
+    {
+        durationMs = 130, settleMs = 60, distancePx = 4f, scale = 1.015f,
+        startOpacity = 1f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe drawerExpand = new UiMotionRecipe
+    {
+        durationMs = 190, settleMs = 70, distancePx = 28f, scale = 0.99f,
+        startOpacity = 0.06f, particles = 3, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe drawerCollapse = new UiMotionRecipe
+    {
+        durationMs = 150, settleMs = 50, distancePx = 22f, scale = 0.995f,
+        startOpacity = 0.12f, particles = 0, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe socketWake = new UiMotionRecipe
+    {
+        durationMs = 210, settleMs = 100, distancePx = 3f, scale = 1.04f,
+        startOpacity = 1f, particles = 5, staggerMs = 0, staggerCapMs = 0,
+    };
+    public UiMotionRecipe projectedTarget = new UiMotionRecipe
+    {
+        durationMs = 260, settleMs = 110, distancePx = 8f, scale = 1.045f,
+        startOpacity = 1f, particles = 7, staggerMs = 0, staggerCapMs = 0,
+    };
 }
 
 [Serializable]
@@ -249,6 +309,8 @@ internal sealed class HubPresentationConfig
     public HallEnvironmentTuning environment = new HallEnvironmentTuning();
     public UiAudioTuning audio = new UiAudioTuning();
     public UiHapticTuning haptics = new UiHapticTuning();
+    public UiTooltipTuning tooltip = new UiTooltipTuning();
+    public UiInteractionRecipes interactions = new UiInteractionRecipes();
 
     private static readonly HubPresentationConfig Shared = new HubPresentationConfig();
     private static bool s_loaded;
@@ -373,12 +435,30 @@ internal sealed class HubPresentationConfig
             Shared.environment.transactionMotes, 0, 64);
         Shared.audio.volume = Mathf.Clamp01(Shared.audio.volume);
         Shared.audio.pitchVariance = Mathf.Clamp(Shared.audio.pitchVariance, 0f, 0.2f);
-        Shared.audio.hoverCooldownMs = Mathf.Max(0, Shared.audio.hoverCooldownMs);
-        Shared.audio.ambienceVolume = Mathf.Clamp01(Shared.audio.ambienceVolume);
-        Shared.audio.commitDuck = Mathf.Clamp01(Shared.audio.commitDuck);
         Shared.haptics.selectMs = Mathf.Clamp(Shared.haptics.selectMs, 1, 60);
         Shared.haptics.successMs = Mathf.Clamp(Shared.haptics.successMs, 1, 120);
         Shared.haptics.errorMs = Mathf.Clamp(Shared.haptics.errorMs, 1, 120);
+        Shared.tooltip ??= new UiTooltipTuning();
+        Shared.tooltip.pointerDelayMs = Mathf.Max(0, Shared.tooltip.pointerDelayMs);
+        Shared.tooltip.focusDelayMs = Mathf.Max(0, Shared.tooltip.focusDelayMs);
+        Shared.tooltip.reshowDelayMs = Mathf.Max(0, Shared.tooltip.reshowDelayMs);
+        Shared.tooltip.closeDelayMs = Mathf.Max(0, Shared.tooltip.closeDelayMs);
+        Shared.tooltip.revealMs = Mathf.Max(0, Shared.tooltip.revealMs);
+        Shared.tooltip.dismissMs = Mathf.Max(0, Shared.tooltip.dismissMs);
+        Shared.tooltip.offsetPx = Mathf.Max(0f, Shared.tooltip.offsetPx);
+        Shared.tooltip.safeMarginPx = Mathf.Max(0f, Shared.tooltip.safeMarginPx);
+        Shared.tooltip.maxWidthPx = Mathf.Max(220f, Shared.tooltip.maxWidthPx);
+        Shared.tooltip.equipmentMaxWidthPx = Mathf.Max(
+            240f, Shared.tooltip.equipmentMaxWidthPx);
+        Shared.interactions ??= new UiInteractionRecipes();
+        Sanitize(Shared.interactions.tooltipReveal);
+        Sanitize(Shared.interactions.tooltipDismiss);
+        Sanitize(Shared.interactions.pin);
+        Sanitize(Shared.interactions.unpin);
+        Sanitize(Shared.interactions.drawerExpand);
+        Sanitize(Shared.interactions.drawerCollapse);
+        Sanitize(Shared.interactions.socketWake);
+        Sanitize(Shared.interactions.projectedTarget);
     }
 
     private static void Sanitize(UiMotionRecipe recipe)
@@ -1280,6 +1360,37 @@ internal sealed class UiFeedbackDirector : IDisposable
                        _targets.FirstVisible("market-offer-card--selected") ??
                        _targets.FirstVisible("wb-card--selected"));
                 break;
+            case UiPolishSignals.Cue.TooltipReveal:
+                // The tooltip service owns placement/fade so it can clamp after wrapped layout.
+                // This semantic cue still reaches audio/haptic adapters and preview tooling.
+                break;
+            case UiPolishSignals.Cue.TooltipDismiss:
+                break;
+            case UiPolishSignals.Cue.Pin:
+                Punch(target ?? source, _config.interactions.pin);
+                if (!_reducedMotion)
+                    _fx.Pulse(target ?? source, UiFeedbackTone.Preview,
+                        _config.interactions.pin);
+                break;
+            case UiPolishSignals.Cue.Unpin:
+                Punch(target ?? source, _config.interactions.unpin);
+                break;
+            case UiPolishSignals.Cue.DrawerExpand:
+                Reveal(target ?? source, _config.interactions.drawerExpand);
+                break;
+            case UiPolishSignals.Cue.DrawerCollapse:
+                Reveal(target ?? source, _config.interactions.drawerCollapse, direction: -1);
+                break;
+            case UiPolishSignals.Cue.SocketWake:
+                Punch(target ?? source, _config.interactions.socketWake);
+                if (!_reducedMotion)
+                    _fx.Pulse(target ?? source, UiFeedbackTone.Positive,
+                        _config.interactions.socketWake);
+                break;
+            case UiPolishSignals.Cue.ProjectedTarget:
+                Commit(source, target ?? source, UiFeedbackTone.Positive,
+                    _config.interactions.projectedTarget);
+                break;
             case UiPolishSignals.Cue.Route:
                 // Navigation is not a resource transfer. Confirm the destination and let the
                 // route transition carry the eye; bolts are reserved for stable-layout commits.
@@ -1431,6 +1542,33 @@ internal sealed class UiFeedbackDirector : IDisposable
                        _targets.FirstVisible("market-offer-card--selected") ??
                        _targets.FirstVisible("wb-card--selected") ??
                        _targets.Find("station-hourstone"));
+                break;
+            case UiPolishSignals.Cue.TooltipReveal:
+                Focus(_targets.Find("workbench-dossier"), true);
+                break;
+            case UiPolishSignals.Cue.TooltipDismiss:
+                Focus(_targets.Find("workbench-dossier"), false);
+                break;
+            case UiPolishSignals.Cue.Pin:
+                Punch(_targets.Find("workbench-dossier"), _config.interactions.pin);
+                break;
+            case UiPolishSignals.Cue.Unpin:
+                Punch(_targets.Find("workbench-dossier"), _config.interactions.unpin);
+                break;
+            case UiPolishSignals.Cue.DrawerExpand:
+                Reveal(_targets.Find("workbench-armory"),
+                    _config.interactions.drawerExpand);
+                break;
+            case UiPolishSignals.Cue.DrawerCollapse:
+                Reveal(_targets.Find("workbench-market"),
+                    _config.interactions.drawerCollapse, direction: -1);
+                break;
+            case UiPolishSignals.Cue.SocketWake:
+                Attention(_targets.Find("workbench-dossier"));
+                break;
+            case UiPolishSignals.Cue.ProjectedTarget:
+                Commit(null, _targets.Find("workbench-dossier"),
+                    UiFeedbackTone.Positive, _config.interactions.projectedTarget);
                 break;
             case UiPolishSignals.Cue.Route:
                 Route(_targets.Find("station-market"));
@@ -1764,6 +1902,35 @@ internal static class UiPresentationContract
             "Muster lens re-show must be faster than its first disclosure");
         Require(config.muster.select.durationMs >= config.muster.deselect.durationMs,
             "Muster select should carry at least as much weight as deselect");
+        Require(config.tooltip != null, "shared semantic tooltip tuning must exist");
+        Require(config.tooltip.pointerDelayMs >= config.tooltip.reshowDelayMs,
+            "tooltip re-show must be faster than first pointer disclosure");
+        Require(config.tooltip.focusDelayMs >= config.tooltip.reshowDelayMs,
+            "tooltip re-show must be faster than first focus disclosure");
+        Require(config.tooltip.equipmentMaxWidthPx >= config.tooltip.maxWidthPx,
+            "equipment tooltips must have room for their fact tiles");
+        Require(config.tooltip.safeMarginPx >= 8f,
+            "tooltips need a meaningful safe-edge margin");
+        Require(config.interactions != null,
+            "reusable interaction recipes must exist");
+        foreach (UiMotionRecipe recipe in new[]
+                 {
+                     config.interactions.tooltipReveal,
+                     config.interactions.tooltipDismiss,
+                     config.interactions.pin,
+                     config.interactions.unpin,
+                     config.interactions.drawerExpand,
+                     config.interactions.drawerCollapse,
+                     config.interactions.socketWake,
+                     config.interactions.projectedTarget,
+                 })
+        {
+            Require(recipe != null, "every reusable interaction needs a motion recipe");
+            Require(recipe.durationMs > 0,
+                "reusable interaction recipes must remain perceptible");
+            Require(recipe.particles <= config.fx.maxEffects,
+                "interaction particles must stay inside the bounded FX budget");
+        }
         foreach (UiMotionRecipe recipe in new[]
                  {
                      config.transactions.recruit,
@@ -1793,10 +1960,6 @@ internal static class UiPresentationContract
             "Hall transaction particles must stay inside the bounded FX budget");
         Require(config.audio.volume >= 0f && config.audio.volume <= 1f,
             "UI audio volume must remain normalized");
-        Require(config.audio.ambienceVolume >= 0f && config.audio.ambienceVolume <= 1f,
-            "Hall ambience volume must remain normalized");
-        Require(config.audio.commitDuck >= 0f && config.audio.commitDuck <= 1f,
-            "Hall commit duck must remain normalized");
         Require(config.haptics.selectMs <= config.haptics.successMs,
             "selection haptics must stay lighter than a successful commit");
     }
