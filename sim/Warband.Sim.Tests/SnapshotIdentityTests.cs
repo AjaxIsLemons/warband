@@ -90,6 +90,7 @@ namespace Warband.Sim.Tests
             result.InitialUnits[0].Traits.Add("Warden");
             result.InitialUnits[0].Range = 1;
             result.InitialUnits[0].MoveInterval = 6;
+            result.InitialUnits[1].RoleId = "anchor";
 
             var ms = new MemoryStream();
             Replay.Write(ms, result.InitialUnits, result.Events);
@@ -101,6 +102,7 @@ namespace Warband.Sim.Tests
             Assert.Equal(new[] { "Warden" }, initial[0].Traits);
             Assert.Equal(1, initial[0].Range);
             Assert.Equal(6, initial[0].MoveInterval);
+            Assert.Equal("anchor", initial[1].RoleId); // the board picks its body off this
             Assert.Equal(result.Events.Count, events.Count);
 
             // The end-state hash is the standing proof used by `make scenarios`.
@@ -134,6 +136,8 @@ namespace Warband.Sim.Tests
             { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Longbow", Range = 1 });
             AssertDiffers("traits must be hashed", new PlaybackUnit
             { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Tower Shield", Range = 1, Traits = { "Warden" } });
+            AssertDiffers("role id must be hashed", new PlaybackUnit
+            { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Tower Shield", Range = 1, RoleId = "anchor" });
         }
 
         [Fact]

@@ -12,7 +12,11 @@ namespace Warband.Sim
     public static class Replay
     {
         private const uint Magic = 0x57425250; // "WBRP"
-        private const int Version = 8;   // v8: + per-rule owning team beside each rule id — the id
+        private const int Version = 9;   // v9: + PlaybackUnit.RoleId — the authored enemy role. The
+                                         //     board renders a monster as its ROLE (item 29); before
+                                         //     this the only identity on the wire was ChassisId, a
+                                         //     borrowed hero silhouette
+                                         // v8: + per-rule owning team beside each rule id — the id
                                          //     alone cannot say whose law it is (mirror fights
                                          //     register the same Inscription on both sides), and
                                          //     the badge rail must show YOUR Hourstone (ADR 0026)
@@ -60,6 +64,7 @@ namespace Warband.Sim
                 w.Write(u.TriggerRuleBase); w.Write(u.TriggerRuleCount);
                 w.Write(u.StatRuleBase); w.Write(u.StatRuleCount);
                 w.Write(u.ChassisId ?? ""); w.Write(u.WeaponName ?? ""); w.Write((int)u.WeaponTier);
+                w.Write(u.RoleId ?? "");
                 w.Write(u.Traits.Count);
                 foreach (var t in u.Traits) w.Write(t ?? "");
                 w.Write(u.Statuses.Count);
@@ -118,7 +123,7 @@ namespace Warband.Sim
                     TriggerRuleBase = r.ReadInt32(), TriggerRuleCount = r.ReadInt32(),
                     StatRuleBase = r.ReadInt32(), StatRuleCount = r.ReadInt32(),
                     ChassisId = r.ReadString(), WeaponName = r.ReadString(),
-                    WeaponTier = (WeaponTier)r.ReadInt32(),
+                    WeaponTier = (WeaponTier)r.ReadInt32(), RoleId = r.ReadString(),
                 };
                 int traitCount = r.ReadInt32();
                 for (int t = 0; t < traitCount; t++)

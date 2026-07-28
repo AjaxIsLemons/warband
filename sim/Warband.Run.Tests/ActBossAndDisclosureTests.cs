@@ -244,6 +244,62 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
+        public void EveryAuthoredBodyReachesTheBoardCarryingItsRole()
+        {
+            // The board renders a monster AS its role (item 29), so the role has to survive the trip
+            // from the encounter's placement onto the UnitDef the battle spawns — not just into the
+            // preview card. A body that arrives with an empty RoleId falls back to a borrowed hero
+            // silhouette, which is the exact lie the enemy cards were fixed for.
+            var cat = (IRunContent)new Catalog();
+            var comps = new List<List<(UnitDef Def, Hex Pos)>>();
+            for (int act = 1; act <= 3; act++)
+            {
+                comps.Add(cat.Boss(act, new Rng((ulong)act)));
+                foreach (FightTier tier in new[] { FightTier.Stable, FightTier.Fraying, FightTier.Collapsing })
+                    for (int node = 0; node < 4; node++)
+                        comps.Add(cat.Encounter(act, node, tier, new Rng((ulong)(node + 1))));
+            }
+
+            Assert.All(comps, c => Assert.All(c, e =>
+                Assert.False(string.IsNullOrWhiteSpace(e.Def.RoleId),
+                             $"{e.Def.Name} spawns with no role — the board would borrow a hero body")));
+        }
+
+        [Fact]
+        public void EveryAuthoredEncounterStampsItsRolesOnTheDefsThemselves()
+        {
+            // The catalog is NOT the only way an encounter gets built — `Encounters.ById` feeds the
+            // render fixtures and the authoring probes, and it skips the catalog entirely. Stamping
+            // the role at a resolution point therefore shipped roleless bodies to exactly the
+            // fixtures this item is verified with. Walk the authored pools directly.
+            var authored = new List<EncounterDef>();
+            foreach (var factory in Encounters.NodePool)
+                for (int act = 1; act <= 3; act++) authored.Add(factory(act));
+            foreach (var factory in Encounters.BossPool) authored.Add(factory());
+            Assert.NotEmpty(authored);
+
+            Assert.All(authored, d => Assert.All(d.Enemies, e =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(e.RoleId), $"{d.Id}/{e.Def.Name}: placement has no role");
+                Assert.Equal(e.RoleId, e.Def.RoleId); // the def is what the board and the wire see
+            }));
+        }
+
+        [Fact]
+        public void TheBoardAndThePreviewAgreeOnTheRole()
+        {
+            // Same draw, same rng: the role the player reads on the preview card must be the role
+            // the body wears on the board. Two tables would drift the moment one is edited.
+            var cat = (IRunContent)new Catalog();
+            for (int act = 1; act <= 3; act++)
+            {
+                var brief = cat.EncounterBrief(act, 0, FightTier.Stable, new Rng((ulong)act));
+                var comp = cat.Encounter(act, 0, FightTier.Stable, new Rng((ulong)act));
+                Assert.Equal(brief.Units.Select(u => u.RoleId), comp.Select(e => e.Def.RoleId));
+            }
+        }
+
+        [Fact]
         public void PreviewBriefAndPreviewEnemiesAgreeThroughTheController()
         {
             // End to end through the salted rng, on the REAL catalog: the two things the shell

@@ -38,6 +38,13 @@ namespace Warband.Sim
         public string WeaponName = "";
         public WeaponTier WeaponTier;
         public List<string> Traits = new List<string>();  // spec nodes + trinkets, in merge order
+
+        /// <summary>The authored enemy role (Enemies.Swarm/Anchor/…), empty for heroes. Unlike
+        /// ChassisId — a render key pointing at a hero silhouette — this is what the body IS, so it
+        /// is what the board renders a monster AS. The encounter declares it once on its
+        /// EncounterUnit; the catalog stamps it here at resolution, which is why every consumer
+        /// (preview brief, board, replay) reads one authored value instead of guessing from a name.</summary>
+        public string RoleId = "";
     }
 
     public sealed class UnitState

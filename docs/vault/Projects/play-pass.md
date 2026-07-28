@@ -14,6 +14,12 @@ tuning; nothing here blocks any board work.
   muster rings on a live deploy · Inscription tray drawer hover + TriggerFired flash/indicator ·
   dossier + armory drawer feel · options (menu/fight buttons, Esc, audible sliders, reduced
   motion) · CONTINUE from a cold start.
+- **The new enemy bodies (item 29) want your eye on the DIRECTION, not the details.** Authored
+  monsters are now flat-shaded primitives (small hunched Swarm, boxy Anchor, back-leaning Artillery
+  on a firing-line lane, legless Ritualist column with a mana clock at its foot, forward-pitched
+  Diver) standing next to textured KayKit heroes. Verified in captures, unseen in motion. The call
+  that is yours: keep procedural monsters as the placeholder language, or put the roles back on
+  hero minis dressed with role kit. Captures: `tmp/item29/final_*.png`.
 - **Known-dormant:** Heal carries no `Cause`, so Boon pulses never fire — one-line fix when wanted.
 - **F1 knobs to tune live:** field brightness · icon size · wall tint · cleric sigil.
 - **Finishing any run uploads its telemetry** — the first human data point; sessions read it off

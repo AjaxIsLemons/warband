@@ -73,6 +73,11 @@ namespace Warband.Sim
         public WeaponTier WeaponTier;
         public List<string> Traits = new List<string>();
 
+        /// <summary>The authored enemy role, empty for heroes (UnitDef.RoleId). ChassisId says which
+        /// silhouette a monster BORROWS; this says what it is, and the board keys its body and its
+        /// role tell on this — an Hourling is a Swarm body, not a Rogue mini.</summary>
+        public string RoleId = "";
+
         /// <summary>
         /// Project live battle state into the renderer contract. Placement previews use this same
         /// projection as Battle's initial snapshot, so Unity never grows a second unit-view model.
@@ -92,7 +97,7 @@ namespace Warband.Sim
                 TriggerRuleBase = u.TriggerBase, TriggerRuleCount = u.Def.Triggers.Count,
                 StatRuleBase = u.StatRuleBase, StatRuleCount = u.Def.StatRules.Count,
                 ChassisId = u.Def.ChassisId, WeaponName = u.Def.WeaponName,
-                WeaponTier = u.Def.WeaponTier,
+                WeaponTier = u.Def.WeaponTier, RoleId = u.Def.RoleId,
                 // Shared, not copied: the guardrail projects every unit EVERY tick, and Traits is
                 // immutable Def data that nothing downstream writes. Clone() still copies, so any
                 // owned snapshot (PlaybackState.From) gets its own list.
@@ -119,7 +124,7 @@ namespace Warband.Sim
             TriggerRuleBase = TriggerRuleBase, TriggerRuleCount = TriggerRuleCount,
             StatRuleBase = StatRuleBase, StatRuleCount = StatRuleCount,
             ChassisId = ChassisId, WeaponName = WeaponName, WeaponTier = WeaponTier,
-            Traits = new List<string>(Traits),
+            RoleId = RoleId, Traits = new List<string>(Traits),
         };
     }
 
@@ -336,6 +341,7 @@ namespace Warband.Sim
                 Mix(u.TriggerRuleBase); Mix(u.TriggerRuleCount);
                 Mix(u.StatRuleBase); Mix(u.StatRuleCount);
                 MixStr(u.Name); MixStr(u.ChassisId); MixStr(u.WeaponName); Mix((int)u.WeaponTier);
+                MixStr(u.RoleId); // shown (it picks the body), so hashed — the round-trip proves the wire carries it
                 foreach (var t in u.Traits) MixStr(t); // merge order is meaningful (last override wins)
                 var sorted = new List<(StatusKind Kind, int Mag, int ExpiryTick)>(u.Statuses);
                 sorted.Sort((a, b) => a.Kind != b.Kind ? a.Kind.CompareTo(b.Kind) : a.Mag.CompareTo(b.Mag));

@@ -37,28 +37,23 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
    ManagementView/ShopView/PlanningView (~2,300 lines) are unregistered since the view-table
    refactor; WarbandCard/CardRulesPopover only reachable from them. Delete (git remembers) or
    keep? The deletion itself is a compile-gated afternoon.
-**4. Item 29 — enemy board identity** — **SPEC'D (render-only), was item 2③+⑤.** Enemy board
-   silhouettes/tells still borrow hero minis (cards were fixed earlier); give the five authored
-   roles (Swarm/Anchor/Artillery/Ritualist/Diver) distinct silhouettes + per-role tells.
-   Capture-verifiable; the two boss render fixtures (`boss-ashfall-battery`, `boss-waning-crown`)
-   ride along as the capture pass.
-**5. Item 25 — a live passive has no on-body mark** — **SPEC'D (render-only), from items 20/21.**
+**4. Item 25 — a live passive has no on-body mark** — **SPEC'D (render-only), from items 20/21.**
    The fold carries `ActiveRules` and the hover card marks conditionals LIVE/idle, but nothing
    reads at a glance on the board. A `StatusIconRow`-shaped rim/mark while a conditional rule is
    live (and the `RuleChanged` pulse becoming a persistent rim) closes the passive renderer's last
    gap. Capture-verifiable.
-**6. Item 26 — overlapping muster rings share one gold** — **SPEC'D (small render fix).** Whose
+**5. Item 26 — overlapping muster rings share one gold** — **SPEC'D (small render fix).** Whose
    ring is whose is unreadable when two placed musters overlap; per-owner accent
    (portrait-matched tint or pattern). Verify via `Warband/MCP/Capture Muster Rings`.
-**7. Item 27 — Workbench polish batch** — **SPEC'D (item 24's deferred list).** Weapon-tier
+**6. Item 27 — Workbench polish batch** — **SPEC'D (item 24's deferred list).** Weapon-tier
    "augmented" marking on a non-hue channel · WHEN/THEN trigger anatomy for trinkets/inscriptions ·
    compact-card text-budget CI assertion · hero rank pips · paradox-inscription badge · rule-delta
    rows clipped at drawer-open · `MarketOfferCardModel.Qualifier` dead slot. Individually small;
    Workbench Full Matrix gates, captures read by eye.
-**8. Item 1b — Hall polish, two buildable slices** — **SPEC'D.** Final Bind choreography · Rule
+**7. Item 1b — Hall polish, two buildable slices** — **SPEC'D.** Final Bind choreography · Rule
    Preview diagrams (`Design/hall-polish.md`). The device and audio/motion slices are
    feedback-gated → Deferred.
-**9. Item 22 — the board is square, and that caps the camera** — **DESIGN (measured; last because
+**8. Item 22 — the board is square, and that caps the camera** — **DESIGN (measured; last because
    Jake's framing feedback informs it, but decidable any time).** 6×8 at 0.91:1 mathematically
    forbids a readable pitch; **8×8 at ~45° measures 98% frame fill AND 1.37 rows of overlap — the
    only point that does both.** Costs +16 hexes: `Battle.InBounds`, `Pathing.Cells`, every
@@ -102,6 +97,9 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
   never comes off for `control` · `reach` cannot clear the act-1 boss.
 
 ## Done — one line each; full detail + all older lines in `roadmap-done-archive.md`
+- **2026-07-28** — Item 29, enemy board identity: `RoleId` on the wire (replay v9), seven authored
+  role bodies replacing borrowed hero minis + per-role ground tells (artillery firing line, ritual
+  clock); two new role fixtures; 522 tests, contact sheet byte-stable B/C/D.
 - **2026-07-28** — Roadmap re-cut twice (playtesting = feedback, then actionable-only board).
 - **2026-07-28** — Item 19, run telemetry: JSONL decision trail (every fight/purchase/tier), 5
   headless tests, fail-silent client hooks, key-gated site sink DEPLOYED + live-verified.

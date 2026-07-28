@@ -794,12 +794,208 @@
       "name": "overtime",
       "seed": 11,
       "units": [
-        {"team": 0, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 1, "col": 1},
-        {"team": 0, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 1, "col": 4},
-        {"team": 0, "chassis": "cleric",  "picks": [1, 0, 0], "tier": "Relic", "row": 0, "col": 2},
-        {"team": 1, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 6, "col": 1},
-        {"team": 1, "chassis": "bulwark", "picks": [1, 0, 0], "tier": "Relic", "row": 6, "col": 4},
-        {"team": 1, "chassis": "cleric",  "picks": [1, 0, 0], "tier": "Relic", "row": 7, "col": 2}
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 1,
+          "col": 1
+        },
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 1,
+          "col": 4
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 0,
+          "col": 2
+        },
+        {
+          "team": 1,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 6,
+          "col": 1
+        },
+        {
+          "team": 1,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 6,
+          "col": 4
+        },
+        {
+          "team": 1,
+          "chassis": "cleric",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 7,
+          "col": 2
+        }
+      ]
+    },
+    {
+      "// note": "Role bodies (item 29): ANCHOR wall + three SWARM + a rooted RITUALIST clock. Watch: four different silhouettes, and the ritual's ground clock filling while it never swings.",
+      "name": "enc-ninth-bell",
+      "seed": 21,
+      "encounter": "ninth-bell",
+      "encounterAct": 3,
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 1,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 4,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 2,
+          "mastered": false
+        }
+      ]
+    },
+    {
+      "// note": "Role bodies (item 29): three DIVERs leaping the backline while an ARTILLERY holds standoff. Watch: the forward-pitched divers vs the back-leaning gun and its firing-line mark.",
+      "name": "enc-the-drop",
+      "seed": 22,
+      "encounter": "the-drop",
+      "encounterAct": 3,
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 1,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 4,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 2,
+          "mastered": false
+        }
       ]
     }
   ]

@@ -161,6 +161,11 @@ public class ReplayPlayer : MonoBehaviour
         // brief scale-pop on the mana bar so the flip is an EVENT, not a state you must notice.
         public bool ManaReady;
         public float ManaPulseT, ManaFillBaseH;
+        // The rooted rituals' board-level clock (item 29): a ground disc inside the role ring that
+        // grows with mana. Null on every other body. A Ritualist never attacks, so its mana bar is
+        // the entire threat — this puts that threat on the board, where the eye already is.
+        public Transform RoleClock;
+        public float RoleClockMax;
         // Non-null only on the KayKit model path — drives Idle/Walk; null for primitives.
         public Animator ModelAnimator;
         // The fold says this unit is dead but its corpse is still on the board (DeathSequence). The
@@ -2512,12 +2517,22 @@ public class ReplayPlayer : MonoBehaviour
         // Model first (fight-legibility Phase 2, KayKit shared-rig minis), primitives as the
         // automatic fallback — a missing model/chassis can never break the board. Key on the
         // stable content id (replay v3+); Name is the fallback for older fixtures.
-        float barOff, leanDeg;
-        var modelRend = TryBuildModel(body, u, team, out barOff, out leanDeg);
-        var torso = modelRend != null
-            ? modelRend
-            : BuildSilhouette(body, string.IsNullOrEmpty(u.ChassisId) ? u.Name : u.ChassisId,
-                              team, out barOff, out leanDeg);
+        // An authored role owns its body outright (item 29) — it is a monster, not the hero whose
+        // silhouette its ChassisId borrows for card art, so the hero-model path is skipped entirely.
+        // Face the enemy at spawn so shields/spears/bows read right in a tick-0 capture (team0
+        // marches to +Z, team1 to -Z); movement + attacks retarget the yaw from there.
+        float yaw0 = u.Team == 0 ? 0f : 180f;
+        float barOff = 0f, leanDeg = 0f;
+        Renderer torso = null, modelRend = null;
+        if (!string.IsNullOrEmpty(u.RoleId))
+            torso = BuildRoleSilhouette(body, u.RoleId, team, out barOff, out leanDeg);
+        bool isRole = torso != null;
+        var roleClock = isRole ? BuildRoleMark(root, u.RoleId, team, yaw0) : null;
+        if (torso == null)
+            torso = modelRend = TryBuildModel(body, u, team, out barOff, out leanDeg);
+        if (torso == null)
+            torso = BuildSilhouette(body, string.IsNullOrEmpty(u.ChassisId) ? u.Name : u.ChassisId,
+                                    team, out barOff, out leanDeg);
 
         float barY = 1.55f + barOff, manaY = 1.40f + barOff, pipY = 1.72f + barOff;
         var bars = _data != null ? _data.bars : new BarsTune();
@@ -2549,9 +2564,6 @@ public class ReplayPlayer : MonoBehaviour
 
         var nameplate = MakeNameplate(root, pipY + 0.30f, u.Name);
 
-        // Face the enemy at spawn so shields/spears/bows read right in a tick-0 capture (team0 marches
-        // to +Z, team1 to -Z); movement + attacks retarget the yaw from there via the Director/fold.
-        float yaw0 = u.Team == 0 ? 0f : 180f;
         body.localRotation = Quaternion.Euler(leanDeg, yaw0, 0f);
 
         _views[u.Id] = new UnitView
@@ -2559,6 +2571,7 @@ public class ReplayPlayer : MonoBehaviour
             Root = root, Body = body, BodyRenderer = torso, BodyBaseScale = Vector3.one,
             PlanningMarker = planningMarker,
             HpFill = hp, ShieldFill = shield, ManaFill = mana, Icons = icons, Nameplate = nameplate,
+            RoleClock = roleClock, RoleClockMax = 0.68f,
             ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
             // Models flash off WHITE (a team tint would permanently recolor the texture; team reads
             // via the ground disc + ally/enemy bars). Primitives keep the team-colored torso.
@@ -2728,6 +2741,169 @@ public class ReplayPlayer : MonoBehaviour
         return torso.GetComponent<Renderer>();
     }
 
+    // ---- authored enemy bodies (item 29) --------------------------------------
+    // An authored monster is NOT a hero: no chassis, no rank, no weapon, no spec tree (Enemies.cs).
+    // The board nonetheless spawned it as the hero mini its ChassisId borrows for art, so five roles
+    // posing five different problems arrived as five familiar champions — the same lie the enemy
+    // CARDS were fixed for. A body carrying a RoleId now gets its own silhouette, built from the
+    // primitive vocabulary (no art dependency), plus a ground tell that states the role's problem.
+    //
+    // Proportion IS the tell: Swarm is small and low, Anchor is the widest mass on the board,
+    // Artillery leans back over a splayed base behind a long barrel, Ritualist is a legless rooted
+    // column, Diver is pitched forward mid-pounce. Read from the TFT camera, no text needed.
+
+    /// <summary>Body for one of the authored roles. Same contract as <see cref="BuildSilhouette"/>:
+    /// returns the flash target, <paramref name="barOff"/> lifts the bars clear of a tall shape
+    /// (negative pulls them down onto a small one), <paramref name="leanDeg"/> is a body tilt baked
+    /// into the facing target. Unknown roles fall through to null so the caller keeps its hero-model
+    /// path — an unrecognized role can never blank a unit off the board.</summary>
+    private Renderer BuildRoleSilhouette(Transform body, string roleId, Color team,
+                                         out float barOff, out float leanDeg)
+    {
+        barOff = 0f; leanDeg = 0f;
+
+        Transform Torso(float w, float h) =>
+            MakePrimitive(PrimitiveType.Capsule, body, new Vector3(0f, h, 0f), new Vector3(w, h, w), team);
+        Transform Column(float w, float h) =>
+            MakePrimitive(PrimitiveType.Cylinder, body, new Vector3(0f, h, 0f), new Vector3(w, h, w), team);
+        // Flat faces, not a giant pill: a capsule this wide sweeps a specular highlight across its
+        // whole crown and blooms out WHITE, which costs the body its enemy-red read entirely.
+        Transform Slab(float w, float h, float d) =>
+            MakePrimitive(PrimitiveType.Cube, body, new Vector3(0f, h, 0f), new Vector3(w, h * 2f, d), team);
+        void Acc(PrimitiveType t, Vector3 pos, Vector3 scale, Vector3 euler, Color c) =>
+            MakePrimitive(t, body, pos, scale, c).localRotation = Quaternion.Euler(euler);
+
+        Transform torso;
+        if (roleId == Warband.Content.Enemies.Swarm)
+        {
+            // Small, low, hunched — the pressure is the COUNT, so one body must read as cheap. It
+            // still needs a head and a pair of knives, or a capture reads it as a pebble.
+            torso = Torso(0.42f, 0.30f);
+            leanDeg = 24f;
+            barOff = -0.72f;
+            Acc(PrimitiveType.Sphere, new Vector3(0f, 0.62f, 0.10f), new Vector3(0.28f, 0.28f, 0.28f), Vector3.zero, AccGun);
+            Acc(PrimitiveType.Cube, new Vector3(-0.24f, 0.30f, -0.18f), new Vector3(0.05f, 0.05f, 0.34f), new Vector3(34f, 0f, 0f), AccSteel);
+            Acc(PrimitiveType.Cube, new Vector3( 0.24f, 0.30f, -0.18f), new Vector3(0.05f, 0.05f, 0.34f), new Vector3(34f, 0f, 0f), AccSteel);
+        }
+        else if (roleId == Warband.Content.Enemies.Anchor)
+        {
+            // The widest, heaviest mass on the board: "go through it or go around it" at a glance.
+            // The slab stays LOW and dark — chest-high steel swallowed the body colour, and an enemy
+            // that does not read enemy-red is a worse failure than one that does not read as a wall.
+            torso = Slab(1.06f, 0.60f, 0.74f);
+            barOff = 0.30f;
+            Acc(PrimitiveType.Cube, new Vector3(0f, 0.30f, 0.46f), new Vector3(1.12f, 0.56f, 0.14f), Vector3.zero, AccGun);
+            Acc(PrimitiveType.Cube, new Vector3(-0.60f, 1.02f, 0f), new Vector3(0.30f, 0.24f, 0.46f), Vector3.zero, AccGun);
+            Acc(PrimitiveType.Cube, new Vector3( 0.60f, 1.02f, 0f), new Vector3(0.30f, 0.24f, 0.46f), Vector3.zero, AccGun);
+        }
+        else if (roleId == Warband.Content.Enemies.Artillery)
+        {
+            // Leans AWAY behind a long raised barrel — the shape says "it shoots past your front line".
+            torso = Torso(0.42f, 0.40f);
+            leanDeg = -10f;
+            barOff = 0.18f;
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, -0.04f), new Vector3(0.82f, 0.05f, 0.82f), Vector3.zero, AccGun);
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 0.74f, 0.30f), new Vector3(0.09f, 0.60f, 0.09f), new Vector3(58f, 0f, 0f), AccSteel);
+        }
+        else if (roleId == Warband.Content.Enemies.Ritualist)
+        {
+            // Rooted and legless: a column, not a fighter. It never attacks — nothing about it should
+            // read as a body that closes distance.
+            torso = Column(0.42f, 0.76f);
+            barOff = 0.46f;
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 1.74f, 0f), new Vector3(0.64f, 0.025f, 0.64f), Vector3.zero, AccSteel);
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(0.76f, 0.06f, 0.76f), Vector3.zero, AccGun);
+        }
+        else if (roleId == Warband.Content.Enemies.Diver)
+        {
+            // Pitched forward mid-pounce, blades swept back — it is coming for your backline. The
+            // blades are authored in BODY space, which already carries the 30° pitch: a rod at local
+            // euler 0 comes out horizontal (handlebars), so they are raked back hard on top of it.
+            torso = Torso(0.40f, 0.42f);
+            leanDeg = 30f;
+            barOff = 0.06f;
+            Acc(PrimitiveType.Cube, new Vector3(-0.24f, 0.46f, -0.30f), new Vector3(0.055f, 0.055f, 0.56f), new Vector3(48f, 0f, 0f), AccSteel);
+            Acc(PrimitiveType.Cube, new Vector3( 0.24f, 0.46f, -0.30f), new Vector3(0.055f, 0.055f, 0.56f), new Vector3(48f, 0f, 0f), AccSteel);
+        }
+        else if (roleId == Warband.Content.Enemies.Siege)
+        {
+            // The act-2 boss reads as Artillery's big brother — same grammar, emplaced and huge.
+            torso = Torso(0.74f, 0.56f);
+            barOff = 0.42f;
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(1.20f, 0.07f, 1.20f), Vector3.zero, AccGun);
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 1.02f, 0.40f), new Vector3(0.16f, 0.86f, 0.16f), new Vector3(56f, 0f, 0f), AccSteel);
+        }
+        else if (roleId == Warband.Content.Enemies.Hour)
+        {
+            // The act-3 boss is the Ritualist's grammar crowned — same rooted column, bigger, with
+            // the crown that names it.
+            torso = Column(0.58f, 0.92f);
+            barOff = 0.78f;
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 2.02f, 0f), new Vector3(0.92f, 0.03f, 0.92f), Vector3.zero, AccSteel);
+            for (int i = 0; i < 5; i++)
+            {
+                float a = i * Mathf.PI * 2f / 5f;
+                Acc(PrimitiveType.Cube,
+                    new Vector3(Mathf.Sin(a) * 0.34f, 2.14f, Mathf.Cos(a) * 0.34f),
+                    new Vector3(0.07f, 0.24f, 0.07f), Vector3.zero, AccSteel);
+            }
+            Acc(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(1.04f, 0.06f, 1.04f), Vector3.zero, AccGun);
+        }
+        else return null;   // unknown role → caller keeps the hero-model path
+
+        return torso.GetComponent<Renderer>();
+    }
+
+    /// <summary>
+    /// The role's ground tell: a flat team-colored mark under the body whose SHAPE names the role's
+    /// problem — a firing line for Artillery, a wall footprint for Anchor, a ring for the rooted
+    /// rituals. Ground-plane, because that is the surface the TFT camera reads best and the one
+    /// place a mark cannot fight the unit's own status tint.
+    ///
+    /// Returns the ritual CLOCK — the disc inside a Ritualist's ring, scaled by mana in the sync
+    /// loop — or null for roles with no clock. A rooted ritual never attacks, so without this the
+    /// single most dangerous thing on the board is also the only thing with no board-level tell.
+    ///
+    /// Parented to ROOT, not Body: Body carries the forward lean, the facing yaw and the punch
+    /// scale, so a mark hung there tips off the floor and pumps on every hit. It takes the spawn
+    /// facing once (<paramref name="yaw"/>) — enough for the one directional mark, the artillery
+    /// firing line, because a standoff gun holds the lane it opened on.
+    /// </summary>
+    private Transform BuildRoleMark(Transform root, string roleId, Color team, float yaw)
+    {
+        var pad = new GameObject("role-mark").transform;
+        pad.SetParent(root, false);
+        pad.localRotation = Quaternion.Euler(0f, yaw, 0f);
+
+        void Mark(PrimitiveType t, Vector3 pos, Vector3 scale, float spin, Color c) =>
+            MakePrimitive(t, pad, pos, scale, c).localRotation = Quaternion.Euler(0f, spin, 0f);
+
+        if (roleId == Warband.Content.Enemies.Swarm)
+            Mark(PrimitiveType.Cylinder, new Vector3(0f, 0.014f, 0f), new Vector3(0.44f, 0.012f, 0.44f), 0f, team);
+        else if (roleId == Warband.Content.Enemies.Anchor)
+            Mark(PrimitiveType.Cube, new Vector3(0f, 0.014f, 0f), new Vector3(1.00f, 0.024f, 1.00f), 0f, team);
+        else if (roleId == Warband.Content.Enemies.Artillery || roleId == Warband.Content.Enemies.Siege)
+        {
+            float big = roleId == Warband.Content.Enemies.Siege ? 1.35f : 1.0f;
+            Mark(PrimitiveType.Cylinder, new Vector3(0f, 0.014f, 0f), new Vector3(0.60f * big, 0.012f, 0.60f * big), 0f, team);
+            // The firing line: it shoots PAST your front line, so the mark points downrange.
+            Mark(PrimitiveType.Cube, new Vector3(0f, 0.014f, 0.80f * big), new Vector3(0.10f, 0.022f, 1.30f * big), 0f, team);
+        }
+        else if (roleId == Warband.Content.Enemies.Ritualist || roleId == Warband.Content.Enemies.Hour)
+        {
+            float big = roleId == Warband.Content.Enemies.Hour ? 1.25f : 1.0f;
+            Mark(PrimitiveType.Cylinder, new Vector3(0f, 0.014f, 0f), new Vector3(0.92f * big, 0.012f, 0.92f * big), 0f, team);
+            Mark(PrimitiveType.Cylinder, new Vector3(0f, 0.017f, 0f), new Vector3(0.70f * big, 0.012f, 0.70f * big), 0f, BaseDark);
+            var clock = MakePrimitive(PrimitiveType.Cylinder, pad, new Vector3(0f, 0.020f, 0f),
+                                      new Vector3(0f, 0.012f, 0f), _data != null ? _data.bars.mana : new BarsTune().mana);
+            clock.name = "role-clock";
+            return clock;
+        }
+        else if (roleId == Warband.Content.Enemies.Diver)
+            Mark(PrimitiveType.Cube, new Vector3(0f, 0.014f, 0f), new Vector3(0.46f, 0.022f, 0.46f), 45f, team);
+        return null;
+    }
+
     /// <summary>Per-unit world-space nameplate (chassis name), pooled-free — one lives with the view.
     /// Styled + billboarded live from <see cref="TuningData.nameplates"/> in Update/BuildPreview via
     /// <see cref="StyleNameplate"/>, so a hot-reload resizes/recolors/hides it with no rebuild.</summary>
@@ -2821,6 +2997,16 @@ public class ReplayPlayer : MonoBehaviour
                 if (ready) v.ManaPulseT = 1f;
                 var bars = _data != null ? _data.bars : new BarsTune();
                 Paint(v.ManaFill.GetComponent<Renderer>(), ready ? bars.manaReady : bars.mana);
+                if (v.RoleClock != null)
+                    Paint(v.RoleClock.GetComponent<Renderer>(), ready ? bars.manaReady : bars.mana);
+            }
+            // The ritual clock fills on the ground, same threshold flip as the bar above it.
+            if (v.RoleClock != null)
+            {
+                float f = v.ManaMax > 0 ? Mathf.Clamp01((float)u.Mana / v.ManaMax) : 0f;
+                var s = v.RoleClock.localScale;
+                s.x = s.z = v.RoleClockMax * f;
+                v.RoleClock.localScale = s;
             }
             SetStatusTint(v, u);
             // Detailed read: which statuses, how many, how long left. Cheap on the unchanged path

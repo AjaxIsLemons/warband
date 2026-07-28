@@ -351,13 +351,24 @@ namespace Warband.Content
             return def;
         }
 
+        /// <summary>
+        /// Place one authored body. The role is stamped onto the DEF as well as the placement, so it
+        /// travels with the unit into the battle and out over the replay wire — the board renders a
+        /// monster as its role (item 29), and a body that reaches the board without one falls back
+        /// to a borrowed hero silhouette. Stamping here rather than at a resolution point is what
+        /// makes `Encounters.ById` (render fixtures, probes) carry roles too: the catalog is not the
+        /// only way an encounter is built.
+        /// </summary>
         private static EncounterUnit Place(UnitDef def, int row, int col, string roleId,
-                                           string role = "") =>
-            new EncounterUnit
+                                           string role = "")
+        {
+            def.RoleId = roleId;
+            return new EncounterUnit
             {
                 Def = def, Pos = Hex.FromRowCol(row, col), RoleId = roleId,
                 Role = string.IsNullOrEmpty(role) ? Enemies.RoleLabel(roleId) : role,
             };
+        }
 
         /// <summary>
         /// Read the Bond out of a resolved fight. Keyed on the published BondHaste magnitude so
@@ -419,20 +430,8 @@ namespace Warband.Content
                 RuleText = "When either Oathbound dies, the survivor Enrages (+100% Attack Speed).",
                 Enemies =
                 {
-                    new EncounterUnit
-                    {
-                        Def = bulwark,
-                        Pos = Hex.FromRowCol(5, 0),
-                        RoleId = Enemies.Anchor,
-                        Role = "OATHBOUND · FRONTLINE",
-                    },
-                    new EncounterUnit
-                    {
-                        Def = sharpshot,
-                        Pos = Hex.FromRowCol(5, 5),
-                        RoleId = Enemies.Artillery,
-                        Role = "OATHBOUND · BACKLINE",
-                    },
+                    Place(bulwark, 5, 0, Enemies.Anchor, "OATHBOUND · FRONTLINE"),
+                    Place(sharpshot, 5, 5, Enemies.Artillery, "OATHBOUND · BACKLINE"),
                 },
             };
         }
