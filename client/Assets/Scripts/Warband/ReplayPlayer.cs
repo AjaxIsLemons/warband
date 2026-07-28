@@ -132,6 +132,11 @@ public class ReplayPlayer : MonoBehaviour
         public Transform PlanningMarker;
         public Renderer BodyRenderer;
         public Transform HpFill, ShieldFill, ManaFill;
+        // P5 damage trail state: TrailFar = the frozen far edge (bar fraction), TrailT = seconds
+        // since the last hit (drives the t² drain), HpFrac = last folded fraction. HpFrac -1 is
+        // the "not yet folded" sentinel so a scenario switch snaps instead of draining a phantom.
+        public Transform TrailFill;
+        public float TrailFar, TrailT = 1000f, HpFrac = -1f;
         public TextMesh Nameplate;
         // The status roster over the head — fold-driven, stepped by StepFx, popped by the Director.
         public StatusIconRow Icons;
@@ -203,6 +208,7 @@ public class ReplayPlayer : MonoBehaviour
         public string Text;
         public Color Color;
         public float Scale, T, LifeMul;
+        public bool Crit;        // crits alone get the spawn pop (P7 motion law)
     }
 
     /// <summary>Data-driven event → tell, built from TuningData.tells (JSON). No code per tell.
@@ -297,6 +303,7 @@ public class ReplayPlayer : MonoBehaviour
             public string Text;
             public Color Color;
             public float Scale, T, LifeMul;
+            public bool Crit;
         }
 
         private readonly List<QueuedNumber> _numberQueue = new List<QueuedNumber>();
@@ -902,10 +909,17 @@ public class ReplayPlayer : MonoBehaviour
             if (def.number && Mathf.Abs(e.Amount) >= def.minAmount)
             {
                 var col = e.Crit ? def.critNumberColor : def.numberColor;
-                if (_impact.enabled) col = Color.Lerp(col, _impact.heavyTint, _impact.tintAmount * t);
+                // Attribution (ui-review P1): damage TAKEN by the player's side overrides to
+                // crimson. heavyTint stays output-only — half a lerp toward warm white would turn
+                // crimson into the very salmon it exists to be distinct from.
+                bool incoming = e.Kind == EventKind.DamageDealt && _unitById(sideUid)?.Team == 0;
+                if (incoming) col = e.Crit ? _numbers.allyHitCrit : _numbers.allyHit;
+                else if (_impact.enabled) col = Color.Lerp(col, _impact.heavyTint, _impact.tintAmount * t);
                 float mag = _impact.enabled ? Mathf.Lerp(_impact.minScale, _impact.maxScale, t) : 1f;
-                EnqueueNumber(def, sideUid, v, Mathf.Abs(e.Amount).ToString(),
-                              col, def.numberScale * mag * (e.Crit ? 1.4f : 1f), t);
+                string text = Mathf.Abs(e.Amount).ToString();
+                if (e.Crit && _numbers.critBang) text += "!";
+                EnqueueNumber(def, sideUid, v, text,
+                              col, def.numberScale * mag * (e.Crit ? 1.4f : 1f), t, e.Crit);
             }
 
             // Contact recipe, at the victim's chest and aimed along the blow so directional sprays
@@ -969,7 +983,7 @@ public class ReplayPlayer : MonoBehaviour
         /// launches. Lane + time are chosen deterministically (no Random anywhere in the path), so a
         /// frozen BuildPreview renders identically every capture and RenderShots can regression-check
         /// crowding.</summary>
-        private void EnqueueNumber(TellDef def, int unitId, UnitView v, string text, Color color, float scale, float t)
+        private void EnqueueNumber(TellDef def, int unitId, UnitView v, string text, Color color, float scale, float t, bool crit)
         {
             int lanes = Mathf.Max(1, _numbers.columns);
             float gap = Mathf.Max(0f, _numbers.releaseGap);
@@ -997,7 +1011,7 @@ public class ReplayPlayer : MonoBehaviour
                 ReleaseAt = release,
                 Lateral = (lane - (lanes - 1) * 0.5f) * _numbers.columnSpread,
                 Text = text, Color = color, Scale = scale, T = t,
-                LifeMul = Mathf.Max(0.01f, def.numberLife),
+                LifeMul = Mathf.Max(0.01f, def.numberLife), Crit = crit,
             });
         }
 
@@ -1015,7 +1029,7 @@ public class ReplayPlayer : MonoBehaviour
                 {
                     Anchor = _views.TryGetValue(q.Unit, out var v) ? v.Target + Vector3.up * q.Height : q.Fallback,
                     Lateral = q.Lateral, Unit = q.Unit, Text = q.Text, Color = q.Color,
-                    Scale = q.Scale, T = q.T, LifeMul = q.LifeMul,
+                    Scale = q.Scale, T = q.T, LifeMul = q.LifeMul, Crit = q.Crit,
                 });
                 if (fn != null) _activeNumbers.Add(fn);
             }
@@ -1271,8 +1285,17 @@ public class ReplayPlayer : MonoBehaviour
         _director?.Tick(dt);
         // Status rows: the countdown rings drain and any apply-pop runs out on this clock, which is
         // why two frozen captures of the SAME tick at different previewAdvanceSeconds show the
-        // clocks at different fills instead of one static ring.
-        foreach (var v in _views.Values) v.Icons?.Step(dt);
+        // clocks at different fills instead of one static ring. The damage trail drains on the
+        // same clock for the same reason.
+        foreach (var v in _views.Values)
+        {
+            v.Icons?.Step(dt);
+            if (v.TrailFill != null && v.TrailT < 999f)
+            {
+                v.TrailT = Mathf.Min(v.TrailT + dt, 1000f);
+                SetSegment(v.TrailFill, v.HpFrac, TrailDisplayedFar(v) - v.HpFrac);
+            }
+        }
         // The dress layer (board dim + camera). Stepped here rather than in Update for the parity
         // law: the Deathless dim then reproduces in a frozen contact sheet by construction.
         StepDress(dt);
@@ -1847,7 +1870,14 @@ public class ReplayPlayer : MonoBehaviour
     private void ResetAnim()
     {
         ResetDeaths();      // corpses first: it hands bodies/materials/props back before anything else runs
-        foreach (var v in _views.Values) { v.FlashT = 0f; v.PunchT = 0f; v.Icons?.Reset(); }
+        foreach (var v in _views.Values)
+        {
+            v.FlashT = 0f; v.PunchT = 0f; v.Icons?.Reset();
+            // Trail back to the sentinel: a wrapped fight must not open draining the previous
+            // loop's last hit.
+            v.HpFrac = -1f; v.TrailT = 1000f;
+            if (v.TrailFill != null) SetSegment(v.TrailFill, 0f, 0f);
+        }
         _holdSeconds = 0f;  // a hit-stop must not survive a loop-wrap or scenario switch
         _director?.Reset(); // clears timeline/latches, zeros MotionOffsets, recycles in-flight FX
         ClearFieldViews();  // ditto the fields — the next fight traces its own glyphs in
@@ -1989,9 +2019,17 @@ public class ReplayPlayer : MonoBehaviour
         // Lane splay parts within a unit; bias parts across units. Both ride into velocity too, so
         // separation grows over the number's life instead of holding a fixed initial gap.
         Vector3 vel = Vector3.up * rise + right * (s.Lateral * n.columnDrift + bias);
-        fn.Play(s.Anchor + right * (s.Lateral + bias), vel, rise * 1.5f, s.Text, s.Color, s.Scale, _numberFace,
-                n.lifeSeconds * s.LifeMul * (1f + _data.impact.lifeBoost * s.T),
-                n.characterSize, n.fontSize,
+        // P7 ramp: small hits spawn luminance-dimmed (alpha untouched — Jake's 2026-07-28 call:
+        // brightness says "small", alpha is reserved for "expiring") and live shorter. The
+        // decay-to-dark over the back half is FloatingNumber's job, driven by endLum.
+        float dim = Mathf.Lerp(_data.impact.dimFloor, 1f, s.T);
+        var col = s.Color;
+        col.r *= dim; col.g *= dim; col.b *= dim;
+        float life = n.lifeSeconds * s.LifeMul * (1f + _data.impact.lifeBoost * s.T)
+                     * Mathf.Lerp(_data.impact.lifeFloor, 1f, s.T);
+        fn.Play(s.Anchor + right * (s.Lateral + bias), vel, rise * 1.5f, s.Text, col, s.Scale, _numberFace,
+                life, n.characterSize, n.fontSize,
+                s.Crit ? _data.impact.critPop : 0f, _data.impact.endLum,
                 RecycleNumber);
         return fn;
     }
@@ -2538,8 +2576,13 @@ public class ReplayPlayer : MonoBehaviour
         var bars = _data != null ? _data.bars : new BarsTune();
         MakeBarBack(root, barY);
         var hp = MakeFill(root, barY, u.Team == 0 ? bars.allyHp : bars.enemyHp);
-        var shield = MakeFill(root, barY, new Color(0.55f, 0.80f, 1.00f));
+        var shield = MakeFill(root, barY, bars.shield);
         shield.localPosition += new Vector3(0f, 0f, -0.04f);
+        // P5 damage trail: behind the HP fill, in front of the back bar; zeroed at birth so a
+        // tick-0 capture doesn't open on a full-width pale bar.
+        var trail = MakeFill(root, barY, bars.trail);
+        trail.localPosition += new Vector3(0f, 0f, 0.01f);
+        SetSegment(trail, 0f, 0f);
         MakeBarBack(root, manaY, 0.09f);
         var mana = MakeFill(root, manaY, bars.mana, 0.06f);
         // Segment ticks every hpPerSegment (TFT: one divider per fixed HP) — absolute magnitude
@@ -2570,7 +2613,8 @@ public class ReplayPlayer : MonoBehaviour
         {
             Root = root, Body = body, BodyRenderer = torso, BodyBaseScale = Vector3.one,
             PlanningMarker = planningMarker,
-            HpFill = hp, ShieldFill = shield, ManaFill = mana, Icons = icons, Nameplate = nameplate,
+            HpFill = hp, ShieldFill = shield, ManaFill = mana, TrailFill = trail,
+            Icons = icons, Nameplate = nameplate,
             RoleClock = roleClock, RoleClockMax = 0.68f,
             ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
             // Models flash off WHITE (a team tint would permanently recolor the texture; team reads
@@ -2985,8 +3029,20 @@ public class ReplayPlayer : MonoBehaviour
             }
             v.Walking = u.Walking;
             v.Target = nt;
-            SetFill(v.HpFill, v.MaxHp > 0 ? (float)u.Hp / v.MaxHp : 0f);
-            SetFill(v.ShieldFill, v.MaxHp > 0 ? Mathf.Clamp01((float)u.Shield / v.MaxHp) : 0f);
+            float hpFrac = v.MaxHp > 0 ? Mathf.Clamp01((float)u.Hp / v.MaxHp) : 0f;
+            float shieldFrac = v.MaxHp > 0 ? Mathf.Clamp01((float)u.Shield / v.MaxHp) : 0f;
+            SetFill(v.HpFill, hpFrac);
+            SetShieldFill(v.ShieldFill, hpFrac, shieldFrac);
+            // P5 damage trail: the pale segment from the new tip back to where HP just was. On a
+            // hit the far edge freezes at the drain's CURRENT position (computed against the old
+            // HpFrac, before it moves) and the timer restarts — consecutive hits accumulate one
+            // growing trail instead of competing trails. The HpFrac sentinel snaps the first fold
+            // after spawn/wrap so a scenario switch doesn't open on a phantom drain.
+            if (v.HpFrac < 0f) v.TrailFar = hpFrac;
+            else if (hpFrac < v.HpFrac) { v.TrailFar = TrailDisplayedFar(v); v.TrailT = 0f; }
+            else if (hpFrac > v.TrailFar) v.TrailFar = hpFrac;
+            v.HpFrac = hpFrac;
+            SetSegment(v.TrailFill, hpFrac, TrailDisplayedFar(v) - hpFrac);
             SetFill(v.ManaFill, v.ManaMax > 0 ? (float)u.Mana / v.ManaMax : 0f);
             // The cast sentence's first word: "about to cast" is a discrete FLIP (color change +
             // one pulse at full), not an analog quantity the viewer has to measure (Underlords law).
@@ -3120,6 +3176,39 @@ public class ReplayPlayer : MonoBehaviour
         frac = Mathf.Clamp01(frac);
         var s = fill.localScale; s.x = BarWidth * frac; fill.localScale = s;
         var p = fill.localPosition; p.x = -BarWidth * 0.5f * (1f - frac); fill.localPosition = p;
+    }
+
+    /// <summary>Shield rides at the HP tip (TFT convention), truncated at the bar's end — it used
+    /// to overlay the fill from the left, which hid the true HP under any shield. A shield on a
+    /// (near-)full bar keeps a fixed minimum sliver instead of vanishing: Overheal→Shield units
+    /// live at full HP, and "shielded" must stay visible even when the appended length rounds to
+    /// nothing. The sliver overlaps that last bit of HP; the segment ticks stay truthful.</summary>
+    private void SetShieldFill(Transform fill, float hpFrac, float shieldFrac)
+    {
+        const float MinSliver = 0.06f;
+        float len = shieldFrac <= 0f ? 0f : Mathf.Max(Mathf.Min(shieldFrac, 1f - hpFrac), MinSliver);
+        float start = Mathf.Min(hpFrac, 1f - len);
+        var s = fill.localScale; s.x = BarWidth * len; fill.localScale = s;
+        var p = fill.localPosition; p.x = -BarWidth * 0.5f + BarWidth * (start + len * 0.5f); fill.localPosition = p;
+    }
+
+    /// <summary>Arbitrary bar segment [start, start+len] in bar fractions — the trail's layout.</summary>
+    private void SetSegment(Transform fill, float start, float len)
+    {
+        len = Mathf.Max(0f, len);
+        var s = fill.localScale; s.x = BarWidth * len; fill.localScale = s;
+        var p = fill.localPosition; p.x = -BarWidth * 0.5f + BarWidth * (start + len * 0.5f); fill.localPosition = p;
+    }
+
+    /// <summary>Where the trail's far edge currently renders: t²-eased from the frozen far edge
+    /// toward the live HP tip. The quadratic spends its first ~30% of the window covering ~9% of
+    /// the distance — the ease IS the hold, one curve instead of a timer plus a tween
+    /// (research round 2 §10).</summary>
+    private float TrailDisplayedFar(UnitView v)
+    {
+        float dur = Mathf.Max(0.05f, _data != null ? _data.bars.trailSeconds : 0.8f);
+        float k = Mathf.Clamp01(v.TrailT / dur);
+        return Mathf.Lerp(v.TrailFar, v.HpFrac, k * k);
     }
 
     private Transform MakePrimitive(PrimitiveType type, Transform parent, Vector3 localPos, Vector3 localScale, Color c)

@@ -20,6 +20,14 @@ tuning; nothing here blocks any board work.
   Diver) standing next to textured KayKit heroes. Verified in captures, unseen in motion. The call
   that is yours: keep procedural monsters as the placeholder language, or put the roles back on
   hero minis dressed with role kit. Captures: `tmp/item29/final_*.png`.
+- **Unit HUD pass (2026-07-28, capture-verified, unseen in motion):** number attribution — damage
+  your units TAKE is crimson, damage you DEAL stays type-colored, gold = your crits only (now with
+  a "!") — does the split read at 1×/2×, and is crimson punchy enough through the post stack?
+  (`numbers.allyHit` toward `#E02818` live if not) · the delayed damage trail (pale sand drain
+  behind the HP fill) — does anyone read it as recoverable HP? · shield now caps the bar TIP in
+  grey-white · status rows sit on dark pills · small hits render smaller/dimmer/shorter-lived —
+  do chip hits still register at 2× speed? · crit pop is crit-ONLY now (normals spawn at final
+  size — does combat feel calmer or flatter?).
 - **Known-dormant:** Heal carries no `Cause`, so Boon pulses never fire — one-line fix when wanted.
 - **F1 knobs to tune live:** field brightness · icon size · wall tint · cleric sigil.
 - **Finishing any run uploads its telemetry** — the first human data point; sessions read it off

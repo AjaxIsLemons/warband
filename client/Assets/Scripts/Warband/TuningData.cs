@@ -246,6 +246,14 @@ public class BarsTune
     [Min(0)] public int hpPerSegment = 25;
     public Color allyHp = new Color(0.35f, 0.85f, 0.35f);
     public Color enemyHp = new Color(0.90f, 0.36f, 0.30f);
+    // Shield rides at the HP tip (TFT convention, ui-review unit-hud-readability P3). Pale
+    // grey-white, not blue: saturated blue is mana's hue and must stay unambiguous.
+    public Color shield = new Color(0.88f, 0.93f, 0.97f);
+    // The delayed damage trail (ui-review P5): the real fill snaps with the fold; this pale
+    // segment drains after it on a t² ease-in (the ease manufactures the hold). Its length is the
+    // delta rendered at full bar scale — the readback numbers alone carried until now.
+    public Color trail = new Color(0.96f, 0.87f, 0.72f);
+    [Range(0.2f, 2.5f)] public float trailSeconds = 0.8f;
     public Color mana = new Color(0.35f, 0.55f, 0.95f);
     public Color manaReady = new Color(0.91f, 0.96f, 1.00f);
     [Range(0f, 2f)] public float manaReadyPulse = 0.9f;
@@ -321,6 +329,17 @@ public class NumberTune
     //    on the same side of centre still separate. Deterministic → frozen captures stay reproducible.
     [Range(0f, 1.5f)] public float outwardBias = 0.6f;
     [Range(0f, 1f)] public float unitJitter = 0.25f;
+
+    // Attribution (ui-review unit-hud-readability P1, D3's law mapped to PvE where the player is
+    // always Team0): damage LANDING keeps the tell's type color, damage TAKEN overrides to one
+    // hostile crimson — "my output" vs "incoming" reads before the digits do. Gold stays reserved
+    // for the player's own crits; an incoming crit brightens within the crimson family instead.
+    public Color allyHit = new Color(1.00f, 0.25f, 0.19f);
+    public Color allyHitCrit = new Color(1.00f, 0.42f, 0.28f);
+
+    // FFXIV's free channel (ui-review P7): a crit's number carries a literal "!" — legible at any
+    // size, colorblind-safe, survives a screenshot.
+    public bool critBang = true;
 }
 
 /// <summary>
@@ -353,6 +372,15 @@ public class ImpactTune
     // normal hit must not read as a crit. Magnitude = brightness, crit = hue; a big crit is both.
     public Color heavyTint = new Color(1f, 0.95f, 0.86f);
     [Range(0f, 1f)] public float tintAmount = 0.5f;      // how far toward heavyTint at t=1
+
+    // The magnitude→presentation ramp (ui-review P7, Jake 2026-07-28: LUMINANCE, not alpha).
+    // Small hits live shorter and spawn dimmer; every number luminance-decays toward dark over
+    // its back half (Hades' white→black law) so spent numbers self-extinguish against bright
+    // VFX. Alpha stays reserved for the final fade — translucency reads as "expiring".
+    [Range(0.3f, 1f)] public float lifeFloor = 0.75f;   // life multiplier at t=0
+    [Range(0.3f, 1f)] public float dimFloor = 0.72f;    // spawn luminance at t=0
+    [Range(0f, 1f)] public float endLum = 0.25f;        // luminance at end of life (all numbers)
+    [Range(0f, 2f)] public float critPop = 0.5f;        // crit-only spawn overshoot (fraction over 1×)
 
     /// <summary>0..1 spectacle for a hit of <paramref name="amount"/>. Disabled → always 0, which
     /// makes every boost term vanish and leaves the old flat behaviour (bar minScale).</summary>

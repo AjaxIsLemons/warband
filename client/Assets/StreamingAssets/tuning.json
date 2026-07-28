@@ -27,20 +27,27 @@
     "columnDrift": 0.5,
     "maxHold": 0.4,
     "outwardBias": 0.5,
-    "unitJitter": 0.25
+    "unitJitter": 0.25,
+    "allyHit": "#FF4030FF",
+    "allyHitCrit": "#FF6B47FF",
+    "critBang": true
   },
   "impact": {
     "enabled": true,
     "bigHit": 40.0,
     "curve": 0.85,
-    "minScale": 0.6,
+    "minScale": 0.78,
     "maxScale": 1.6,
     "riseBoost": 0.6,
     "lifeBoost": 0.5,
     "punchBoost": 0.8,
     "punchScale": 0.5,
     "heavyTint": "#FFF2DBFF",
-    "tintAmount": 0.5
+    "tintAmount": 0.5,
+    "lifeFloor": 0.75,
+    "dimFloor": 0.72,
+    "endLum": 0.25,
+    "critPop": 0.5
   },
   "fields": {
     "hazard": "#F25933FF",
@@ -92,7 +99,10 @@
     "enemyHp": "#E65C4DFF",
     "mana": "#598CF2FF",
     "manaReady": "#E8F5FFFF",
-    "manaReadyPulse": 0.9
+    "manaReadyPulse": 0.9,
+    "shield": "#E0EDF7FF",
+    "trail": "#F5DEB8FF",
+    "trailSeconds": 0.8
   },
   "models": {
     "enabled": true,

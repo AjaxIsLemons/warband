@@ -1,0 +1,1160 @@
+Hash: 1696D1CF, Key: BlackPointDescriptionController, Value: Use {icon:l_horiz, 2} to adjust the black point to determine the maximum luminance that will appear black.
+Hash: 7C3F7881, Key: BrightnessDescriptionController, Value: Use {icon:l_horiz, 2} to adjust the brightness slider until the logo is barely visible.
+Hash: 64BB3413, Key: WhitePointDescriptionController, Value: Use {icon:l_horiz, 2} to adjust the white point to determine the minimum luminance that will appear white.
+Hash: 6CA1E930, Key: LeftNav, Value: {icon:l1, 2} L1
+Hash: AC0002CF, Key: BrightnessControlPrompts, Value: Adjust the black point to maintain as much detail as possible in the left image. Adjust the white point to maintain as much detail as possible in the right image. Adjust brightness as necessary.
+Hash: 0E83BB13, Key: HoldPositionInputModeTitle, Value: Hold Position Mode
+Hash: 87FA2032, Key: ToggleInput, Value: Toggle
+Hash: 2D9900D7, Key: HoldInput, Value: Hold
+Hash: D0409EB2, Key: ControllerSwapSticksTitle, Value: Swap Left and Right Sticks
+Hash: D3A1F7E0, Key: ControllerPersistTargetLockTitle, Value: Persist Target Lock
+Hash: 51A436E9, Key: ControllerPersistTargetLockTooltip, Value: If enabled, target lock will remain active between encounters.
+Hash: F087DA3B, Key: ControllerSwapSticksTooltip, Value: If enabled, the functions of the left and right sticks will be swapped.
+Hash: AA698844, Key: Label_jaJP, Value: Japanese
+Hash: 681F0D0D, Key: ScreenReaderVolumeTitle, Value: Screen Reader Volume
+Hash: E4137C6F, Key: LockTargetPersistsTitle, Value: Lock Target Persists
+Hash: 44891B38, Key: LockTargetPersistsTooltip, Value: When using lock target and your target dies, it will auto select a new one as long as a target remains.
+Hash: 71D5AB15, Key: KeyboardCombineMovePrimarySkillAndInteract, Value: Combine Move / Interact / Basic Skill Slot
+Hash: C0258588, Key: HotKeyCombinedMovePS_Interact, Value: Move / Interact / Basic Skill Slot
+Hash: 5510190B, Key: HotKeyMove, Value: Move
+Hash: F8287D1D, Key: HotKeyForceInteract, Value: Force Interact
+Hash: E3935E86, Key: ScreenReaderSpeedTitle, Value: Screen Reader Speed
+Hash: 2389DF0F, Key: ScreenReaderSpeedTooltip, Value: Adjusts the speed of screen reader dictation.
+Hash: 9BB95EE7, Key: HighlightPlayerTitle, Value: Display Player Highlight
+Hash: 7D317BB0, Key: HighlightPlayerTooltip, Value: Adds a strong highlight to the player at all times making them easier to see.
+Hash: F9BB4B56, Key: ScreenReaderVolumeTooltip, Value: Adjusts the volume of screen reader dictation.
+Hash: 2ECC5E4D, Key: HighlightsTitle, Value: Highlights
+Hash: 2737D1C5, Key: HighlightPlayer, Value: Player Highlight Color
+Hash: 65438DB6, Key: HighlightEnemy, Value: Enemy Target Highlight Color
+Hash: BEFA19B9, Key: HighlightNPC, Value: NPC Target Highlight Color
+Hash: 24324E2F, Key: HighlightObject, Value: Object Target Highlight Color
+Hash: 760C540F, Key: HighlightPlayerColorTooltip, Value: Controls the color of your player highlight.
+Hash: C3062A03, Key: HighlightNPCColorTooltip, Value: Controls the color of NPC highlights. When targeted, the NPC is highlighted with the specified color.
+Hash: 41008180, Key: HighlightEnemyColorTooltip, Value: Controls the color of enemy highlights. When targeted, the enemy is highlighted with the specified color.
+Hash: 9FFABF79, Key: HighlightObjectColorTooltip, Value: Controls the color of interactable object highlights. When targeted, the Object is highlighted with the specified color.
+Hash: D8E35391, Key: ColorBlindIntensityTitle, Value: Color Blind Filter Intensity
+Hash: ACAB42DA, Key: ColorBlindIntensityTooltip, Value: Adjusts the intensity of the color blindness filter.  Lowering this will reduce the strength of the color adjustments in the game.
+Hash: 161AA0B0, Key: PlayerErrorAudioModeTitle, Value: Player Audio on Error
+Hash: 14EA53B9, Key: PlayerErrorAudioModeTooltip, Value: Controls the dialog lines spoken by the player when error text appears on the screen.
+
+{c_highlight}On:{/c} All dialog lines are spoken
+{c_highlight}Off:{/c} No dialog lines are spoken
+{c_highlight}Simple:{/c} An error noise is played in place of the dialog lines.
+Hash: 6746B9AE, Key: PlayerErrorAudioDefault, Value: On
+Hash: E6E869F2, Key: PlayerErrorAudioOption_1, Value: Off
+Hash: E6E869F3, Key: PlayerErrorAudioOption_2, Value: Simple
+Hash: A372F14B, Key: HeaderOther, Value: Other
+Hash: D340CB52, Key: SetBindingTooltip, Value: Change the bindings for this action.
+Hash: B4A33ED6, Key: HotKeyChatQuickMessage, Value: Quick Message
+Hash: E5D84806, Key: HotKeyScreenReaderSkipLine, Value: Skip Line With Screen Reader
+Hash: 9513908E, Key: PartyGameChannelTooltip, Value: Enables or disables text to speech for the Party channel.
+Hash: F7826FA1, Key: HotKeyStore, Value: Shop Screen
+Hash: 4948983D, Key: VisualHeader, Value: Visual
+Hash: 36CC5DE8, Key: GraphicsTab, Value: Graphics
+Hash: 3CCEFEDD, Key: ColorPicker, Value: Color Picker
+Hash: 281B68B8, Key: DefaultsButtonController, Value: {icon:button3, 2} Reset to Defaults
+Hash: AFE752C3, Key: NextController, Value: {icon:r1, 2} Next
+Hash: 2BBFDFE1, Key: PreviousController, Value: {icon:l1, 2} Previous
+Hash: 28CA566E, Key: ScreenReader3rdPartyTitle, Value: 3rd Party Screen Reader
+Hash: 925E70F7, Key: ScreenReader3rdPartyTooltip, Value: {c_highlight}Enabled:{/c} Allows for third party applications to handle screen reading and disables the platform's built in screen reader.
+{c_highlight}Disabled:{/c} Defaults to the platform's built in screen reader.
+Hash: 7F405398, Key: HotkeyMountSpeed, Value: Spur Mount
+Hash: 93A4AF7A, Key: HotkeyMountDismount, Value: Mount Dismount
+Hash: 1B882810, Key: HotkeyMountCombatDismount, Value: Mount Combat Dismount
+Hash: 97852255, Key: HotkeyAbilitiesTooltip, Value: Toggles the Abilities side panel, which contains the Skill Tree and Paragon board.
+Hash: 7BD13FDF, Key: HotKeyChatTooltip, Value: Sets focus to the text chat input field.
+
+{c_red}Cannot be rebound.{/c}
+Hash: CB2A9A39, Key: HotKeyChatNextViewTooltip, Value: Selects the next tab in chat when text chat is active.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 91D56917, Key: HotKeyChatPrevViewTooltip, Value: Selects the previous tab in chat when text chat is active.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 1C3F6BA1, Key: HotKeyChatQuickMessageTooltip, Value: Activates the quick message menu for sending pre-written phrases.
+Hash: 94561372, Key: HotKeyChatResetFadeTooltip, Value: Resets the fade timer on the text chat widow.
+Hash: E4A41AED, Key: HotKeyClanPanelTooltip, Value: Toggles the Clan screen.
+Hash: 6BDEBF75, Key: HotKeyClassScreenTooltip, Value: Toggles your class-specific mechanic screen if relevant.
+Hash: DC69B7A1, Key: HotKeyClearTTSTooltip, Value: Clear all TTS 
+Hash: D7AA1C4E, Key: HotKeyCollectionsPanelTooltip, Value: Toggles the Collections Screen.
+Hash: 277CF613, Key: HotKeyCombinedMovePS_InteractTooltip, Value: When pressed:
+{c_highlight}Move:{/c} If your cursor is over terrain, your character will move to that location.
+{c_highlight}Interact:{/c} If your cursor is over a clickable object or non-playable character, your player will interact with that object or character.
+{c_highlight}Basic Skill:{/c} If your cursor is over a target that can be attacked, your player will cast the ability assigned to your Basic Skill Slot.
+Hash: DB1395C9, Key: HotKeyCycleChatTargetsTooltip, Value: Cycles through available chat targets when text chat is active.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 04649B64, Key: HotKeyEvadeTooltip, Value: Fires your Evade ability.
+Hash: 0F9F6059, Key: HotKeyExitChatTooltip, Value: Removes active focus from text chat.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 0FF4F408, Key: HotKeyForceInteractTooltip, Value: Used to look at certain points of interest. Can also be used as a fallback button for interacting with objects and non-playable characters in the world.
+Hash: E9ACFCE5, Key: HotKeyForceMoveTooltip, Value: Moves you to your cursor's location without attacking monsters or interacting with objects.
+Hash: C0D87128, Key: HotKeyFPSTooltip, Value: Toggles Framerate Display at the bottom left of the screen.
+Hash: 62B5AECE, Key: HotKeyGameMenuTooltip, Value: Toggles the Game Menu.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 71A74D1B, Key: HotKeyHoldPositionTooltip, Value: Allows the player to attack without moving.
+Hash: 58DA84E5, Key: HotKeyInteractToolip, Value: Used to look at certain points of interest. Can also be used as a fallback button for interacting with objects and non-playable characters in the world.
+Hash: C9ACFC45, Key: HotKeyJoinVoiceChatTooltip, Value: Toggles speech to text transcription of your current voice channel. Only works when you are in an active voice channel.
+Hash: 45124B5D, Key: HotKeyMapTooltip, Value: Toggles the Map screen.
+Hash: BAC9897B, Key: HotKeyMasterVolumeDownTooltip, Value: Decreases master volume.
+Hash: 47607088, Key: HotKeyMasterVolumeUpTooltip, Value: Increases master volume.
+Hash: 9C01CB72, Key: HotKeyMountTooltip, Value: Summons the player's mount if available.
+Hash: CC4E6F9B, Key: HotkeyMountCombatDismountTooltip, Value: Dismounts the player with a combat ability.
+Hash: 176F3BC5, Key: HotkeyMountDismountTooltip, Value: Dismounts the player.
+Hash: 84141836, Key: HotKeyMoveTooltip, Value: Moves the player to their cursor's location when pressed.
+Hash: F7A665D4, Key: HotKeyPageDownChatTooltip, Value: Scrolls text chat down by a page.
+Hash: 6257D921, Key: HotKeyPageUpChatTooltip, Value: Scrolls text chat up by a page.
+Hash: 781F55C2, Key: HotKeyPrimarySkillTooltip, Value: Casts the ability assigned to this slot.
+Hash: A12CAA4E, Key: HotKeyPushToTalkTooltip, Value: Activates voice transmission when held if the player is in a voice channel.
+Hash: F3E18574, Key: HotKeyQuestsPanelTooltip, Value: Opens to your Journal within the Map screen.
+Hash: 6CEFAC6B, Key: HotKeyQuickResponseTooltip, Value: Enables controls to respond to social requests from other players.
+
+{c_red}Cannot be rebound.{/c}
+Hash: A3EA19CD, Key: HotKeyReplyWhisperTooltip, Value: Sets the player who last whispered you as your current chat target.
+Hash: AEB70579, Key: HotKeyReportBugTooltip, Value: Invokes the bug reporter form.
+Hash: 1E3F4296, Key: HotkeyReportContentTooltip, Value: Invokes the content reporter form.
+Hash: FB955E18, Key: HotKeyReWhisperTooltip, Value: Sets the player you last whispered as your current chat target.
+Hash: DCA83ED1, Key: HotKeyScreenReaderSkipLineTooltip, Value: Screen reader skips to the next content block.
+Hash: 9423B17D, Key: HotKeyScreenShotTooltip, Value: Saves an image of your game screen to your local Documents folder.
+Hash: FD92E882, Key: HotKeyShowItemLabelsTooltip, Value: Refreshes display of item labels on the ground.
+Hash: F369BFE1, Key: HotKeySkillsPanelTooltip, Value: Toggles the Skill Assignment flyout from your Action Bar.
+Hash: FC6435EE, Key: HotKeySkillTreeTooltip, Value: Toggles the Skill Tree panel.
+Hash: C189F471, Key: HotKeySkipTTSTooltip, Value: Skips to the next text line.
+Hash: 54605EEA, Key: HotKeySocialPanelTooltip, Value: Toggles the Social screen.
+Hash: 3E5C6A0C, Key: HotKeyStoreTooltip, Value: Toggles the Store screen.
+Hash: 79BDD86C, Key: ControllerInteractCombinedTitleTooltip, Value: When pressed:
+{c_highlight}Interact:{/c} If your cursor is over a clickable object or non-playable character, your player will interact with that object or character.
+{c_highlight}Basic Skill:{/c} If your cursor is over a target that can be attacked, your player will cast the ability assigned to your Basic Skill Slot.
+Hash: B733BB00, Key: KeyboardCombineMovePrimarySkillAndInteractTooltip, Value: {c_highlight}Enabled:{/c} Movement, Interaction, and casting the ability assigned to your Basic Skill slot will utilize the same binding.
+{c_highlight}Disabled:{/c} You can define separate bindings for movement, interaction, and casting the ability assigned to your Basic Skill slot.
+Hash: 5D63266F, Key: HotkeyTargetLockTooltip, Value: When engaged on a target, all offensive abilities will attempt to hit that target.
+Hash: FD1FA322, Key: HotKeyToggleMusicTooltip, Value: Toggles music.
+Hash: 3D6CC00A, Key: HotKeyToggleSoundTooltip, Value: Toggles all sounds.
+Hash: 83708E99, Key: HotkeyTownPortalTooltip, Value: Casts Town Portal and returns you to the nearest discovered capital city.
+Hash: 7C70DC84, Key: HotKeyZoomTooltip, Value: Toggles between a zoomed in and zoomed out state.
+Hash: FA53A44A, Key: StreamerModeTitle, Value: Streamer Mode
+Hash: EB72A5D3, Key: StreamerModeTooltip, Value: Hides Real IDs and replaces character and account names with randomized versions. 
+
+A button binding to toggle the mode can be defined under the "Controls > System" section. In-game player reporting will still work regardless of the state of this option.
+
+{c_highlight}Disabled:{/c} Display real IDs, characters, and account names
+{c_highlight}Hide my name:{/c} Obfuscate your own identifiers
+{c_highlight}Hide other player names:{/c} Obfuscate the identifiers of other players
+{c_highlight}Hide all names:{/c} Obfuscate all identifiers
+Hash: 1BAC61DA, Key: HotkeyEquippablesTooltip, Value: Toggles the Character details and Inventory panel.
+Hash: F1B4407C, Key: HotKeyActionWheelBindingMiddleTooltip, Value: Uses the item or action bound to this position on the middle wheel.
+Hash: 0D485D98, Key: HotKeyActionWheelBindingLeftTooltip, Value: Uses the item or action bound to this position on the left wheel.
+Hash: 00C59F8B, Key: HotKeyActionWheelBindingRightTooltip, Value: Uses the item or action bound to this position on the right wheel.
+Hash: 62C15223, Key: HotkeyMountSpeedTooltip, Value: Gives your mount a burst of speed.
+Hash: CC0392DC, Key: HoldPositionInputModeTooltip, Value: {c_highlight}Hold:{/c} Activate Hold Position by keeping the Hold Position key pressed.
+{c_highlight}Toggle:{/c} Press the Hold Position key to toggle the behavior on and off.
+Hash: ECD6AD1B, Key: HotKeyUseItemTooltip, Value: Drink a Healing Potion.
+Hash: 5B830008, Key: ChatBubblesClanTooltip, Value: Displays text chat from a clan member over their head.
+Hash: 51516BF5, Key: ChatBubblesLocalTooltip, Value: Displays text chat from a nearby player over their head.
+Hash: AB3FAB5A, Key: ChatBubblesPartyTooltip, Value: Displays text chat from a party member over their head.
+Hash: 4895D55A, Key: ChatBubblesTradeTooltip, Value: Displays text chat from a trade channel member over their head.
+Hash: CB043A21, Key: HotKeyControllerMapTooltip, Value: Toggles the Map screen.
+
+{c_red}Cannot be rebound.{/c}
+Hash: 44C6EC02, Key: HotKeyMouseZoom, Value: Zoom on Mousewheel
+Hash: DF2F0F4D, Key: HotkeyMouseZoomTooltip, Value: Zooms the in-game camera in or out when the mousewheel is scrolled up or down.
+
+While enabled, mouse up and mouse down cannot be used as bindings.
+Hash: A0F54B0B, Key: ControllerZoomToggle, Value: Zoom in-game camera
+Hash: B7ED0A36, Key: ControllerZoomToggleTooltip, Value: Toggles the game camera zoom.
+Hash: 4FA74EDF, Key: FSR2Title, Value: FidelityFX Super Resolution 2
+Hash: E45B49A8, Key: FSR2Tooltip, Value: When enabled game will render at lower resolution, based on selected setting, and will be upscaled to display resolution using temporal upscaling techniques.
+Hash: 4D8A1D8D, Key: ControllerCycleTargetLockTooltipRight, Value: Allows you to use the right stick to change your locked target.
+{c_highlight}You will not be able to bind right stick to other actions while this is enabled.{/c}
+Hash: FEDD21BC, Key: RightStick, Value: Right Stick
+Hash: 1D25B0C9, Key: LeftStick, Value: Left Stick
+Hash: 95BB029A, Key: ControllerCycleTargetLockTooltipLeft, Value: Allows you to use the left stick to change your locked target.
+{c_highlight}You will not be able to bind left stick to other actions while this is enabled.{/c}
+Hash: 5E2B17CF, Key: DLSSFrameGenerationTitle, Value: NVIDIA DLSS Frame Generation
+Hash: A2F50E98, Key: DLSSFrameGenerationTooltip, Value: Boosts frame rates by using AI to render additional frames.
+
+This feature requires a GeForce RTX 40 Series graphics card and that "Hardware-accelerated GPU Scheduling" is enabled in Windows. It is compatible with the {c_highlight}None{/c} and {c_highlight}NVIDIA DLSS Super Resolution{/c} Resolution Scaling modes. Frame Generation will deactivate if the game is letterboxed. 
+Hash: 74FD257B, Key: DLSSSuperResolutionTitle, Value: Super Resolution
+Hash: B6813744, Key: DLSSSuperResolutionTooltip, Value: Super Resolution boosts frame rates by rendering fewer pixels and using AI to output high resolution frames. This feature requires a GeForce RTX graphics card.
+Hash: 8FE27BE8, Key: ReflexTitle, Value: NVIDIA Reflex Low Latency
+Hash: 2015DCF1, Key: ReflexTooltip, Value: Used to optimize system latency which increases PC responsiveness.
+
+Enabling NVIDIA DLSS Frame Generation will force this option to {c_highlight}Enabled{/c}.
+Hash: A4044E5C, Key: EnableScreenReaderTitle, Value: Use Screen Reader
+Hash: C3F61C65, Key: EnableScreenReaderTooltip, Value: Enables or disables audio that describes text and interactive elements of the current screen.
+Hash: 265E6E4B, Key: QualityTitle, Value: Quality Preset
+Hash: 4557F414, Key: QualityTooltip, Value: {c_highlight}Low:{/c} Meant for achieving a stable framerate on lower end hardware.
+{c_highlight}Medium:{/c} Favors performance over visual quality.
+{c_highlight}High:{/c} Attempts a balance between performance and visual quality.
+{c_highlight}Ultra:{/c} Favors visual quality over performance.
+{c_highlight}Custom:{/c} Set your own preferences.
+Hash: 4942807A, Key: DefaultSystemDevice, Value: Default System Device
+Hash: D573DAAD, Key: NoDevice, Value: No Device
+Hash: 3BF0E94B, Key: DefaultCommunicationDevice, Value: Default Communication Device
+Hash: 46A6162F, Key: DLSSSharpnessTitle, Value: Sharpness
+Hash: 962924F8, Key: DLSSSharpnessTooltip, Value: Adjusts the image sharpness when using NVIDIA DLSS.
+Hash: 80586EDC, Key: FSRSharpeningTitle, Value: Sharpening
+Hash: 05D45CE5, Key: FSRSharpeningTooltip, Value: Adjusts the image sharpness when using AMD FSR.
+Hash: 6CA998B0, Key: QualityModeTitle, Value: Quality Mode
+Hash: 7A054FB7, Key: ResolutionScalingTitle, Value: Resolution Scaling
+Hash: 1E3CE080, Key: ResolutionScalingTooltip, Value: Selects the resolution scaling technique to use, which can help improve performance and/or image quality.
+
+{c_highlight}None:{/c} Uses temporal anti-aliasing and an adjustable resolution percentage.
+{c_highlight}AMD FSR 1.0:{/c} A cutting-edge super-optimized spatial upscaling technology that produces impressive image quality at fast framerates.
+{c_highlight}AMD FSR 2:{/c} A cutting-edge temporal upscaling algorithm that produces high resolution frames from lower resolution inputs.
+{c_highlight}NVIDIA DLSS Super Resolution:{/c} Boosts frame rates by rendering fewer pixels and using AI to output high resolution frames. This feature requires a GeForce RTX graphics card.
+{c_highlight}Intel XeSS:{/c} Uses AI to deliver higher performance with exceptional image quality.
+Hash: 9DF2A025, Key: HotKeyMoveInteract, Value: Move & Interact
+Hash: 70A85E10, Key: HotKeyMoveInteractTooltip, Value: Moves the player to their cursor's location or interacts with cursor targeted object.
+Hash: 08E487CD, Key: TextToSpeechVoice_EN_F, Value: English (Feminine)
+Hash: 08E487D4, Key: TextToSpeechVoice_EN_M, Value: English (Masculine)
+Hash: 235430E2, Key: LimitCutsceneFPS, Value: Limit Cutscene FPS
+Hash: 7342182D, Key: LimitCutsceneFPSTooltip, Value: Limits cutscenes to 30 FPS
+Hash: 7C22629A, Key: WindowTitle, Value: Options
+Hash: 21CD31E1, Key: HeaderVolume, Value: Volume
+Hash: B5690457, Key: HeaderHardware, Value: Hardware
+Hash: 1A5B6BF2, Key: EnableSoundToggle, Value: Enable Sound
+Hash: 19F79729, Key: HeaderScreen, Value: Screen
+Hash: E7C32672, Key: HeaderQuality, Value: Quality
+Hash: 928D25F8, Key: DisplayTitle, Value: Display
+Hash: 2C372596, Key: ResolutionTitle, Value: Resolution
+Hash: 063C1E7B, Key: LetterboxToggle, Value: Letterbox
+Hash: 12D54B1B, Key: BrightnessTitle, Value: Brightness
+Hash: B80466F5, Key: VSyncToggle, Value: Vertical Sync
+Hash: AEBE18D3, Key: TextureTitle, Value: Texture Quality
+Hash: 78533F68, Key: ShadowTitle, Value: Shadow Quality
+Hash: 957D9225, Key: PhysicsTitle, Value: Physics Quality
+Hash: 922F71D8, Key: AntiAliasToggle, Value: Anti-Aliasing
+Hash: 887154A6, Key: MasterVolumeTitle, Value: Master Volume
+Hash: AA9A72BA, Key: EffectsVolumeTitle, Value: Effects Volume
+Hash: 1831967C, Key: ReverseSpeakersToggle, Value: Reverse Left/Right Speakers
+Hash: FEB22FFB, Key: MusicVolumeTitle, Value: Music Volume
+Hash: CE0E33D0, Key: VoiceVolumeTitle, Value: Dialogue Volume
+Hash: 1DB9CF5A, Key: AmbientVolumeTitle, Value: Ambience Volume
+Hash: 2DC2C4E8, Key: HeaderSubtitles, Value: Subtitles
+Hash: B344380E, Key: CinematicSubtitlesToggle, Value: Cinematic Subtitles
+Hash: F83D38A3, Key: QuestDialogSubtitlesToggle, Value: Quest Dialog Subtitles
+Hash: EBDA07A7, Key: BrightnessSummary, Value: Adjust brightness for optimal viewing.
+Hash: 85A37D51, Key: LockActionBarsToggle, Value: Lock Action Bars
+Hash: 71421CFF, Key: AutoEquipToggle, Value: Auto-equip Items
+Hash: C6EB4E69, Key: TutorialsToggle, Value: Show All Tutorials
+Hash: 833BD525, Key: DestinationPingsToggle, Value: Show Destination Pings
+Hash: 30C0A5C4, Key: ItemLabelsToggle, Value: Item Label Duration on Drop
+Hash: F8C5470B, Key: HeaderItemLabels, Value: Item Labels
+Hash: F11237C5, Key: ItemHotkeyTitle, Value: Item Label Display
+Hash: C3AC1F86, Key: KeyBindingTitle, Value: Key Binding
+Hash: 369666E7, Key: HeaderHealthBars, Value: Health Bars
+Hash: B1E79063, Key: PlayerNamesToggle, Value: Invert Camera Y-Axis
+Hash: 44F53654, Key: HealthNumbersToggle, Value: Display Health Bar Numbers
+Hash: 28BFCC7D, Key: DamageNumbersToggle, Value: Show Damage Numbers
+Hash: 52DCEDE8, Key: CriticalDamageNumbersToggle, Value: Display Critical Damage Numbers
+Hash: 3A4EF793, Key: DefensiveMessagesToggle, Value: Display Defensive Messages
+Hash: 3A420205, Key: PlayerHealthToggle, Value: Display Player Health Bars
+Hash: 6A34B2A0, Key: MonsterHealthToggle, Value: Display Monster Health Bars
+Hash: A9657FFC, Key: SystemTab, Value: System
+Hash: AFCA5A47, Key: GameplayTab, Value: Gameplay
+Hash: F4F3E19A, Key: BattleNetTab, Value: Account
+Hash: DF23DEEE, Key: KeyBindingsTab, Value: Key Bindings
+Hash: 69A16D0E, Key: VideoTab, Value: Graphics
+Hash: 9AFDE200, Key: SoundTab, Value: Sound
+Hash: 8960FE55, Key: GeneralTab, Value: General
+Hash: A3A8E45B, Key: StatusTab, Value: Status
+Hash: 0B5F3EF4, Key: DefaultsButton, Value: Reset to Defaults
+Hash: 3E5E7B62, Key: ApplyButton, Value: Save Changes
+Hash: 8A430AF6, Key: OkButton, Value: Okay
+Hash: DB92D0A2, Key: CancelButton, Value: Close
+Hash: 23F94A64, Key: HeaderKey2, Value: Key 2
+Hash: 23F94A63, Key: HeaderKey1, Value: Key 1
+Hash: A4EE6FA8, Key: HeaderCommand, Value: Command
+Hash: BDFA5D73, Key: OSShortcutsToggle, Value: Disable OS Keyboard Shortcuts
+Hash: 476A6E24, Key: QuestDialogChatToggle, Value: Show Quest Dialog in Chat
+Hash: 2D790BF7, Key: SoundChannelsTitle, Value: Sound Channels
+Hash: 445B1CF5, Key: BrightnessButton, Value: Calibrate Brightness
+Hash: CF9031AC, Key: AcceptButton, Value: Accept
+Hash: 85C8CAB6, Key: HealingNumbersToggle, Value: Display Healing Numbers
+Hash: C11FDB16, Key: HotKeySkillsPanel, Value: Skill Assignment Flyout
+Hash: EA7D1009, Key: HotKeyQuestsPanel, Value: Journal Panel
+Hash: 9408741F, Key: HotKeyJournalPanel, Value: Journal test
+Hash: A57C9A12, Key: HotKeyMap, Value: Map Screen
+Hash: 55173919, Key: HotKeyZoom, Value: Toggle Zoom
+Hash: 08C79ACD, Key: HotKeyGameplayHeader, Value: Gameplay
+Hash: 22EF9D9B, Key: HotKeyGeneralHeader, Value: General
+Hash: 1FCFF20E, Key: HotKeyInteract, Value: Interact
+Hash: DA727095, Key: HotKeySwapRightMouseSkill, Value: Swap Right Mouse Skill
+Hash: 4E406AA3, Key: HotKeyGameMenu, Value: Game Menu
+Hash: 84C2A432, Key: HotKeyScreenShot, Value: Take a Screenshot
+Hash: 5AFF099D, Key: HotKeyMasterVolumeUp, Value: Master Volume Up
+Hash: 16DE9DF0, Key: HotKeyMasterVolumeDown, Value: Master Volume Down
+Hash: AFFAA75F, Key: HotKeyToggleSound, Value: Toggle Sound
+Hash: 30C58178, Key: HotKeySocialHeader, Value: Social
+Hash: A6681362, Key: HotKeySystemHeader, Value: System
+Hash: 550A7CD4, Key: HotKeyChat, Value: Open Chat Input
+Hash: 57ED928E, Key: HotKeyExitChat, Value: Close Chat Input
+Hash: D170C682, Key: HotKeyReplyWhisper, Value: Reply to Last Whisper
+Hash: D133192D, Key: HotKeyReWhisper, Value: Re-Whisper
+Hash: 4EB405FE, Key: HotKeyCycleChatTargets, Value: Cycle Chat Targets
+Hash: BBBD70F1, Key: HotKeyRecentPlayersList, Value: Toggle Recent Players
+Hash: AF915577, Key: HotKeyToggleMusic, Value: Toggle Music
+Hash: DB07AC3D, Key: HotKeyHeadsUpDisplayHeader, Value: Heads Up Display
+Hash: B00DF647, Key: MacNote, Value: command key can be used in place of control key; fn+left mouse button can be used in place of right mouse button
+Hash: B1A094B1, Key: MacLabel, Value: Mac Only Controls
+Hash: 78134B01, Key: DisplayTooltip, Value: Allows you to change the primary display mode of the game to Windowed or Windowed (Fullscreen).
+Hash: CE5392C4, Key: LetterboxTooltip, Value: Display in widescreen aspect ratio regardless of screen resolution.
+Hash: 243BAA1F, Key: ResolutionTooltip, Value: Higher resolution will result in increased clarity, but this greatly affects performance. Choose a resolution that matches the aspect ratio of your monitor.
+Hash: B924EA7E, Key: VSyncTooltip, Value: Synchronizes your framerate to some fraction of your monitor's refresh rate. Enable this if you see excessive screen tearing in game.
+
+Enabling NVIDIA DLSS Frame Generation will disable this option.
+Hash: 644C609C, Key: TextureTooltip, Value: Determines the clarity and size of textures used throughout the game. Higher texture quality will result in more detail, but it requires more system memory (RAM) and video memory (VRAM).
+
+{c_highlight}Low:{/c} Suitable for playing up to 720p resolution.
+{c_highlight}Medium:{/c} Suitable for playing up to 1080p resolution.
+{c_highlight}High:{/c} Suitable for playing up to 4k resolution.
+{c_highlight}Ultra:{/c} Recommended for playing at 4k resolution. Requires 32 GB of RAM for a smooth play experience.
+Hash: E7C58071, Key: ShadowTooltip, Value: Controls both the method and quality of shadows. Decreasing this may greatly improve performance.
+
+{c_highlight}Low:{/c} Low-resolution terrain shadows, blob shadows for units.
+{c_highlight}Medium:{/c} Low-resolution terrain shadows, high-resolution dynamic shadows near player.
+{c_highlight}High:{/c} High-resolution dynamic shadows for entire scene.
+{c_highlight}Highest:{/c} High-resolution, highest quality dynamic shadows for entire scene.
+Hash: F8CF766E, Key: PhysicsTooltip, Value: Determines the realism of colliding objects and gravity. Physics Quality relies on your computer's processor (CPU).
+Hash: AEEEFF2E, Key: ClutterDensityTooltip, Value: Controls the density and the distance at which ground clutter items, like grass and foliage are placed. Decrease to improve performance.
+
+{c_highlight}Off:{/c} No Clutter.
+{c_highlight}Low:{/c} Short distance at which clutter items are placed with low density.
+{c_highlight}Medium:{/c} Medium distance at which clutter items are placed with medium density.
+{c_highlight}High:{/c} High distance at which clutter items are placed with high density.
+{c_highlight}Highest:{/c} High quality which also enables shadows from clutter.
+Hash: D8B151C1, Key: AntiAliasTooltip, Value: Fullscreen anti-aliasing helps soften model edges. Disabling this may improve performance.
+Hash: 665C8F1B, Key: EnableSoundTooltip, Value: Enables or disables all sound.
+Hash: 77BDDD2F, Key: MasterVolumeTooltip, Value: Adjusts the volume of all sound in the game.
+Hash: C8A6D043, Key: EffectsVolumeTooltip, Value: Adjusts the sound effects volume.
+Hash: 81A2E1C4, Key: MusicVolumeTooltip, Value: Adjusts the music volume.
+Hash: 980F2ED9, Key: VoiceVolumeTooltip, Value: Adjusts the voice dialogue volume.
+Hash: 810FD4E3, Key: AmbientVolumeTooltip, Value: Adjusts the ambience volume.
+Hash: 1EF80AE5, Key: ReverseSpeakersTooltip, Value: Swap the sound coming from the left and right speakers.
+Hash: 1C5EDEB7, Key: CinematicSubtitlesTooltip, Value: Display subtitles during cinematic cutscenes.
+Hash: 0077F1EC, Key: QuestDialogSubtitlesTooltip, Value: Display quest dialog in chat bubbles during in-game scripted sequences.
+Hash: 354BD78D, Key: QuestDialogChatTooltip, Value: Output all quest dialog to chat window.
+Hash: 4969032D, Key: ItemLabelsTooltip, Value: Briefly display item label when the item drops on the ground.
+Hash: A4E8C072, Key: TutorialsTooltip, Value: {c_highlight}Enabled:{/c} All tutorials will be shown.
+{c_highlight}Disabled:{/c} Only tutorials specific to new features in Diablo IV will be shown.
+Hash: EB4A1EAE, Key: DestinationPingsTooltip, Value: Show quest objectives on minimap.
+Hash: 9A1961C8, Key: AutoEquipTooltip, Value: Auto-equips items if you have an empty Inventory slot for that item.
+Hash: 3AA6CC5A, Key: LockActionBarsTooltip, Value: Prevents the user from picking up/dragging Skills on the action bar. This function can be bound to a key in the keybindings interface.
+Hash: EF6D41AC, Key: PlayerNamesTooltip, Value: Display player names above characters.
+Hash: E42FA5BD, Key: HealthNumbersTooltip, Value: Display numerical health values on player health bars.
+Hash: 3F75C65F, Key: HealingNumbersTooltip, Value: Display floating health numbers above characters, showing healing effects on player.
+Hash: 414D0106, Key: DamageNumbersTooltip, Value: {c_highlight}Enabled:{/c} All damage dealt by the player is displayed as floating numbers on screen.
+{c_highlight}Disabled:{/c} Hides all damage numbers.
+Hash: AF0E4FD1, Key: CriticalDamageNumbersTooltip, Value: Display floating numbers above monsters, showing critical damage dealt by the player.
+Hash: 84C18EDC, Key: DefensiveMessagesTooltip, Value: Display floating numbers above monsters, showing blocks, parries, and dodges.
+Hash: 8315E78E, Key: PlayerHealthTooltip, Value: Show player health bars above characters.
+Hash: B15EAB89, Key: MonsterHealthTooltip, Value: Show monster health bars above monsters.
+Hash: 77BA80B2, Key: LowFXToggle, Value: Low FX
+Hash: 6F9E3BDB, Key: LowFXTooltip, Value: Reduces the number of rendered particle system effects. Checking this may greatly improve performance.
+Hash: 69FA518E, Key: ClockToggle, Value: Show Clock
+Hash: A9D82837, Key: ClockTooltip, Value: Toggles the display of the clock over the minimap.
+Hash: FC6B605F, Key: AdvancedTooltipsTooltip, Value: Display advanced information on tooltips such as item property ranges, Lucky Hit chance on Skills, and indicators as to whether modifications are additive [+] or multiplicative [x].
+Hash: A575B21A, Key: MaxBackgroundFPSTooltip, Value: Enable this option to limit and adjust the maximum framerate while running in the background.
+Hash: 0434B715, Key: MaxForegroundFPSTooltip, Value: Enable this option to limit and adjust the maximum framerate while running in the foreground.
+Hash: 4D7324B6, Key: AdvancedTooltipsToggle, Value: Advanced Tooltip Information
+Hash: 55717CAC, Key: MaxForegroundFPSToggle, Value: Max Foreground FPS
+Hash: 3B4CAB11, Key: MaxBackgroundFPSToggle, Value: Max Background FPS
+Hash: AA67031A, Key: Label_enUS, Value: English
+Hash: AA67013B, Key: Label_enGB, Value: English (British)
+Hash: AA6702CC, Key: Label_enSG, Value: English (SEA)
+Hash: AA67164F, Key: Label_esES, Value: Spanish
+Hash: AA67175C, Key: Label_esMX, Value: Spanish (Latin American)
+Hash: AA679E8F, Key: Label_frFR, Value: French
+Hash: AA694C99, Key: Label_itIT, Value: Italian
+Hash: AA664E31, Key: Label_deDE, Value: German
+Hash: AA6A5056, Key: Label_koKR, Value: Korean
+Hash: AA6D2257, Key: Label_ptBR, Value: Portuguese (Brazil)
+Hash: AA6E416D, Key: Label_ruRU, Value: Russian
+Hash: AA726B32, Key: Label_zhCN, Value: Chinese (Simplified)
+Hash: AA726D6C, Key: Label_zhTW, Value: Chinese (Traditional)
+Hash: AA6F4DAB, Key: Label_trTR, Value: Turkish
+Hash: AA6D0217, Key: Label_plPL, Value: Polish
+Hash: AA6D2427, Key: Label_ptPT, Value: Portuguese (EU)
+Hash: F0C1202C, Key: ChangeLocaleWarning, Value: Changing the language requires restarting the game. Are you sure you want to proceed?
+Hash: F389AA78, Key: LocaleSelectionTitle, Value: Language Selection
+Hash: A3FFC12A, Key: HeaderHUD, Value: HUD
+Hash: 724F6CFA, Key: HeaderInterface, Value: Interface
+Hash: B2360933, Key: MacTitle, Value: Mac Users
+Hash: 3F410401, Key: RegionNorthAmerica, Value: The Americas
+Hash: 496DE2B4, Key: RegionEurope, Value: Europe
+Hash: 6DD714E2, Key: RegionAsia, Value: Asia
+Hash: 60679C69, Key: HotKeyPageDownChat, Value: Page Down Chat
+Hash: 8E43DC56, Key: HotKeyPageUpChat, Value: Page Up Chat
+Hash: 49D24F7D, Key: BrightnessDescription, Value: Adjust the brightness slider until the logo is barely visible.
+Hash: 694F7063, Key: HeaderNotifications, Value: Notifications
+Hash: 5113979D, Key: HeaderBlocked, Value: Blocked
+Hash: 6ABEFAC3, Key: HeaderNotificationsChat, Value: Chat
+Hash: 853DB5D2, Key: SocialTab, Value: Connect
+Hash: B1C248D0, Key: HeaderGameAccount, Value: Game Account
+Hash: F166B6A0, Key: HeaderAuctionHouse, Value: Auction House
+Hash: 190F1D66, Key: NotificationFriendOnlineToggle, Value: Friend Comes Online
+Hash: 30BE85C4, Key: NotificationFriendOfflineToggle, Value: Friend Goes Offline
+Hash: 1B441C8A, Key: NotificationFriendRequestToggle, Value: Friend Request Received
+Hash: 4FAAED4A, Key: NotificationFriendAchievementToggle, Value: Friend Earns a Challenge
+Hash: BC352C57, Key: NotificationDisplayWindowToggle, Value: Show Toast Windows
+Hash: 0A16244A, Key: UnblockButton, Value: Unblock
+Hash: A1CE1CAD, Key: CurrencyTitle, Value: Real Money Auction House Currency
+Hash: 3B866F0F, Key: NotificationFriendOnlineTooltip, Value: Displays a notification when a friend comes online.
+Hash: 4922E32D, Key: NotificationFriendOfflineTooltip, Value: Displays a notification when a friend goes offline.
+Hash: 845B52B3, Key: NotificationFriendRequestTooltip, Value: Displays a notification when you receive a friend request.
+Hash: 459C3B73, Key: NotificationFriendAchievementTooltip, Value: Displays a notification when a friend earns a Challenge.
+Hash: 436E5C20, Key: NotificationDisplayWindowTooltip, Value: Display notifications in toast windows. If disabled, these messages will continue to be displayed in the chat window.
+Hash: A6DFDE78, Key: NotificationDurationTooltip, Value: Adjust the duration of the toast window.
+Hash: 1F89FCE3, Key: MatureLanguageFilterTooltip, Value: Enable mature language filtering.
+Hash: 5B6CC2F6, Key: CurrencyTooltip, Value: Select which currency type you would like to use for the Real Money Auction House.
+Hash: 0A42EF81, Key: LocaleSelectionTooltip, Value: Select which language you would like to use.
+Hash: 3F4DB65D, Key: NotificationDurationShort, Value: Short
+Hash: 7E0663BD, Key: NotificationDurationLong, Value: Long
+Hash: 3F606FAF, Key: NotificationDurationTitle, Value: Toast Duration
+Hash: 23F4F149, Key: HeaderChat, Value: Additional Options
+Hash: F92E40BA, Key: MatureLanguageFilterToggle, Value: Mature Language Filter
+Hash: A03E580F, Key: QuickJoinToggle, Value: Enable Quick Join
+Hash: A89CFED8, Key: QuickJoinTooltip, Value: Allow friends to join your party without an invitation.
+Hash: 8C24040E, Key: ItemHotkeyTooltip, Value: Adjust the behavior of the "Show Items on Ground" key binding when pressed.
+Hash: 7D90ACC0, Key: SoundChannelsTooltip, Value: Adjust the number of Sound Channels used.
+Hash: E3280126, Key: GammaDisabledTooltip, Value: Gamma is disabled while in this mode. Please switch to Fullscreen mode to enable Gamma.
+Hash: A57C7E3D, Key: HotKeyFPS, Value: Toggle Framerate Display
+Hash: 7DD9B0BC, Key: OSShortcutsTooltip, Value: Disable the operating system keyboard shortcuts.
+
+{c_highlight}This option is always enabled in Fullscreen mode. For all other modes this option requires that "Enable access for assistive devices" is checked in the Universal Access preference pane in the System Preferences.{/c}
+Hash: 68E26C04, Key: OSCommandControlTitle, Value: Use Command key as Control key
+Hash: 38D2440D, Key: OSCommandControlTooltip, Value: Use Command key and Control key interchangeably.
+Hash: C4D6FA0C, Key: OSCommandLeftRightTitle, Value: Command left click as right click
+Hash: 64227415, Key: OSCommandLeftRightTooltip, Value: Hold down Command key and left click to simulate a right click.
+Hash: 3F324C0A, Key: EnableMusicToggle, Value: Enable Music
+Hash: 260F7233, Key: EnableMusicTooltip, Value: Enables or disables all music.
+Hash: B5A6D005, Key: SoundOutputTooltip, Value: The output device is where your sound will play.
+
+Default will match your system's output device. Use this if you want to play the game through headphones or a different set of speakers.
+Hash: ACB399FC, Key: SoundOutputTitle, Value: Sound Output
+Hash: 11D0D067, Key: SoundSpeakerSetupTitle, Value: Speaker Setup
+Hash: D6EB4D30, Key: SoundSpeakerSetupTooltip, Value: Set this to match your speaker setup. Choose Stereo for headphones or standard two-speaker setups.
+Hash: 58B6068F, Key: SoundSpeakerSetupOption1, Value: Default
+Hash: 58B60690, Key: SoundSpeakerSetupOption2, Value: Mono
+Hash: 58B60691, Key: SoundSpeakerSetupOption3, Value: Stereo
+Hash: 58B60692, Key: SoundSpeakerSetupOption4, Value: Quad
+Hash: 58B60693, Key: SoundSpeakerSetupOption5, Value: Surround
+Hash: 58B60694, Key: SoundSpeakerSetupOption6, Value: 5.1
+Hash: 58B60695, Key: SoundSpeakerSetupOption7, Value: 7.1
+Hash: 58B60696, Key: SoundSpeakerSetupOption8, Value: Pro Logic
+Hash: 1FC46990, Key: HeaderGlobalPlay, Value: Global Play
+Hash: BE7ADF37, Key: ChatTab, Value: Chat
+Hash: C0CA5B42, Key: NotificationAuctionHouseEventToggle, Value: Auction House Events
+Hash: DAA9686B, Key: NotificationAuctionHouseEventTooltip, Value: Displays a notification whenever an auction house event occurs.
+Hash: 0970DB0A, Key: FontColorQuestLog, Value: Quest Dialog
+Hash: 4D640A3B, Key: FontColorSystem, Value: System Messages
+Hash: ACBF9146, Key: FontColorParty, Value: Party Chat
+Hash: 05713EB8, Key: FontColorWhisper, Value: Whispers
+Hash: 2B19EDB5, Key: FontColorPublicChat, Value: Local Chat
+Hash: AC7B8017, Key: FontColorLinks, Value: Battle.net Alerts
+Hash: AC01D580, Key: FontColorError, Value: Errors
+Hash: FD7F2ACC, Key: FontColorYell, Value: Yell
+Hash: FD7834D4, Key: FontColorLoot, Value: Crafting
+Hash: 037C82F1, Key: ChatSettings, Value: Chat Settings
+Hash: FC55C60B, Key: ChatChannelColors, Value: Chat Colors
+Hash: 0B16485A, Key: RegionPTR, Value: Public Test
+Hash: EF91EE4E, Key: SalvageConfirmationToggle, Value: Disable Salvage Confirmation Dialog
+Hash: E2635CF7, Key: SalvageConfirmationTooltip, Value: Disables the confirmation dialog that appears when salvaging rare quality items.
+Hash: 257313F4, Key: LockCursorInFullscreenWindowedToggle, Value: Lock Cursor
+Hash: D469375D, Key: LockCursorInFullscreenWindowedTooltip, Value: Locks mouse cursor to window.
+Hash: 6A511264, Key: ShowPlayersNearYou, Value: Enable Display of Local Network Players
+Hash: 5C45F36F, Key: ShowPlayersNearYouTooltip, Value: Allows you to see other players on your network who are currently online. These players will be displayed by their BattleTag. 
+
+Disabling this feature prevents both you from seeing other players on your network and them from seeing you. 
+Hash: 02CDA80C, Key: FontColorPrivateConversation, Value: Private Conversation
+Hash: E8C2E162, Key: FontColorCombatWarning, Value: Combat Warning
+Hash: AC2784EB, Key: FontColorGuild, Value: Clan
+Hash: C2590029, Key: FontColorGuildOfficer, Value: Clan Officer
+Hash: B68FEBE5, Key: SmartCoopMinimapTitle, Value: Enable Smart Minimap in Coop
+Hash: A7DF402E, Key: SmartCoopMinimapTooltip, Value: Only display the minimap when near an objective.
+
+Hash: 2985C20D, Key: BlockClanInvitesToggle, Value: Block Clan Invites
+Hash: 33929378, Key: PlayInBGToggle, Value: Play In Background
+Hash: A678A761, Key: PlayInBGTooltip, Value: Allows the game to continue playing sound when it is not the focus window.
+Hash: 5AD1A896, Key: BlockClanInvitesTooltip, Value: Block Clan Invites.
+Hash: 5430B2DA, Key: HotKeyWorldMap, Value: Toggle World Map
+Hash: C856AD7A, Key: SSRTitle, Value: Screen Space Reflections
+Hash: 465CBB03, Key: SSRTooltip, Value: Controls the resolution of SSR. Decreasing this may improve performance.
+Hash: 8038286E, Key: HotKeyChatNextView, Value: Next Chat Tab
+Hash: 1543150C, Key: HotKeyChatPrevView, Value: Previous Chat Tab
+Hash: 6324DFBD, Key: HotKeyChatHeader, Value: Chat
+Hash: 2CB05FBB, Key: NotificationGuildMemberOnlineToggle, Value: Clan Member Comes Online
+Hash: C34FFC04, Key: NotificationGuildMemberOnlineTooltip, Value: Displays a notification when a clan member comes online.
+Hash: AC25FA83, Key: FontColorGroup, Value: Community
+Hash: 75F83AC1, Key: FontColorGroupOfficer, Value: Community Officer
+Hash: D0DBA919, Key: NoCutSceneToggle, Value: Automatically Skip All Cut Scenes
+Hash: ECE47122, Key: NoCutSceneTooltip, Value: Toggles whether or not cut scenes are automatically skipped while playing.
+Hash: 56C45554, Key: OSShortcutsTooltip_10_9, Value: Disable the operating system keyboard shortcuts.
+
+{c_highlight}This option is always enabled in Fullscreen mode. For all other modes this option requires you to grant access to "Diablo IV" in Security & Privacy preferences, located in System Preferences.{/c}
+Hash: B5287FC7, Key: HotKeyChatResetFade, Value: Reset Chat Fade
+Hash: 4EA0C7A0, Key: HotKeyMoveForward, Value: Move Forward
+Hash: 1838584A, Key: HotKeyMoveBackward, Value: Move Backward
+Hash: 22789AB6, Key: HotKeyMoveLeft, Value: Move Left
+Hash: 71FAB929, Key: HotKeyMoveRight, Value: Move Right
+Hash: E6123F28, Key: HotKeyPrimarySkill1, Value: Basic Skill Slot
+Hash: E6123F29, Key: HotKeyPrimarySkill2, Value: Core Skill Slot
+Hash: E6123F2A, Key: HotKeyPrimarySkill3, Value: Skill Slot 1
+Hash: E6123F2B, Key: HotKeyPrimarySkill4, Value: Skill Slot 2
+Hash: 230392CC, Key: HotKeySecondarySkill1, Value: Skill Slot 3
+Hash: 230392CD, Key: HotKeySecondarySkill2, Value: Skill Slot 4
+Hash: F71337C7, Key: HotKeyMount, Value: Mount
+Hash: F685F3F9, Key: HotKeyEvade, Value: Evade
+Hash: 78C29590, Key: HotKeyUseItem, Value: Use Potion
+Hash: CD073590, Key: HotKeyHoldPosition, Value: Hold Position
+Hash: 92220926, Key: HotKeyFastEquip, Value: Initiate Fast Equip
+Hash: 41E782C9, Key: HotKeyFastEquip_Equip, Value: Confirm Item Equip
+Hash: 06C3D31F, Key: HotkeyEquippablesPanel, Value: Character Panel
+Hash: 837E7B2B, Key: HotKeyQuestsPanelToggle, Value: Toggle Quests Within Map
+Hash: CF5CFE57, Key: Framerate, Value: Framerate
+Hash: C8246D94, Key: GameSoundOutput, Value: Game Sound Output
+Hash: A2D4C136, Key: VoiceChat, Value: Voice Chat
+Hash: 955C16FB, Key: VoiceChatMode, Value: Voice Chat Mode
+Hash: A94DA5F7, Key: VoiceChatOutputDevice, Value: Voice Chat Output Device
+Hash: 71C0E4EE, Key: VoiceChatVolume, Value: Voice Chat Volume
+Hash: 0144505A, Key: VoiceChatMicrophoneDevice, Value: Microphone Device
+Hash: F96D1233, Key: VoiceChatMicrophoneOutputVolume, Value: Microphone Output Volume
+Hash: 644013DF, Key: VoiceChatAutoJoin, Value: Auto-Join Voice Channels
+Hash: B8CB1C8A, Key: VoiceChatAutoJoinTooltip, Value: Automatically join voice chat in parties.
+Hash: FAD520A5, Key: VoiceChatMicrophoneDeviceTooltip, Value: This output device is what your voice will play through.
+Hash: 2CF246B9, Key: VoiceChatVolumeTooltip, Value: This adjusts the volume of incoming voice chat.
+Hash: 1B48345E, Key: VoiceChatMicrophoneOutputVolumeTooltip, Value: This adjusts the outgoing volume of your own voice.
+Hash: DECC63A2, Key: VoiceChatOutputDeviceTooltip, Value: This output device is what incoming voice chat will play through. Default is your game sound output device.
+Hash: AF190826, Key: VoiceChatModeTooltip, Value: {c_highlight}Push-to-Talk:{/c} Your voice only transmits when your push-to-talk key ({hotkey:VOICE_PTT}) is held down. This key can be adjusted under Controls.
+{c_highlight}Open Mic:{/c} Automatically transmits voice when microphone sound is detected.
+Hash: 9FA35623, Key: HotKeyPushToTalk, Value: Push-to-Talk
+Hash: EA6A151D, Key: SafeZoneTitle, Value: Safe Zone
+Hash: 0E892737, Key: SafeZoneButton, Value: Adjust Safe Zone
+Hash: F477E4F3, Key: VoiceChatModePTT, Value: Push To Talk
+Hash: 2FD706E6, Key: VoiceChatModeOpenMic, Value: Open Mic
+Hash: C5559A9F, Key: HotKeyCommunicationWheel, Value: Action Wheel
+Hash: 7B6D2C1E, Key: FogTitle, Value: Fog Quality
+Hash: 190D72A7, Key: FogTooltip, Value: Controls both the method and quality of fog. Decreasing this may greatly improve performance.
+Hash: 56F51EB3, Key: SharpenTitle, Value: Sharpen Image
+Hash: CCA5FD34, Key: ResolutionPercentageTitle, Value: Resolution Percentage
+Hash: 9BBEE13D, Key: ResolutionPercentageTooltip, Value: Adjusts the rendering resolution of the 3D world. Default is 100%.
+
+Enabling NVIDIA DLSS Frame Generation limits this to 100%.
+Hash: BA4F722E, Key: ScreenShakeTitle, Value: Screen Shake Effects
+Hash: 99997CB7, Key: ScreenShakeTooltip, Value: Show screen shake effects on certain Skills and abilities.
+Hash: 6A7248CE, Key: HotkeyTownPortal, Value: Town Portal
+Hash: 0495CE3F, Key: FontScale, Value: Font Scale
+Hash: 1EF0987F, Key: FontScale_Medium, Value: Medium
+Hash: 94C5C777, Key: FontScale_Small, Value: Small
+Hash: 9440CF09, Key: FontScale_Large, Value: Large
+Hash: 74DB6AEA, Key: FontScaleTooltip, Value: Adjusts all font sizing within the game.
+Hash: A4927C99, Key: HUDConfiguration, Value: HUD Configuration
+Hash: 8F2D3004, Key: HUDConfigurationTooltip, Value: Choose a configuration for your Life, Resource, and Skill bar.
+Hash: 6C7E1544, Key: HUDConfigurationLeft, Value: Left Corner
+Hash: C0E13503, Key: HUDConfigurationCentered, Value: Centered
+Hash: A7129E7A, Key: AnisotropyTitle, Value: Anisotropic Filtering
+Hash: C3D8EC03, Key: AnisotropyTooltip, Value: Determines the number of samples used for anisotropic filtering.
+Hash: ABA5B178, Key: SSAOTitle, Value: SSAO Quality
+Hash: 397CB681, Key: SSAOTooltip, Value: Controls the number of samples used for SSAO. Decreasing this may improve performance.
+Hash: 0D227249, Key: ParticlesTitle, Value: Particles Quality
+Hash: ED2CEF92, Key: ParticlesTooltip, Value: Controls how many particles are spawned.
+Hash: ACB6DE2D, Key: AAQualityTitle, Value: Anti-Aliasing Quality
+Hash: C38BE476, Key: AAQualityTooltip, Value: Controls the number of samples drawn for Anti-Aliasing.
+Hash: 5D31C140, Key: DynamicShadowsTitle, Value: Dynamic Shadows
+Hash: 7E4BD849, Key: DynamicShadowsTooltip, Value: Toggles whether dynamic shadows are rendered. Turning this off may increase performance.
+Hash: 11E2056E, Key: WaterSimTitle, Value: Water Simulation Quality
+Hash: 201DDFF7, Key: WaterSimTooltip, Value: Determines the size of the texture used to simulate water. Higher quality will result in more detail, but requires more video memory (VRAM).
+Hash: 72010ECB, Key: GeoComplexityTitle, Value: Geometric Complexity
+Hash: 0424B494, Key: GeoComplexityTooltip, Value: Controls the quality of meshes and the distance at which they will lose additional detail. Decreasing this will increase performance.
+Hash: A1C8CCE3, Key: AdapterTitle, Value: Adapter
+Hash: 44D458AC, Key: AdapterTooltip, Value: Select the graphics processing unit (GPU) that you would like to use.
+Hash: AF159E6A, Key: MonitorTitle, Value: Monitor
+Hash: D89BA7F3, Key: MonitorTooltip, Value: Displays the monitor Diablo IV is currently running on.
+Hash: 1ED8F880, Key: HDRTitle, Value: HDR
+Hash: 469DDF89, Key: HDRTooltip, Value: Allows for more detail in the lights and darks of the game visuals.
+
+HDR is only available if your monitor supports it. 
+Hash: A15C6E64, Key: PerfTab, Value: Performance
+Hash: A4074AD1, Key: DistortionTitle, Value: Distortion
+Hash: D0AA0A1A, Key: DistortionTooltip, Value: Controls whether screen space distortion is applied. Disabling this may improve performance.
+Hash: E386C522, Key: ShaderQualityTitle, Value: Shader Quality
+Hash: EDF15CAB, Key: ShaderQualityTooltip, Value: Controls the quality of various visual effects on a case by case basis. Decreasing this may improve performance.
+Hash: DABE5C9B, Key: ControllerTab, Value: Controller
+Hash: 3A31A564, Key: HotkeyTargetLock, Value: Lock Target
+Hash: 63C1E6D7, Key: HotKeyShowItemLabels, Value: Show Item Labels
+Hash: 298F2EE0, Key: HotKeyQuickResponse, Value: Respond to Social Request
+Hash: 963D0823, Key: HotKeyCollectionsPanel, Value: Collections Screen
+Hash: F285423F, Key: HotKeySocialPanel, Value: Social Screen
+Hash: E4A7CBA2, Key: HotKeyClanPanel, Value: Clan Screen
+Hash: D59F2180, Key: TextLocaleTooltip, Value: Determines the language of text in the game and subtitles.
+
+{c_highlight}Can only be changed while on the character select screen. {/c}
+Hash: 4BAE20D6, Key: TextLocaleName, Value: Text Locale
+Hash: 79BBA0E9, Key: SpeechLocaleName, Value: Speech Locale
+Hash: AAC70CB3, Key: SpeechLocaleTooltip, Value: Determines the language of speech audio.
+
+{c_highlight}The available options are limited by what languages are currently installed. More languages can be installed from the Battle.net launcher settings. {/c}
+Hash: AA4022AD, Key: WhitePointTitle, Value: White Point
+Hash: 976FC869, Key: BlackPointTitle, Value: Black Point
+Hash: FDD50F4B, Key: BlackPointDescription, Value: Adjust the black point to determine the maximum luminance that will appear black.
+Hash: 58790C8F, Key: WhitePointDescription, Value: Adjust the white point to determine the minimum luminance that will appear white.
+Hash: F692D514, Key: ControllerVibrationTitle, Value: Controller Vibration
+Hash: F441311D, Key: ControllerVibrationTooltip, Value: Enable controller vibration effects on certain Skills and abilities.
+Hash: 2A043AB6, Key: ReflectionQualityTitle, Value: Reflection Quality
+Hash: C9A2873F, Key: ReflectionQualityTooltip, Value: Controls the quantity of reflection probes in the world. Lowering this will improve performance at the cost of reflection accuracy.
+Hash: 2D0F27F6, Key: Wheel_Title, Value: Wheel
+Hash: 79084901, Key: Wheel_LeftTitle, Value: Left
+Hash: 53877765, Key: Wheel_MiddleTitle, Value: Middle
+Hash: D58AB874, Key: Wheel_RightTitle, Value: Right
+Hash: B5A3D935, Key: Wheel_Input1, Value: Input 1
+Hash: B5A3D936, Key: Wheel_Input2, Value: Input 2
+Hash: B5A3D937, Key: Wheel_Input3, Value: Input 3
+Hash: B5A3D938, Key: Wheel_Input4, Value: Input 4
+Hash: B5A3D939, Key: Wheel_Input5, Value: Input 5
+Hash: B5A3D93A, Key: Wheel_Input6, Value: Input 6
+Hash: B5A3D93B, Key: Wheel_Input7, Value: Input 7
+Hash: B5A3D93C, Key: Wheel_Input8, Value: Input 8
+Hash: EC1CFA96, Key: ControlsTitle, Value: Controls
+Hash: 6D185EAE, Key: KeyBindingCancelController, Value: Press {hotkey:Map} to cancel binding
+Hash: F32B7D64, Key: KeyBindingCancelKBM, Value: Press {hotkey:Escape} to cancel binding
+Hash: 46304564, Key: ResetDefaultsConfirmation, Value: Are you sure you want to reset {s1} to default settings?
+Hash: 109AB854, Key: ControllerBindingsTitle, Value: Bindings
+Hash: 8568EE96, Key: RaytracingToggle, Value: Ray Tracing
+Hash: 331A663F, Key: RaytracingTooltip, Value: Enables real time ray tracing. Requires GPU with ray tracing support.
+Hash: 986A04E3, Key: RaytracedShadowsQualityTitle, Value: Ray Traced Shadows Quality
+Hash: 68A390AC, Key: RaytracedShadowsQualityTooltip, Value: Determines the realism of ray traced shadows. Lowering this setting will improve performance.
+
+{c_highlight}Disabled:{/c} No ray traced shadows.
+{c_highlight}Low:{/c} Ray traced sun shadows.
+{c_highlight}Medium:{/c} Ray traced sun and player light shadows.
+{c_highlight}High:{/c} Ray traced shadows for all lights.
+Hash: 1CE9CAC8, Key: RaytracedReflectionsQualityTitle, Value: Ray Traced Reflections Quality
+Hash: 0C2C63D1, Key: RaytracedReflectionsQualityTooltip, Value: Determines the realism of ray traced reflections. Lowering this setting will improve performance.
+
+{c_highlight}Disabled:{/c} No ray traced reflections.
+{c_highlight}Low:{/c} Single ray reflections with approximated blur from rough materials.
+{c_highlight}High:{/c} Multiple ray reflections with accurate blur from rough materials.
+Hash: 6CE5D08F, Key: HotkeyUnbound, Value: {s1} has been unbound
+Hash: D57B2858, Key: DLSSTitle, Value: NVIDIA DLSS
+Hash: 2E8B6561, Key: DLSSTooltip, Value: NVIDIA DLSS uses AI to boost frame rates while maintaining great image quality and responsiveness. This feature requires a GeForce RTX graphics card.
+Hash: 36B14372, Key: CloseButton, Value: Close
+Hash: 0454FD2D, Key: DLSSGPUTooltip, Value: {c_red}DLSS can only be enabled if you have an RTX capable NVIDIA GPU{/c}
+Hash: EEAC57ED, Key: DLSSDriverTooltip, Value: {c_red}Your GPU drivers are out of date, please update them to use DLSS. {/c}
+Hash: C0F7B57F, Key: CheckerboardTitle, Value: Temporal Reconstruction
+Hash: EB5FD848, Key: CheckerboardTooltip, Value: When enabled, the game will render half as many pixels per frame and use data from previous frames to reconstruct a full resolution image. 
+
+{c_highlight}Increases performance but may cause visual artifacts and lower image quality. {/c}
+Hash: A897A74C, Key: CrossNetworkPlayToggle, Value: Cross-Network Play
+Hash: 58B0C3FD, Key: HeaderCrossNetwork, Value: Cross Network
+Hash: BC2035B5, Key: CrossNetworkPlayTooltip, Value: {c_highlight}Enabled:{/c} You will encounter and be able to play with players on other platforms.
+{c_highlight}Disabled:{/c} You will no longer encounter or be able to play with players on other platforms.
+
+{c_highlight}Can only be changed while on the character select screen. {/c}
+Hash: 9164A8D5, Key: CrossNetworkCommunicationTooltip, Value: {c_highlight}Enabled:{/c} You will be able to text and voice chat with players on other platforms.
+{c_highlight}Disabled:{/c} You will no longer be able to text or voice chat with players on other platforms.
+Hash: 9F8A366C, Key: CrossNetworkCommunicationToggle, Value: Cross-Network Communications
+Hash: F65C5E7C, Key: SharpenTooltip, Value: Adjusts the intensity of a sharpening filter on the final image.
+Hash: 1FDBB88B, Key: HeaderPriority, Value: Priority
+Hash: 04DF1AED, Key: PriorityTooltip, Value: Adjusts variable resolution threshold balancing image quality and responsiveness.
+
+{c_highlight}Frame rate: {/c} Reduces rendering resolution when frame rate drops below 60 fps - targeting improved latency
+{c_highlight}Image Quality: {/c} Improved image quality at the expense of frame rate
+Hash: E57DCA7D, Key: RefreshRateTitle, Value: Refresh Rate
+Hash: 49BF24C6, Key: RefreshRateTooltip, Value: Displays the number of frames your monitor is currently displaying per second.
+Hash: BAFDC6E8, Key: ChatBubblesHeader, Value: Chat Bubbles
+Hash: 1863DBB9, Key: ChatBackgroundOpacity, Value: Chat Background Opacity
+Hash: 64184B24, Key: ChatBackgroundOpacityTooltip, Value: Adjusts the opacity of your chat window background when the window is active.
+Hash: C9EBCB47, Key: ChatTimestamps, Value: Chat Timestamp Display
+Hash: CA8433D4, Key: ChatChannelJoinLocal, Value: Join Local Chat Channel
+Hash: CB1694D9, Key: ChatChannelJoinTrade, Value: Join Trade Chat Channel
+Hash: FE5716DF, Key: ChatChannelJoinLocalTooltip, Value: Local chat channel includes players near you within Sanctuary.
+Hash: F59B8044, Key: ChatChannelJoinTradeTooltip, Value: Trade chat channel is solely used for trading items.
+Hash: 6B12ACAF, Key: ChatBubblesParty, Value: Show Party Chat Bubbles
+Hash: 6AD1B5AA, Key: ChatBubblesLocal, Value: Show Local Chat Bubbles
+Hash: CEC70C6A, Key: ChatBubblesTooltip, Value: Displays text chat from a player over their head.
+Hash: D4AC091D, Key: ChatBubblesClan, Value: Show Clan Chat Bubbles
+Hash: 6B6416AF, Key: ChatBubblesTrade, Value: Show Trade Chat Bubbles
+Hash: AD10FB46, Key: FontColorTrade, Value: Trade Chat
+Hash: 0917749A, Key: HotKeyForceMove, Value: Force Move
+Hash: 6E59F084, Key: PeripheralLightingToggle, Value: Peripheral Lighting
+Hash: E0553DE9, Key: HotKeyFastQuestTrack, Value: Fast Quest Track
+Hash: 1FDDAEAB, Key: CombatHitFlashTitle, Value: Combat Hit Flash
+Hash: 9BA8CC74, Key: CombatHitFlashTooltip, Value: This will enable hit flashes on characters while hitting a monster or player during combat.
+Hash: 9867FEDD, Key: Previous, Value: Previous
+Hash: 003E0F3F, Key: Next, Value: Next
+Hash: 3A2BA5ED, Key: PeripheralLightingTooltip, Value: Toggles lighting effects on connected peripherals.
+Hash: AB0AAFE2, Key: ReduceStrobingTitle, Value: Reduce Strobing
+Hash: A61AF76B, Key: ReduceStrobingTooltip, Value: This will disable several effects and lights in the game, reducing the amount of strobing in the game. 
+Hash: 185C044F, Key: VoiceChatRestricted, Value: Voice Chat use is restricted for this user.
+Hash: B5E3711F, Key: SelectColor, Value: Select Color
+Hash: DF79CDDA, Key: SelectColorHexSymbol, Value: #
+Hash: A316B5C3, Key: HotKeySkillTree, Value: Skill Tree Panel
+Hash: E4E54B6B, Key: ConsoleFrameRateLimitTitle, Value: Frame Rate Limit
+Hash: C10A9934, Key: ConsoleFrameRateLimitTooltip, Value: Sets the maximum frame rate the game will be rendered at. Does not affect visual quality, but lowering this can give a more stable framerate.
+Hash: 4AC515B1, Key: OutlineOccludedActorsTitle, Value: Highlight Player When Obscured
+Hash: 1E060CFA, Key: OutlineOccludedActorsTooltip, Value: Draws a highlight around you when obscured from vision.
+Hash: 029B162A, Key: AdvancedTooltipCompareTitle, Value: Advanced Tooltip Compare
+Hash: 235E0FB3, Key: AdvancedTooltipCompareTooltip, Value: {c_highlight}Enabled:{/c} When comparing item tooltips, properties gained, lost, and changes to equipped Skills will be displayed.
+{c_highlight}Disabled:{/c} When comparing item tooltips, only the primary stat will be compared.
+Hash: 5B3DF92A, Key: HotKeyClassScreen, Value: Class Panel
+Hash: B61CAFA7, Key: DriverWarningText, Value: {c_red}Your GPU drivers are out of date! Some features may not be available. Please exit the game and update them. {/c}
+Hash: 8ECA0CEF, Key: UnsavedChanges, Value: You have unsaved changes. Are you sure you want to discard them?
+Hash: C0FB15EB, Key: ControlsTab, Value: Controls
+Hash: 69976839, Key: SpatialSoundToggle, Value: Spatial Sound
+Hash: 9D181442, Key: SpatialSoundTooltip, Value: {c_highlight}Spatial Sound{/c} is supported, but it's based on your current platform. Enable this through your system's settings. 
+Hash: 2DEB0FA4, Key: AudioDeviceTitle, Value: Sound Output Device
+Hash: 5BA70BD7, Key: SoftShadowsTitle, Value: Soft Shadows
+Hash: EF3E24A0, Key: SoftShadowsTooltip, Value: Toggles whether soft shadows are rendered. Turning this off will increase performance.
+Hash: 01D391C2, Key: ControllerInteractToggleTitle, Value: Combine Interact & Basic Skill
+Hash: D2A3D14B, Key: ControllerInteractToggleTooltip, Value: {c_highlight}Enabled:{/c} Interact and casting your Basic Skill will utilize the same binding.
+{c_highlight}Disabled:{/c} You can define separate bindings for Interact and your Basic Skill slot.
+Hash: EE2D4A01, Key: ControllerInteractCombinedTitle, Value: Interact & Basic Skill Slot
+Hash: 1019C2FA, Key: ControllerBindingsMenus, Value: Menus
+Hash: FCB2A1E8, Key: ControllerBindingsCombat, Value: Combat
+Hash: 432308CA, Key: AccessibilityTitle, Value: Accessibility
+Hash: F90B5495, Key: ScreenReaderTitle, Value: Screen Reader
+Hash: 76D794DE, Key: ScreenReaderTooltip, Value: Enables dictation of screen elements.
+Hash: 949EA38B, Key: ScreenReaderVoiceTitle, Value: Screen Reader Voice
+Hash: 447A7954, Key: ScreenReaderVoiceTooltip, Value: Defines the type of voice heard when screen reader is enabled.
+Hash: EE3BCDE5, Key: VolumeToggleTooltip, Value: Enables or disables all sound.
+Hash: 2AF944E4, Key: BrightnessTooltip, Value: Adjust Brightness Levels
+Hash: 3AE89766, Key: SafeZoneTooltip, Value: Adjust the extents of your screen space
+Hash: 62924FAD, Key: AudioDeviceTooltip, Value: The output device is where your sound will play.
+
+Default will match your systems output device. Use this if you want to play the game through headphones or a different set of speakers.
+Hash: BA016EF2, Key: ChatTimestampsTooltip, Value: Appends a timestamp to chat messages in the format of your choice.
+Hash: C6C6D366, Key: FontColorSystemTooltip, Value: System messages will appear in this color in text chat. 
+Hash: 6D2ECA11, Key: FontColorTradeTooltip, Value: Trade channel messages will appear in this color in text chat.
+Hash: 7DFEC9A0, Key: FontColorPublicChatTooltip, Value: Local area messages will appear in this color in text chat.
+Hash: D4509F0B, Key: FontColorErrorTooltip, Value: Error messages will appear in this color in text chat.
+Hash: 743538AD, Key: FontColorCombatWarningTooltip, Value: Combat warning messages will appear in this color in text chat.
+Hash: 58DF6816, Key: FontColorGuildTooltip, Value: Clan messages will appear in this color in text chat.
+Hash: 472A1194, Key: FontColorGuildOfficerTooltip, Value: Clan officer messages will appear in this color in text chat.
+Hash: 09967943, Key: FontColorWhisperTooltip, Value: Whispered messages will appear in this color in text chat.
+Hash: CFD8A011, Key: FontColorPartyTooltip, Value: Party messages will appear in this color in text chat.
+Hash: A180BB38, Key: FurQualityTitle, Value: Fur Quality
+Hash: 12413041, Key: FurQualityTooltip, Value: Controls the level of quality of fur on player equipment, enemies, and the environment. Decrease to improve performance.
+
+{c_highlight}Low:{/c} Lowest density of fur, some edge artifacts may be visible.
+{c_highlight}Medium:{/c} Medium density of fur, moderate visual quality.
+{c_highlight}High:{/c} High density of fur, highest visual quality.
+Hash: F8F274C9, Key: KeyBindingModifierRestriction, Value: Modifier buttons cannot be bound by themselves
+Hash: 74B8B8D4, Key: Ray Tracing, Value: Ray Tracing
+Hash: 1EF31229, Key: AxeEmulateConsoleQualityTitle, Value: Emulate Console Quality Priority
+Hash: 86B0AA9F, Key: AxeEmulateQualityTooltip, Value: AXE ONLY
+Enabling forces the game to run with emulated console quality settings.
+Hash: A0884A1B, Key: HoldSkillsToggle, Value: Skill Toggle Behavior
+Hash: 96687746, Key: HoldSkillsToggleTooltip, Value: {c_highlight}Hold All:{/c} Repeating or channeling Skills requires holding the Skill input.
+{c_highlight}Toggle Channeled Skills:{/c} {c_important}Channeled{/c_important} Skills like Incinerate and Whirlwind can be toggled on and off. Repeated Skills require holding the Skill input.
+{c_highlight}Toggle All:{/c} Repeating or channeling Skills can be toggled on and off.
+Hash: 418DEF29, Key: CursorSensitivity, Value: Cursor Sensitivity
+Hash: 999C2094, Key: CursorSensitivityTooltip, Value: Determines the cursor sensitivity on the user interface.
+Hash: C91AC106, Key: NPCNameTextColor, Value: NPC Name Text Color
+Hash: 5F4897D1, Key: NPCNameTextColorTooltip, Value: Changes the color of NPC Names displayed within subtitles.
+Hash: B45AB238, Key: WorldLocationsTextColor, Value: World Locations Text Color
+Hash: 6BEAFCC3, Key: WorldLocationsTextColorTooltip, Value: Changes the color of World Locations displayed within subtitles.
+Hash: 3986CF92, Key: PlayerNameTextColor, Value: Player Name Text Color
+Hash: 6BD950DD, Key: PlayerNameTextColorTooltip, Value: Changes the color of the Player's Name displayed within subtitles.
+Hash: 81427998, Key: FontScaling, Value: Font Scaling
+Hash: 941CB823, Key: FontScalingTooltip, Value: Adjusts the font scaling for subtitles.
+Hash: 037B09F6, Key: FontColor, Value: Font Color
+Hash: 2F3F72C1, Key: FontColorTooltip, Value: Adjusts the font color of the subtitles.
+Hash: 6BA7A830, Key: FontOpacity, Value: Font Opacity
+Hash: 56388BBB, Key: FontOpacityTooltip, Value: Adjusts the font opacity.
+Hash: EBABEED9, Key: BackgroundOpacity, Value: Background Opacity
+Hash: 21679A44, Key: BackgroundOpacityTooltip, Value: Adjusts the background opacity for subtitles.
+
+{c_highlight}This does not apply to pre-rendered cinematics.{/c}
+Hash: EE046066, Key: InnerDeadZone, Value: Inner Dead Zone
+Hash: 3FF92B31, Key: InnerDeadZoneTooltip, Value: Inner Dead Zone increases the dead zone from the stick's neutral state out, making it take longer to start registering input.
+Hash: 41126699, Key: OuterDeadZone, Value: Outer Dead Zone
+Hash: 7361DA04, Key: OuterDeadZoneTooltip, Value: Outer Dead Zone adds a new dead zone to stick inflection, effectively shorting an input curves present making players hit maximum inflection sooner.
+Hash: 25034C34, Key: ItemLabelsOnDrop, Value: Item Label Duration on Drop
+Hash: 789B033F, Key: ItemLabelsOnDropTooltip, Value: Briefly display item label when the item drops on the ground.
+Hash: 94BBBCE5, Key: ItemLabelDisplay, Value: Item Label Display
+Hash: 2FF9A2D0, Key: ItemLabelDisplayTooltip, Value: Adjust the behavior of the "Show Items on Ground" key binding when pressed.
+Hash: 0622E165, Key: PushToToggle, Value: Push to Toggle (On/Off)
+Hash: 7F6A5504, Key: PushToShow, Value: Push to show
+Hash: FA567E5B, Key: PushToShowFor10Seconds, Value: Push to show for 10 seconds
+Hash: 6AC59A2B, Key: HoldToRepeat, Value: Hold to Repeat
+Hash: 6C1844A9, Key: TapToRepeat, Value: Tap to Repeat
+Hash: 36F2EE3E, Key: AutoProgressDialog, Value: Auto-Progress Game Dialog
+Hash: 0AF2B609, Key: AutoProgressDialogTooltip, Value: {c_highlight}Enabled:{/c} Cutscenes will progress automatically without requiring player interaction.
+{c_highlight}Disabled:{/c} Certain cutscenes will pause after each line, requiring player input to continue. This feature may not apply to all cutscenes in the game.
+Hash: DF70C586, Key: CursorScale, Value: Cursor Scale
+Hash: 611C8C51, Key: CursorScaleTooltip, Value: Adjusts all cursor sizing within the game.
+Hash: 03C3F683, Key: TranscribeVoiceChat, Value: Transcribe Voice Chat
+Hash: DF091EAE, Key: TranscribeVoiceChatTooltip, Value: Enables speech to text transcription of active voice channels.
+
+View our Online Privacy Policy on {c_highlight}https://blizzard.com/legal/{/c} for more information.
+
+{c_highlight}Supports English spoken audio only.{/c}
+Hash: 73E352E0, Key: ChatTextToSpeech, Value: Enable Chat Text to Speech
+Hash: C7A2DD6F, Key: VoiceOption, Value: Voice Option
+Hash: CF19841A, Key: VoiceOptionTooltip, Value: Defines the type of voice heard when text to speech is enabled.
+Hash: 25177484, Key: AdjustRateOfSpeech, Value: Adjust Rate of Speech
+Hash: 3804B18F, Key: AdjustRateOfSpeechTooltip, Value: Adjusts the rate of speech.
+Hash: A19AAB10, Key: SpeechVolume, Value: Speech Volume
+Hash: 3A0F929B, Key: SpeechVolumeTooltip, Value: Adjusts the speech volume of text to speech voice.
+Hash: 40155D49, Key: SoundChatLineBreaks, Value: Play sound separating chat line breaks
+Hash: EBF66AB4, Key: SoundChatLineBreaksTooltip, Value: Enables or disables a sound that plays separating chat line breaks.
+Hash: 8EC88486, Key: CharacterNameSpeech, Value: Add <Character Name says> in speech
+Hash: A6676B51, Key: CharacterNameSpeechTooltip, Value: Enables or disables the character name during text to speech.
+Hash: AAB1E891, Key: ChannelSpeech, Value: Add <In channel [Channel]> in speech
+Hash: 002C74FC, Key: ChannelSpeechTooltip, Value: Enables or disables the channel name during text to speech.
+Hash: 47BCD4C8, Key: ItemNameSpeech, Value: Add <Item Link [Item Name]> in speech
+Hash: C05A9D53, Key: ItemNameSpeechTooltip, Value: Enables or disables the item name during text to speech.
+Hash: 299C6AFA, Key: EnableTTSMessages, Value: Enable TTS for specific messages
+Hash: A8F10745, Key: EnableTTSMessagesTooltip, Value: [PH] Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Hash: 53A35A7E, Key: LocalGameChannel, Value: Local
+Hash: D7E6DA49, Key: LocalGameChannelTooltip, Value: Enables or disables text to speech for the Local channel.
+Hash: C017EE63, Key: TradeGameChannel, Value: Trade
+Hash: 5DFB7A8E, Key: TradeGameChannelTooltip, Value: Enables or disables text to speech for the Trade channel.
+Hash: FD06FBF1, Key: ClanGameChannel, Value: Clan
+Hash: 3C5DFC5C, Key: ClanGameChannelTooltip, Value: Enables or disables text to speech for the Clan channel.
+Hash: 622A9B74, Key: StoryGameChannel, Value: Story
+Hash: E508AA7F, Key: StoryGameChannelTooltip, Value: [PH] Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Hash: 76629115, Key: WhisperGameChannel, Value: Whisper
+Hash: CB81E100, Key: WhisperGameChannelTooltip, Value: Enables or disables text to speech for the Whisper channel.
+Hash: 479F305B, Key: FontColorDefault, Value: Default
+Hash: B10A2C20, Key: FontColorOption1, Value: Option 1
+Hash: B10A2C21, Key: FontColorOption2, Value: Option 2
+Hash: B10A2C22, Key: FontColorOption3, Value: Option 3
+Hash: B10A2C23, Key: FontColorOption4, Value: Option 4
+Hash: B10A2C24, Key: FontColorOption5, Value: Option 5
+Hash: 1E3452A2, Key: ItemDropSoundsTitle, Value: Item Drop Sounds
+Hash: 70E12011, Key: ItemDropSoundToggleTitle, Value: In-game Loot Sounds
+Hash: 3B4E2F5A, Key: ItemDropSoundToggleTooltip, Value: Enables sound effects tied to items dropping in the world.
+Hash: 08969533, Key: ItemDropSoundHoverTitle, Value: Play Audio on Targeting Objects
+Hash: 963574FC, Key: ItemDropSoundHoverTooltip, Value: Enables sound effects when an item or object in the world is targeted by the player.
+Hash: F4C04F2F, Key: ItemDropSoundAmbientTitle, Value: Play Audio on Ambient Loot
+Hash: 33B59DF8, Key: ItemDropSoundAmbientTooltip, Value: Enables sound effects when an item in the world is nearby.
+Hash: 4C8A2496, Key: ItemDropSoundQuality, Value: Minimum Quality
+Hash: 2A325961, Key: ItemDropSoundQualityTooltip, Value: Apply this effect to items at this quality level or higher.
+Hash: BA2C6EE4, Key: ItemDropSoundTypeWeaponTooltip, Value: Apply this effect to all weapon items.
+
+{icon:AttributeBullet, 0.6}  1-Handed
+{icon:AttributeBullet, 0.6}  2-Handed
+{icon:AttributeBullet, 0.6}  Offhands
+Hash: C22395FB, Key: ItemDropSoundTypeArmorTooltip, Value: Apply this effect to all armor items.
+
+{icon:AttributeBullet, 0.6}  Helm
+{icon:AttributeBullet, 0.6}  Chest
+{icon:AttributeBullet, 0.6}  Gloves
+{icon:AttributeBullet, 0.6}  Pants
+{icon:AttributeBullet, 0.6}  Boots
+{icon:AttributeBullet, 0.6}  Shields
+Hash: 5B96185C, Key: ItemDropSoundTypeJewelryTooltip, Value: Apply this effect to all jewelry items.
+
+{icon:AttributeBullet, 0.6}  Rings
+{icon:AttributeBullet, 0.6}  Amulets
+Hash: 4045D837, Key: ItemDropSoundTypeSocketableTooltip, Value: Apply this effect to all socketable items.
+
+{icon:AttributeBullet, 0.6}  Gems
+{icon:AttributeBullet, 0.6}  Skulls
+Hash: 18E413B1, Key: ItemDropSoundTypeOther, Value: Other
+Hash: D91ADC1C, Key: ItemDropSoundTypeOtherTooltip, Value: Apply this effect to all other item types not listed above.
+Hash: C5922B69, Key: HeaderTextToSpeech, Value: Text to Speech
+Hash: FEA5F1AD, Key: TextToSpeechToggleTooltip, Value: Enables or disables all text to speech narration of in-game text chat.
+
+{c_highlight}Supports English written text only.{/c}
+Hash: 4F11FFFA, Key: HotKeyJoinVoiceChat, Value: Toggle voice chat transcription
+Hash: F96ADE63, Key: JoinSTTVoicePrompt, Value: Transcribe Voice Chat is not currently enabled. Would you like to enable it now?
+Hash: CFB2604E, Key: Confirm, Value: Confirm
+Hash: EE080366, Key: Cancel, Value: Cancel
+Hash: 505F5090, Key: STTNotificationStart, Value: Speech to text allows you to add closed captioning in a voice channel. Transcription started.
+Hash: 25EBA299, Key: STTNotificationEnd, Value: Transcription ended.
+Hash: 23CFD80A, Key: HotKeyAbilities, Value: Abilities Panel
+Hash: 2D5CFE3C, Key: BrightnessMidtones, Value: Midtones
+Hash: CCA91E32, Key: BrightnessShadows, Value: Shadows
+Hash: 06125224, Key: BrightnessHighlights, Value: Highlights
+Hash: C8FEDE0D, Key: FSRTitle, Value: FidelityFX Super Resolution 1.0
+Hash: 11D35C56, Key: FSRTooltip, Value: When enabled game will render at lower resolution, based on selected setting, and will be upscaled to display resolution using spatial upscaling techniques.
+Hash: C752BBAE, Key: HotKeyReportBug, Value: Report Bug
+Hash: A4402F6B, Key: HotkeyReportContent, Value: Report Content
+Hash: 28A13ECE, Key: HotKeyItemTooltip, Value: Show Item Tooltip on Ground
+Hash: BA8965C7, Key: ToggleModeHoldAll, Value: Hold All
+Hash: F877EFD9, Key: ToggleModeToggleSustained, Value: Toggle Channeled Skills
+Hash: 6FBCC463, Key: PartyGameChannel, Value: Party
+Hash: CC7111A6, Key: HotKeySkipTTS, Value: Skip next TTS
+Hash: D90B0AD6, Key: HotKeyClearTTS, Value: Clear all TTS 
+Hash: C8DE2FCA, Key: MinionHealthBarsTitle, Value: Display Minion Health Bars
+Hash: 86CE1153, Key: MinionHealthBarsTooltip, Value: Show health bars above summoned minions.
+Hash: 7F2EA022, Key: ToggleModeToggleAll, Value: Toggle All
+Hash: 7D7F968E, Key: XeSSTooltip, Value: Intel® Xe Super Sampling (XeSS) technology uses AI to deliver more performance with exceptional image quality.
+
+{c_highlight}Significantly improves performance at the cost of sharpness and image quality.{/c}
+Hash: 79672A45, Key: XeSSTitle, Value: Intel XeSS
+Hash: 7FB94F55, Key: ActionWheelTitle, Value: Action Wheel Activation
+Hash: 60EF3F9E, Key: ActionWheelTooltip, Value: {c_highlight}Press and Hold:{/c} Use the Action Wheel by pressing and holding the Action Wheel key.
+{c_highlight}Press to Toggle:{/c} Press the Action Wheel key to toggle the wheel on and off. Using the wheel does not require holding the key.
+Hash: FBF52C53, Key: ActionWheelBehavior_1, Value: Hold
+Hash: FBF52C54, Key: ActionWheelBehavior_2, Value: Toggle
+Hash: 8B22D40A, Key: ColorBlindTitle, Value: Color Blind Filter
+Hash: E81F029E, Key: ColorBlindOptionProtanopia, Value: Protanopia
+Hash: 373368C2, Key: ColorBlindOptionDeuteranopia, Value: Deuteranopia
+Hash: 6EBE49DC, Key: ColorBlindOptionTritanopia, Value: Tritanopia
+Hash: E7865DB9, Key: ColorBlindFilterTooltip, Value: Applies a filter to compensate visuals for color blindness.
+
+{c_highlight}Protanopia:{/c} Difficulty distinguishing red light from green light.
+{c_highlight}Deuteranopia:{/c} Difficulty distinguishing green light from red light.
+{c_highlight}Tritanopia:{/c} Difficulty distinguishing blue light from green light, and yellow light from red light.
+Hash: 09F811C0, Key: VOIPToggle, Value: Voice Chat Focus
+Hash: 076DAAC1, Key: VOIPSlider, Value: Voice Chat Focus Amount
+Hash: 8C31E12C, Key: VOIPSliderTooltip, Value: Adjusts the amount of attenuation on game sounds when someone in your party is speaking in voice chat.
+Hash: 9FE0934B, Key: VOIPToggleTooltip, Value: Attenuates game sounds when someone in your party is speaking in voice chat.
+Hash: 49748DA3, Key: SetBindingButton, Value: Set Binding
+Hash: 9C38563D, Key: ChangeBindingButton, Value: Change Binding
+Hash: 834F041C, Key: UnbindButton, Value: Unbind
+Hash: 6FF480BE, Key: HeightFieldGeometryDetailTitle, Value: Terrain Geometry Detail
+Hash: 4CBC6F47, Key: HeightFieldGeometryDetailTooltip, Value: Controls the amount of detail used to render terrain meshes. Decreasing this will increase performance.
+Hash: 5509E2AC, Key: MonsterHealthBarOption, Value: Monster Health Bar Option
+Hash: 15E49679, Key: MonsterHealthBarHoverOnly, Value: Hover only
+Hash: A5FEFC01, Key: MonsterHealthBarAlwaysOn, Value: Always On
+Hash: 65DE7B7F, Key: MonsterHealthBarAlwaysOff, Value: Always Off
+Hash: 747B7EFE, Key: MonsterHealthBarTooltip, Value: Configure the display mode for monster health bar.
+Hash: 560EA98D, Key: HotKeySeasonPanel, Value: Season Screen
+Hash: 79F0EE08, Key: HotKeySeasonScreenTooltip, Value: Toggles the Season screen.
+Hash: 32D5DF7A, Key: CinematicsVolumeTitle, Value: Cinematics Volume
+Hash: 4D706D03, Key: CinematicsVolumeTooltip, Value: Adjusts the cinematic cutscene volume.
+Hash: 2B5CD7B0, Key: AudioMixPresets_Tooltip, Value: Set this to match what type of output device you are listening on.
+Hash: CF5DBAE7, Key: AudioMixPresets_Title, Value: Audio Mix
+Hash: 19F5D1C4, Key: AudioMixPresets_Headphones, Value: Headphones
+Hash: 165DF1FB, Key: AudioMixPresets_HomeTheater, Value: Home Theater
+Hash: C0579264, Key: AudioMixPresets_NightMode, Value: Night Mode
+Hash: B8D03843, Key: AudioMixPresets_SoundBar, Value: Sound Bar
+Hash: 55356D0C, Key: AudioMixPresets_StudioReference, Value: Studio Reference
+Hash: CC562B87, Key: AudioMixPresets_Television, Value: Television
+Hash: 87FF44D1, Key: DataSharingTooltip, Value: Enable this setting if you would like to opt out of your personal information being shared or sold.
+
+Privacy laws afford residents of some states the right to opt out of the sale or sharing of personal information, defined in a way that may include the transfer and sharing of data to third parties to predict your preferences or interests to personalize ads for you on those third-party platforms. If you opt-out of Blizzard’s disclosure of your personal information for purposes that may be considered a “sale” or “sharing” by checking this option, we will not sell (should we do so in the future) or share your personal information collected in this game and for your Blizzard account, including to our marketing partners. 
+
+For information about what personal information Blizzard collects and your rights regarding that information, visit our Privacy Policy at {c_highlight}https://blizzard.com/legal/{/c}
+Hash: 14906BC8, Key: DataSharingTitle, Value: Do Not Sell or Share My Data
+Hash: A334694E, Key: HeaderLegal, Value: Data Privacy
+Hash: 25448F91, Key: NearestTraversalSoundToggle, Value: Nearest Traversal Sounds
+Hash: 945D3BFC, Key: NearestTraversalSoundToggleTooltip, Value: Plays a sound at the nearest usable traversal.
+Hash: D94B6964, Key: HotKeyAutoMove, Value: Auto-Move
+Hash: 4D586A6F, Key: HotKeyAutoMoveTooltip, Value: Moves the player in the direction they're facing/towards the cursor until interrupted
+Hash: 65E68DE8, Key: VoiceChatAutoDetect, Value: Auto-Detect Voice Activity
+Hash: 5174D273, Key: VoiceChatAutoDetectTooltip, Value: If Enabled, this will detect voice activity automatically. Otherwise, it will be based on the {c_highlight}Voice Detect Sensitivity{/c} threshold.
+Hash: D2E17C9A, Key: VoiceDetectSensitivity, Value: Voice Detect Sensitivity
+Hash: 9ADE04E5, Key: VoiceDetectSensitivityTooltip, Value: This sets the threshold for microphone volume before voice will be detected.
+Hash: 6F93E5CF, Key: DLSSQualityModeTooltip, Value: Selects the quality mode for NVIDIA DLSS Super Resolution.
+
+{c_highlight}Ultra Performance:{/c} Offers the highest performance boost. Recommended for 8K gameplay only.
+{c_highlight}Performance:{/c} Offers a higher performance boost than balanced mode.
+{c_highlight}Balanced:{/c} Offers both optimized performance and image quality.
+{c_highlight}Quality:{/c} Offers higher image quality than balanced mode.
+{c_highlight}DLAA:{/c} Offers highest image quality.
+Hash: D8AC2FB6, Key: FSR2QualityModeTooltip, Value: Selects the quality mode for AMD FSR 2.
+
+{c_highlight}Ultra Performance:{/c} Provides the highest performance gain while still maintaining an image quality representative of native rendering.
+{c_highlight}Performance:{/c} Provides an image quality similar to native rendering with a major performance gain.
+{c_highlight}Balanced:{/c} Offers an ideal compromise between image quality and performance gains.
+{c_highlight}Quality:{/c} Provides an image quality equal or superior to native rendering with a significant performance gain.
+Hash: 0D1E79A4, Key: FSRQualityModeTooltip, Value: Selects the quality mode for AMD FSR 1.0.
+
+{c_highlight}Performance:{/c} Visibly impacts image quality and should only be selected in situations where needing additional performance is critical.
+{c_highlight}Balanced:{/c} Produces a super resolution image approximating native rendering quality, with a major performance gain compared to native.
+{c_highlight}Quality:{/c} Produces a super resolution image with quality representative of native rendering, with a sizeable performance gain.
+{c_highlight}Ultra Quality:{/c} Produces an image with quality virtually indistinguishable from native rendering. It should be selected when the highest quality is desired.
+Hash: 2DAEE0DC, Key: XeSSQualityModeTooltip, Value: Selects the quality mode for Intel XeSS.
+
+{c_highlight}Ultra Performance:{/c} Highest performance improvement.
+{c_highlight}Performance:{/c} High performance improvement.
+{c_highlight}Balanced:{/c} Best balance between performance and visual quality.
+{c_highlight}Quality:{/c} High quality visual upscale.
+{c_highlight}Ultra Quality:{/c} Higher quality visual upscale.
+{c_highlight}Ultra Quality Plus:{/c} Highest quality visual upscale.
+{c_highlight}Native Anti-Aliasing:{/c} AI-based Anti-Aliasing for maximum visual quality.
+Hash: 10851EF6, Key: CombatTextDisplayMode, Value: Combat Text Display Mode
+Hash: 537FE7C1, Key: CombatTextDisplayModeTooltip, Value: {c_highlight}Display All:{/c} All damage and statuses caused by the player are displayed as floating numbers on screen.
+{c_highlight}Hide Damage Numbers:{/c} Hides all damage numbers.
+{c_highlight}Hide All:{/c} Hides all damage numbers and statuses
+Hash: 6C5D7BE5, Key: CombatTextDisplayModeDisplayAll, Value: Display All
+Hash: 1D2FEB2B, Key: CombatTextDisplayModeHideDamageNumbers, Value: Hide Damage Numbers
+Hash: A8FAE649, Key: CombatTextDisplayModeHideAll, Value: Hide All
+Hash: 38F3A013, Key: ScreenReaderFTUE_Modal, Value: The Screen Reader is enabled by default. If you do not need this feature choose to disable it now.
+Hash: 36F84DF5, Key: ScreenReaderFTUE_ModalTitle, Value: Screen Reader Enable/Disable
+Hash: DFA80C0C, Key: HighContrastCursor, Value: High Contrast Cursor
+Hash: C81E8017, Key: HighContrastCursorTooltip, Value: Increases the contrast of colors used on the in-game cursors.
+Hash: 25992C7B, Key: CursorColorPicker, Value: Cursor Color Picker
+Hash: 8016EDA6, Key: CursorColorPickerTooltip, Value: Chosen color is used to tint the in-game cursor.
+Hash: 37A9144D, Key: HeaderSubtitleFontScaling, Value: Subtitle Font Scaling
+Hash: 54B0DD91, Key: FontScalingAll, Value: All Subtitles
+Hash: BBFC3ED8, Key: FontScalingCinematics, Value: Cinematics
+Hash: D6F44248, Key: FontScalingDialog, Value: Dialog
+Hash: BC1C1ED5, Key: FontScalingLorebook, Value: Lorebook
+Hash: FA8A2F31, Key: DialogSubtitlesToggle, Value: Dialog Subtitles
+Hash: 4C63BA3A, Key: DialogSubtitlesTooltip, Value: Display subtitles during dialog.
+Hash: 13E7E21E, Key: LorebookSubtitlesToggle, Value: Lorebook Subtitles
+Hash: 9177CAC7, Key: LorebookSubtitlesTooltip, Value: Display subtitles for lorebook items
+Hash: 80438EBE, Key: TextChatRestricted, Value: Text Chat use is restricted for this user.
+Hash: CA2824BE, Key: StreamerModeHotkeyTitle, Value: Toggle Streamer Mode
+Hash: 02691347, Key: StreamerModeHotkeyTooltip, Value: Toggles Streamer Mode in the Connect Settings On or Off. 
+
+If you have not defined a Streamer Mode selection, this will toggle between "Disabled" and "Hide all names"
+Hash: 1653AE03, Key: StreamerModeOff, Value: Disabled
+Hash: 93148F14, Key: StreamerModeOn_Myself, Value: Hide my name
+Hash: 975E5E79, Key: StreamerModeOn_Others, Value: Hide other player names
+Hash: 396D2B7D, Key: StreamerModeOn_All, Value: Hide all names
+Hash: 89F9504C, Key: StreamerModeNotificationOn, Value: Streamer Mode Enabled ({s1})
+Hash: C923592A, Key: StreamerModeNotificationOff, Value: Streamer Mode Disabled
+Hash: D6AB2D31, Key: SpeechLocaleTooltip_Cedar, Value: Determines the language of speech audio.
+
+{c_highlight}Additional languages can be selected through the Diablo IV properties within Steam.{/c}
+Hash: D97A9750, Key: HotKeyMoveUp, Value: Move Up
+Hash: 22746463, Key: HotKeyMoveDown, Value: Move Down
+Hash: EF826681, Key: DisableMouseMovementOption, Value: Disable Mouse Movement
+Hash: 5DA5E4EC, Key: DisableMouseMovementOptionTooltip, Value: If checked, you will not try to move closer when trying to use a skill out of range on mouse
+Hash: B19849C1, Key: EvadeInMovementDirectionOption, Value: Evade In Movement Direction
+Hash: C653A02C, Key: EvadeInMovementDirectionOptionTooltip, Value: If {c_highlight}Enabled{/c_highlight}, evade actions will be performed in the current movement direction.
+
+If {c_highlight}Disabled{/c_highlight}, evade actions will be performed in the direction of the cursor.
+Hash: 65A57FA0, Key: ControlPreference, Value: Control Preference
+Hash: 40862253, Key: KeyboardOnly, Value: Keyboard Only
+Hash: 5126EDFA, Key: KeyboardMouse, Value: Keyboard & Mouse
+Hash: 07EDB4A8, Key: Menus, Value: Menus
+Hash: B7923218, Key: HotkeyCycleTargetLockLeftOption, Value: Cycle Target Lock Left
+Hash: 203553F2, Key: HotKeyCycleTargetLockUpOption, Value: Cycle Target Lock Up
+Hash: 069BC985, Key: HotKeyCycleTargetLockDownOption, Value: Cycle Target Lock Down
+Hash: B9E103EB, Key: HotKeyCycleTargetLockRightOption, Value: Cycle Target Lock Right
+Hash: 22123A4D, Key: GTAOTitle, Value: Ambient Occlusion
+Hash: FD2EC896, Key: GTAOTooltip, Value: Controls the resolution used for GTAO. Decreasing this may improve performance.
+Hash: 66FA68B4, Key: KeyBindingConfigIndexTitle, Value: Key Binding Configuration Save
+Hash: C0E435E3, Key: KeyBindingConfigIndex1, Value: Key Binding Config 1
+Hash: C0E435E4, Key: KeyBindingConfigIndex2, Value: Key Binding Config 2
+Hash: 3576B739, Key: KeyBindingPresetTitle, Value: Preset
+Hash: 361C04B0, Key: KeyBindingPresetDefaultMouseMovement, Value: Mouse Movement
+Hash: E351D173, Key: KeyBindingPresetKeyboardMovement, Value: Keyboard Movement
+Hash: 8E824BAA, Key: KeyBindingPresetKeyboardOnly, Value: Keyboard Only
+Hash: 88819FEF, Key: DisableMouseAimOptionTitle, Value: Disable Mouse Aim
+Hash: BD0E1EB8, Key: DisableMouseAimOptionTooltip, Value: If checked, your movement direction will be used to aim instead of the mouse cursor
+Hash: BD7EA912, Key: KeyBindingPresetCustom, Value: Custom
+Hash: 23206E5E, Key: OcclusionShapesQualityTitle, Value: Contact Shadows Quality
+Hash: 7A9A44E7, Key: OcclusionShapesQualityTooltip, Value: Controls contact shadows on characters. Decrease to improve performance.
+
+{c_highlight}Low:{/c} Contact shadows appear only on player characters.
+{c_highlight}Medium:{/c} Contact shadows appear on players, town characters, and mounts.
+{c_highlight}High:{/c} Contact shadows appear on players, town characters, mounts, and monsters.
+Hash: 1CDC2CBD, Key: KeyBindingConfigIndexTooltip, Value: Allows the player to save multiple hotkey configurations. Changing the config updates all bindings to the newly chosen save.
+Hash: 7BA63082, Key: KeyBindingPresetTooltip, Value: {c_highlight}Mouse Movement:{/c} Default Control scheme allowing for simultaneous usage of mouse and keyboard. 
+{c_highlight}Keyboard Movement:{/c} Allows for navigating with direct keyboard input as opposed to using the mouse.
+{c_highlight}Keyboard Only:{/c} Disables mouse input and allows for full keyboard control, functioning similar to controller with autotargeting. {c_highlight}Still requires mouse for most UI elements.{/c}
+Hash: C1C336DB, Key: HotKeyMoveUpTooltip, Value: Moves the player in the up direction.
+Hash: 58F7308E, Key: HotKeyMoveDownTooltip, Value: Moves the player in the down direction.
+Hash: 28BAAB81, Key: HotKeyMoveLeftTooltip, Value: Moves the player in the left direction.
+Hash: 8A81AA94, Key: HotKeyMoveRightTooltip, Value: Moves the player in the right direction.
+Hash: ED1BD268, Key: Bullet, Value: {icon:bullet, 1.6}
+Hash: E8A3EAE5, Key: ClutterDensityTitle, Value: Clutter
+Hash: 18A600DA, Key: RaytracedFoliageToggleTitle, Value: Ray Traced Foliage
+Hash: E7CE6663, Key: RaytracedFoliageToggleTooltip, Value: Enables ray tracing against trees and other foliage. Disabling this setting will improve performance
+Hash: 235FCD3B, Key: EnhanceVisualsTitle, Value: Enhanced Visuals
+Hash: 882CCF04, Key: EnhanceVisualsTooltip, Value: Enabled: Enhances some shadowing and reflections with ray tracing. Improves quality of other effects such as fur, hair, and fog. Targets 30 fps.
+
+Disabled: Prioritizes performance. Targets 60 fps.
+Hash: A3219F4A, Key: RaytracedParticlesToggleTitle, Value: Ray Traced Particles
+Hash: FFAB60D3, Key: RaytracedParticlesToggleTooltip, Value: Enables ray tracing against particle effects. Disabling this setting will improve performance
+Hash: AF88EB16, Key: CharacterVisibility_Title, Value: Character Visibility
+Hash: C314CF9F, Key: CharacterVisibility_Tooltip, Value: Allows a choice between the default grimdark visuals, or sets an ambient light (Additional Highlight) above all players, NPCs, and enemies to make characters more visible.
+Hash: 818B3B34, Key: CharacterVisibility_Realistic, Value: Standard Highlight
+Hash: 68B18FC1, Key: CharacterVisibility_EdgeLight, Value: Additional Highlight
+Hash: 4C444E46, Key: CharacterVisibilityEdgeLightSlider_Title, Value: Additional Highlights Slider
+Hash: 7C35BECF, Key: CharacterVisibilityEdgeLightSlider_Tooltip, Value: Sets the intensity of the highlights present on characters when additional highlights is enabled.
+Hash: 0288A7C2, Key: CharacterVisibilityEdgeLightColor_Title, Value: Additional Highlights Color
+Hash: D4F6674B, Key: CharacterVisibilityEdgeLightColor_Tooltip, Value: When enabled, allows the player to set unique colors for the additional highlights based on the entity type.
+Hash: 234A96FD, Key: CharacterVisibilityEnable_Title, Value: Character Visibility Options
+Hash: D2DD0C57, Key: CharacterVisibility_EdgeHighlight_Player_Tooltip, Value: Sets the color of the player's additional highlights when enabled.
+Hash: D99A154B, Key: CharacterVisibility_EdgeHighlight_NPC_Tooltip, Value: Sets the color of all NPC additional highlights when enabled.
+Hash: C95EB848, Key: CharacterVisibility_EdgeHighlight_Enemy_Tooltip, Value: Sets the color of all enemy additional highlights when enabled.
+Hash: AC1A52C1, Key: CharacterVisibility_EdgeHighlight_Object_Tooltip, Value: Sets the color of all object additional highlights when enabled.
+Hash: 102A99CE, Key: CharacterVisibility_EdgeHighlight_Player_Title, Value: Player Additional Highlight Color
+Hash: 8E68D5C2, Key: CharacterVisibility_EdgeHighlight_NPC_Title, Value: NPC Additional Highlight Color
+Hash: 51BE957F, Key: CharacterVisibility_EdgeHighlight_Enemy_Title, Value: Enemy Additional Highlight Color
+Hash: 75AF3DB8, Key: CharacterVisibility_EdgeHighlight_Object_Title, Value: Object Additional Highlight Color
+Hash: D98FFB4B, Key: ConflictingOptionTitle, Value: Conflicting Setting
+Hash: 5941690E, Key: ConflictingOptionMessage, Value: This will unset {c_highlight}{s1}{/c}. Continue?
+Hash: F6CC049F, Key: ViewDistanceFar, Value: Far
+Hash: 74146817, Key: ViewDistanceStandard, Value: Standard
+Hash: DAE17948, Key: ViewDistanceTitle, Value: View Distance
+Hash: 26C9B251, Key: ViewDistanceTooltip, Value: Adjusts the default gameplay camera view distance.
+
+{c_highlight}Will not affect the camera in town or while mounted.{/c}
+Hash: AE2A4338, Key: OwnHealthBarOption, Value: Display Own Health
+Hash: 85036795, Key: OwnResourceOption, Value: Display Own Resource
+Hash: 21957915, Key: OwnHealthTooltip, Value: Show health bar above your own character. 
+Hash: A3A5A107, Key: OwnResourceTooltip, Value: Show resource bar above your own character. 
+Hash: 6BA353DC, Key: CombatText_Title, Value: Combat Text Options
+Hash: D27A5A03, Key: CombatText_Normal, Value: Normal Damage
+Hash: 627DA60D, Key: CombatText_Normal_Tooltip, Value: Enables/Disables combat numbers displaying from normal damage dealt.
+Hash: 0617FEE5, Key: CombatText_Critical, Value: Critical Damage
+Hash: 715B0CEF, Key: CombatText_Critical_Tooltip, Value: Enables/Disables combat numbers displaying from critical damage dealt.
+Hash: B7E6D403, Key: CombatText_Overpower, Value: Overpower Damage
+Hash: 41C4200D, Key: CombatText_Overpower_Tooltip, Value: Enables/Disables combat numbers displaying from overpower damage dealt.
+Hash: 4B30924E, Key: CombatText_OverpowerCritical, Value: Overpower Critical Damage
+Hash: 8A60F958, Key: CombatText_OverpowerCritical_Tooltip, Value: Enables/Disables combat numbers displaying from overpower critical damage dealt.
+Hash: 84F4278A, Key: CombatText_Vulnerable, Value: Vulnerable Damage
+Hash: 92140A94, Key: CombatText_Vulnerable_Tooltip, Value: Enables/Disables messages displaying when targets are made vulnerable.
+Hash: 16959956, Key: CombatText_Fortified, Value: Fortified Buff
+Hash: F5C08860, Key: CombatText_Fortified_Tooltip, Value: Enables/Disables displaying when the fortified buff is gained.
+Hash: 89ADD2C4, Key: CombatText_DefensiveActions, Value: Defensive Actions
+Hash: C37A4FCE, Key: CombatText_DefensiveActions_Tooltip, Value: Enables/Disables displaying when players/enemies dodge and block.
+Hash: 9F51A5A6, Key: CombatTextEnabled, Value: Show Combat Text
+Hash: B6ABE4B0, Key: CombatTextEnabled_Tooltip, Value: Enables/Disables the display of all damage numbers and statuses
+Hash: AF835F8A, Key: HidePartyPinnedPathsTitle, Value: Hide Pinned Paths for Party Members
+Hash: AB7E3113, Key: HidePartyPinnedPathsTooltip, Value: Hides the paths extending from the player to the pins set by other members of the party.
+Hash: E333EDD2, Key: ScreenReaderReadonHoverTitle, Value: Read on Hover
+Hash: 8D8B715B, Key: ScreenReaderReadonHoverTooltip, Value: Enables the screen reader to read UI headers when the cursor passes over them.
+Hash: 3790743A, Key: CombatText_CrowdControl, Value: Crowd Control Effects
+Hash: 27CA0744, Key: CombatText_CrowdControl_Tooltip, Value: Enables/Disables displaying text for various crowd control effects
+Hash: C49F8CAC, Key: HotKeyPartyFinderPanel, Value: [PH] Party Finder
+Hash: BF5CB2A7, Key: HotKeyPartyFinderTooltip, Value: [PH] Toggles the Party Finder screen.
+Hash: FA5CC524, Key: NavAssist_Header, Value: Navigation Assist
+Hash: 7BA0991D, Key: NavAssist_AutoPinTitle, Value: Auto-Pin New Quests
+Hash: F3D01B66, Key: NavAssist_AutoPinTooltip, Value: {c_highlight}Highly Recommended for use with Navigation Features{/c}
+
+Enabling this feature immediately drops a pin in the world marking the destination of a newly switched to quest. This helps enable other navigation features automatically. Players can cycle through objective destinations on the map for quests with multiple points of interest.
+
+{c_highlight}Does not function in dungeons.
+Hash: CC1AB474, Key: NavAssist_HUDCompassTitle, Value: HUD Compass
+Hash: 4B3E687D, Key: NavAssist_HUDCompassTooltip, Value: Enables a visual compass around the player that points to the current map pin placed. 
+
+{c_highlight}In conjunction with Auto-pin, this allows players to constantly navigate towards their current quest.{/c}
+Hash: 930ECBEC, Key: NavAssist_HUDCompass_HighContrastArrowTitle, Value: High Contrast Arrow
+Hash: 9F963DF5, Key: NavAssist_HUDCompass_HighContrastArrowTooltip, Value: Sets the arrow to be standard or a high contrast variant.
+Hash: C49684A7, Key: NavAssist_ArrowColorTitle, Value: Arrow Color
+Hash: 51EF1170, Key: NavAssist_ArrowColorTooltip, Value: Choose the desired color of the compass arrow.
+Hash: 11F10C7C, Key: NavAssist_InWorldTitle, Value: In-World Navigation VFX
+Hash: 600AE285, Key: NavAssist_InWorldTooltip, Value: Adds a visual representation of a path towards your current map pin embedded within the world. 
+
+{c_highlight}In conjunction with Auto-pin, this allows players to constantly navigate towards their current quest.{/c}
+Hash: C3CF619D, Key: NavAssist_InWorld_HighContrastVFXTitle, Value: High Contrast VFX
+Hash: 02D303E6, Key: NavAssist_InWorld_HighContrastVFXTooltip, Value: Sets the in-world VFX to be standard or a high contrast variant.
+Hash: 4D18123F, Key: NavAssist_AudioNavigationTitle, Value: Audio Navigation Assistance
+Hash: 010A6508, Key: NavAssist_AudioNavigationTooltip, Value: Provides audio pings that help navigate players towards their current map pin in the world. 
+
+{c_highlight}In conjunction with Auto-pin, this allows players to constantly navigate towards their current quest.{/c}
+Hash: 937DC8D6, Key: NavAssist_AudioNavigation_VolumeTitle, Value: Volume
+Hash: 77B81D5F, Key: NavAssist_AudioNavigation_VolumeTooltip, Value: Sets the desired volume of the audio navigation assist.
+Hash: 62C20DE3, Key: NavAssist_AudioNavigation_IntervalTitle, Value: Interval
+Hash: 2921D9AC, Key: NavAssist_AudioNavigation_IntervalTooltip, Value: Sets the desired interval in seconds between audio navigation assist pings.
+Hash: 06DC2637, Key: HotKeyPingMenu, Value: [PH] Show Ping Menu
+Hash: AB801BE2, Key: HotKeyPingMenuTooltip, Value: [PH] Show Ping Menu
+Hash: 90EC1AF2, Key: HotKeyMercenariesPanel, Value: Mercenaries Panel
+Hash: D8727925, Key: HotKeyAbilitiesPanelTooltip, Value: Tooltip information
+Hash: C1AC103D, Key: HotKeyMercenariesPanelTooltip, Value: Toggles the Mercenaries panel.
+Hash: E43192FD, Key: CombatText_Buff, Value: Buff Effects
+Hash: 35733907, Key: CombatText_Buff_Tooltip, Value: Enables/Disables displaying text for various buff effects
+Hash: 2764CDBC, Key: NotificationsToggle, Value: Error Notifications
+Hash: 14922A25, Key: NotificationsTooltip, Value: {c_highlight}Enabled:{/c} Displays all error notification messages.
+{c_highlight}Disabled:{/c} Hides all error notification messages.
+
+ e.g. "Not enough Fury to use that skill".
+Hash: F7C6492E, Key: EnableHybridTargeting, Value: Hybrid Targeting
+Hash: E2F462F9, Key: EnableHybridTargetingTooltip, Value: Enabled - Targeting is handled using character facing (similar to controller). This allows for interactions to be performed by proximity.
+
+Disabled - Targeting is handled by cursor highlighting only

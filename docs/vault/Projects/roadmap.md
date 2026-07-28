@@ -14,8 +14,13 @@ Nothing parks here — no status essays, no VERIFY limbo, no laws. Where the res
 
 🎯 **GOAL (Jake, 2026-07-23): a playable PvE PoC.** **North star (ADR 0016): the fun is breaking
 the game with a compounding warband, then seeing how far asymmetrical PvE and endless pressure can
-push it.** **Milestone: friends playtest #1 is mechanically unblocked (2026-07-28)** — build,
-launcher, site, save/resume, options, and the telemetry sink are all live; Jake calls the date.
+push it.** **Three-month slice proof (Jake, 2026-07-28):** a standard run takes 45–60 minutes;
+Jake completes one fresh run through the final boss and enters endless; one cold friend attempts
+the run without guidance and can draft, navigate the Hall, deploy, identify the major combat
+events, and describe an evolving build intention. No unresolved comprehension or continuation
+blocker remains. Jake's run must upload a complete log; the friend's decision trail must be
+retrieved through their stopping point. The friend need not finish: confusion and drop-off are
+evidence, not a failed test.
 
 ## Stages
 - **DESIGN** — needs Jake's decision; don't build, propose (chat-sized ones resolve in a message).
@@ -26,41 +31,53 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
 
 ## Now / Next (ordered — top item a session can start is "what's next"; Jake reorders at will)
 
-**1. Item 13 — the endless seam** — **DESIGN (chat-sized), then a small build.** ADR 0016 identity
-   + a content-budget line item. `RunPhase.Complete` is terminal today. Proposed shape (theme name
-   **Beyond the Hour**): on Complete, offer CONTINUE — re-enter act 3's pool at escalating scale
-   until a loss; score = beats survived. One nod decides.
-**2. Item 15 — THE EVENT** — **DESIGN (tiny, chat-sized).** The budget funds ONE authored
-   risk/reward event — a real gamble, distinct from a reward pick; nothing like it exists.
-   (Guard: the Interlude IS a real three-way choice — corrected 2026-07-27, don't re-derive.)
-**3. Item 28 — dead-view cleanup** — **DESIGN (one word), then mechanical.**
-   ManagementView/ShopView/PlanningView (~2,300 lines) are unregistered since the view-table
-   refactor; WarbandCard/CardRulesPopover only reachable from them. Delete (git remembers) or
-   keep? The deletion itself is a compile-gated afternoon.
-**4. Item 25 — a live passive has no on-body mark** — **SPEC'D (render-only), from items 20/21.**
-   The fold carries `ActiveRules` and the hover card marks conditionals LIVE/idle, but nothing
-   reads at a glance on the board. A `StatusIconRow`-shaped rim/mark while a conditional rule is
-   live (and the `RuleChanged` pulse becoming a persistent rim) closes the passive renderer's last
-   gap. Capture-verifiable.
-**5. Item 26 — overlapping muster rings share one gold** — **SPEC'D (small render fix).** Whose
-   ring is whose is unreadable when two placed musters overlap; per-owner accent
-   (portrait-matched tint or pattern). Verify via `Warband/MCP/Capture Muster Rings`.
-**6. Item 27 — Workbench polish batch** — **SPEC'D (item 24's deferred list).** Weapon-tier
-   "augmented" marking on a non-hue channel · WHEN/THEN trigger anatomy for trinkets/inscriptions ·
-   compact-card text-budget CI assertion · hero rank pips · paradox-inscription badge · rule-delta
-   rows clipped at drawer-open · `MarketOfferCardModel.Qualifier` dead slot. Individually small;
-   Workbench Full Matrix gates, captures read by eye.
-**7. Item 1b — Hall polish, two buildable slices** — **SPEC'D.** Final Bind choreography · Rule
-   Preview diagrams (`Design/hall-polish.md`). The device and audio/motion slices are
-   feedback-gated → Deferred.
-
+**1. Item 30 — combat payoff slice** — **BUILD** (2026-07-28: unit-HUD readability sub-slice
+   SHIPPED — number attribution by perspective (crimson incoming / typed output / gold =
+   player crits + "!"), shield at the bar tip, delayed damage trail, status-row plates,
+   magnitude→size/lifetime/luminance ramp; capture-verified + contact-sheet byte-identical ×2;
+   plan/evidence in `docs/ui-reviews/outbox/unit-hud-readability/`. Remaining from that review:
+   P2 TMP double-outline text (needs an editor font-asset session) and P4 bar-contrast tuning;
+   play-pass watches filed). The build already asks enough pre-fight
+   questions; now make the answer readable and satisfying at the real play camera. Finish
+   event-driven Attack/Cast/Hit/Death crossfades on the existing KayKit units; tune camera,
+   unit scale, beat sequencing, hit-stop, battle speed, combat mix, and the major cast/death
+   effects; keep authored enemy roles distinct in motion. Fold old items 25/26 into this slice:
+   conditional passives need a persistent on-body LIVE mark, and overlapping muster rings need
+   per-owner identity. Also fold: the world-space kill feed clips at the right frame edge on the
+   8-wide board (anchor sits outside fov 34's horizontal budget — ADR 0027, seen in captures). Existing assets/native effects only — no paid pack or new sim verb.
+   Acceptance: autos, casts, deaths, enemy threats, and build-rule activations read without the
+   inspector at 0.5×/1×/2×; representative normal/boss/swarm/ritual/Inscription fights are
+   capture-checked, then watched in motion.
+**2. Item 31 — run pacing + decision economy** — **DESIGN, evidence-first.** The first input is
+   Jake's fresh baseline run and its telemetry. Measure total run time, fight time, Hall dwell,
+   purchase/rank/roster timing, unused Sand, and repeated or no-op decisions. Tune the existing
+   12-fight / 3-Interlude / 3-boss structure to 45–60 minutes while preserving visible build
+   evolution. Remove/compress decisions that do not change the warband; add no currency, offer
+   layer, hero, item, or progression system.
+**3. Item 32 — encounter differentiation + difficulty curve** — **DESIGN.** Current probe:
+   three of six node families are free/flat for purpose-built parties while the naive line
+   completes 1/12 runs. Rework or retune The Gnawing Hour, The Long Range at its intended acts,
+   and The Long Procession; close the weak-legal-comp versus competent-party gap; restore a
+   credible third answer to the act-1 boss on the 8-wide board. Use the existing five-role
+   grammar and protect the strong formation sensitivity/multiple answers already present in
+   Ninth Bell, The Drop, Slagworks, Ashfall Battery, and Waning Crown. Human telemetry decides
+   direction; probes confirm the result, never set a uniform win-rate target.
+**4. Item 15 — THE EVENT** — **DESIGN.** Spend the budgeted ONE event on a genuine run gamble,
+   distinct from the deterministic Interlude reward choice. Reuse existing rewards and
+   consequences; place it where item 31's telemetry finds the largest pacing valley. Do not
+   create an event catalog.
+**5. Item 13 — Beyond the Hour, the endless seam** — **DESIGN, then a small build.** After the
+   final boss, offer RETIRE WITH VICTORY or CONTINUE with the same warband. Reuse act 3's pool in
+   escalating cycles; initial score = cycles + beats survived; endless defeat preserves the
+   standard-run victory. Persist continuation/cycle/score in save/resume and telemetry. No endless
+   economy, special reward pool, leaderboard, or metagame in this slice.
 ## Deferred (explicitly NOT now — don't resurrect without Jake; detail in the archive)
 - **Gated/parked:** Inscription wave 3, 12→24 (gated: the twelve must stay legible in play) ·
-  camera/framing pass (wants Jake's play notes; item 22 owns the shape half) · the tier value
-  question + encounter sharpness (old items 4 + 18 — balance doctrine parks them until playtest
-  data; **the telemetry sink now collects exactly that**) · risk-tier mutation of encounters ·
-  1b's real-device + audio/motion slices · audio D2 re-bake vs regenerate (ears —
-  `Projects/play-pass.md`).
+  risk-tier mutation of encounters · item 27's Workbench polish batch · item 1b's remaining Hall
+  choreography/Rule Preview/device polish · audio D2 re-bake vs regenerate (ears —
+  `Projects/play-pass.md`) · forecast UI · paid VFX packs. The Hall/Workbench already exceed the
+  battlefield in finish; they return only when the slice proof identifies a real comprehension
+  problem there.
 - **Settled guards (do not re-open):** terminal loss STAYS — mitigation is save/resume, no retry
   currency, don't soften act 2's pool (archive: item 16) · the Interlude is a real three-way
   choice · act pools are disjoint; their difficulty half is the encounter-sharpness wall ·
@@ -76,10 +93,6 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
   the content doctrine until playtest #1.
 
 ## Design backlog (unranked ammo for DESIGN chats — not scheduled)
-- **The act-1 boss admits 2 answer axes on the 8-wide board, was 3** (ADR 0027's measured
-  casualty — control fails the Last Oath at every placement tried, including the literal 6-wide
-  coordinates; the width itself flipped it). The settled guard says 3–4. Options: re-author the
-  Oath for the wide board · amend the guard for the teaching boss · wait for playtest data.
 - **Wide Banner** reads as "inner circle gets innate+crown" instead of "reach replaces"; ADR 0022
   makes the real design a one-liner (`SignaturePatch = Patch(radius: 1)`). Needs Jake's nod.
 - **Content-fidelity leftovers** (2026-07-23 de-SIMPLIFY pass): Twist's crit-memory is a 30-tick
@@ -87,19 +100,33 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
   defensive stat · reforged-item resale forgets forge spend · returning to an implicit starter
   resets its temper · Company Standard expresses potency as an adjacent opening-Haste muster.
 - **Inscription wave 3 ammo:** pool assignment across acts/bosses; which twelve shapes earn slots.
-- **Balance/economy (post-playtest-data):** endless cycle scaling + score (item 13's sequel) ·
-  Sand/economy values · respec cost (free-for-now, revisit) · per-rank stat scaling.
+- **Balance/economy after the slice proof:** endless cycle reward/scaling depth (item 13's sequel) ·
+  respec cost (free-for-now, revisit) · per-rank stat scaling.
 - **Named-not-tuned outliers (guards against re-discovery):** `banneret` CHASSIS-DEAD (13 avg) ·
-  four node pairs lopsided ≥25 · `shade:reaper+widowmaker` dead at 8–9% · The Long Range's ward
-  never comes off for `control` · `reach` cannot clear the act-1 boss.
+  four node pairs lopsided ≥25 · `shade:reaper+widowmaker` dead at 8–9%.
 
 ## Done — one line each; full detail + all older lines in `roadmap-done-archive.md`
+- **2026-07-28** — Item 28, dead-view cleanup: reference-proved and deleted the unregistered
+  ManagementView/ShopView/PlanningView + WarbandCard/CardRulesPopover stack and its three dead
+  UXML trees (3,105 lines); moved the one live accent helper to DecisionCardPresentation.
+  Client compile 0 errors, 522 tests pass, Unity refresh/console/build preflight clean.
+- **2026-07-28** — One-command delivery: `make release` tests → rebuilds Unity DLLs → waits for
+  sync → leases/drives the open Windows Editor → polls a request-scoped build → atomically ships
+  and verifies the public launcher manifest; no competing batch-mode Editor.
+- **2026-07-28** — Independent current-game assessment + three-month roadmap recut: combat payoff
+  → 45–60m pacing/economy → encounter differentiation → one event → endless seam → cleanup;
+  slice proof = Jake full run + one cold friend attempt with retained decision trails. Items
+  25/26 merged into combat; Workbench/Hall generic polish feedback-gated.
 - **2026-07-28** — Item 22, the board is 8×8 (ADR 0027): `BoardCols` 6→8, board dims in the
-  content hash, semantic remap of all authored formations + probes + fixtures, camera defaults at
-  the audit dial point (F1-dialable). 522 tests, scenarios round-trip, headless client compile
-  PASS, baseline re-measured (content `28b51d86`): known outliers persist, shade's best build now
-  flags DOMINANT (91%), slagworks a1 reach 100→46, and the a1 boss dropped to 2 answer axes →
-  design backlog. Framing pixels unverified — the editor gets the payload via Syncthing.
+  content hash, semantic remap of all authored formations + probes + fixtures. 522 tests,
+  scenarios round-trip, headless client compile PASS, baseline re-measured (content `28b51d86`):
+  known outliers persist, shade's best build now flags DOMINANT (91%), slagworks a1 reach 100→46,
+  and the a1 boss dropped to 2 answer axes → design backlog. Camera dialed against live editor
+  renders (probe-shot loop): fov 34 · pitch 42 · yaw 6 · distance 1.6 · **new `aimBias` 0.2**
+  (look-at pulled toward the near edge — high pitch makes center-aim waste the top while the
+  front rank clips). Full board in frame on Waning Crown + overtime captures. Discovered: the
+  world-space kill feed clips at the right edge on the wider board (anchor outside fov 34's
+  budget) — folded into item 30.
 - **2026-07-28** — Item 29, enemy board identity: `RoleId` on the wire (replay v9), seven authored
   role bodies replacing borrowed hero minis + per-role ground tells (artillery firing line, ritual
   clock); two new role fixtures; 522 tests, contact sheet byte-stable B/C/D.

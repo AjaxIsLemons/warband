@@ -89,6 +89,7 @@ public sealed class StatusIconRow
 
     private readonly List<Slot> _slots = new List<Slot>();
     private TextMesh _chip;
+    private MeshRenderer _plate;
 
     // Retained scratch — the sync path allocates nothing after the first rebuild.
     private readonly List<(StatusKind Kind, int Mag, int ExpiryTick)> _cache =
@@ -143,6 +144,7 @@ public sealed class StatusIconRow
             if (_slots[i].T.gameObject.activeSelf) _slots[i].T.gameObject.SetActive(false);
         }
         if (_chip != null) _chip.gameObject.SetActive(false);
+        if (_plate != null) _plate.gameObject.SetActive(false);
         _spans.Clear();
         _cache.Clear();
         _agg.Clear();
@@ -294,6 +296,19 @@ public sealed class StatusIconRow
         for (int i = 0; i < shown; i++) width += size * SlotScale(_agg[i].Kind);
         if (hidden > 0) width += size * ChipWidth;
 
+        // Figure-ground plate (ui-review unit-hud-readability P6): one dark translucent quad
+        // behind the whole row — the colored glyphs were blending into VFX behind them on busy
+        // boards. Sized to the shown slots (+N chip included via width) plus the count dots'
+        // descent below the glyph line; hidden outright when the row is empty.
+        if (shown > 0)
+        {
+            var plate = Plate();
+            if (!plate.gameObject.activeSelf) plate.gameObject.SetActive(true);
+            plate.transform.localScale = new Vector3(width + size * 0.35f, size * 1.75f, 1f);
+            plate.transform.localPosition = new Vector3(0f, -size * 0.12f, 0.03f);
+        }
+        else if (_plate != null && _plate.gameObject.activeSelf) _plate.gameObject.SetActive(false);
+
         float x = -width * 0.5f;
         for (int i = 0; i < shown; i++)
         {
@@ -436,6 +451,23 @@ public sealed class StatusIconRow
     {
         if (_chip == null) _chip = Label("chip", _group, TextAnchor.MiddleCenter);
         return _chip;
+    }
+
+    /// <summary>Row backing, built once per row like the chip. GroundFill, NOT Sigil/Ring: those
+    /// are additive (Blend One One) and a dark additive quad adds nothing — the plate must
+    /// alpha-blend to darken. GroundFill's unset noise defaults to white (uniform fill), _Phase
+    /// stays 0 (no crawl), and its radial edge fade rounds the quad into a soft pill for free.</summary>
+    private MeshRenderer Plate()
+    {
+        if (_plate == null)
+        {
+            _plate = Quad("plate", _group, VfxLibrary.QuadMesh,
+                          VfxLibrary.MaterialFor(VfxLibrary.ShaderGroundFill, null), 0.03f);
+            var mpb = new MaterialPropertyBlock();
+            mpb.SetColor(ColorId, new Color(0.03f, 0.035f, 0.05f, 0.55f));
+            _plate.SetPropertyBlock(mpb);
+        }
+        return _plate;
     }
 
     private static MeshRenderer Quad(string name, Transform parent, Mesh mesh, Material mat, float z)
