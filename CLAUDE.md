@@ -14,10 +14,13 @@ client, pure C# deterministic sim. PvP is deferred.
 **`docs/vault/Projects/roadmap.md` is the ONLY live priority list.** When Jake opens a
 session and asks what's next, the answer comes from the board, never from memory:
 1. Read the roadmap. "What's next" = the topmost unblocked item, respecting its stage.
-2. **Stages:** `DESIGN` = needs a Jake conversation — don't build it, drive the discussion
-   with concrete proposals and record outcomes as ADRs, then flip it to SPEC'D.
-   `SPEC'D` = build autonomously. `BUILD` = in progress — finish before starting anything
-   new. `VERIFY` = needs tests/verification/polish. `DONE` = move to Done with a date.
+2. **Stages (actionable-only board, Jake's 2026-07-28 law):** `DESIGN` = needs a Jake
+   conversation — don't build it, drive the discussion with concrete proposals and record
+   outcomes as ADRs, then flip it to SPEC'D. `SPEC'D` = build autonomously. `BUILD` = in
+   progress — finish before starting anything new; machine verification (tests, captures,
+   matrices) is part of BUILD, not a parking stage. `DONE` = move to Done with a date.
+   In-motion feel goes to `Projects/play-pass.md` (Jake playtests continuously — it is
+   feedback, never a board item).
 3. **Update the board as you work** — stage flips when state changes, finished work moves
    to Done, new discoveries become items (Deferred/Open-questions if not now). Session end
    with a stale board = failed session hygiene.
@@ -44,7 +47,7 @@ engine merely because it is powerful; see ADR 0016's balance law.
   playable depends on a server.
 - The sim is a pure C# assembly: deterministic, seeded, order-independent, headless-testable,
   zero `UnityEngine` references. Replay = re-simulation from (seed, snapshots, contentVersion).
-- First-playable content budget is a hard cap (roadmap), not a floor.
+- First-playable content budget is a hard cap (`Design/content-budget.md`), not a floor.
 - Nothing is "LOCKED" until it has been **played**. Friends playtest #1 outranks any new system.
 
 ## Stack

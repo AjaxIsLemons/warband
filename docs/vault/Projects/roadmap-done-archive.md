@@ -1522,3 +1522,197 @@ paradox badge · rule-delta rows clipped at drawer-open (info still on tile hove
     trimmed before filtering left up to 105 ms of dead tail, which holds a pooled voice open), which
     is the whole argument for the gate.
 
+
+
+---
+
+## Moved 2026-07-28 (second re-cut — actionable-only board; Jake). Verbatim.
+
+### session hygiene + STATE + MEASURED snapshots — moved 2026-07-28 (actionable-only re-cut)
+
+**SESSION HYGIENE — RESOLVED 2026-07-28.** The whole 07-27/28 build wave is committed as
+`cc058c2` (104 files, 5020 insertions) after Jake confirmed no Codex session was live; `make test`
+green at **514 (275 sim + 239 run)** at commit time. `client/TempCaptures/` and `.playwright-mcp/`
+are now git-ignored (capture artifacts — synced for review, never history). Keep it this way:
+commit at stream boundaries, don't let verified work pool uncommitted.
+
+**STATE, 2026-07-27 (honest):** the first-playable run shape and between-fight UX are walkable end
+to end: Menu → five-card Draft → Management Hall → stakes-first Wager → formation-reveal Deployment
+→ Fight/replay → blocking result report → spatial Hourstone Table → Victory/Defeat. Three acts ×
+five beats, Sand economy, Interludes, boss rewards, terminal loss, save/resume, and a shipped
+standalone build + launcher + public site are all implemented. Authored encounters (ADR 0023),
+per-act bosses and full disclosure (ADR 0024), and act-scoped disjoint pools are in.
+**Combat viewing still does not read well enough, and that judgement is over a year-stale build —
+nobody has watched the corrected player.** UI has had five passes (Muster readability, unified
+decision cards, persistent Warband Shelf + Loadout Table, shared mechanic presentation, and the
+2026-07-27 Workbench overhaul), all Unity-verified by capture, **none watched in motion**.
+Detail for every one: `roadmap-done-archive.md` + `Daily/2026-07-26`.
+
+**MEASURED, 2026-07-27 review** (`make baseline`, byte-identical to committed — these are current):
+bot run victory **4 / 4 / 7** (stable/fraying/collapsing) · fight win 76% · naive line **2/12 runs
+completed** · **4 of 6 node encounters FREE + FLAT at their own debut act** · all 3 bosses admit 3–4
+answer axes at spread 100 (**the healthiest content in the game — protect it in any balance pass**) ·
+`banneret` still chassis-dead at 13 avg vs berserker 75 · sim health clean (never-swung 0.00%,
+deadtime 1.81%) · **Inscriptions 12 of 24 — ADR 0026 wave 2 landed 2026-07-27** (was 5 at review
+time, and closing that gap was this review's whole point). The three-act run, the shell, save/resume, the build and
+the launcher are all real; **what is thin is the reason to replay it.**
+
+
+### item 2 — authored PvE content (BUILT header; remnant became item 29) — moved 2026-07-28 (actionable-only re-cut)
+
+2. **Authored PvE content** — **BUILT (ADR 0023 + ADR 0024). Header corrected 2026-07-27: bosses and
+   disclosure are DONE, not remaining.** Five authored enemy roles (Swarm/Anchor/Artillery/Ritualist/
+   Diver) compose six node encounters across act-scoped, **disjoint** act-2/act-3 pools, each posing a
+   placement problem and disclosing its rule; three per-act bosses close the acts.
+   **Composition is the act lever, stats are secondary**; an act's pool is its identity.
+   Laws: `Design/pve-encounters.md`; decisions: ADR 0023, ADR 0024.
+   **What remains:** ③ bespoke enemy art + per-role tells (enemy CARDS no longer borrow hero
+   names/portraits, but board silhouettes still do) · ④ risk-tier mutation of authored encounters
+   (tiers only scale stats today) · ⑤ **still not watched in Unity** — two boss render fixtures exist
+   (`boss-ashfall-battery`, `boss-waning-crown`), so this is one session away.
+   → **The "encounters are FREE" finding is now item 18.**
+
+### item 4 — the pressure tier (parked: balance doctrine) — moved 2026-07-28 (actionable-only re-cut)
+
+4. **The pressure tier is a fake choice — AND THE PREMISE INVERTED. Re-measured 2026-07-27.** —
+   **DESIGN.** Stable/Fraying/Collapsing are visible. This item has now been true for two OPPOSITE
+   reasons, which is exactly why it must be re-measured before it is designed:
+   | measured | stable | fraying | collapsing | the reading |
+   |---|---|---|---|---|
+   | 2026-07-23 | ~99 | ~99 | ~99 | risk is free — everything wins |
+   | after ADR 0022 | 88 | 92 | 79 | |
+   | after ADR 0023 | 35 | 48 | 39 | Fraying beats Stable |
+   | **2026-07-27 (current)** | **4** | **4** | **7** | **the run is near-unwinnable — and Collapsing STILL wins most** |
+   So the old sentence "victory saturates ~99%, Collapsing strictly dominates at zero risk" is
+   **8× stale and points at the wrong bug.** What survives is the *shape* of the defect: the highest
+   risk tier still posts the best victory rate, so the tier costs nothing. What changed is the floor.
+   **Caveat that must travel with these numbers:** `run.*` is a **default-policy BOT** over 120 runs
+   per tier — it does not choose placement or purchases. It is a floor, not a forecast. See item 19.
+   ADR 0007's economy is placeholder either way. **Always start from a fresh `make baseline`.**
+
+### item 16 — defeat/retry rule (settled guard) — moved 2026-07-28 (actionable-only re-cut)
+
+16. **Defeat/retry rule — SETTLED 2026-07-26, no work item.** **Jake's call: terminal loss STAYS —
+    the mitigation is save/resume (item 7), not a retry currency and not softening the encounters.**
+    Recorded rather than deleted so the next session does not re-open it. Do **not** tune act 2's node
+    pool down to address run length; if the cliff hurts, it hurts real playtesters first (ADR 0001).
+
+### item 18 — encounters pose no problems (parked: balance doctrine) — moved 2026-07-28 (actionable-only re-cut)
+
+18. **The authored encounters do not actually pose problems — PARKED BY DOCTRINE, not solved.** —
+    **measurement, not a work item until playtest #1.** Promoted out of a Done-entry footnote because
+    it directly contradicts item 2's premise. **Re-measured 2026-07-27 — and the shape is worse than
+    "4 of 6": the failures are at the acts each encounter was AUTHORED FOR.**
+    | encounter | debut | at its debut act |
+    |---|---|---|
+    | The Gnawing Hour | 1 | **FREE + FLAT** (and at acts 2 and 3) |
+    | The Long Range | 2 | **FREE + FLAT** (rule fires only 75%) |
+    | The Slagworks | 3 | **FREE + FLAT** |
+    | The Long Procession | 3 | **FREE + FLAT** |
+    | The Ninth Bell | 1 | poses a problem — spread 100, but FLAT at acts 2–3 |
+    | The Drop | 1 | poses a problem — spread 100 at every act |
+    **The bosses are the counter-example and the thing to protect:** all three admit 3–4 answer axes
+    at spread 100. Whatever eventually fixes the node pool must not be allowed to flatten them. **Root cause, found 2026-07-26 and uncomfortable:** *the gap between the four
+    answer-axis parties and the weakest legal comp is wider than the band an encounter can sit in* —
+    nothing can be made sharp for one without being lethal to the other. Every composition that
+    fixed the flatness drove the naive bot line from 3/12 completed runs to **0/12**.
+    **That is a BALANCE finding, and the content doctrine parks balance until the interactive
+    playtest.** Two further cautions for whoever picks it up:
+    ① **Party size is the strongest difficulty dial in the game, and it is not a stat** — The Long
+    Range admits 3 answers with spread 100 against three heroes and is FREE from every formation
+    against four. Every probe table now prints hero count; always check it.
+    ② the earlier ADR 0023 numbers **could not be bisected** (the whole implementation was
+    uncommitted), so **re-measure with `make baseline` before trusting any number here.**
+
+### laws pages 5 / 5a / 6 — moved 2026-07-28 (actionable-only re-cut)
+
+### Laws pages (keep their numbers — ADRs and design docs reference them by name)
+5. **PvE-first playable loop** — **LAWS PAGE, not a work item** (dissolved 2026-07-26). ADR 0016
+   supersedes mandatory ghost bosses: PvE is the product, encounters are authored and asymmetrical, a
+   completed run has a final PvE victory, and the winning warband may continue into endless until
+   defeated. `IRunContent.Boss(act, rng)` returns an AUTHORED comp · `RunPhase.Defeated` is terminal
+   — **lose any fight and the run ends** (Jake's PoC rule) · `Victory` = reached the end of the last
+   act, NOT the old best-of-5 `BossWins >= 3` · ghost-capture removed.
+   **`RunController.PreviewEnemies(tier)` exists because the encounter rng derives from private salts
+   — never reconstruct a preview client-side**, it will show an army that does not spawn.
+   ADR 0019 + 0020: three acts of Fight/Fight/Interlude/Fight/Boss · terminal losses ·
+   Stable/Fraying/Collapsing fixed rewards · choose 3 of 5 opening draft · Hall → Wager → Deployment
+   → Combat · Sand Market/Armory/Hourstone · 3→6 capacity unlock.
+   **Balance law:** preserve spectacular system-breaking engines; intervene only when one line erases
+   discovery, all encounter problems, determinism, resolution, or readability.
+   **Settled design law** (`Design/pve-encounters.md`): the encounter itself is the boss · every boss
+   is a multi-answer strength exam · the boss mechanically rules and teaches its act · enemy
+   formations are always previewed before deployment · all mechanics are inspectable before Play, the
+   rules known but the outcome not forecast · boss units have **no blanket control immunity**, only
+   explicit previewed passives may negate a specific verb · Execute is a true kill preserving normal
+   death/transform consequences · Phase grants complete personal absence while encounter clocks
+   continue · fields are factional by default, environmental/volatile ones may affect everyone ·
+   fight flow is Encounter Reveal → combined Planning → Play → Result, with lineup, equipment and
+   positions freely editable together until `BEGIN FIGHT`.
+   Remaining scope is tracked elsewhere and must not be re-derived here: risk-tier mutation → item 2④
+   · endless seam → item 13 · defeat/retry → item 16 · encounter sharpness → item 18.
+   **Parked extrapolation (2026-07-24, never taken up):** the **Dying Procession** — an escalation of
+   the Last Oath's bonded pair — remains a possible extrapolation, not current scope.
+5a. **Hourstone / Inscription engine layer** — **WAVE 2 BUILT 2026-07-27 (ADR 0026). VERIFY in
+    motion sits on the play-pass checklist; wave 3 (12→24) gated on the twelve staying legible in play.**
+    Shipped this pass, all machine-gated green (`make test` 492, `make baseline` explained,
+    `make check-client`, capture-reviewed):
+    ① sim machinery — once-per-root guard (Inscriptions only), `EveryN` counters with
+    `RuleProgress` pips on the wire, `AdjacentToAlly` selector, `HealToShield` status,
+    `TriggerFired` hook; baseline was **byte-identical** for the guard alone. ② the twelve —
+    five seeds renamed (First Bell/Closed Gate/Cinder Law/Bronze Testament/Chorus of Hours) +
+    tithe/woundclock/thirdchime/ashbequest/stilledbell/shoulder/bloodless; Paradoxes reachable
+    via boss rewards only. ③ Living Inscription replaced Bearer of the Mark (`DoublesBanners`
+    deleted everywhere). ④ full `Banner*`→`Inscription*` rename; RuleIds are `inscription.*`;
+    replay v8 carries per-rule owning team. ⑤ **the combat badge rail is BUILT** — left-edge
+    world-text badges, team-0 laws only, counter pips fold-driven (capture: `hourstone` fixture,
+    "The Third Chime 2/3"), pulse+coalesce on TriggerFired. **Unverifiable from a session: the
+    pulse/coalesce glow in motion (Play Mode is Jake-only).** In-fight full-rule inspection
+    deferred — the Hourstone Table remains the disclosure surface. Fixed en route: `PlayBattle`
+    never carried the result's rule table, so LIVE fights resolved passive names against a stale
+    file table (item 20 latent). New render fixture: `hourstone` (5 player + 1 enemy law).
+    Numbers all placeholder by doctrine — shapes tune in review once heard/seen in play.
+6. **Friends playtest #1** — the milestone that ends arguments (ADR 0001), after the PvE vertical
+   slice. Distribution/launcher work is allowed only as needed to put that slice in friends' hands.
+   **Mechanically nothing blocks it as of 2026-07-28** — items 7, 8 and 9 are built and the site
+   is live; item 9's in-motion verify sits on the play-pass checklist. No date until Jake calls it.
+
+### Done lines 2026-07-22 → 2026-07-26 — moved 2026-07-28 (actionable-only re-cut)
+
+- **2026-07-26** — Items 7 + 8: save/resume (verified on Windows) + standalone build, launcher,
+  publish pipeline, live site. Cold-start CONTINUE wiring is on the play-pass checklist.
+- **2026-07-26** — Item 14, act identity: genuinely disjoint act pools; the "differentiated
+  difficulty" half is item 18's balance wall, parked with it.
+
+### Done lines, older — moved 2026-07-28 (actionable-only re-cut)
+
+- **2026-07-26** — Candidate content + first third path (Sharpshot Spotter), authored but unreachable;
+  `Kits.Candidate*` registries, `IncludeCandidates` default false, fingerprint provably unchanged.
+- **2026-07-26** — Inbox Market UI redesign + equipment preview (455 tests).
+- **2026-07-26** — Variable-arity spec offers + seeded pool draw + fork-rank law (455 tests); the spec
+  tree was the only deterministic layer in a run. Zero behaviour change, fingerprint identical.
+- **2026-07-26** — Act-scoped encounter pools (closed item 14); acts 2 and 3 now disjoint, two new
+  encounters, zero new roles (446 tests). Surfaced the balance finding now tracked as item 18.
+- **2026-07-26** — Persistent Warband bar + atomic loadout transfers (249 sim + 195 run tests).
+- **2026-07-26** — UI proposal slice 1: Hall hierarchy + compact warband bar.
+- **2026-07-26** — Balance instruments: 4-axis `--enc`, `make baseline` (104 metrics, A/B by
+  `git diff`), `make enc` / `make boss`.
+- **2026-07-26** — Routing + the engagement law (ADR 0025): Dijkstra flow field to the engage ring,
+  bodies a detour at `BodyCost = 6`. **Watch `BodyCost` at playtest — the one tuning constant.**
+- **2026-07-26** — The site is live and the launcher pulls from it (closed item 8).
+- **2026-07-26** — First standalone build + launcher/delivery (item 8); the shader landmine was real
+  and the preflight caught it.
+- **2026-07-26** — Content version stamp (433 tests): computed FNV-1a-64 fingerprint of the content
+  graph, not a hand-bumped constant. Replays deliberately unstamped.
+- **2026-07-26** — Run save/resume (item 7, 412 tests), verified on Windows.
+- **2026-07-26** — Act bosses + the disclosure contract (item 2 ①②, ADR 0024, 392 tests).
+- **2026-07-25** — Authored PvE encounters (item 2, ADR 0023, 368 tests); the `--enc` probe.
+- **2026-07-25** — Unit behavior layer + weapon cadence + signature patches (ADR 0022, 346 tests).
+- **2026-07-25** — The Last Oath's decision is reachable (item 3, 313 tests) — geometry, not numbers.
+- **2026-07-25** — Fight-legibility phases 0/1/4-sim + combat-spectacle arc P0–P6, nine commits.
+- **2026-07-24** — First-playable run + persistent Planning UX (ADR 0019, 278 tests).
+- **2026-07-24** — Playable PoC shell + deployment + scenes (263 tests).
+- **2026-07-24** — Render + data systems (item 4b): `scenarios.json`, `TellMatch`, the Lexicon.
+- **2026-07-23** — Unity client bring-up (item 4); outlier sanity sweep; hero/build content pass;
+  sim mechanics build queue; PvE-first identity amendment (ADR 0016); design campaign complete.
+- **2026-07-22** — Design foundation (ADR 0001–0009); sim framework (65 tests); run layer (109 tests).

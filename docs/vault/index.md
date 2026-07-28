@@ -59,6 +59,14 @@ Read this first. One line per page; open only what's relevant. Update on every a
   reusable motion/feedback/Painter2D FX/audio-haptic seams, live UI FX tuning, mobile/accessibility
   contracts, and remaining P3–P5 slices.
 
+- [Design/workbench-dossier.md](Design/workbench-dossier.md) — the 2026-07-28 dossier/armory
+  redesign decision: section ROLE over width-demotion, per-kind dossiers, footer drawer (research:
+  autobattler shops, card anatomy, progressive disclosure).
+- [Design/client-architecture.md](Design/client-architecture.md) — client architecture + the
+  session gotchas that have each cost real time (Play Mode unreachable, Syncthing, capture paths).
+  Moved off the roadmap 2026-07-28.
+- [Design/content-budget.md](Design/content-budget.md) — the first-playable content hard cap
+  (ADR 0001 + 0016) + measured-against-cap block. Moved off the roadmap 2026-07-28.
 - [Design/ui-responsive-contract.md](Design/ui-responsive-contract.md) — **the UI foundation SOP**:
   how UI Toolkit's three responsive layers (panel scale / flex / breakpoint classes) actually work,
   an audit of warband's 14.4k lines of USS against them, and the proposed contract — one classifier,
@@ -151,11 +159,14 @@ Read this first. One line per page; open only what's relevant. Update on every a
   authoring instrument (encounters × 4 answer axes, bosses, hero builds, run EV, sim health).
   Regenerate with `make baseline`; the A/B is `git diff`. Not an assertion — it exists so a change's
   effect on the game is visible instead of reconstructed.
-- [Projects/roadmap.md](Projects/roadmap.md) — **THE live board**: staged priorities, deferred list,
-  open questions, one-line done log. Sessions plan from here (CLAUDE.md Planning SOP).
+- [Projects/roadmap.md](Projects/roadmap.md) — **THE live board, actionable-only since
+  2026-07-28**: every item is DESIGN or BUILD; deferred one-liners, design backlog, one-line done
+  log. Sessions plan from here (CLAUDE.md Planning SOP).
+- [Projects/play-pass.md](Projects/play-pass.md) — what to watch next time Jake plays (he
+  playtests continuously — feedback, never a board item). Sessions keep it current.
 - [Projects/roadmap-done-archive.md](Projects/roadmap-done-archive.md) — full detail of completed
-  roadmap items + item 1's build history, cut out of the board on 2026-07-27. Read only when you
-  need the blow-by-blow of how something shipped; the board itself is the priority list.
+  and parked roadmap items, the laws pages (5/5a/6), and state snapshots — cut out of the board
+  2026-07-27/28. Read only when you need the blow-by-blow; the board is the priority list.
 - [Projects/boss-probe-2026-07-26.md](Projects/boss-probe-2026-07-26.md) — `--boss` output at ship:
   each act boss vs four answer-axis parties × six formations. The bar is "how many kinds of strength
   can pass this", not win%.
