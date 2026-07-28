@@ -26,14 +26,17 @@ public static class OathProbe
     /// report keyed to shapes is one they can act on. Blue rows are 0-2 (enemies sit at 5-6).</summary>
     private static readonly (string Name, Hex[] Slots)[] Formations =
     {
-        ("default",     new[] { Hex.FromRowCol(2, 2), Hex.FromRowCol(0, 1), Hex.FromRowCol(0, 4) }),
-        ("forward",     new[] { Hex.FromRowCol(2, 2), Hex.FromRowCol(2, 1), Hex.FromRowCol(2, 4) }),
-        ("turtle",      new[] { Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 1), Hex.FromRowCol(0, 3) }),
-        ("wall-first",  new[] { Hex.FromRowCol(2, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 3) }),
-        ("split",       new[] { Hex.FromRowCol(2, 0), Hex.FromRowCol(1, 2), Hex.FromRowCol(2, 5) }),
+        // 8-wide remap (ADR 0027): centered shapes translated +1, edge shapes re-anchored to the
+        // new edges — a formation's NAME is its identity, and "split" that isn't corner-to-corner
+        // would be measuring a different shape.
+        ("default",     new[] { Hex.FromRowCol(2, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 5) }),
+        ("forward",     new[] { Hex.FromRowCol(2, 3), Hex.FromRowCol(2, 2), Hex.FromRowCol(2, 5) }),
+        ("turtle",      new[] { Hex.FromRowCol(0, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 4) }),
+        ("wall-first",  new[] { Hex.FromRowCol(2, 4), Hex.FromRowCol(0, 3), Hex.FromRowCol(0, 4) }),
+        ("split",       new[] { Hex.FromRowCol(2, 0), Hex.FromRowCol(1, 3), Hex.FromRowCol(2, 7) }),
         ("left-stack",  new[] { Hex.FromRowCol(2, 0), Hex.FromRowCol(1, 0), Hex.FromRowCol(0, 1) }),
-        ("right-stack", new[] { Hex.FromRowCol(2, 5), Hex.FromRowCol(1, 5), Hex.FromRowCol(0, 4) }),
-        ("bait-left",   new[] { Hex.FromRowCol(2, 0), Hex.FromRowCol(0, 4), Hex.FromRowCol(0, 5) }),
+        ("right-stack", new[] { Hex.FromRowCol(2, 7), Hex.FromRowCol(1, 7), Hex.FromRowCol(0, 6) }),
+        ("bait-left",   new[] { Hex.FromRowCol(2, 0), Hex.FromRowCol(0, 6), Hex.FromRowCol(0, 7) }),
     };
 
     public static void Run()

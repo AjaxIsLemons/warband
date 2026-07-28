@@ -26,12 +26,13 @@ public static class ProbeParties
     /// </summary>
     public static readonly (string Name, Hex[] Slots)[] Formations =
     {
-        ("default",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(1, 1), Hex.FromRowCol(1, 4), Hex.FromRowCol(0, 2) }),
-        ("forward",    new[] { Hex.FromRowCol(3, 2), Hex.FromRowCol(3, 1), Hex.FromRowCol(3, 4), Hex.FromRowCol(2, 2) }),
-        ("turtle",     new[] { Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 1), Hex.FromRowCol(0, 3), Hex.FromRowCol(1, 2) }),
-        ("wall-first", new[] { Hex.FromRowCol(3, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 3), Hex.FromRowCol(1, 3) }),
-        ("split",      new[] { Hex.FromRowCol(3, 0), Hex.FromRowCol(1, 2), Hex.FromRowCol(3, 5), Hex.FromRowCol(0, 0) }),
-        ("back-line",  new[] { Hex.FromRowCol(2, 2), Hex.FromRowCol(0, 0), Hex.FromRowCol(0, 5), Hex.FromRowCol(1, 5) }),
+        // 8-wide remap (ADR 0027): centered shapes translated +1, edge shapes re-anchored.
+        ("default",    new[] { Hex.FromRowCol(3, 3), Hex.FromRowCol(1, 2), Hex.FromRowCol(1, 5), Hex.FromRowCol(0, 3) }),
+        ("forward",    new[] { Hex.FromRowCol(3, 3), Hex.FromRowCol(3, 2), Hex.FromRowCol(3, 5), Hex.FromRowCol(2, 3) }),
+        ("turtle",     new[] { Hex.FromRowCol(0, 3), Hex.FromRowCol(0, 2), Hex.FromRowCol(0, 4), Hex.FromRowCol(1, 3) }),
+        ("wall-first", new[] { Hex.FromRowCol(3, 4), Hex.FromRowCol(0, 3), Hex.FromRowCol(0, 4), Hex.FromRowCol(1, 4) }),
+        ("split",      new[] { Hex.FromRowCol(3, 0), Hex.FromRowCol(1, 3), Hex.FromRowCol(3, 7), Hex.FromRowCol(0, 0) }),
+        ("back-line",  new[] { Hex.FromRowCol(2, 3), Hex.FromRowCol(0, 0), Hex.FromRowCol(0, 7), Hex.FromRowCol(1, 7) }),
     };
 
     /// <summary>

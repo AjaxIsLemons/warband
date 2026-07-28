@@ -43,9 +43,9 @@ namespace Warband.Sim.Tests
         [Fact]
         public void RowColRoundTripsAcrossTheFullBoard()
         {
-            // 6 cols x 8 rows: rows 0-3 = our half, 4-7 = enemy half (pitch v0.3).
-            for (int row = 0; row < 8; row++)
-                for (int col = 0; col < 6; col++)
+            // 8 cols x 8 rows (ADR 0027): rows 0-3 = our half, 4-7 = enemy half.
+            for (int row = 0; row < Battle.BoardRows; row++)
+                for (int col = 0; col < Battle.BoardCols; col++)
                 {
                     var h = Hex.FromRowCol(row, col);
                     Assert.Equal(row, h.Row);
@@ -56,8 +56,8 @@ namespace Warband.Sim.Tests
         [Fact]
         public void AdjacentRowsInSameColumnAreNeighbors()
         {
-            for (int row = 0; row < 7; row++)
-                for (int col = 0; col < 6; col++)
+            for (int row = 0; row < Battle.BoardRows - 1; row++)
+                for (int col = 0; col < Battle.BoardCols; col++)
                     Assert.Equal(1, Hex.Distance(Hex.FromRowCol(row, col), Hex.FromRowCol(row + 1, col)));
         }
     }

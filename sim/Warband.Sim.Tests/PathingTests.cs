@@ -71,7 +71,8 @@ namespace Warband.Sim.Tests
             {
                 (wall, Hex.FromRowCol(2, 1), -1), (wall, Hex.FromRowCol(2, 2), -1),
                 (wall, Hex.FromRowCol(2, 3), -1), (wall, Hex.FromRowCol(2, 4), -1),
-                (wall, Hex.FromRowCol(2, 5), -1),
+                (wall, Hex.FromRowCol(2, 5), -1), (wall, Hex.FromRowCol(2, 6), -1),
+                (wall, Hex.FromRowCol(2, 7), -1),
             };
             var result = new Battle(units, initialFields: fields).Run();
 

@@ -1,5 +1,5 @@
 {
-  "// note": "Data-driven replay set. Each unit is a real Catalog build. picks = path choices at B/A/S (0 or 1). tier: Worn|Honed|Relic. Board is 8 rows x 6 cols; team0 lower rows march up, team1 upper rows march down. Regenerate with `make scenarios`.",
+  "// note": "Data-driven replay set. Each unit is a real Catalog build. picks = path choices at B/A/S (0 or 1). tier: Worn|Honed|Relic. Board is 8 rows x 8 cols (ADR 0027); fixtures sit +1 col of their 6-wide spots to stay centered; team0 lower rows march up, team1 upper rows march down. Regenerate with `make scenarios`.",
   "scenarios": [
     {
       "name": "hourstone",
@@ -27,7 +27,7 @@
           ],
           "tier": "Honed",
           "row": 1,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -39,7 +39,7 @@
           ],
           "tier": "Honed",
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 0,
@@ -51,7 +51,7 @@
           ],
           "tier": "Honed",
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -63,7 +63,7 @@
           ],
           "tier": "Honed",
           "row": 6,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -75,7 +75,7 @@
           ],
           "tier": "Honed",
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -87,7 +87,7 @@
           ],
           "tier": "Honed",
           "row": 6,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -105,7 +105,7 @@
           ],
           "tier": "Relic",
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -117,7 +117,7 @@
           ],
           "tier": "Honed",
           "row": 5,
-          "col": 2
+          "col": 3
         }
       ]
     },
@@ -142,7 +142,7 @@
             0
           ],
           "row": 1,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -153,7 +153,7 @@
             1
           ],
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -164,7 +164,7 @@
             1
           ],
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 1,
@@ -175,7 +175,7 @@
             0
           ],
           "row": 6,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -186,7 +186,7 @@
             0
           ],
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -197,7 +197,7 @@
             1
           ],
           "row": 6,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -218,7 +218,7 @@
           "mastered": true,
           "rank": 3,
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -232,7 +232,7 @@
           "mastered": true,
           "rank": 3,
           "row": 2,
-          "col": 3
+          "col": 4
         },
         {
           "team": 0,
@@ -246,7 +246,7 @@
           "mastered": true,
           "rank": 3,
           "row": 1,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -260,7 +260,7 @@
           "mastered": false,
           "rank": 0,
           "row": 5,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -274,7 +274,7 @@
           "mastered": false,
           "rank": 0,
           "row": 6,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -288,7 +288,7 @@
           "mastered": false,
           "rank": 0,
           "row": 5,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -311,7 +311,7 @@
           ],
           "tier": "Honed",
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -322,7 +322,7 @@
             1
           ],
           "row": 1,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -333,7 +333,7 @@
             0
           ],
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 1,
@@ -344,7 +344,7 @@
             1
           ],
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -355,7 +355,7 @@
             1
           ],
           "row": 6,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -366,7 +366,7 @@
             0
           ],
           "row": 6,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -384,7 +384,7 @@
             0
           ],
           "row": 1,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -395,7 +395,7 @@
             0
           ],
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -406,7 +406,7 @@
             0
           ],
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 1,
@@ -417,7 +417,7 @@
             0
           ],
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -428,7 +428,7 @@
             0
           ],
           "row": 6,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -439,7 +439,7 @@
             0
           ],
           "row": 6,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -456,7 +456,7 @@
             0
           ],
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -467,7 +467,7 @@
             0
           ],
           "row": 2,
-          "col": 3
+          "col": 4
         },
         {
           "team": 0,
@@ -478,7 +478,7 @@
             0
           ],
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 1,
@@ -489,7 +489,7 @@
             0
           ],
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -500,7 +500,7 @@
             0
           ],
           "row": 6,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -511,7 +511,7 @@
             0
           ],
           "row": 5,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -522,7 +522,7 @@
       "walls": [
         {
           "row": 2,
-          "col": 2
+          "col": 3
         }
       ],
       "units": [
@@ -535,7 +535,7 @@
             0
           ],
           "row": 0,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -546,7 +546,7 @@
             0
           ],
           "row": 1,
-          "col": 0
+          "col": 1
         },
         {
           "team": 1,
@@ -557,7 +557,7 @@
             0
           ],
           "row": 4,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -568,7 +568,7 @@
             0
           ],
           "row": 6,
-          "col": 4
+          "col": 5
         }
       ]
     },
@@ -587,7 +587,7 @@
           ],
           "weapon": "sabre",
           "row": 2,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -599,7 +599,7 @@
           ],
           "weapon": "mace",
           "row": 2,
-          "col": 2
+          "col": 3
         },
         {
           "team": 0,
@@ -611,7 +611,7 @@
           ],
           "weapon": "musket",
           "row": 1,
-          "col": 3
+          "col": 4
         },
         {
           "team": 1,
@@ -622,7 +622,7 @@
             0
           ],
           "row": 5,
-          "col": 1
+          "col": 2
         },
         {
           "team": 1,
@@ -633,7 +633,7 @@
             0
           ],
           "row": 5,
-          "col": 2
+          "col": 3
         },
         {
           "team": 1,
@@ -644,7 +644,7 @@
             0
           ],
           "row": 5,
-          "col": 3
+          "col": 4
         }
       ]
     },
@@ -657,84 +657,6 @@
         {
           "team": 0,
           "chassis": "bulwark",
-          "picks": [
-            0,
-            0,
-            0
-          ],
-          "tier": "Worn",
-          "rank": 1,
-          "row": 3,
-          "col": 2,
-          "mastered": false
-        },
-        {
-          "team": 0,
-          "chassis": "sharpshot",
-          "picks": [
-            1,
-            0,
-            0
-          ],
-          "tier": "Worn",
-          "rank": 1,
-          "row": 1,
-          "col": 1,
-          "mastered": false
-        },
-        {
-          "team": 0,
-          "chassis": "pyromancer",
-          "picks": [
-            0,
-            0,
-            0
-          ],
-          "tier": "Worn",
-          "rank": 1,
-          "row": 1,
-          "col": 4,
-          "mastered": false
-        },
-        {
-          "team": 0,
-          "chassis": "cleric",
-          "picks": [
-            0,
-            0,
-            0
-          ],
-          "tier": "Worn",
-          "rank": 1,
-          "row": 0,
-          "col": 2,
-          "mastered": false
-        }
-      ]
-    },
-    {
-      "// note": "Act-3 boss (ADR 0024): the Crown's bell advances on time AND on every death in its court. Watch: mana bar jumping on each escort death, then the board-wide ring.",
-      "name": "boss-waning-crown",
-      "seed": 13,
-      "encounter": "waning-crown",
-      "units": [
-        {
-          "team": 0,
-          "chassis": "bulwark",
-          "picks": [
-            0,
-            0,
-            0
-          ],
-          "tier": "Worn",
-          "rank": 1,
-          "row": 3,
-          "col": 2,
-          "mastered": false
-        },
-        {
-          "team": 0,
-          "chassis": "phalanx",
           "picks": [
             0,
             0,
@@ -757,7 +679,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 1,
+          "col": 2,
           "mastered": false
         },
         {
@@ -771,7 +693,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 4,
+          "col": 5,
           "mastered": false
         },
         {
@@ -785,7 +707,85 @@
           "tier": "Worn",
           "rank": 1,
           "row": 0,
+          "col": 3,
+          "mastered": false
+        }
+      ]
+    },
+    {
+      "// note": "Act-3 boss (ADR 0024): the Crown's bell advances on time AND on every death in its court. Watch: mana bar jumping on each escort death, then the board-wide ring.",
+      "name": "boss-waning-crown",
+      "seed": 13,
+      "encounter": "waning-crown",
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 3,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "phalanx",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 4,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
           "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 5,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [
+            0,
+            0,
+            0
+          ],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 3,
           "mastered": false
         }
       ]
@@ -804,7 +804,7 @@
           ],
           "tier": "Relic",
           "row": 1,
-          "col": 1
+          "col": 2
         },
         {
           "team": 0,
@@ -816,7 +816,7 @@
           ],
           "tier": "Relic",
           "row": 1,
-          "col": 4
+          "col": 5
         },
         {
           "team": 0,
@@ -828,6 +828,18 @@
           ],
           "tier": "Relic",
           "row": 0,
+          "col": 3
+        },
+        {
+          "team": 1,
+          "chassis": "bulwark",
+          "picks": [
+            1,
+            0,
+            0
+          ],
+          "tier": "Relic",
+          "row": 6,
           "col": 2
         },
         {
@@ -840,19 +852,7 @@
           ],
           "tier": "Relic",
           "row": 6,
-          "col": 1
-        },
-        {
-          "team": 1,
-          "chassis": "bulwark",
-          "picks": [
-            1,
-            0,
-            0
-          ],
-          "tier": "Relic",
-          "row": 6,
-          "col": 4
+          "col": 5
         },
         {
           "team": 1,
@@ -864,7 +864,7 @@
           ],
           "tier": "Relic",
           "row": 7,
-          "col": 2
+          "col": 3
         }
       ]
     },
@@ -886,7 +886,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 3,
-          "col": 2,
+          "col": 3,
           "mastered": false
         },
         {
@@ -900,7 +900,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 1,
+          "col": 2,
           "mastered": false
         },
         {
@@ -914,7 +914,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 4,
+          "col": 5,
           "mastered": false
         },
         {
@@ -928,7 +928,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 0,
-          "col": 2,
+          "col": 3,
           "mastered": false
         }
       ]
@@ -951,7 +951,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 3,
-          "col": 2,
+          "col": 3,
           "mastered": false
         },
         {
@@ -965,7 +965,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 1,
+          "col": 2,
           "mastered": false
         },
         {
@@ -979,7 +979,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 1,
-          "col": 4,
+          "col": 5,
           "mastered": false
         },
         {
@@ -993,7 +993,7 @@
           "tier": "Worn",
           "rank": 1,
           "row": 0,
-          "col": 2,
+          "col": 3,
           "mastered": false
         }
       ]

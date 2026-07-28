@@ -53,13 +53,6 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
 **7. Item 1b — Hall polish, two buildable slices** — **SPEC'D.** Final Bind choreography · Rule
    Preview diagrams (`Design/hall-polish.md`). The device and audio/motion slices are
    feedback-gated → Deferred.
-**8. Item 22 — the board is square, and that caps the camera** — **DESIGN (measured; last because
-   Jake's framing feedback informs it, but decidable any time).** 6×8 at 0.91:1 mathematically
-   forbids a readable pitch; **8×8 at ~45° measures 98% frame fill AND 1.37 rows of overlap — the
-   only point that does both.** Costs +16 hexes: `Battle.InBounds`, `Pathing.Cells`, every
-   authored formation and deployment fixture. Justify on framing, measure for balance
-   (`make baseline` before/after) — not the reverse. The rhombus is NOT the answer (yaw costs
-   frame area). Full sweep numbers in the archive.
 
 ## Deferred (explicitly NOT now — don't resurrect without Jake; detail in the archive)
 - **Gated/parked:** Inscription wave 3, 12→24 (gated: the twelve must stay legible in play) ·
@@ -83,6 +76,10 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
   the content doctrine until playtest #1.
 
 ## Design backlog (unranked ammo for DESIGN chats — not scheduled)
+- **The act-1 boss admits 2 answer axes on the 8-wide board, was 3** (ADR 0027's measured
+  casualty — control fails the Last Oath at every placement tried, including the literal 6-wide
+  coordinates; the width itself flipped it). The settled guard says 3–4. Options: re-author the
+  Oath for the wide board · amend the guard for the teaching boss · wait for playtest data.
 - **Wide Banner** reads as "inner circle gets innate+crown" instead of "reach replaces"; ADR 0022
   makes the real design a one-liner (`SignaturePatch = Patch(radius: 1)`). Needs Jake's nod.
 - **Content-fidelity leftovers** (2026-07-23 de-SIMPLIFY pass): Twist's crit-memory is a 30-tick
@@ -97,6 +94,12 @@ launcher, site, save/resume, options, and the telemetry sink are all live; Jake 
   never comes off for `control` · `reach` cannot clear the act-1 boss.
 
 ## Done — one line each; full detail + all older lines in `roadmap-done-archive.md`
+- **2026-07-28** — Item 22, the board is 8×8 (ADR 0027): `BoardCols` 6→8, board dims in the
+  content hash, semantic remap of all authored formations + probes + fixtures, camera defaults at
+  the audit dial point (F1-dialable). 522 tests, scenarios round-trip, headless client compile
+  PASS, baseline re-measured (content `28b51d86`): known outliers persist, shade's best build now
+  flags DOMINANT (91%), slagworks a1 reach 100→46, and the a1 boss dropped to 2 answer axes →
+  design backlog. Framing pixels unverified — the editor gets the payload via Syncthing.
 - **2026-07-28** — Item 29, enemy board identity: `RoleId` on the wire (replay v9), seven authored
   role bodies replacing borrowed hero minis + per-role ground tells (artillery firing line, ritual
   clock); two new role fixtures; 522 tests, contact sheet byte-stable B/C/D.

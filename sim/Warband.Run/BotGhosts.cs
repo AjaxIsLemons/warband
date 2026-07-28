@@ -8,7 +8,7 @@ namespace Warband.Run
     /// default placement: melee hold the front row, ranged sit the back, center-out.</summary>
     internal static class Formation
     {
-        internal static readonly int[] ColOrder = { 2, 3, 1, 4, 0, 5 };
+        internal static readonly int[] ColOrder = { 3, 4, 2, 5, 1, 6, 0, 7 };
 
         internal static int RangeOf(IRunContent content, HeroInstance hero) =>
             hero.WeaponId != null ? content.Weapon(hero.WeaponId).Range
@@ -17,8 +17,8 @@ namespace Warband.Run
         /// <summary>Owner-half hex for the n-th front (row 3, spilling to 2) or back
         /// (row 0, spilling to 1) unit.</summary>
         internal static Hex Slot(bool front, int n) =>
-            front ? Hex.FromRowCol(3 - n / 6, ColOrder[n % 6])
-                  : Hex.FromRowCol(n / 6, ColOrder[n % 6]);
+            front ? Hex.FromRowCol(3 - n / ColOrder.Length, ColOrder[n % ColOrder.Length])
+                  : Hex.FromRowCol(n / ColOrder.Length, ColOrder[n % ColOrder.Length]);
     }
 
     /// <summary>

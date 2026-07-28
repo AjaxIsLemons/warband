@@ -69,7 +69,7 @@ namespace Warband.Sim
         private readonly List<ulong> _tickViewHashes = new List<ulong>();
 
         public const int BoardRows = 8;
-        public const int BoardCols = 6;
+        public const int BoardCols = 8;   // 6 → 8 (ADR 0027): the square board capped the camera
 
         private readonly List<(FieldDef Def, Hex Center, int OwnerTeam)> _initialFields;
         private readonly Rng _rng;

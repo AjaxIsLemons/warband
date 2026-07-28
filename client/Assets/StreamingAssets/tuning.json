@@ -1,9 +1,9 @@
 {
   "camera": {
-    "yaw": 13.0,
-    "pitch": 25.0,
-    "distance": 1.13,
-    "fov": 60.0,
+    "yaw": 6.0,
+    "pitch": 42.0,
+    "distance": 1.45,
+    "fov": 34.0,
     "background": "#0E1014FF"
   },
   "post": {

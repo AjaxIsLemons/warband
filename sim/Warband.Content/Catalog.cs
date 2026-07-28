@@ -191,6 +191,10 @@ namespace Warband.Content
             var h = new ContentHash();
             h.Add("warband-content/1");
 
+            // The board is content too (ADR 0027): a dims-only change moves every fight's outcome,
+            // and without this line it would be the one retune the fingerprint could not see.
+            h.Add("board").Add(Battle.BoardRows).Add(Battle.BoardCols);
+
             foreach (string id in Sorted(Kits.Chassis.Keys)) { h.Add(id); h.AddChassis(Kits.Chassis[id]); }
             foreach (string id in Sorted(Weapons.All.Keys)) { h.Add(id); h.AddWeapon(Weapons.All[id]); }
             foreach (string id in Sorted(Trinkets.Keys)) { h.Add(id); h.AddTrinket(Trinkets[id]); }

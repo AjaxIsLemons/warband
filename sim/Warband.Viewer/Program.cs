@@ -162,7 +162,7 @@ namespace Warband.Viewer
             for (int row = 7; row >= 0; row--)   // enemy half on top
             {
                 sb.Append(row % 2 == 1 ? " " : "").Append(row).Append("  ");
-                for (int col = 0; col < 6; col++)
+                for (int col = 0; col < Battle.BoardCols; col++)
                 {
                     var hex = Hex.FromRowCol(row, col);
                     var here = fold.Units.FirstOrDefault(u => !u.Dead && u.Pos == hex);

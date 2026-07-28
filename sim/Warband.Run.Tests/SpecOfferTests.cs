@@ -216,7 +216,9 @@ namespace Warband.Run.Tests
             // replaced Bearer of the Mark — one deliberate, save-invalidating move.
             // Moved again 2026-07-27: the Banneret's Company became a placement roster (Mustered)
             // instead of a live radius, which rewrote Rally and four of his nodes.
-            Assert.Equal("a6d4b52f6b8d824f", new Catalog().ContentVersion);
+            // Moved 2026-07-28 (ADR 0027): the board went 6→8 cols, dims joined the hash, and
+            // every authored formation was remapped — one deliberate, save-invalidating move.
+            Assert.Equal("28b51d860a59bba0", new Catalog().ContentVersion);
         }
 
         [Fact]

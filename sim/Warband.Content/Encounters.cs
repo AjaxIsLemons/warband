@@ -191,8 +191,8 @@ namespace Warband.Content
             int bodies = act <= 1 ? 5 : act == 2 ? 8 : 10;
             var slots = new[]
             {
-                (5, 0), (5, 2), (5, 4), (6, 1), (6, 3),
-                (4, 1), (4, 4), (6, 5), (7, 2), (7, 3),
+                (5, 0), (5, 3), (5, 6), (6, 1), (6, 4),
+                (4, 1), (4, 6), (6, 7), (7, 3), (7, 4),
             };
             var def = new EncounterDef
             {
@@ -223,9 +223,9 @@ namespace Warband.Content
                      + "Gunners fire at your FARTHEST unit and give ground to keep their distance.",
             Enemies =
             {
-                Place(Enemies.Colossus(), 4, 2, Enemies.Anchor, "WARDED WALL"),
+                Place(Enemies.Colossus(), 4, 3, Enemies.Anchor, "WARDED WALL"),
                 Place(Enemies.Gunner(), 7, 1, Enemies.Artillery),
-                Place(Enemies.Gunner(), 7, 4, Enemies.Artillery),
+                Place(Enemies.Gunner(), 7, 6, Enemies.Artillery),
             },
         };
 
@@ -250,11 +250,11 @@ namespace Warband.Content
             };
             // Act 1 teaches the clock on its own. From act 2 the clock gets a body in front of it,
             // which is the same lesson with the answer made expensive.
-            if (act >= 2) def.Enemies.Add(Place(Enemies.Colossus(warded: false), 4, 2, Enemies.Anchor, "WALL"));
+            if (act >= 2) def.Enemies.Add(Place(Enemies.Colossus(warded: false), 4, 3, Enemies.Anchor, "WALL"));
             def.Enemies.Add(Place(Enemies.Hourling(), 5, 0, Enemies.Swarm));
-            def.Enemies.Add(Place(Enemies.Hourling(), 5, 4, Enemies.Swarm));
-            if (act >= 3) def.Enemies.Add(Place(Enemies.Hourling(), 5, 2, Enemies.Swarm));
-            def.Enemies.Add(Place(Enemies.Scribe(), 7, 2, Enemies.Ritualist));
+            def.Enemies.Add(Place(Enemies.Hourling(), 5, 6, Enemies.Swarm));
+            if (act >= 3) def.Enemies.Add(Place(Enemies.Hourling(), 5, 3, Enemies.Swarm));
+            def.Enemies.Add(Place(Enemies.Scribe(), 7, 3, Enemies.Ritualist));
             return def;
         }
 
@@ -276,9 +276,9 @@ namespace Warband.Content
                          + "shoots past your front line while they work.",
             };
             def.Enemies.Add(Place(Enemies.Stalker(), 6, 1, Enemies.Diver));
-            def.Enemies.Add(Place(Enemies.Stalker(), 6, 4, Enemies.Diver));
-            if (knives >= 3) def.Enemies.Add(Place(Enemies.Stalker(), 5, 2, Enemies.Diver));
-            def.Enemies.Add(Place(Enemies.Gunner(), 7, 2, Enemies.Artillery));
+            def.Enemies.Add(Place(Enemies.Stalker(), 6, 6, Enemies.Diver));
+            if (knives >= 3) def.Enemies.Add(Place(Enemies.Stalker(), 5, 3, Enemies.Diver));
+            def.Enemies.Add(Place(Enemies.Gunner(), 7, 3, Enemies.Artillery));
             return def;
         }
 
@@ -313,10 +313,12 @@ namespace Warband.Content
                          + "behind them acquire your FARTHEST unit and give ground to keep their "
                          + "distance. Standing behind your own wall does not help.",
             };
-            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 1, Enemies.Anchor, "WALL"));
-            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 4, Enemies.Anchor, "WALL"));
+            // 8-wide remap (ADR 0027): the walls hug the new center so the LANE stays a lane —
+            // the linear edge map would have opened a 4-hex boulevard between them.
+            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 2, Enemies.Anchor, "WALL"));
+            def.Enemies.Add(Place(Enemies.Colossus(warded: false), 5, 5, Enemies.Anchor, "WALL"));
             def.Enemies.Add(Place(Enemies.Gunner(), 7, 0, Enemies.Artillery));
-            def.Enemies.Add(Place(Enemies.Gunner(), 7, 5, Enemies.Artillery));
+            def.Enemies.Add(Place(Enemies.Gunner(), 7, 7, Enemies.Artillery));
             return def;
         }
 
@@ -333,7 +335,7 @@ namespace Warband.Content
             // and 4 more mana the moment you answer it. Six measured FREE and flat at act 3
             // (`--enc`, 2026-07-26) — the ritual fired but never mattered.
             int court = act <= 2 ? 4 : 6;
-            var slots = new[] { (5, 0), (5, 4), (6, 1), (6, 3), (4, 2), (6, 5) };
+            var slots = new[] { (5, 0), (5, 6), (6, 1), (6, 4), (4, 3), (6, 7) };
             var def = new EncounterDef
             {
                 Id = "long-procession",
@@ -347,7 +349,7 @@ namespace Warband.Content
             };
             for (int i = 0; i < court; i++)
                 def.Enemies.Add(Place(Enemies.Hourling(), slots[i].Item1, slots[i].Item2, Enemies.Swarm));
-            def.Enemies.Add(Place(Enemies.Scribe(deathFed: true), 7, 2, Enemies.Ritualist, "DEATH-FED RITUAL"));
+            def.Enemies.Add(Place(Enemies.Scribe(deathFed: true), 7, 3, Enemies.Ritualist, "DEATH-FED RITUAL"));
             return def;
         }
 
@@ -430,8 +432,13 @@ namespace Warband.Content
                 RuleText = "When either Oathbound dies, the survivor Enrages (+100% Attack Speed).",
                 Enemies =
                 {
-                    Place(bulwark, 5, 0, Enemies.Anchor, "OATHBOUND · FRONTLINE"),
-                    Place(sharpshot, 5, 5, Enemies.Artillery, "OATHBOUND · BACKLINE"),
+                    // 8-wide remap (ADR 0027): NOT the corners — Full Draw pays +2 Attack per
+                    // hex, so a (0,7) stretch over-buffed the Sharpshot. Same 5-col gap, centered.
+                    // MEASURED 2026-07-28: control fails this exam at EVERY placement tried on the
+                    // 8-wide board (even the literal 6-wide coordinates) — the width itself, not
+                    // the pair, took the a1 boss from 3 answer axes to 2. Jake's call, see ADR 0027.
+                    Place(bulwark, 5, 1, Enemies.Anchor, "OATHBOUND · FRONTLINE"),
+                    Place(sharpshot, 5, 6, Enemies.Artillery, "OATHBOUND · BACKLINE"),
                 },
             };
         }
@@ -501,11 +508,13 @@ namespace Warband.Content
                      + "Colossi hold the lane in front of it. Silence stops the clock; Stun holds it.",
             Enemies =
             {
-                Place(Enemies.Colossus(warded: false), 5, 1, Enemies.Anchor, "WALL"),
-                Place(Enemies.Colossus(warded: false), 5, 4, Enemies.Anchor, "WALL"),
-                Place(Enemies.Hourling(), 6, 2, Enemies.Swarm),
+                // 8-wide remap (ADR 0027): walls hug the center like the Slagworks' — the lane,
+                // not the linear map, is the identity.
+                Place(Enemies.Colossus(warded: false), 5, 2, Enemies.Anchor, "WALL"),
+                Place(Enemies.Colossus(warded: false), 5, 5, Enemies.Anchor, "WALL"),
                 Place(Enemies.Hourling(), 6, 3, Enemies.Swarm),
-                Place(Enemies.Bombard(), 7, 2, Enemies.Siege),
+                Place(Enemies.Hourling(), 6, 4, Enemies.Swarm),
+                Place(Enemies.Bombard(), 7, 3, Enemies.Siege),
             },
         };
 
@@ -537,13 +546,13 @@ namespace Warband.Content
                      + "Slowed. Silence stops the bell completely; Stun holds it while it lasts.",
             Enemies =
             {
-                Place(Enemies.Colossus(warded: false), 5, 2, Enemies.Anchor, "WALL"),
+                Place(Enemies.Colossus(warded: false), 5, 3, Enemies.Anchor, "WALL"),
                 Place(Enemies.Hourling(), 4, 1, Enemies.Swarm),
-                Place(Enemies.Hourling(), 4, 4, Enemies.Swarm),
-                Place(Enemies.Stalker(), 6, 3, Enemies.Diver),
+                Place(Enemies.Hourling(), 4, 6, Enemies.Swarm),
+                Place(Enemies.Stalker(), 6, 4, Enemies.Diver),
                 Place(Enemies.Gunner(), 7, 0, Enemies.Artillery),
-                Place(Enemies.Gunner(), 7, 5, Enemies.Artillery),
-                Place(Enemies.Crown(), 7, 2, Enemies.Hour),
+                Place(Enemies.Gunner(), 7, 7, Enemies.Artillery),
+                Place(Enemies.Crown(), 7, 3, Enemies.Hour),
             },
         };
     }

@@ -84,7 +84,7 @@ namespace Warband.Content
                     "Starts combat with 30 Shield.",
                     "Shield Slam",
                     "Deals 10 damage to the nearest enemy and Stuns it for 1.0s.",
-                    Hex.FromRowCol(2, 2),
+                    Hex.FromRowCol(2, 3),
                     false,
                     "towershield", "mace", "censer"),
 
@@ -96,7 +96,7 @@ namespace Warband.Content
                     "Damaging auto attacks apply 1 Burn.",
                     "Fire Glyph",
                     "Ignites the target hex and its neighbors for 8.0s; enemies inside build Burn.",
-                    Hex.FromRowCol(0, 1),
+                    Hex.FromRowCol(0, 2),
                     false,
                     "staff", "censer", "towershield"),
 
@@ -108,7 +108,7 @@ namespace Warband.Content
                     "Gains +2 Attack per hex to the current target.",
                     "Piercing Bolt",
                     "Deals 14 damage through the current target and every enemy behind it.",
-                    Hex.FromRowCol(0, 4),
+                    Hex.FromRowCol(0, 5),
                     false,
                     "bow", "musket", "daggers"),
 
@@ -120,7 +120,7 @@ namespace Warband.Content
                     "Nearby allies start combat with Regen.",
                     "Sanctified Pyre",
                     "Damages nearby enemies and heals nearby allies.",
-                    Hex.FromRowCol(1, 3),
+                    Hex.FromRowCol(1, 4),
                     true,
                     "censer", "staff", "mace"),
             };

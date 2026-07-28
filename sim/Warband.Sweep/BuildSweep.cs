@@ -125,12 +125,14 @@ public static class BuildSweep
         {
             var units = new List<UnitState>
             {
-                UnitState.Spawn(0, 0, HeroDef(i), Hex.FromRowCol(1, 2)),
-                UnitState.Spawn(1, 0, Escort(), Hex.FromRowCol(2, 1)),
-                UnitState.Spawn(2, 0, Escort(), Hex.FromRowCol(2, 3)),
-                UnitState.Spawn(3, 1, HeroDef(j), Hex.FromRowCol(6, 2)),
-                UnitState.Spawn(4, 1, Escort(), Hex.FromRowCol(5, 1)),
-                UnitState.Spawn(5, 1, Escort(), Hex.FromRowCol(5, 3)),
+                // 8-wide remap (ADR 0027): pure +1 translation — the duel's relative geometry is
+                // the harness, so only the board's width itself may move these numbers.
+                UnitState.Spawn(0, 0, HeroDef(i), Hex.FromRowCol(1, 3)),
+                UnitState.Spawn(1, 0, Escort(), Hex.FromRowCol(2, 2)),
+                UnitState.Spawn(2, 0, Escort(), Hex.FromRowCol(2, 4)),
+                UnitState.Spawn(3, 1, HeroDef(j), Hex.FromRowCol(6, 3)),
+                UnitState.Spawn(4, 1, Escort(), Hex.FromRowCol(5, 2)),
+                UnitState.Spawn(5, 1, Escort(), Hex.FromRowCol(5, 4)),
             };
             var r = new Battle(units, seed: (ulong)(i * 1009 + j * 31 + 7)).Run();
             if (r.EndTick >= Battle.SafetyCapTick) res.CapHits++;
