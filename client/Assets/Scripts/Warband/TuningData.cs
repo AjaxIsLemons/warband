@@ -183,6 +183,12 @@ public class CameraTune
     /// caps how far it can be narrowed is the world-space kill feed's horizontal budget
     /// (see Design/sim-render-audit.md §3).</summary>
     [Range(15f, 75f)] public float fov = 60f;
+    /// <summary>Pulls the camera's look-at from board center toward the near (player) edge, as a
+    /// fraction of the near half-span. At high pitch the near half of the board projects much
+    /// taller than the far half, so aiming at true center leaves the top of the frame empty while
+    /// the front rank clips the bottom — distance can trade the two but never center them. 0 = aim
+    /// at center (pre-8×8 behavior).</summary>
+    [Range(-1f, 1f)] public float aimBias = 0f;
     public Color background = new Color(0.055f, 0.06f, 0.08f);
 }
 

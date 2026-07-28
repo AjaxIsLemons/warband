@@ -3089,7 +3089,8 @@ public class ReplayPlayer : MonoBehaviour
         float span = Mathf.Max(Mathf.Abs(max.x - min.x), Mathf.Abs(max.z - min.z));
         var offset = Quaternion.Euler(_data.camera.pitch, _data.camera.yaw, 0f) * Vector3.back * (span * _data.camera.distance);
         cam.transform.position = center + offset;
-        cam.transform.LookAt(center);
+        var horiz = new Vector3(offset.x, 0f, offset.z).normalized;
+        cam.transform.LookAt(center + horiz * (_data.camera.aimBias * span * 0.5f));
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = _data.camera.background;
         // FOV is framing, so it belongs with the rest of the framing rather than in the scene file.
