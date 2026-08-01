@@ -2,6 +2,11 @@
 
 **Date:** 2026-07-24 · **Status:** partially superseded by ADR 0020 · **Participants:** Jake + Codex
 
+> **2026-07-29 pacing amendment (Jake + Codex):** beat one now runs Muster → starting Revision →
+> Wager → Deployment → Fight. There is no pre-fight Workbench visit and starting Sand remains 4.
+> The first Workbench visit follows the first victory, when the retained 4 Sand plus the fight
+> reward can support a meaningful build decision. Later planning access is unchanged.
+
 ## Context
 
 The first shell proved that Menu → Recruit → Map → Deploy → Fight → Shop could walk the run

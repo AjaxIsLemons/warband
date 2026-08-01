@@ -1,8 +1,13 @@
-# warband — pitch (v0.4, 2026-07-23)
+# warband — pitch (v0.5, 2026-07-28)
 
 **One line:** A PvE roguelike autobattler where you deep-spec an era-spanning warband on a
 hex battlefield, assemble interactions that feel illegal, conquer authored asymmetrical
 encounters — then take the same broken build into endless until time finally kills it.
+
+**The hook:** You do not command attacks. Once per battle, you may stop a future you have watched,
+return to an earlier second, and **Revise one fact** — carry a champion's future Mana backward or
+recall an enemy to where the battle began. Then you watch the new timeline prove whether your
+change mattered.
 
 **The fantasy:** You are not assembling a fair team. You are finding a loophole in the Tower:
 a healer turned immortal frontline, a field engine that consumes the board, a firing line
@@ -39,9 +44,9 @@ The player answers by bending the shared Clock + Field systems harder than the e
   bespoke units and bosses; bespoke one-off simulation rules remain a last resort.
 
 ## Combat
-**The soul (ADR 0003): "A war for time and ground: your build bends the clocks and paints
-the battlefield — placement is the only order you give."**
-- Auto-resolves on hexes: **4 rows × 6 columns per side**. Warband scales **3 units → cap 6**
+**The soul (ADRs 0003 + 0028): "A war for time and ground: your build bends the clocks and paints
+the battlefield; placement is the ordinary order, and one watched timeline split is the exception."**
+- Auto-resolves on hexes: **4 rows × 8 columns per side**. Warband scales **3 units → cap 6**
   across the run (availability timing is reopened for the PvE structure). Flat board, zero
   predetermined terrain — all ground effects are unit-cast **glyphs** (fire fields, healing
   ground, summoned walls). Full grammar: combat-grammar.md.
@@ -50,6 +55,10 @@ the battlefield — placement is the only order you give."**
   reach backlines via abilities/passives — never via player micro. All skill lives between fights.
 - Escalating overtime clock guarantees resolution (beltwars finding: deterministic mirrors
   stalemate forever without a designed decider).
+- Each battle offers one **Revision** after the first observed second. It pauses only the replay,
+  rewinds in whole-second steps, changes one authored fact, and commits a deterministic branch.
+  An unused losing timeline holds immediately before its fatal beat for the same final choice.
+  Revision lineages evolve at Interludes, outside the Workbench economy.
 - Deterministic event→trigger→effect sim (circuit's vocabulary, ported to C#), seeded,
   order-independent; replay = re-simulation.
 

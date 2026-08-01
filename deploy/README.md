@@ -40,6 +40,7 @@ from the registered `Universal Render Pipeline/Lit` shader.
 
 | Command | Where | What |
 |---|---|---|
+| `make release` | homeserv | **All in one:** tests, rebuilds sim DLLs, waits for sync, builds in the open Windows Editor, publishes, verifies the public launcher manifest. |
 | `Warband/Build Preflight` | Unity menu | Cheap pre-check: scenes, shader stripping, StreamingAssets, content version. Seconds, not minutes. |
 | `Warband/Build Windows Client` | Unity menu | Registers shaders, builds, writes `release.json` **last and only on success**. |
 | `make ship-preflight` | homeserv | Pull + verify + stage. Publishes nothing. |
@@ -54,6 +55,20 @@ to ship. `make ship EXPECTED_VERSION=0.1.x` refuses a stale one.
 
 Publishing uses same-filesystem renames throughout, so a launcher polling mid-publish never sees a
 half-copied zip or a manifest pointing at one.
+
+### One-command release
+
+From the repository root on homeserv:
+
+```sh
+make release
+```
+
+This deliberately drives the **already-open** Warband Editor through its MCP relay. It does not
+launch a competing batch-mode Unity against the same `Library/`. The command takes the
+`unity-warband` lease, refuses Play Mode or a busy Editor, writes a request-scoped build status
+outside the synced repository, and publishes only after that exact request succeeds. Useful timeout
+overrides are `SYNC_TIMEOUT=300 make release` and `UNITY_BUILD_TIMEOUT=2400 make release`.
 
 ## Content fingerprint is checked at ship time
 

@@ -96,17 +96,23 @@ public class ScreenManager : MonoBehaviour
         if (_isTransitioning) return;
         _isTransitioning = true;
 
-        var ct = destroyCancellationToken;
-
-        if (_screenStack.TryPeek(out var current))
+        try
         {
-            await current.HideAsync(ct);
+            var ct = destroyCancellationToken;
+
+            if (_screenStack.TryPeek(out var current))
+            {
+                await current.HideAsync(ct);
+            }
+
+            _screenStack.Push(screen);
+            await screen.ShowAsync(ct);
         }
-
-        _screenStack.Push(screen);
-        await screen.ShowAsync(ct);
-
-        _isTransitioning = false;
+        finally
+        {
+            // Cancellation or a transition exception must not wedge navigation forever.
+            _isTransitioning = false;
+        }
     }
 
     /// <summary>Pop the current screen and reveal the one beneath it.</summary>
@@ -115,23 +121,33 @@ public class ScreenManager : MonoBehaviour
         if (_isTransitioning || _screenStack.Count <= 1) return;
         _isTransitioning = true;
 
-        var ct = destroyCancellationToken;
-        var leaving = _screenStack.Pop();
-        await leaving.HideAsync(ct);
-
-        if (_screenStack.TryPeek(out var revealed))
+        try
         {
-            await revealed.ShowAsync(ct);
-        }
+            var ct = destroyCancellationToken;
+            var leaving = _screenStack.Pop();
+            await leaving.HideAsync(ct);
 
-        _isTransitioning = false;
+            if (_screenStack.TryPeek(out var revealed))
+            {
+                await revealed.ShowAsync(ct);
+            }
+        }
+        finally
+        {
+            // Cancellation or a transition exception must not wedge navigation forever.
+            _isTransitioning = false;
+        }
     }
 }
 ```
 
 DESIGN HOOK: New screens = implement `IScreen` + UXML template; navigation via `ScreenManager.PushAsync(screen)` / `PopAsync()`. Screens know nothing about each other.
 
-GOTCHA: Screen stack must handle edge cases: pushing same screen twice, popping last screen, pushing during transition. The scaffold guards against transition overlap with `_isTransitioning`. To prevent duplicate pushes, check `_screenStack.Peek() != screen` before pushing.
+GOTCHA: Screen stack must handle edge cases: pushing the same screen twice, popping the last
+screen, and pushing during a transition. The scaffold guards against overlap and guarantees the
+guard resets. Production navigation must also define rollback/recovery if `HideAsync` or
+`ShowAsync` fails, because visibility and stack state can otherwise be partially changed. To
+prevent duplicate pushes, check `_screenStack.Peek() != screen` before pushing.
 
 ---
 
@@ -275,7 +291,11 @@ public class InventoryView : MonoBehaviour
 
 DESIGN HOOK: New data sources = new ViewModel adapting game system; View binds with zero knowledge of game internals. ViewModels are testable without Unity.
 
-GOTCHA: Don't use Unity's built-in data binding for gameplay UI -- it is designed for Editor tools and has overhead/limitations that make it unsuitable for runtime game UI. Use explicit C# event subscriptions for control and debuggability.
+GOTCHA: Unity 6 supports UI Toolkit data binding at runtime; it is not an Editor-only feature.
+Choose runtime binding when declarative synchronization and converter support simplify the view.
+Use explicit C# subscriptions when update cadence, allocation control, transition ordering, or
+debugging clarity makes the lifecycle easier to reason about. Measure hot HUD paths instead of
+rejecting either approach categorically.
 
 ---
 

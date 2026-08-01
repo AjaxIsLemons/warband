@@ -72,8 +72,6 @@ internal sealed class SkirmishScreenModel
     public string EncounterName = "";
     public string Pressure = "";
     public string Rule = "";
-    public string Feedback = "";
-    public bool FeedbackIsError;
     public string Instruction = "";
     public string PrimaryText = "";
     public bool PrimaryEnabled;
@@ -133,6 +131,7 @@ internal sealed class SkirmishScreen : IDisposable
     private readonly EventCallback<PointerDownEvent> _onBoardDown;
     private readonly EventCallback<PointerMoveEvent> _onBoardMove;
     private readonly EventCallback<PointerUpEvent> _onBoardUp;
+    private readonly EventCallback<PointerCancelEvent> _onBoardCancel;
 
     private readonly VisualElement _root;
     private readonly VisualElement _boardSurface;
@@ -141,7 +140,6 @@ internal sealed class SkirmishScreen : IDisposable
     private readonly Label _pressure;
     private readonly Label _rule;
     private readonly Label _instruction;
-    private readonly Label _feedback;
     private readonly VisualElement _drawer;
     private readonly VisualElement _drawerBody;
     private readonly Button _drawerToggle;
@@ -201,7 +199,8 @@ internal sealed class SkirmishScreen : IDisposable
         Action<SkirmishRosterDrop> onRosterDrop,
         EventCallback<PointerDownEvent> onBoardDown,
         EventCallback<PointerMoveEvent> onBoardMove,
-        EventCallback<PointerUpEvent> onBoardUp)
+        EventCallback<PointerUpEvent> onBoardUp,
+        EventCallback<PointerCancelEvent> onBoardCancel)
     {
         _onPrimary = onPrimary;
         _onHero = onHero;
@@ -215,6 +214,7 @@ internal sealed class SkirmishScreen : IDisposable
         _onBoardDown = onBoardDown;
         _onBoardMove = onBoardMove;
         _onBoardUp = onBoardUp;
+        _onBoardCancel = onBoardCancel;
 
         var tree = Resources.Load<VisualTreeAsset>("UI/Skirmish");
         // Keep the USS basename distinct from the UXML. Resources.Load<T> can otherwise return
@@ -239,7 +239,6 @@ internal sealed class SkirmishScreen : IDisposable
         _pressure = Required<Label>(_root, "pressure-label");
         _rule = Required<Label>(_root, "rule-label");
         _instruction = Required<Label>(_root, "instruction-label");
-        _feedback = Required<Label>(_root, "feedback-label");
         _drawer = Required<VisualElement>(_root, "muster-drawer");
         _drawerBody = Required<VisualElement>(_root, "drawer-body");
         _drawerToggle = Required<Button>(_root, "drawer-toggle");
@@ -280,6 +279,7 @@ internal sealed class SkirmishScreen : IDisposable
         _boardSurface.RegisterCallback(_onBoardDown);
         _boardSurface.RegisterCallback(_onBoardMove);
         _boardSurface.RegisterCallback(_onBoardUp);
+        _boardSurface.RegisterCallback(_onBoardCancel);
     }
 
     public void Render(SkirmishScreenModel model)
@@ -296,11 +296,6 @@ internal sealed class SkirmishScreen : IDisposable
         SetDisplayed(_drawer, model.State == SkirmishScreenState.Planning);
         SetDisplayed(_commitCluster, model.State != SkirmishScreenState.Playing);
         SetDisplayed(_resultPanel, model.State == SkirmishScreenState.Result);
-        SetDisplayed(_feedback, model.State == SkirmishScreenState.Planning &&
-                                !string.IsNullOrEmpty(model.Feedback));
-
-        _feedback.text = model.Feedback;
-        _feedback.EnableInClassList("feedback-label--error", model.FeedbackIsError);
 
         if (model.State == SkirmishScreenState.Planning)
             RenderPlanning(model);
@@ -333,6 +328,7 @@ internal sealed class SkirmishScreen : IDisposable
         _boardSurface.UnregisterCallback(_onBoardDown);
         _boardSurface.UnregisterCallback(_onBoardMove);
         _boardSurface.UnregisterCallback(_onBoardUp);
+        _boardSurface.UnregisterCallback(_onBoardCancel);
     }
 
     private void RenderPlanning(SkirmishScreenModel model)

@@ -3,7 +3,7 @@
  *
  * Palette and panel treatment are lifted from SkirmishStyles.uss on purpose — the shell and the
  * Planning screen must read as one product, not two apps bolted together. Anything already
- * defined there (.panel, .eyebrow, .body-copy, .public-info-pill, .feedback-label) is REUSED and
+ * defined there (.panel, .eyebrow, .body-copy, .public-info-pill) is REUSED and
  * deliberately not redefined here.
  *
  * Layering: tokens -> layout -> type -> controls -> components. Views may only use class names;
@@ -31,6 +31,8 @@
     flex-direction: column;
 }
 
+/* ---- First Draft: the run's temporal law -------------------------------- */
+
 .topbar {
     flex-direction: row;
     align-items: center;
@@ -50,108 +52,6 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-}
-
-/* ---- opening draft -------------------------------------------------------
- * This is a full-screen decision, not an overlay on the battlefield. The
- * portraits establish identity; the rest of the surface exists to compare
- * five champions comfortably at normal desktop distance.
- */
-
-.recruit-screen {
-    background-color: rgb(7, 11, 17);
-}
-
-.recruit-header {
-    min-height: 154px;
-    padding-left: 54px;
-    padding-right: 54px;
-    padding-top: 30px;
-    padding-bottom: 24px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(83, 103, 133, 0.46);
-    background-color: rgba(10, 15, 23, 0.99);
-}
-
-.recruit-header__titles {
-    flex-grow: 1;
-    min-width: 0;
-}
-
-.recruit-screen .shell-title {
-    margin-bottom: 7px;
-    font-size: 44px;
-    letter-spacing: 6px;
-}
-
-.recruit-screen .shell-subtitle {
-    margin-bottom: 0;
-    color: rgb(182, 195, 214);
-    font-size: 17px;
-}
-
-.recruit-header__controls {
-    flex-direction: row;
-    align-items: center;
-    margin-left: 30px;
-}
-
-.recruit-seed {
-    margin-right: 8px;
-    font-size: 11px;
-}
-
-.recruit-reroll {
-    min-height: 44px;
-    margin-right: 14px;
-}
-
-.recruit-progress {
-    min-width: 132px;
-    min-height: 58px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-right: 0;
-    padding-left: 18px;
-    padding-right: 18px;
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(91, 117, 153, 0.7);
-    border-right-color: rgba(91, 117, 153, 0.7);
-    border-top-color: rgba(91, 117, 153, 0.7);
-    border-bottom-color: rgba(91, 117, 153, 0.7);
-}
-
-.recruit-progress .stat-chip__label {
-    margin-right: 0;
-    font-size: 10px;
-}
-
-.recruit-progress .stat-chip__value {
-    margin-top: 2px;
-    font-size: 19px;
-}
-
-.recruit-screen--ready .recruit-progress {
-    background-color: rgba(26, 78, 55, 0.96);
-    border-left-color: rgb(100, 215, 150);
-    border-right-color: rgb(100, 215, 150);
-    border-top-color: rgb(100, 215, 150);
-    border-bottom-color: rgb(100, 215, 150);
-}
-
-.recruit-card-grid {
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    align-items: center;
-    padding-left: 46px;
-    padding-right: 46px;
-    padding-top: 24px;
-    padding-bottom: 24px;
-    background-color: rgb(7, 11, 17);
 }
 
 /* In-game hover/focus disclosure. It is intentionally pointer-transparent:
@@ -254,955 +154,15 @@
     white-space: normal;
 }
 
-.recruit-footer {
-    min-height: 112px;
-    padding-left: 54px;
-    padding-right: 54px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    border-top-width: 1px;
-    border-top-color: rgba(83, 103, 133, 0.46);
-    background-color: rgba(10, 15, 23, 0.99);
-}
-
-.recruit-footer__hint {
-    flex-grow: 1;
-    color: rgb(170, 185, 207);
-    font-size: 15px;
-    white-space: normal;
-}
-
-.recruit-begin {
-    min-width: 280px;
-    min-height: 58px;
-    margin-left: 28px;
-    font-size: 17px;
-}
-
-.recruit-screen--ready .recruit-begin {
-    background-color: rgb(47, 112, 189);
-    border-left-color: rgb(145, 194, 250);
-    border-right-color: rgb(145, 194, 250);
-    border-top-color: rgb(145, 194, 250);
-    border-bottom-color: rgb(145, 194, 250);
-}
-
-/* ---- Muster v2: dedicated opening-draft grammar ---------------------------
- * The starter choice is five equal, direct-select cards. Dense/exact language
- * is progressive disclosure inside the portrait; the card face never grows.
- */
-
-.recruit-screen {
-    background-color: rgb(6, 9, 14);
-}
-
-.recruit-header {
-    min-height: 122px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding-left: 48px;
-    padding-right: 48px;
-    padding-top: 22px;
-    padding-bottom: 18px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(102, 122, 151, 0.34);
-    background-color: rgba(9, 13, 20, 0.99);
-}
-
-.recruit-header .shell-title {
-    margin-bottom: 5px;
-    font-size: 42px;
-    letter-spacing: 6px;
-    -unity-text-align: middle-center;
-}
-
-.recruit-header .shell-subtitle {
-    margin-bottom: 0;
-    color: rgb(174, 189, 210);
-    font-size: 16px;
-    -unity-text-align: middle-center;
-}
-
-.recruit-card-grid {
-    flex-grow: 1;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
-    padding-left: 42px;
-    padding-right: 42px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    background-color: rgb(6, 9, 14);
-}
-
 .warband-glyph {
     width: 20px;
     height: 20px;
-    flex-shrink: 0;
 }
 
-.muster-card {
-    position: relative;
-    flex-grow: 1;
-    flex-basis: 0;
-    min-width: 0;
-    max-width: 360px;
-    height: 100%;
-    max-height: 748px;
-    margin-left: 6px;
-    margin-right: 6px;
-    overflow: hidden;
-    background-color: rgb(12, 18, 27);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(91, 112, 143, 0.62);
-    border-right-color: rgba(91, 112, 143, 0.62);
-    border-top-color: rgba(91, 112, 143, 0.62);
-    border-bottom-color: rgba(91, 112, 143, 0.62);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    transition-property: scale, translate, border-left-color, border-right-color,
-        border-top-color, border-bottom-color, background-color;
-    transition-duration: 90ms;
-    transition-timing-function: ease-out;
-}
-
-.muster-card:hover,
-.muster-card:focus {
-    translate: 0 -3px;
-    scale: 1.012 1.012;
-    border-left-color: rgba(151, 181, 222, 0.94);
-    border-right-color: rgba(151, 181, 222, 0.94);
-    border-top-color: rgba(151, 181, 222, 0.94);
-    border-bottom-color: rgba(151, 181, 222, 0.94);
-}
-
-.muster-card--selected {
-    background-color: rgb(16, 27, 37);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(112, 202, 160);
-    border-right-color: rgb(112, 202, 160);
-    border-top-color: rgb(112, 202, 160);
-    border-bottom-color: rgb(112, 202, 160);
-}
-
-.muster-card--blocked {
-    border-left-color: rgba(85, 96, 113, 0.62);
-    border-right-color: rgba(85, 96, 113, 0.62);
-    border-top-color: rgba(85, 96, 113, 0.62);
-    border-bottom-color: rgba(85, 96, 113, 0.62);
-}
-
-.muster-card__portrait {
-    position: relative;
-    flex-grow: 11;
-    flex-basis: 0;
-    min-height: 280px;
-    overflow: hidden;
-    -unity-background-scale-mode: scale-and-crop;
-    background-color: rgb(20, 28, 40);
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(94, 117, 151, 0.55);
-}
-
-.muster-card__portrait-fallback {
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    color: rgba(205, 216, 232, 0.52);
-    font-size: 52px;
-    -unity-font-style: bold;
-    letter-spacing: 4px;
-    -unity-text-align: middle-center;
-}
-
-.muster-card__role-badge {
-    position: absolute;
-    left: 13px;
-    top: 13px;
-    min-height: 31px;
-    flex-direction: row;
-    align-items: center;
-    padding-left: 9px;
-    padding-right: 11px;
-    background-color: rgba(7, 11, 17, 0.90);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(166, 187, 215, 0.60);
-    border-right-color: rgba(166, 187, 215, 0.60);
-    border-top-color: rgba(166, 187, 215, 0.60);
-    border-bottom-color: rgba(166, 187, 215, 0.60);
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-    transition-property: opacity;
-    transition-duration: 70ms;
-    transition-timing-function: ease-out;
-}
-
-.muster-card__portrait--lens .muster-card__role-badge {
-    opacity: 0;
-}
-
-.muster-card__role-icon {
-    width: 17px;
-    height: 17px;
-    margin-right: 7px;
-}
-
-.muster-card__role-badge-text {
-    color: rgb(224, 232, 243);
-    font-size: 11px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
-.muster-card__info {
-    flex-grow: 9;
-    flex-basis: 0;
-    min-height: 295px;
-    padding-left: 13px;
-    padding-right: 13px;
-    padding-top: 9px;
-    padding-bottom: 8px;
-    background-color: rgba(11, 17, 26, 0.99);
-}
-
-.muster-card__identity {
-    min-height: 34px;
-    align-items: center;
-    justify-content: center;
-}
-
-.muster-card__name {
-    max-width: 100%;
-    overflow: hidden;
-    color: rgb(241, 245, 251);
-    font-size: 24px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.muster-card__facts {
-    height: 64px;
-    flex-direction: row;
-    margin-top: 4px;
-    margin-bottom: 5px;
-    background-color: rgb(7, 11, 17);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(73, 93, 120, 0.78);
-    border-right-color: rgba(73, 93, 120, 0.78);
-    border-top-color: rgba(73, 93, 120, 0.78);
-    border-bottom-color: rgba(73, 93, 120, 0.78);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.muster-fact {
-    flex-grow: 1;
-    flex-basis: 0;
-    min-width: 0;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    padding-left: 3px;
-    padding-right: 3px;
-    border-right-width: 1px;
-    border-right-color: rgba(73, 93, 120, 0.62);
-    transition-property: background-color;
-    transition-duration: 90ms;
-}
-
-.muster-fact__primary,
-.muster-fact__secondary {
-    min-width: 0;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-}
-
-.muster-fact__secondary {
-    margin-left: 4px;
-}
-
-.muster-fact--reach {
-    flex-grow: 0.85;
-    border-right-width: 0;
-}
-
-.muster-fact--health {
-    flex-grow: 1;
-}
-
-.muster-fact--basic {
-    flex-grow: 1.35;
-}
-
-.muster-fact:hover {
-    background-color: rgba(45, 67, 94, 0.72);
-}
-
-.muster-fact__icon {
-    width: 19px;
-    height: 19px;
-    margin-right: 5px;
-}
-
-.muster-fact__value {
-    color: rgb(239, 244, 251);
-    font-size: 20px;
-    -unity-font-style: bold;
-}
-
-.muster-fact__secondary-icon {
-    width: 15px;
-    height: 15px;
-    margin-right: 2px;
-    opacity: 0.78;
-}
-
-.muster-fact__secondary-value {
-    color: rgb(180, 195, 216);
-    font-size: 12px;
-    -unity-font-style: bold;
-}
-
-.muster-rule {
-    min-height: 76px;
-    flex-grow: 1;
-    flex-basis: 0;
-    flex-direction: row;
-    align-items: center;
-    margin-top: 4px;
-    padding-left: 11px;
-    padding-right: 9px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    background-color: rgba(22, 31, 44, 0.94);
-    border-left-width: 3px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    transition-property: background-color;
-    transition-duration: 90ms;
-}
-
-.muster-rule:hover {
-    background-color: rgba(38, 51, 70, 0.98);
-}
-
-.muster-rule--signature {
-    border-left-color: rgb(230, 174, 72);
-}
-
-.muster-rule--passive {
-    border-left-color: rgb(91, 156, 224);
-}
-
-.muster-rule__icon {
-    width: 23px;
-    height: 23px;
-    margin-right: 9px;
-}
-
-.muster-rule__copy {
-    flex-grow: 1;
-    min-width: 0;
-}
-
-.muster-rule__meta {
-    min-width: 0;
-    flex-direction: row;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.muster-rule__name {
-    max-width: 100%;
-    overflow: hidden;
-    color: rgb(231, 237, 247);
-    font-size: 14px;
-    -unity-font-style: bold;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.muster-rule__keyword {
-    flex-shrink: 0;
-    flex-direction: row;
-    align-items: center;
-    margin-left: auto;
-    padding-left: 6px;
-    padding-right: 7px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    background-color: rgba(7, 11, 17, 0.82);
-    border-top-left-radius: 9px;
-    border-top-right-radius: 9px;
-    border-bottom-left-radius: 9px;
-    border-bottom-right-radius: 9px;
-}
-
-.muster-rule__keyword-icon {
-    width: 13px;
-    height: 13px;
-    margin-right: 4px;
-}
-
-.muster-rule__keyword-text {
-    color: rgb(187, 203, 225);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
-.muster-rule__context {
-    max-width: 78px;
-    margin-left: 7px;
-    color: rgb(138, 156, 181);
-    font-size: 9px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-    white-space: normal;
-    -unity-text-align: middle-right;
-}
-
-.muster-lens {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    visibility: hidden;
-    opacity: 0;
-    padding-left: 18px;
-    padding-right: 18px;
-    padding-top: 18px;
-    padding-bottom: 16px;
-    background-color: rgba(6, 10, 16, 0.965);
-    transition-property: opacity;
-    transition-duration: 90ms;
-    transition-timing-function: ease-out;
-}
-
-.muster-lens--visible {
-    visibility: visible;
-    opacity: 1;
-}
-
-.muster-lens__eyebrow {
-    color: rgb(222, 174, 83);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 2px;
-}
-
-.muster-lens__title {
-    margin-top: 4px;
-    color: rgb(242, 246, 252);
-    font-size: 22px;
-    -unity-font-style: bold;
-    white-space: normal;
-}
-
-.muster-lens__context {
-    margin-top: 4px;
-    color: rgb(126, 174, 225);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-    white-space: normal;
-}
-
-.muster-lens__body {
-    flex-shrink: 1;
-    margin-top: 10px;
-    overflow: hidden;
-    color: rgb(211, 220, 233);
-    font-size: 12px;
-    white-space: normal;
-}
-
-.muster-lens__keywords {
-    flex-shrink: 0;
-    margin-top: 8px;
-}
-
-.muster-lens__keyword {
-    flex-direction: row;
-    align-items: flex-start;
-    margin-top: 4px;
-}
-
-.muster-lens__keyword-icon {
-    width: 14px;
-    height: 14px;
-    margin-right: 6px;
-}
-
-.muster-lens__keyword-copy {
-    flex-grow: 1;
-    min-width: 0;
-    color: rgb(155, 177, 207);
-    font-size: 10px;
-    white-space: normal;
-}
-
-.muster-card__selection {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    min-height: 30px;
-    flex-direction: row;
-    align-items: center;
-    padding-left: 8px;
-    padding-right: 10px;
-    background-color: rgb(31, 98, 69);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(117, 224, 168);
-    border-right-color: rgb(117, 224, 168);
-    border-top-color: rgb(117, 224, 168);
-    border-bottom-color: rgb(117, 224, 168);
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-}
-
-.muster-card__selection-icon {
-    width: 15px;
-    height: 15px;
-    margin-right: 5px;
-}
-
-.muster-card__selection-label {
-    color: rgb(229, 249, 238);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
-.recruit-footer {
-    min-height: 128px;
-    flex-direction: row;
-    align-items: center;
-    padding-left: 48px;
-    padding-right: 48px;
-    padding-top: 14px;
-    padding-bottom: 14px;
-    border-top-width: 1px;
-    border-top-color: rgba(102, 122, 151, 0.36);
-    background-color: rgba(9, 13, 20, 0.99);
-}
-
-.recruit-party {
-    min-width: 270px;
-    flex-direction: column;
-}
-
-.recruit-party__title {
-    margin-bottom: 5px;
-    color: rgb(143, 163, 190);
-    font-size: 10px;
-    -unity-font-style: bold;
-    letter-spacing: 2px;
-}
-
-.recruit-party__slots {
-    flex-direction: row;
-}
-
-.muster-slot {
-    position: relative;
-    width: 62px;
-    height: 62px;
-    margin-right: 8px;
-    overflow: hidden;
-    background-color: rgb(7, 11, 17);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(82, 102, 130, 0.72);
-    border-right-color: rgba(82, 102, 130, 0.72);
-    border-top-color: rgba(82, 102, 130, 0.72);
-    border-bottom-color: rgba(82, 102, 130, 0.72);
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
-    border-bottom-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-}
-
-.muster-slot--filled {
-    border-left-color: rgb(100, 201, 149);
-    border-right-color: rgb(100, 201, 149);
-    border-top-color: rgb(100, 201, 149);
-    border-bottom-color: rgb(100, 201, 149);
-}
-
-.muster-slot__portrait {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    -unity-background-scale-mode: scale-and-crop;
-}
-
-.muster-slot__fallback {
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    color: rgb(202, 216, 233);
-    font-size: 18px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-}
-
-.muster-slot__number {
-    position: absolute;
-    right: 4px;
-    bottom: 3px;
-    min-width: 17px;
-    min-height: 17px;
-    color: rgb(173, 189, 211);
-    font-size: 10px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    background-color: rgba(5, 8, 13, 0.88);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
-
-.recruit-footer__copy {
-    flex-grow: 1;
-    min-width: 0;
-    margin-left: 18px;
-}
-
-.recruit-footer__hint {
-    color: rgb(171, 186, 207);
-    font-size: 14px;
-    white-space: normal;
-}
-
-.recruit-feedback {
-    margin-top: 4px;
-    color: rgb(223, 187, 112);
-    font-size: 12px;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-}
-
-.recruit-feedback--error {
-    color: rgb(238, 130, 119);
-}
-
-.recruit-begin {
-    position: relative;
-    min-width: 270px;
-    min-height: 58px;
-    overflow: hidden;
-    margin-left: 24px;
-    font-size: 16px;
-}
-
-.recruit-begin__sweep {
-    position: absolute;
-    left: -90px;
-    top: -20px;
-    width: 52px;
-    height: 110px;
-    opacity: 0;
-    background-color: rgba(255, 218, 125, 0.50);
-    transition-property: translate, opacity;
-    transition-duration: 220ms;
-    transition-timing-function: ease-out;
-}
-
-.recruit-screen--ready-sweep .recruit-begin__sweep {
-    translate: 390px 0;
-    opacity: 0.80;
-}
-
-.recruit-screen--ready .recruit-begin {
-    background-color: rgb(142, 102, 35);
-    border-left-color: rgb(242, 202, 112);
-    border-right-color: rgb(242, 202, 112);
-    border-top-color: rgb(242, 202, 112);
-    border-bottom-color: rgb(242, 202, 112);
-}
-
-.motion--reduced .muster-card:hover,
-.motion--reduced .muster-card:focus {
-    translate: 0 0;
-    scale: 1 1;
-}
-
-/* Unified decision-card language: Feature profile (opening Muster). */
-.recruit-screen {
-    --decision-health: rgb(218, 100, 103);
-    --decision-power: rgb(235, 143, 81);
-    --decision-reach: rgb(104, 165, 231);
-    --decision-cadence: rgb(172, 132, 229);
-    --decision-mana: rgb(77, 205, 207);
-}
-
-.muster-card.decision-card--feature {
-    background-color: rgb(10, 16, 25);
-    border-bottom-width: 4px;
-    border-bottom-color: rgba(74, 96, 125, 0.88);
-}
-
-.muster-card.decision-card--feature:hover,
-.muster-card.decision-card--feature:focus {
-    background-color: rgb(14, 23, 35);
-}
-
-.muster-card__facts {
-    height: 64px;
-    min-height: 64px;
-    background-color: rgb(6, 10, 16);
-}
-
-.muster-fact {
-    position: relative;
-    border-top-width: 3px;
-    border-top-color: rgba(116, 139, 171, 0.45);
-}
-
-.muster-fact.decision-fact--health {
-    border-top-color: var(--decision-health);
-    background-color: rgba(72, 25, 30, 0.34);
-}
-
-.muster-fact.decision-fact--power {
-    border-top-color: var(--decision-power);
-    background-color: rgba(77, 41, 21, 0.30);
-}
-
-.muster-fact.decision-fact--healing {
-    border-top-color: rgb(101, 201, 154);
-    background-color: rgba(24, 67, 48, 0.32);
-}
-
-.muster-fact.decision-fact--reach {
-    border-top-color: var(--decision-reach);
-    background-color: rgba(25, 48, 77, 0.32);
-}
-
-.muster-fact.decision-fact--health .muster-fact__value {
-    color: rgb(244, 153, 155);
-}
-
-.muster-fact.decision-fact--power .muster-fact__value {
-    color: rgb(249, 177, 117);
-}
-
-.muster-fact.decision-fact--healing .muster-fact__value {
-    color: rgb(139, 224, 179);
-}
-
-.muster-fact.decision-fact--reach .muster-fact__value {
-    color: rgb(151, 197, 246);
-}
-
-.muster-fact--basic .muster-fact__secondary-value {
-    color: rgb(202, 177, 245);
-}
-
-.muster-rule {
-    min-height: 80px;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: rgba(18, 28, 41, 0.98);
-}
-
-.muster-rule__type {
-    flex-grow: 1;
-    min-width: 0;
-    margin-bottom: 0;
-    color: rgb(144, 168, 202);
-    font-size: 9px;
-    -unity-font-style: bold;
-    letter-spacing: 1.7px;
-}
-
-.muster-rule--signature .muster-rule__type {
-    color: rgb(240, 190, 91);
-}
-
-.muster-rule--passive .muster-rule__type {
-    color: rgb(126, 183, 239);
-}
-
-.muster-rule__name {
-    font-size: 15px;
-}
-
-.muster-card--compact .muster-fact--basic {
-    flex-direction: column;
-}
-
-.muster-card--compact .muster-fact--basic .muster-fact__secondary {
-    margin-left: 0;
-    margin-top: 1px;
-}
-
-/* Five choices must remain simultaneously comparable at the 1024px floor. At that width the
- * card changes composition instead of globally shrinking: outer gutters relax, the redundant
- * rule-kind label yields to the authored keyword token, and the three fact cells use a compact
- * icon/value rhythm. The exact rule kind remains in the tooltip and is still communicated by
- * the signature/passive accent treatment. */
-.layout--narrow .recruit-card-grid {
-    padding-left: 24px;
-    padding-right: 24px;
-}
-
-.layout--narrow .muster-card {
-    margin-left: 4px;
-    margin-right: 4px;
-}
-
-.muster-card--compact .muster-card__portrait {
-    min-height: 250px;
-}
-
-.muster-card--compact .muster-card__info {
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.muster-card--compact .muster-fact {
-    padding-left: 2px;
-    padding-right: 2px;
-}
-
-.muster-card--compact .muster-fact__icon {
-    width: 15px;
-    height: 15px;
-    margin-right: 3px;
-}
-
-.muster-card--compact .muster-fact__value {
-    font-size: 18px;
-}
-
-.muster-card--compact .muster-fact__secondary-icon {
-    width: 12px;
-    height: 12px;
-}
-
-.muster-card--compact .muster-fact__secondary-value {
-    font-size: 11px;
-}
-
-.muster-card--compact .muster-rule {
-    padding-left: 7px;
-    padding-right: 6px;
-}
-
-.muster-card--compact .muster-rule__icon {
-    width: 18px;
-    height: 18px;
-    margin-right: 6px;
-}
-
-.muster-card--compact .muster-rule__type {
-    display: none;
-}
-
-.muster-card--compact .muster-rule__keyword {
-    margin-left: 0;
-}
-
-.muster-card--compact .muster-rule__name {
-    font-size: 13px;
-}
-
-.muster-rule__cost {
-    width: 66px;
-    min-width: 66px;
-    min-height: 48px;
-    margin-left: 7px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(12, 54, 61, 0.70);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(77, 205, 207, 0.68);
-    border-right-color: rgba(77, 205, 207, 0.68);
-    border-top-color: rgba(77, 205, 207, 0.68);
-    border-bottom-color: rgba(77, 205, 207, 0.68);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.muster-card--compact .muster-rule__cost {
-    width: 48px;
-    min-width: 48px;
-    min-height: 44px;
-    margin-left: 5px;
-}
-
-.muster-rule__cost-icon {
-    width: 16px;
-    height: 16px;
-}
-
-.muster-rule__cost-value {
-    margin-top: 1px;
-    color: rgb(132, 234, 231);
-    font-size: 18px;
-    -unity-font-style: bold;
-}
-
-.muster-rule__context {
-    color: rgb(151, 171, 198);
-    font-size: 10px;
-}
-
-.muster-lens__body {
-    font-size: 14px;
-}
-
-.muster-lens__keyword-copy {
-    font-size: 11px;
-}
-
-.motion--reduced .recruit-begin__sweep {
-    display: none;
-}
+/* NOTE (2026-07-28, workbench-frame session): the .layout--phone overrides for the
+ * revision-combat overlay (and a lone .revision-clock__outer refinement) were lost in
+ * a stylesheet-editing accident this session; their base desktop rules are intact.
+ * Re-tune the phone trims at the next phone-layout pass. */
 
 .stat-row {
     flex-direction: row;
@@ -1408,9 +368,17 @@
     color: rgb(232, 238, 248);
 }
 
-.stat-chip--good .stat-chip__value { color: rgb(126, 214, 150); }
-.stat-chip--bad  .stat-chip__value { color: rgb(230, 120, 108); }
-.stat-chip--warn .stat-chip__value { color: rgb(232, 186, 108); }
+.stat-chip--good .stat-chip__value {
+    color: rgb(126, 214, 150);
+}
+
+.stat-chip--bad  .stat-chip__value {
+    color: rgb(230, 120, 108);
+}
+
+.stat-chip--warn .stat-chip__value {
+    color: rgb(232, 186, 108);
+}
 
 .trait-pill {
     font-size: 10px;
@@ -1578,8 +546,13 @@
     margin-bottom: 8px;
 }
 
-.outcome--victory { color: rgb(238, 200, 116); }
-.outcome--defeat  { color: rgb(226, 108, 96); }
+.outcome--victory {
+    color: rgb(238, 200, 116);
+}
+
+.outcome--defeat {
+    color: rgb(226, 108, 96);
+}
 
 /* ---- fight overlay --------------------------------------------------------
  * The board is the screen during a fight, so this is intentionally almost
@@ -1588,20 +561,637 @@
 
 .fight-overlay {
     position: absolute;
-    right: 22px;
-    bottom: 22px;
-    flex-direction: row;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
-/* ---- inherited toast, re-anchored -----------------------------------------
- * `.feedback-label` is shared with the Planning screen, where `bottom: 374px`
- * clears the Muster Drawer. No shell screen has that drawer, so the same offset
- * would strand the message mid-screen. Override the anchor ONLY — the accent
- * border and colours stay shared, which is the point of reusing the class.
- */
+/* ---- Revision: held Hour + branch instrument ----------------------------- */
 
-.shell-screen .feedback-label {
-    bottom: 92px;
+.revision-combat {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.revision-combat__instrument {
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    width: 760px;
+    translate: -380px 0;
+    align-items: center;
+}
+
+.revision-combat--selecting.revision-combat--dock-top .revision-combat__instrument {
+    top: 20px;
+    bottom: auto;
+}
+
+.revision-ceremony__backdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgb(3, 5, 10);
+}
+
+.revision-clock {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 310px;
+    height: 310px;
+    margin-left: -155px;
+    margin-top: -155px;
+    align-items: center;
+    justify-content: center;
+}
+
+.revision-clock__outer,
+.revision-clock__inner,
+.revision-clock__pulse {
+    position: absolute;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(224, 198, 139, 0.78);
+    border-right-color: rgba(224, 198, 139, 0.78);
+    border-top-color: rgba(224, 198, 139, 0.78);
+    border-bottom-color: rgba(224, 198, 139, 0.78);
+    border-top-left-radius: 999px;
+    border-top-right-radius: 999px;
+    border-bottom-left-radius: 999px;
+    border-bottom-right-radius: 999px;
+}
+
+.revision-clock__inner {
+    width: 238px;
+    height: 238px;
+    border-left-color: rgba(224, 198, 139, 0.34);
+    border-right-color: rgba(224, 198, 139, 0.34);
+    border-top-color: rgba(224, 198, 139, 0.34);
+    border-bottom-color: rgba(224, 198, 139, 0.34);
+}
+.revision-clock__pulse {
+    width: 276px;
+    height: 276px;
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-left-color: rgba(244, 213, 145, 0.82);
+    border-right-color: rgba(244, 213, 145, 0.82);
+    border-top-color: rgba(244, 213, 145, 0.82);
+    border-bottom-color: rgba(244, 213, 145, 0.82);
+}
+
+.revision-clock__hand {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background-color: rgb(235, 207, 146);
+}
+
+.revision-clock__hand--long {
+    width: 3px;
+    height: 112px;
+    margin-left: -1px;
+    margin-top: -112px;
+}
+
+.revision-clock__hand--short {
+    width: 78px;
+    height: 3px;
+    margin-top: -1px;
+}
+
+.revision-ceremony__copy {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    margin-top: 182px;
+    align-items: center;
+}
+
+.revision-ceremony__title {
+    color: rgb(243, 218, 164);
+    font-size: 34px;
+    -unity-font-style: bold;
+    letter-spacing: 9px;
+    -unity-text-align: middle-center;
+    text-shadow: 0 0 18px rgba(240, 203, 130, 0.55);
+}
+
+.revision-ceremony__subtitle {
+    margin-top: 8px;
+    color: rgb(169, 184, 202);
+    font-size: 12px;
+    letter-spacing: 4px;
+    -unity-text-align: middle-center;
+}
+
+.revision-receipt {
+    width: 700px;
+    min-height: 290px;
+    padding-left: 44px;
+    padding-right: 44px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(7, 11, 18, 0.97);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(227, 198, 132);
+    border-right-color: rgb(227, 198, 132);
+    border-top-color: rgb(227, 198, 132);
+    border-bottom-color: rgb(227, 198, 132);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.revision-receipt__eyebrow {
+    color: rgb(153, 174, 199);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 5px;
+}
+
+.revision-receipt__title {
+    margin-top: 7px;
+    color: rgb(247, 223, 168);
+    font-size: 36px;
+    -unity-font-style: bold;
+    letter-spacing: 7px;
+    -unity-text-align: middle-center;
+}
+
+.revision-receipt__subtitle {
+    margin-top: 4px;
+    color: rgb(126, 167, 202);
+    font-size: 11px;
+    letter-spacing: 3px;
+}
+
+.revision-receipt__lines {
+    width: 100%;
+    margin-top: 22px;
+}
+
+.revision-receipt__line {
+    min-height: 31px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: rgb(231, 238, 247);
+    font-size: 15px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+    border-top-width: 1px;
+    border-top-color: rgba(111, 142, 177, 0.3);
+}
+
+.revision-combat__ready {
+    min-width: 390px;
+    min-height: 66px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 18px;
+    padding-right: 8px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: rgba(7, 12, 20, 0.91);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(116, 184, 231, 0.72);
+    border-right-color: rgba(116, 184, 231, 0.72);
+    border-top-color: rgba(116, 184, 231, 0.72);
+    border-bottom-color: rgba(116, 184, 231, 0.72);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.revision-combat__ready-copy {
+    margin-right: 18px;
+}
+
+.revision-combat__name {
+    color: rgb(226, 237, 249);
+    font-size: 15px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.revision-combat__charge {
+    margin-top: 2px;
+    color: rgb(118, 160, 202);
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.revision-combat__revise,
+.revision-combat__confirm {
+    min-height: 44px;
+    padding-left: 18px;
+    padding-right: 18px;
+    color: rgb(239, 247, 255);
+    background-color: rgb(32, 95, 139);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(126, 204, 247);
+    border-right-color: rgb(126, 204, 247);
+    border-top-color: rgb(126, 204, 247);
+    border-bottom-color: rgb(126, 204, 247);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+/* =========================================================================
+   The Hourstone — approved 2026-07-29 (ui-review revision-time-toy, sample
+   b-r3-*). The docked two-column draft panel, the landmark rail, the price
+   row and the readout are gone: the board is the record, so the only chrome
+   is a stone you turn and the ability drawn on the unit it happens to.
+   ========================================================================= */
+
+.revision-dial {
+    position: absolute;
+    left: 50%;
+    bottom: -148px;
+    margin-left: -194px;
+    width: 388px;
+    height: 388px;
+    border-radius: 194px;
+    background-color: rgba(6, 11, 18, 0.94);
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-left-color: rgba(150, 120, 70, 0.6);
+    border-right-color: rgba(150, 120, 70, 0.6);
+    border-top-color: rgba(233, 181, 95, 0.85);
+    border-bottom-color: rgba(150, 120, 70, 0.6);
+}
+
+.revision-combat--final .revision-dial {
+    border-top-color: rgb(240, 226, 200);
+    border-left-color: rgba(196, 176, 140, 0.7);
+    border-right-color: rgba(196, 176, 140, 0.7);
+}
+
+.revision-dial__fill,
+.revision-dial__notches {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* UI Toolkit has no conic gradient, so the hold fill is a run of beads that light in order. */
+.revision-dial__sand {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    margin-top: -2px;
+    border-radius: 2px;
+    background-color: rgba(233, 181, 95, 0.20);
+}
+
+.revision-dial__sand--lit {
+    background-color: rgb(255, 231, 188);
+}
+
+.revision-dial__notch {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    margin-left: -27px;
+    margin-top: -27px;
+    min-width: 0;
+    min-height: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* The visible mark. It is deliberately small; the 54px parent is what you actually click. */
+.revision-dial__bead {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background-color: rgb(216, 232, 248);
+}
+
+.revision-dial__notch--selected .revision-dial__bead {
+    background-color: rgb(255, 230, 176);
+}
+
+.revision-dial__notch:hover .revision-dial__bead {
+    background-color: rgb(255, 246, 222);
+}
+
+.revision-dial__notch-label {
+    position: absolute;
+    left: 50%;
+    top: 16px;
+    width: 38px;
+    margin-left: -19px;
+    -unity-text-align: upper-center;
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    color: rgb(198, 168, 118);
+}
+
+.revision-dial__notch--selected .revision-dial__notch-label {
+    color: rgb(255, 233, 188);
+    font-size: 15px;
+}
+
+.revision-dial__knob {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    margin-left: -20px;
+    margin-top: -20px;
+    border-radius: 20px;
+    background-color: rgb(233, 181, 95);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(255, 246, 222, 0.9);
+    border-right-color: rgba(255, 246, 222, 0.9);
+    border-top-color: rgba(255, 246, 222, 0.9);
+    border-bottom-color: rgba(255, 246, 222, 0.9);
+}
+
+.revision-dial--holding .revision-dial__knob {
+    background-color: rgb(255, 240, 205);
+}
+
+.revision-dial__lineage {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -34px;
+    -unity-text-align: upper-center;
+    font-size: 16px;
+    -unity-font-style: bold;
+    letter-spacing: 5px;
+    color: rgb(233, 181, 95);
+}
+
+.revision-dial__eye {
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    width: 275px;
+    margin-left: -138px;
+    align-items: center;
+}
+
+.revision-dial__number {
+    font-size: 78px;
+    -unity-font-style: bold;
+    letter-spacing: -4px;
+    color: rgb(255, 233, 188);
+}
+
+.revision-dial__sub {
+    margin-top: 4px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 4px;
+    color: rgb(217, 190, 138);
+}
+
+.revision-dial__hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 254px;
+    -unity-text-align: upper-center;
+    font-size: 16px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    color: rgb(198, 168, 118);
+}
+
+.revision-combat--final .revision-dial__hint {
+    color: rgb(240, 214, 160);
+}
+
+/* ---- the ability, drawn on the unit it happens to ---- */
+
+.revision-cluster {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.revision-cluster__carry {
+    position: absolute;
+    width: 262px;
+    margin-left: -131px;
+    -unity-text-align: upper-center;
+    font-size: 54px;
+    -unity-font-style: bold;
+    letter-spacing: -2px;
+    color: rgb(143, 227, 255);
+}
+
+.revision-cluster__orb {
+    position: absolute;
+    width: 82px;
+    height: 82px;
+    margin-left: -41px;
+    margin-top: -41px;
+    border-radius: 41px;
+    background-color: rgb(95, 208, 255);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: rgba(205, 242, 255, 0.95);
+    border-right-color: rgba(205, 242, 255, 0.95);
+    border-top-color: rgba(205, 242, 255, 0.95);
+    border-bottom-color: rgba(205, 242, 255, 0.95);
+    align-items: center;
+    justify-content: center;
+}
+
+.revision-cluster__orb-value {
+    font-size: 25px;
+    -unity-font-style: bold;
+    color: rgb(6, 34, 47);
+}
+
+.revision-cluster__orb-label {
+    position: absolute;
+    width: 188px;
+    margin-left: -94px;
+    -unity-text-align: upper-center;
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    color: rgb(191, 231, 255);
+}
+
+/* Mana caps; the remainder becomes Shield. The ring breaking out of the orb IS that rule. */
+.revision-cluster__spill {
+    position: absolute;
+    width: 122px;
+    height: 122px;
+    margin-left: -61px;
+    margin-top: -61px;
+    border-radius: 61px;
+    border-left-width: 7px;
+    border-right-width: 7px;
+    border-top-width: 7px;
+    border-bottom-width: 7px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-top-color: rgb(246, 250, 255);
+    border-right-color: rgb(246, 250, 255);
+}
+
+.revision-cluster__spill-value {
+    position: absolute;
+    width: 150px;
+    margin-left: -12px;
+    font-size: 19px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    color: rgb(255, 255, 255);
+}
+
+.revision-cluster__tether {
+    position: absolute;
+    height: 5px;
+    border-radius: 2px;
+    background-color: rgba(255, 156, 140, 0.95);
+}
+
+.revision-cluster__home {
+    position: absolute;
+    width: 122px;
+    height: 61px;
+    margin-left: -61px;
+    margin-top: -31px;
+    border-radius: 61px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-left-color: rgba(255, 186, 172, 0.98);
+    border-right-color: rgba(255, 186, 172, 0.98);
+    border-top-color: rgba(255, 186, 172, 0.98);
+    border-bottom-color: rgba(255, 186, 172, 0.98);
+    align-items: center;
+    justify-content: center;
+}
+
+.revision-cluster__home-ghost {
+    width: 60px;
+    height: 48px;
+    border-radius: 30px;
+    background-color: rgba(255, 178, 164, 0.34);
+}
+
+.revision-cluster__disarm {
+    position: absolute;
+    width: 262px;
+    margin-left: -131px;
+    -unity-text-align: upper-center;
+    font-size: 65px;
+    -unity-font-style: bold;
+    letter-spacing: -2px;
+    color: rgb(255, 156, 140);
+}
+
+.revision-cluster__disarm-label {
+    position: absolute;
+    width: 262px;
+    margin-left: -131px;
+    -unity-text-align: upper-center;
+    font-size: 15px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    color: rgb(255, 211, 202);
+}
+
+
+.fight-skip,
+.fight-options {
+    position: absolute;
+    bottom: 22px;
+}
+
+.fight-skip {
+    right: 22px;
+}
+
+.fight-options {
+    right: 112px;
+}
+
+.layout--phone .revision-combat__instrument {
+    bottom: 8px;
+    width: 600px;
+    translate: -300px 0;
+}
+
+.layout--phone .revision-combat--selecting.revision-combat--dock-top .revision-combat__instrument {
+    top: 8px;
+    bottom: auto;
+}
+
+.layout--phone .revision-combat__ready {
+    min-height: 50px;
+}
+
+
+.layout--phone .revision-clock {
+    width: 230px;
+    height: 230px;
+    margin-left: -115px;
+    margin-top: -130px;
 }
 
 /* ---- deployment -----------------------------------------------------------
@@ -1667,40 +1257,6 @@
 /* Shipping type floor. Recruit is a decision surface, so its explanatory copy uses the shared
    body role and its labels use the shared metadata role. Decorative glyphs keep their authored
    sizes; information never drops below these tokens at compact breakpoints. */
-.recruit-seed,
-.recruit-progress .stat-chip__label,
-.muster-card__role-badge-text,
-.muster-card__class,
-.muster-rule__trigger,
-.muster-rule__keyword-text,
-.muster-rule__tier,
-.muster-rule__context,
-.muster-lens__eyebrow,
-.muster-lens__domain,
-.muster-card__selection-label,
-.muster-slot__eyebrow,
-.muster-slot__name,
-.recruit-feedback,
-.section-heading,
-.card-role,
-.stat-chip__label,
-.stat-chip__value,
-.trait-pill {
-    font-size: var(--ui-type-meta);
-}
-
-.rules-popover__body,
-.rules-popover__copy,
-.recruit-footer__hint,
-.muster-lens__body,
-.muster-lens__keyword-copy,
-.card-body,
-.empty-note,
-.btn {
-    font-size: var(--ui-type-body);
-}
-
-/* ---- options modal (item 9) ---------------------------------------------- */
 
 .options-modal {
     width: 520px;

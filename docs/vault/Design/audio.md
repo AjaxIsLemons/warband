@@ -215,13 +215,15 @@ be duckable by a UI commit. So: **one `SfxPlayer` + one `GameMixer`, two policy 
 GameMixer
 ├─ UI ................. clicks, commits, results        (never ducked)
 └─ Board
+   ├─ Revision ......... split, rewind, landing           (never ducked, highest priority)
    ├─ Decisive ........ death, crit, cheat-death, boss   (never ducked, never stolen)
    ├─ Cast ............ risers + cast bodies
    ├─ Impact .......... hits
    └─ State ........... statuses, shields, fields
 ```
 
-`Decisive` sits outside the ducked group, exactly as Shoota's `Feedback` bus sits outside `Combat`.
+`Revision` and `Decisive` sit outside the ducked group. Revision is the one player-authored
+interruption of the autonomous board and therefore outranks every ordinary board voice.
 Four exposed dB params (`MasterVol`, `UiVol`, `BoardVol`, `BoardDuck`) — the first three become
 roadmap item 9's sliders, the fourth is driven by the ducker.
 
@@ -259,19 +261,35 @@ roadmap item 9's sliders, the fourth is driven by the ducker.
 4. **Impacts are short.** ≤ 250 ms. This is the change that does the real work (§3.1).
 5. **Coalesce, don't stack.** Same id inside one tick (200 ms at 5 tps) → **one voice, louder**, not
    N voices. Shoota's `SameClipMax`/`SameClipBoost`, already written and proven.
-6. **Decisive events cannot be stolen.** Death, crit, cheat-death, boss cast, overtime.
+6. **Decisive events cannot be stolen by ordinary combat.** Death, crit, cheat-death, boss cast,
+   overtime. The once-per-battle Revision ceremony may clear them when it arrests the whole board.
+
+### 5.2.1 Revision ceremony law
+
+1. **The rupture owns the mix.** Opening stops active Cast, Impact, State, and Decisive voices.
+   UI and existing Revision voices remain.
+2. **One material family.** Low bell = the Hour; dry sand = motion through time; glass partials =
+   fracture. Mana-blue shimmer answers Borrowed Future; low violet contraction answers Recall.
+3. **One dedicated bed.** Held Hour and rewind use a single loop source, not pooled one-shots.
+4. **Stage cues, not event spam.** Split, reopen, scrub, tear, rewind riser, lineage landing, and
+   Missing Hour return are the complete vocabulary.
+5. **The landing is loudest.** The 0.10-second vacuum immediately before it creates the dynamic
+   range; piling more voices onto the landing is not the strategy.
+6. **Missing clips remain silent no-ops.** Presentation can never break a branch transaction.
 
 ### 5.3 The audio budget — Riot's three questions, answered
 
 > *what stands out when density rises · what steps back · what the transition curve is*
 
-- **Stands out:** the `Decisive` bus. Never ducked, never stolen, capped at 4 voices, priority 0.
+- **Stands out:** `Revision` during the ceremony, otherwise `Decisive`. Both are outside BoardDuck;
+  Revision caps at 4 voices and is the highest priority.
 - **Steps back:** `Impact` and `State`. A `Decisive` onset ducks both by **−6 dB**, and a UI `major`
   ducks the whole `Board` group by −4 dB.
 - **Curve:** 30 ms attack, hold for the duration of the triggering clip, 250 ms release. (Shoota's
   `SfxDucker` envelope, unchanged.)
 
-Per-bus voice caps: `Decisive` 4 · `Cast` 4 · `Impact` 6 · `State` 3 · `UI` 4 = **21 max**, inside
+Per-bus voice caps: `Revision` 4 · `Decisive` 4 · `Cast` 4 · `Impact` 6 · `State` 3 · `UI` 4 =
+**25 max**, inside
 the 32-voice budget with headroom. Stealing is *oldest of the lowest priority ≤ mine*; nothing
 qualifying → drop and increment a `DroppedVoices` counter (a healthy mix keeps it near zero, so it
 is a **measurable** design target, not a vibe).
@@ -315,8 +333,12 @@ the game.* Run it in `make test`.
 
 ### 6.3 `sfxbake` — the fixer
 
-Source clips live in `client/Assets/ArtSource/SFX/` (raw generative output — matching the existing
-`ArtSource` convention); baked clips are written to `Resources/{UI,Board}/SFX/` and are
+Source clips live in **`docs/audio/src/{ui,board}`** and bake to `docs/audio/baked/{ui,board}`, then
+get promoted into `Resources/{UI,Board}/SFX/` by step 5. *(This section originally planned
+`client/Assets/ArtSource/SFX/` to match the `ArtSource` convention. That directory does not exist and
+the plan deliberately changed: audio working files must stay **outside** `client/Assets/` so Unity
+never imports them and no `.meta` churn hits the serialized-asset guard — see §6 and
+`tools/sfx/sfx.py`.)* Baked clips are
 **regenerable at any time** (Shoota's "presets are source of truth" rule, applied to a
 generate-then-process pipeline). Per family it: trims leading silence to the transient, hard-caps
 duration with a 15 ms fade-out, normalises to the family's peak target, high-passes ~200 Hz on

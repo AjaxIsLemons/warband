@@ -26,17 +26,8 @@ internal sealed class PresentationCatalog
         public string roleIcon = "";
         public string musterRole = "";
         public string musterRoleIcon = "";
-        public string musterSignatureKeyword = "";
-        public string musterPassiveKeyword = "";
-        public string abilityName = "";
         public string abilityIcon = "";
-        public string abilityTrigger = "";
-        public string abilitySummary = "";
-        public string passiveName = "";
         public string passiveIcon = "";
-        public string passiveTrigger = "";
-        public string passiveSummary = "";
-        public string[] keywords = Array.Empty<string>();
         public string accent = "";
     }
 
@@ -45,7 +36,6 @@ internal sealed class PresentationCatalog
     {
         public string id = "";
         public string icon = "";
-        public string summary = "";
         public string accent = "";
     }
 
@@ -96,7 +86,7 @@ internal sealed class PresentationCatalog
     public UnitPresentation Unit(string id)
     {
         if (_units.TryGetValue(id, out var value)) return value;
-        return new UnitPresentation
+        var fallback = new UnitPresentation
         {
             id = id,
             portrait = "",
@@ -104,19 +94,11 @@ internal sealed class PresentationCatalog
             roleIcon = "◆",
             musterRole = "Champion",
             musterRoleIcon = "frontline",
-            musterSignatureKeyword = "Special",
-            musterPassiveKeyword = "Innate",
-            abilityName = "SIGNATURE",
             abilityIcon = "✦",
-            abilityTrigger = "SIGNATURE",
-            abilitySummary = "Inspect this champion for full combat information.",
-            passiveName = "TRAIT",
             passiveIcon = "◇",
-            passiveTrigger = "PASSIVE",
-            passiveSummary = "No presentation entry authored.",
-            keywords = Array.Empty<string>(),
             accent = "utility",
         };
+        return fallback;
     }
 
     public ContentPresentation Content(string id)
@@ -126,7 +108,6 @@ internal sealed class PresentationCatalog
         {
             id = id,
             icon = "◇",
-            summary = "Applies a visible rule described by its mechanical card.",
             accent = "utility",
         };
     }

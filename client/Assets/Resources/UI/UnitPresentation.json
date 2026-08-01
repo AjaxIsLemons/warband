@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "units": [
     {
       "id": "cleric",
@@ -8,19 +8,8 @@
       "roleIcon": "✦",
       "musterRole": "Healer",
       "musterRoleIcon": "healer",
-      "musterSignatureKeyword": "Area",
-      "musterPassiveKeyword": "Regen",
-      "abilityName": "SANCTIFIED PYRE",
       "abilityIcon": "✹",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "Enemies within 1 hex take 12 damage. Allies within 1 hex heal 10.",
-      "passiveName": "MERCY AURA",
       "passiveIcon": "✚",
-      "passiveTrigger": "PASSIVE · COMBAT START",
-      "passiveSummary": "Grant 2 Regeneration to allies within 2 hexes.",
-      "keywords": [
-        "REGENERATION · Heals for its value each second."
-      ],
       "accent": "mending"
     },
     {
@@ -30,20 +19,8 @@
       "roleIcon": "⬢",
       "musterRole": "Tank",
       "musterRoleIcon": "tank",
-      "musterSignatureKeyword": "Stun",
-      "musterPassiveKeyword": "Shield",
-      "abilityName": "SHIELD SLAM",
       "abilityIcon": "✸",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "The nearest enemy takes 10 damage and is Stunned for 1.0s.",
-      "passiveName": "BASTION",
       "passiveIcon": "⬡",
-      "passiveTrigger": "PASSIVE · COMBAT START",
-      "passiveSummary": "Gain 30 Shield.",
-      "keywords": [
-        "STUN · Cannot move, attack, or cast.",
-        "SHIELD · Absorbs damage before HP."
-      ],
       "accent": "ward"
     },
     {
@@ -53,19 +30,8 @@
       "roleIcon": "◈",
       "musterRole": "Diver",
       "musterRoleIcon": "diver",
-      "musterSignatureKeyword": "Burst",
-      "musterPassiveKeyword": "Leap",
-      "abilityName": "BACKSTAB",
       "abilityIcon": "†",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "The current target takes 25 damage.",
-      "passiveName": "AMBUSH",
       "passiveIcon": "◆",
-      "passiveTrigger": "PASSIVE · COMBAT START",
-      "passiveSummary": "Leap to the farthest enemy.",
-      "keywords": [
-        "LEAP · Reposition instantly; no movement path is taken."
-      ],
       "accent": "precision"
     },
     {
@@ -75,19 +41,8 @@
       "roleIcon": "◎",
       "musterRole": "Sniper",
       "musterRoleIcon": "sniper",
-      "musterSignatureKeyword": "Line",
-      "musterPassiveKeyword": "Distance",
-      "abilityName": "PIERCING BOLT",
       "abilityIcon": "➶",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "Enemies in a line through the current target take 14 damage.",
-      "passiveName": "FULL DRAW",
       "passiveIcon": "↔",
-      "passiveTrigger": "PASSIVE · ALWAYS",
-      "passiveSummary": "Basic attacks gain +2 damage per hex to the target.",
-      "keywords": [
-        "LINE · Hits every enemy on the traced hex line."
-      ],
       "accent": "power"
     },
     {
@@ -97,20 +52,8 @@
       "roleIcon": "♨",
       "musterRole": "Zoner",
       "musterRoleIcon": "zoner",
-      "musterSignatureKeyword": "Glyph",
-      "musterPassiveKeyword": "Burn",
-      "abilityName": "FIRE GLYPH",
       "abilityIcon": "✺",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "Create a radius-1 Fire Glyph under the current target for 8.0s. Each pulse adds 2 Burn to enemies inside.",
-      "passiveName": "FIREBRAND",
       "passiveIcon": "♨",
-      "passiveTrigger": "PASSIVE · ON BASIC ATTACK",
-      "passiveSummary": "Add 1 Burn to the target.",
-      "keywords": [
-        "BURN · Deals its value each second, then loses 1.",
-        "GLYPH · Persistent ground effect; leaving its hexes avoids later pulses."
-      ],
       "accent": "affliction"
     },
     {
@@ -120,19 +63,8 @@
       "roleIcon": "ϟ",
       "musterRole": "Bruiser",
       "musterRoleIcon": "bruiser",
-      "musterSignatureKeyword": "Frenzy",
-      "musterPassiveKeyword": "Low HP",
-      "abilityName": "FRENZY",
       "abilityIcon": "⚔",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "For the next 4 basic attacks, attack every 0.1s while a target is in reach.",
-      "passiveName": "BURNING HOURS",
       "passiveIcon": "▲",
-      "passiveTrigger": "PASSIVE · ALWAYS",
-      "passiveSummary": "Gain +10% attack speed for each 10% maximum HP missing.",
-      "keywords": [
-        "FRENZY · Ignores normal attack cadence for its remaining swings."
-      ],
       "accent": "tempo"
     },
     {
@@ -142,20 +74,8 @@
       "roleIcon": "↶",
       "musterRole": "Frontline",
       "musterRoleIcon": "frontline",
-      "musterSignatureKeyword": "Line",
-      "musterPassiveKeyword": "Counter",
-      "abilityName": "SKEWER",
       "abilityIcon": "➵",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "Enemies on a 3-hex line through the current target take 12 damage.",
-      "passiveName": "RIPOSTE",
       "passiveIcon": "↶",
-      "passiveTrigger": "PASSIVE · START / AFTER SIGNATURE",
-      "passiveSummary": "Gain 1 Riposte. When hit by a basic attack, spend it to counterattack that attacker.",
-      "keywords": [
-        "RIPOSTE · One stored counterattack; spent when it fires.",
-        "LINE · Hits every enemy on the traced hex line."
-      ],
       "accent": "reaction"
     },
     {
@@ -165,20 +85,8 @@
       "roleIcon": "⚑",
       "musterRole": "Captain",
       "musterRoleIcon": "captain",
-      "musterSignatureKeyword": "Mana",
-      "musterPassiveKeyword": "Haste",
-      "abilityName": "RALLY",
       "abilityIcon": "✦",
-      "abilityTrigger": "SIGNATURE",
-      "abilitySummary": "Allies within 2 hexes gain 10 Mana.",
-      "passiveName": "STANDARD-BEARER",
       "passiveIcon": "⚑",
-      "passiveTrigger": "PASSIVE · COMBAT START",
-      "passiveSummary": "Grant 20% Haste to allies within 1 hex.",
-      "keywords": [
-        "HASTE · Increases attack speed.",
-        "MANA · A Signature casts automatically when Mana reaches its maximum."
-      ],
       "accent": "utility"
     }
   ],
@@ -186,79 +94,66 @@
     {
       "id": "hourglass",
       "icon": "◈",
-      "summary": "Grants +20 maximum HP.",
       "accent": "ward"
     },
     {
       "id": "firstblood",
       "icon": "ϟ",
-      "summary": "When an enemy falls, the whole warband becomes Hasted.",
       "accent": "tempo"
     },
     {
       "id": "leapstun",
       "icon": "◎",
-      "summary": "Enemies that Leap are Stunned on arrival.",
       "accent": "reaction"
     },
     {
       "id": "brand",
       "icon": "♨",
-      "summary": "Every allied basic attack adds Burn.",
       "accent": "affliction"
     },
     {
       "id": "bronzehour",
       "icon": "◆",
-      "summary": "Every ally begins combat with 20 Shield.",
       "accent": "ward"
     },
     {
       "id": "chorus",
       "icon": "✦",
-      "summary": "Whenever an ally casts, that ally gains 5 Shield.",
       "accent": "mending"
     },
     {
       "id": "tithe",
       "icon": "❖",
-      "summary": "Whenever an ally is healed, it gains 10 Mana.",
       "accent": "utility"
     },
     {
       "id": "woundclock",
       "icon": "◑",
-      "summary": "Struck allies gain 5 extra Mana per hit taken.",
       "accent": "utility"
     },
     {
       "id": "thirdchime",
       "icon": "♪",
-      "summary": "Every third allied cast, the warband gains brief Haste.",
       "accent": "tempo"
     },
     {
       "id": "ashbequest",
       "icon": "♻",
-      "summary": "When a Burning enemy dies, its remaining Burn spreads to enemies near the corpse.",
       "accent": "affliction"
     },
     {
       "id": "stilledbell",
       "icon": "Ω",
-      "summary": "When an enemy casts, the caster is Silenced briefly.",
       "accent": "reaction"
     },
     {
       "id": "shoulder",
       "icon": "⚌",
-      "summary": "Heroes mustered beside an ally begin with +5 attack.",
       "accent": "power"
     },
     {
       "id": "bloodless",
       "icon": "◍",
-      "summary": "PARADOX — healing restores no HP; it becomes Shield instead.",
       "accent": "ward"
     }
   ]

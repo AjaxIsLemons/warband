@@ -997,6 +997,143 @@
           "mastered": false
         }
       ]
+    },
+    {
+      "// note": "Item 32 / ADR 0031: the act-1 SWARM begins as two edge wedges instead of collapsing from a broad center scatter.",
+      "name": "enc-gnawing-hour",
+      "seed": 31,
+      "encounter": "gnawing-hour",
+      "encounterAct": 1,
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 0,
+          "row": 2,
+          "col": 3,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 0,
+          "row": 0,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 0,
+          "row": 0,
+          "col": 5,
+          "mastered": false
+        }
+      ]
+    },
+    {
+      "// note": "Item 32 / ADR 0031: one warded and one ordinary ANCHOR hold two lanes in front of three ARTILLERY bodies.",
+      "name": "enc-the-long-range",
+      "seed": 32,
+      "encounter": "the-long-range",
+      "encounterAct": 2,
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 3,
+          "col": 3,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 1,
+          "col": 5,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 1,
+          "row": 0,
+          "col": 3,
+          "mastered": false
+        }
+      ]
+    },
+    {
+      "// note": "Item 32 / ADR 0031: the act-3 PROCESSION court forms two wings around its rooted center Scribe.",
+      "name": "enc-long-procession",
+      "seed": 33,
+      "encounter": "long-procession",
+      "encounterAct": 3,
+      "units": [
+        {
+          "team": 0,
+          "chassis": "bulwark",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 2,
+          "row": 3,
+          "col": 3,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "sharpshot",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 2,
+          "row": 1,
+          "col": 2,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "pyromancer",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 2,
+          "row": 1,
+          "col": 5,
+          "mastered": false
+        },
+        {
+          "team": 0,
+          "chassis": "cleric",
+          "picks": [0, 0, 0],
+          "tier": "Worn",
+          "rank": 2,
+          "row": 0,
+          "col": 3,
+          "mastered": false
+        }
+      ]
     }
   ]
 }

@@ -82,17 +82,33 @@ public static class WarbandUiQa
 
     public static void RunResultFullHeadless() => Begin("result-full", preferOffscreen: true);
 
-    [MenuItem("Warband/UI QA/Run Muster Full Matrix")]
-    public static void RunMusterFull() => Begin("muster-full");
-
-    public static void RunMusterFullHeadless() =>
-        Begin("muster-full", preferOffscreen: true);
-
     [MenuItem("Warband/UI QA/Run Workbench Full Matrix")]
     public static void RunWorkbenchFull() => Begin("workbench-full");
 
     public static void RunWorkbenchFullHeadless() =>
         Begin("workbench-full", preferOffscreen: true);
+
+    /// <summary>Matched implementation evidence for workbench-frame: the two approved states at
+    /// QHD plus the ordinary 1080p containment smoke.</summary>
+    public static void RunWorkbenchFrameHeadless() =>
+        Begin("workbench-frame", preferOffscreen: true);
+
+    /// <summary>Approved Beyond the Hour direction at its QHD review target plus 1080p
+    /// containment, both on the deterministic banked-victory fixture.</summary>
+    public static void RunBeyondTheHourHeadless() =>
+        Begin("beyond-the-hour", preferOffscreen: true);
+
+    [MenuItem("Warband/UI QA/Run Unit Dossier Matrix")]
+    public static void RunUnitDossier() => Begin("unit-dossier");
+
+    public static void RunUnitDossierHeadless() =>
+        Begin("unit-dossier", preferOffscreen: true);
+
+    [MenuItem("Warband/UI QA/Run Combat Unit Sheet Matrix")]
+    public static void RunCombatUnitSheet() => Begin("combat-unit-sheet");
+
+    public static void RunCombatUnitSheetHeadless() =>
+        Begin("combat-unit-sheet", preferOffscreen: true);
 
     [MenuItem("Warband/UI QA/Cancel Active Run")]
     public static void Cancel()
@@ -181,34 +197,6 @@ public static class WarbandUiQa
     {
         var items = new List<WorkItem>();
 
-        if (mode == "muster-full")
-        {
-            foreach (Vector2Int viewport in new[]
-                     {
-                         new Vector2Int(1024, 768),
-                         new Vector2Int(1280, 720),
-                         new Vector2Int(1600, 900),
-                         new Vector2Int(2556, 1317),
-                         new Vector2Int(3440, 1440),
-                     })
-                items.Add(new WorkItem
-                {
-                    Surface = "recruit",
-                    Fixture = "muster-nominal",
-                    Width = viewport.x,
-                    Height = viewport.y,
-                });
-            items.Add(new WorkItem
-            {
-                Surface = "recruit",
-                Fixture = "muster-copy-stress",
-                Width = 1024,
-                Height = 768,
-                ExpandedText = true,
-            });
-            return items;
-        }
-
         // The result gate alone, across every viewport that matters plus phone. Added 2026-07-27
         // after the combat recap shipped a vertical-collapse bug that only the full matrix would
         // have caught — 82 captures is too slow to iterate a single surface against, so nobody
@@ -239,6 +227,128 @@ public static class WarbandUiQa
                 ForcePhone = true,
                 ExpandedText = true,
             });
+            return items;
+        }
+
+        if (mode == "unit-dossier")
+        {
+            Vector2Int[] dossierViewports =
+            {
+                new Vector2Int(1024, 768),
+                new Vector2Int(1600, 900),
+                new Vector2Int(2556, 1317),
+                new Vector2Int(3440, 1440),
+            };
+            foreach (Vector2Int viewport in dossierViewports)
+            {
+                foreach (string fixture in new[] { "market-recruit", "rail-full" })
+                    items.Add(new WorkItem
+                    {
+                        Surface = "workbench",
+                        Fixture = fixture,
+                        Width = viewport.x,
+                        Height = viewport.y,
+                    });
+                items.Add(new WorkItem
+                {
+                    Surface = "workbench",
+                    Fixture = "market-recruit",
+                    Width = viewport.x,
+                    Height = viewport.y,
+                    ExpandedText = true,
+                });
+            }
+            foreach (string fixture in new[]
+                     {
+                         "tooltip-weapon-fact",
+                         "tooltip-weapon-property",
+                         "tooltip-unit-spec",
+                     })
+                items.Add(new WorkItem
+                {
+                    Surface = "workbench",
+                    Fixture = fixture,
+                    Width = 1600,
+                    Height = 900,
+                });
+            return items;
+        }
+
+        if (mode == "combat-unit-sheet")
+        {
+            foreach (Vector2Int viewport in new[]
+                     {
+                         new Vector2Int(1024, 768),
+                         new Vector2Int(1280, 720),
+                         new Vector2Int(1600, 900),
+                         new Vector2Int(2556, 1317),
+                         new Vector2Int(3440, 1440),
+                     })
+            {
+                items.Add(new WorkItem
+                {
+                    Surface = "combat",
+                    Fixture = "ally",
+                    Width = viewport.x,
+                    Height = viewport.y,
+                });
+                if (viewport.x == 1600 || viewport.x == 2556)
+                    items.Add(new WorkItem
+                    {
+                        Surface = "combat",
+                        Fixture = "enemy",
+                        Width = viewport.x,
+                        Height = viewport.y,
+                    });
+            }
+            items.Add(new WorkItem
+            {
+                Surface = "combat",
+                Fixture = "stress",
+                Width = 1600,
+                Height = 900,
+                ExpandedText = true,
+            });
+            return items;
+        }
+
+        if (mode == "workbench-frame")
+        {
+            foreach (Vector2Int viewport in new[]
+                     {
+                         new Vector2Int(2560, 1440),
+                         new Vector2Int(1920, 1080),
+                     })
+                foreach (string fixture in new[]
+                         {
+                             "muster-state",
+                             "muster-phalanx",
+                             "rankup-modal",
+                         })
+                    items.Add(new WorkItem
+                    {
+                        Surface = "workbench",
+                        Fixture = fixture,
+                        Width = viewport.x,
+                        Height = viewport.y,
+                    });
+            return items;
+        }
+
+        if (mode == "beyond-the-hour")
+        {
+            foreach (Vector2Int viewport in new[]
+                     {
+                         new Vector2Int(2560, 1440),
+                         new Vector2Int(1920, 1080),
+                     })
+                items.Add(new WorkItem
+                {
+                    Surface = "workbench",
+                    Fixture = "beyond-the-hour",
+                    Width = viewport.x,
+                    Height = viewport.y,
+                });
             return items;
         }
 
@@ -397,21 +507,17 @@ public static class WarbandUiQa
             selected += "; " + UiVerificationCapture.BeginCapture(
                 document, item.Width, item.Height);
         }
-        // The retained Recruit view owns a direct presentation fixture. Rebuilding the
-        // authoritative shell before binding it can transiently expose an empty opening offer,
-        // which correctly fails the Muster content contract. Muster has no phone fixture.
-        if (item.Surface != "recruit")
-            shell.EditorForcePhoneLayout(item.ForcePhone);
+        shell.EditorForcePhoneLayout(item.ForcePhone);
         bool loaded = item.Surface switch
         {
-            "recruit" => shell.EditorLoadRecruitFixture(
-                item.ExpandedText, reducedMotion: false),
             "wager" => shell.EditorLoadWagerFixture(
                 item.ExpandedText, reducedMotion: false),
             "deploy" => shell.EditorLoadDeployFixture(
                 item.ExpandedText, reducedMotion: false),
             "result" => shell.EditorLoadResultFixture(
                 item.ExpandedText, reducedMotion: false),
+            "combat" => shell.EditorLoadCombatInspectorFixture(
+                item.Fixture, item.ExpandedText, reducedMotion: false),
             "options" => shell.EditorLoadOptionsFixture(
                 item.ExpandedText, reducedMotion: false),
             "rotation" => shell.EditorLoadWorkbenchFixture(
@@ -445,6 +551,15 @@ public static class WarbandUiQa
                 shell.EditorShowWorkbenchEquipmentTooltip();
             else if (item.Surface == "workbench" && item.Fixture == "tooltip-rank-tier")
                 shell.EditorShowWorkbenchRankTierTooltip();
+            else if (item.Surface == "workbench" &&
+                     item.Fixture == "tooltip-unit-spec")
+                shell.EditorShowWorkbenchRankTierTooltip();
+            else if (item.Surface == "workbench" &&
+                     item.Fixture == "tooltip-weapon-fact")
+                shell.EditorShowWorkbenchWeaponFactTooltip();
+            else if (item.Surface == "workbench" &&
+                     item.Fixture == "tooltip-weapon-property")
+                shell.EditorShowWorkbenchWeaponPropertyTooltip();
             else if (item.Surface == "workbench" && item.Fixture == "rail-open")
                 shell.EditorPreviewWarbandRosterDrag();
         }
@@ -539,28 +654,18 @@ public static class WarbandUiQa
 
     private static void Finish(RunShell shell)
     {
-        bool musterOnly = string.Equals(
-            s_state.Mode, "muster-full", StringComparison.Ordinal);
-        if (musterOnly)
+        try
         {
             s_state.LiveRankUpRegression =
-                "PASS · not applicable to the Muster-only matrix";
+                shell.EditorVerifyPendingForkMarketRebuild();
         }
-        else
+        catch (Exception ex)
         {
-            try
-            {
-                s_state.LiveRankUpRegression =
-                    shell.EditorVerifyPendingForkMarketRebuild();
-            }
-            catch (Exception ex)
-            {
-                s_state.LiveRankUpRegression =
-                    $"FAIL · pending-fork Market rebuild threw {ex.GetType().Name}: {ex.Message}";
-            }
-            shell.EditorForcePhoneLayout(false);
-            shell.EditorClearWorkbenchFixture();
+            s_state.LiveRankUpRegression =
+                $"FAIL · pending-fork Market rebuild threw {ex.GetType().Name}: {ex.Message}";
         }
+        shell.EditorForcePhoneLayout(false);
+        shell.EditorClearWorkbenchFixture();
         WriteReport();
         WriteContactSheet();
         int failed = 0;
@@ -671,12 +776,10 @@ public static class WarbandUiQa
     private static string Layout(RunShell shell, WorkItem item) =>
         item.Surface switch
         {
-            "recruit" => shell.EditorValidateMusterLayout()
-                ? "Muster: PASS"
-                : "Muster: FAIL · resolved layout contract failed",
             "wager" => shell.EditorWagerLayoutReport(),
             "deploy" => shell.EditorDeployLayoutReport(),
             "result" => shell.EditorResultLayoutReport(),
+            "combat" => shell.EditorCombatInspectorLayoutReport(),
             "options" => shell.EditorOptionsLayoutReport(),
             "rotation" => shell.EditorRotationGuardReport(),
             _ => shell.EditorWorkbenchLayoutReport(),
@@ -689,6 +792,8 @@ public static class WarbandUiQa
          layout.StartsWith("Wager: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Deploy: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Result gate: PASS", StringComparison.Ordinal) ||
+         layout.StartsWith("Combat inspector: PASS", StringComparison.Ordinal) ||
+         layout.StartsWith("Options: PASS", StringComparison.Ordinal) ||
          layout.StartsWith("Rotation guard: PASS", StringComparison.Ordinal));
 
     private static void QueueFrame()

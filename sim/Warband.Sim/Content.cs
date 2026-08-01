@@ -96,7 +96,7 @@ namespace Warband.Sim
                       // law (ADR: strike the attacker if in reach, else the first enemy on
                       // the line toward them within reach; clear line = air).
         Execute,      // kill outright: damage equal to target's HP + Shield (Reaper)
-        RemoveStatus, // strip ALL instances of Status from the selected target (Detonate consume)
+        RemoveStatus, // Amount > 0 spends that many matching status instances; <= 0 strips all
         Recast,       // re-run the owner's signature anchored on the selected target
                       // (Dying Star kill-chains; cascade depth bounds it)
     }
@@ -105,7 +105,7 @@ namespace Warband.Sim
     {
         public EffectKind Kind;
         public Selector Select = new Selector { Kind = SelKind.CurrentTarget };
-        public int Amount;
+        public int Amount;         // RemoveStatus: instances to spend; <= 0 removes every instance
         public StatusKind Status;
         public int StatusTicks;    // duration for ApplyStatus; <0 = whole fight
         public int StatusSwings;   // >0: ApplyStatus expires after owner's Nth swing instead

@@ -167,7 +167,7 @@ namespace Warband.Sim.Tests
                 Do =
                 {
                     new EffectDef { Kind = EffectKind.Swing, AsCounter = true, Select = new Selector { Kind = SelKind.EventSource } },
-                    new EffectDef { Kind = EffectKind.RemoveStatus, Status = StatusKind.CounterCharge, Select = new Selector { Kind = SelKind.EventTarget } },
+                    new EffectDef { Kind = EffectKind.RemoveStatus, Status = StatusKind.CounterCharge, Amount = 1, Select = new Selector { Kind = SelKind.EventTarget } },
                 },
             });
 

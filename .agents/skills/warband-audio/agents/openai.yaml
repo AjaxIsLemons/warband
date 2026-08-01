@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Audio"
+  short_description: "Author, bake, and verify warband SFX"
+  default_prompt: "Use $warband-audio to take this Warband sound work through the contract: measure, bake, audition, promote, and verify."

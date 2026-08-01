@@ -40,6 +40,11 @@ namespace Warband.Sim
                         // counted match rides the wire because the badge rail may not count for
                         // itself (render-contract law #1). Presentation-only like RuleChanged —
                         // fires no triggers, spends no cascade budget, provably outcome-neutral.
+        RevisionApplied,// Target=directly revised unit, Amount=RevisionEffectKind,
+                        // Aux=RevisionModifier mask. Emitted before the ordinary Move/Mana/Status
+                        // consequences so the renderer can announce the cause without sim logic.
+        UnitOmitted,    // Target=unit removed from the active hour, Amount=return tick.
+        UnitReturned,   // Target=unit restored to the board at its recalled destination.
     }
 
     public enum Cause

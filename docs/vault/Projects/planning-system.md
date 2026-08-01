@@ -1,5 +1,21 @@
 # Planning system — implementation and extension contract
 
+> ⚠ **This is not the roadmap planning SOP.** Despite the filename and its home in `Projects/`, this
+> page is about the in-game `PlanningSession` (draft/validate/commit/undo of unit placement). The
+> board process lives in `CLAUDE.md`'s Planning SOP plus `Projects/roadmap.md`'s Stages block.
+>
+> ⚠ **Partly superseded by roadmap item 34 (in BUILD as of 2026-07-29).** That item folds Muster into
+> the workbench frame and explicitly retires `RecruitView` + `MusterCard` + `RevisionDraftView`, so
+> the "Opening Muster presentation contract" section below describes a flow being replaced. Its
+> *contract requirements* (the five projected objects, the rejection rules, cadence derived from the
+> composed weapon rather than copied card data) should carry over to the shared card — the container
+> changes, the honesty rules don't. Amend this page when item 34 lands.
+>
+> Also stale: the header's test count. The suite is 533–534 as of 2026-07-29, not the 76 recorded
+> further down. The six "Honest remaining work" items at the end of this page appear on neither the
+> board nor the Deferred list, so they are invisible to the SOP that treats the board as the only
+> live list — promote the ones that still matter.
+
 **Status:** foundation plus run workspace live and Unity-verified 2026-07-24. The original
 bonded-pair proof still owns the transactional `PlanningSession`/undo experiment. ADR 0019's run
 shell now supplies the persistent player-facing workspace: encounter intel, formation, roster,
@@ -21,9 +37,10 @@ extend the implementation without moving game rules into Unity.
 | Replay renderer | Board geometry, picking, snapshots, selection marker, and combat playback | `ReplayPlayer.cs` |
 
 The live run host parallels those boundaries in `RunShell` → `RunShellModel` /
-`RunShellActions` → `PlanningView`, with shared `WarbandCard` and `InspectorPanel` renderers.
-`PresentationCatalog` owns presentation-only copy/art/icon references; composed `UnitDef`
-remains the only source of mechanical card values.
+`RunShellActions` → the registered `RecruitView`, `WorkbenchView`, `WagerView`, and `DeployView`.
+Purpose-built `MusterCard`, `MarketOfferCard`, Workbench renderers, and `InspectorPanel` consume
+the shared hydrated `CardModel`. `PresentationCatalog` owns presentation-only copy/art/icon
+references; composed `UnitDef` remains the only source of mechanical card values.
 
 Dependencies still point one way: Unity → Content → Run → Sim. `Warband.Run` does not know about
 Unity controls, authored catalogs, weapon definitions, or consumable mechanics.

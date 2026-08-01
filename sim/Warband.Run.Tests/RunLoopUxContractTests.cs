@@ -33,7 +33,10 @@ namespace Warband.Run.Tests
             while (!run.AtBoss)
             {
                 if (run.CurrentNodeKind == NodeKind.Event)
+                {
+                    run.ChooseRevisionUpgrade(0);
                     run.ResolveInterlude(InterludePath.Treasury);
+                }
                 else
                     run.ResolveFight(FightTier.Stable, Kit.AutoPlace(run));
             }
@@ -77,6 +80,7 @@ namespace Warband.Run.Tests
             var armoryRun = NewRun();
             ReachInterlude(armoryRun);
             var armoryPreview = armoryRun.PreviewInterlude();
+            armoryRun.ChooseRevisionUpgrade(0);
             var item = armoryRun.ResolveInterlude(InterludePath.Armory, 1);
             Assert.Equal(armoryPreview.Armory[1].Id, item.Id);
             Assert.Contains(armoryRun.State.Inventory, x => x.Id == item.Id);
@@ -84,6 +88,7 @@ namespace Warband.Run.Tests
             var hourstoneRun = NewRun();
             ReachInterlude(hourstoneRun);
             var hourstonePreview = hourstoneRun.PreviewInterlude();
+            hourstoneRun.ChooseRevisionUpgrade(0);
             var inscription = hourstoneRun.ResolveInterlude(InterludePath.Hourstone, 2);
             Assert.Equal(hourstonePreview.Hourstone[2].Id, inscription.Id);
             Assert.Contains(inscription.Id, hourstoneRun.State.Inscriptions);

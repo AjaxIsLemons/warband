@@ -1,0 +1,396 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>workbench-refactor · 01 shopfront</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    font-family: "Liberation Sans Narrow", "Arial Narrow", "DejaVu Sans", sans-serif;
+    background: #05090f; color: #e8eef6; position: relative;
+  }
+  .wash {
+    position: absolute; inset: 0;
+    background: #0b131d;
+    border-left: 54px solid rgba(10,28,42,.58);
+    border-right: 54px solid rgba(10,28,42,.58);
+  }
+  .safe { position: absolute; left: 22px; right: 22px; top: 14px; bottom: 200px; }
+
+  /* ---------- header: one 46px row ---------- */
+  .header {
+    height: 46px; display: flex; align-items: center;
+    background: rgba(8,14,22,.985);
+    border-left: 4px solid #d9a43a;
+    border-bottom: 1px solid rgba(91,126,169,.72);
+    padding: 0 12px 0 16px; gap: 18px;
+  }
+  .header .title { font-size: 20px; font-weight: 700; letter-spacing: 3px; color: #f2eee0; }
+  .header .meta  { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; color: #859ebc; }
+  .header .meta b { color: #dfb24b; }
+  .header .grow { flex: 1; }
+  .sand {
+    display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px;
+    background: rgba(45,34,16,.88); border: 1px solid rgba(217,164,58,.62); border-radius: 6px;
+    color: #f0c75e; font-size: 19px; font-weight: 700;
+  }
+  .wager {
+    height: 36px; padding: 0 20px; display: flex; align-items: center;
+    background: #2563c4; border-radius: 6px; color: #eef4ff;
+    font-size: 13px; font-weight: 700; letter-spacing: 1.6px;
+  }
+
+  /* ---------- body: market column + dossier column ---------- */
+  .cols { display: flex; gap: 10px; height: 632px; margin-top: 8px; }
+
+  .market {
+    flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px;
+    background: rgba(8,14,22,.96);
+    border-top: 1px solid rgba(91,126,169,.58);
+    border-bottom: 1px solid rgba(91,126,169,.58);
+  }
+  .market-main { display: flex; gap: 8px; flex: 1; min-height: 0; }
+  .reroll-rail {
+    width: 52px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px;
+    background: rgba(15,25,38,.9); border: 1px solid rgba(91,126,169,.5); border-radius: 6px;
+  }
+  .reroll-rail .glyph { font-size: 22px; color: #cfe0f2; }
+  .reroll-rail .letters {
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #b7c8dd;
+    text-align: center; line-height: 15px;
+  }
+  .reroll-rail .cost { font-size: 13px; font-weight: 700; color: #f0c75e; }
+
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(2, 1fr); gap: 8px; }
+  .offer {
+    background: #0a1119; border: 1px solid rgba(91,126,169,.45);
+    border-top: 3px solid var(--accent, #5b7ea9); border-radius: 4px;
+    display: flex; flex-direction: column; padding: 10px 12px 8px;
+  }
+  .offer .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px;
+                    color: var(--accent, #859ebc); }
+  .offer .name { font-size: 19px; font-weight: 700; color: #f2eee0; margin-top: 3px; }
+  .offer .art {
+    flex: 1; margin-top: 8px; border: 1px solid rgba(91,126,169,.35); border-radius: 3px;
+    background-color: #070c13; background-size: cover; background-position: center 20%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .offer .sigil { width: 84px; height: 84px; border: 3px solid #d9a43a; border-radius: 50%;
+                  display: flex; align-items: center; justify-content: center;
+                  color: #d9a43a; font-size: 44px; }
+  .offer .sigil.hex { border-radius: 12px; border-color: #4fa3d9; color: #4fa3d9; }
+  .offer .commerce { height: 32px; display: flex; align-items: center;
+                     justify-content: flex-end; gap: 6px;
+                     color: #f0c75e; font-size: 17px; font-weight: 700; }
+  .offer.sold { border-style: dashed; opacity: .55; }
+  .offer.sold .art { border-style: dashed; }
+  .offer.sold .slash { font-size: 46px; color: #5b7189; }
+  .offer.selected { outline: 2px solid #d9a43a; outline-offset: -1px; }
+
+  /* ---------- dossier column ---------- */
+  .dossier {
+    width: 466px; display: flex; flex-direction: column;
+    background: rgba(7,12,19,.985); border: 1px solid rgba(74,99,129,.72);
+  }
+  .dossier .kind {
+    height: 30px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; background: rgba(15,25,38,.92);
+    border-bottom: 1px solid rgba(74,99,129,.55);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #b48ad6;
+  }
+  .dossier .kind .rank { color: #859ebc; }
+  .banner {
+    height: 132px; position: relative; background-size: cover; background-position: center 18%;
+    border-bottom: 1px solid rgba(74,99,129,.55);
+  }
+  .banner .scrim { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(7,12,19,0) 30%, rgba(7,12,19,.94) 100%); }
+  .banner .id { position: absolute; left: 12px; bottom: 8px; }
+  .banner .name { font-size: 26px; font-weight: 700; color: #f2eee0; letter-spacing: 1px; }
+  .banner .sub { font-size: 12px; color: #a6b8cf; margin-top: 1px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 4px; }
+  .chip {
+    width: 106px; height: 42px; border-radius: 4px; padding: 4px 8px;
+    border: 1px solid; display: flex; flex-direction: column; justify-content: center;
+  }
+  .chip .l { font-size: 9px; font-weight: 700; letter-spacing: 1px; opacity: .85; }
+  .chip .v { font-size: 16px; font-weight: 700; color: #f2eee0; }
+  .c-hp   { background: rgba(90,28,30,.55);  border-color: #a04043; color: #e88d8f; }
+  .c-pow  { background: rgba(96,55,14,.55);  border-color: #b07430; color: #eda953; }
+  .c-rea  { background: rgba(18,48,88,.55);  border-color: #3c6ca8; color: #7fb0e8; }
+  .c-cad  { background: rgba(58,32,86,.55);  border-color: #7a4fb0; color: #b48ad6; }
+  .c-mana { background: rgba(10,64,66,.55);  border-color: #2f8d90; color: #5fc9cc; }
+  .c-crit { background: rgba(96,55,14,.55);  border-color: #b07430; color: #eda953; }
+  .sect { padding: 10px 12px 0; }
+  .sect .label { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #859ebc; }
+  .sect .label .mana { color: #5fc9cc; }
+  .sect .rule-name { font-size: 17px; font-weight: 700; color: #f2eee0; margin-top: 3px; }
+  .sect .rule { font-size: 13.5px; color: #a6b8cf; margin-top: 3px; line-height: 18px; }
+  .sect .rule em { font-style: normal; color: #eda953; font-weight: 700; }
+  .sect .rule b  { color: #7fb0e8; }
+  .deferred {
+    margin: 10px 12px 0; padding: 7px 10px; display: flex; align-items: center; gap: 8px;
+    background: rgba(15,25,38,.75); border-left: 3px solid #d9a43a; border-radius: 3px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #cfe0f2;
+  }
+  .deferred .t { color: #859ebc; }
+  .dossier .grow { flex: 1; }
+  .actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(74,99,129,.45); }
+  .actions .btn {
+    flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid rgba(91,126,169,.6); border-radius: 4px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 1px; color: #cfe0f2;
+    background: rgba(15,25,38,.6); text-align: center;
+  }
+  .actions .cost { color: #f0c75e; }
+
+  /* ---------- armory drawer (state: #drawer) — band under the grid; the art rows
+     compress because .art is flex, the market column never yields ---------- */
+  .drawer { display: none; }
+  body.drawer-open .drawer {
+    display: flex; height: 168px; flex-shrink: 0;
+    background: rgba(10,17,26,.97); border: 1px solid rgba(217,164,58,.45);
+    border-radius: 4px; flex-direction: column; padding: 10px 12px;
+  }
+  .drawer .head { display: flex; align-items: center; gap: 14px; }
+  .drawer .head .t { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; color: #f0c75e; }
+  .drawer .head .m { font-size: 11px; color: #859ebc; }
+  .drawer .head .x { margin-left: auto; font-size: 11px; font-weight: 700; color: #cfe0f2;
+                     border: 1px solid rgba(91,126,169,.6); border-radius: 4px; padding: 5px 12px; }
+  .drawer .tiles { display: flex; gap: 8px; margin-top: 8px; flex: 1; }
+  .drawer .tile {
+    width: 160px; border: 1px solid rgba(91,126,169,.5); border-radius: 4px; padding: 8px 10px;
+    background: #0a1119; display: flex; flex-direction: column; gap: 3px;
+  }
+  .drawer .tile .k { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; color: #859ebc; }
+  .drawer .tile .i { font-size: 22px; }
+  .drawer .tile .n { font-size: 13.5px; font-weight: 700; color: #f2eee0; }
+
+  /* ---------- footer rail: 186px, progression cards ---------- */
+  .rail {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 186px;
+    background: rgba(6,10,16,.99); border-top: 2px solid rgba(91,126,169,.5);
+    display: flex; align-items: center; padding: 0 10px; gap: 10px;
+  }
+  .rail .identity { width: 150px; padding-left: 8px; }
+  .rail .identity .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #859ebc; }
+  .rail .identity .cap { font-size: 20px; font-weight: 700; color: #f2eee0; margin: 4px 0; }
+  .rail .identity .manage { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #dfb24b; }
+  .rail .slots { display: flex; gap: 8px; flex: 1; justify-content: center; }
+
+  .ucard {
+    width: 148px; height: 166px; background: #0a1119;
+    border: 1px solid rgba(91,126,169,.55); border-radius: 5px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  .ucard.selected { border-color: #d9a43a; box-shadow: 0 0 0 1px #d9a43a; }
+  .ucard .portrait { height: 78px; background-size: cover; background-position: center 15%;
+                     position: relative; }
+  .ucard .rankb {
+    position: absolute; top: 5px; left: 5px; width: 22px; height: 22px; border-radius: 50%;
+    background: #d9a43a; color: #221703; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ucard .uname {
+    height: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; color: #e8eef6;
+    background: rgba(15,25,38,.9);
+  }
+  .srow { display: flex; justify-content: center; gap: 6px; padding-top: 6px; }
+  .srow .slabel { display: none; }
+  .slot {
+    width: 30px; height: 26px; border: 1px solid rgba(91,126,169,.55); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; background: rgba(15,25,38,.6); position: relative;
+  }
+  .slot.filled { border-color: rgba(217,164,58,.75); color: #f0c75e; }
+  .slot.empty { color: #46586e; border-style: dashed; }
+  .slot .tier { position: absolute; right: 1px; bottom: 0; font-size: 8px; color: #859ebc; }
+  .slot.perk { border-radius: 4px; transform: none; font-size: 11px; font-weight: 700; }
+  .slot.perk.empty { color: #3d4e63; }
+  .slot.perk.filled { color: #f0c75e; }
+
+  .ucard.lockedcard { opacity: .55; align-items: center; justify-content: center; gap: 6px; }
+  .ucard.lockedcard .num { width: 24px; height: 24px; border-radius: 50%; background: #d9a43a;
+    color: #221703; font-weight: 700; font-size: 13px; display: flex; align-items: center;
+    justify-content: center; }
+  .ucard.lockedcard .d { font-size: 20px; color: #5b7189; }
+  .ucard.lockedcard .t { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #859ebc; }
+
+  .rail .reserve { display: flex; align-items: center; gap: 8px; }
+  .rail .reserve .rlabel { font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: #859ebc; text-align: center; line-height: 15px; }
+  .rail .armory {
+    width: 150px; height: 158px; border: 1px solid rgba(91,126,169,.55); border-radius: 5px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(10,17,26,.9);
+  }
+  .rail .armory .a1 { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #859ebc; }
+  .rail .armory .a2 { font-size: 19px; font-weight: 700; color: #f2eee0; }
+  .rail .armory .a3 { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; color: #dfb24b; }
+
+  .note { position: absolute; right: 30px; top: 1px; font-size: 9px; color: #4a5f78;
+          letter-spacing: 1px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wash"></div>
+<div class="safe">
+
+  <div class="header">
+    <div><span class="title">WORKBENCH</span></div>
+    <div class="meta">ACT 1 / 3 &nbsp;·&nbsp; <b>BEAT 4 / 5</b></div>
+    <div class="grow"></div>
+    <div class="sand">⧖ 11</div>
+    <div class="wager">CHOOSE NEXT WAGER &nbsp;→</div>
+  </div>
+
+  <div class="cols">
+    <div class="market">
+      <div class="market-main">
+      <div class="reroll-rail">
+        <div class="glyph">↻</div>
+        <div class="letters">R<br>E<br>R<br>O<br>L<br>L</div>
+        <div class="cost">⧖ 1</div>
+      </div>
+      <div class="grid">
+        <div class="offer" style="--accent:#cf5a52;">
+          <div class="eyebrow">RECRUIT · TEMPO</div>
+          <div class="name">Berserker</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/berserker.png');"></div>
+          <div class="commerce">⧖ 5</div>
+        </div>
+        <div class="offer sold" style="--accent:#5b7189;">
+          <div class="eyebrow">MARKET RECEIPT</div>
+          <div class="name">Sold</div>
+          <div class="art"><div class="slash">⃠</div></div>
+          <div class="commerce"></div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">RANK UP</div>
+          <div class="name">Banneret</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/banneret.png');"></div>
+          <div class="commerce">⧖ 5</div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">INSCRIPTION · RUN LAW</div>
+          <div class="name">The Closed Gate</div>
+          <div class="art"><div class="sigil">⧖</div></div>
+          <div class="commerce">⧖ 7</div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">INSCRIPTION · RUN LAW</div>
+          <div class="name">Bronze Testament</div>
+          <div class="art"><div class="sigil">⧖</div></div>
+          <div class="commerce">⧖ 7</div>
+        </div>
+        <div class="offer" style="--accent:#57b06a;">
+          <div class="eyebrow">CAPACITY · RUN-WIDE</div>
+          <div class="name">Unlock Field 4</div>
+          <div class="art"><div class="sigil hex">+</div></div>
+          <div class="commerce">⧖ 8</div>
+        </div>
+      </div>
+      </div>
+      <div class="drawer">
+        <div class="head">
+          <div class="t">ARMORY</div><div class="m">3 STORED ITEMS · Select an item, then choose a matching socket below.</div>
+          <div class="x">COLLAPSE ▾</div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="k">WEAPON · HONED</div><div class="i">⚔</div><div class="n">Greataxe</div></div>
+          <div class="tile"><div class="k">WEAPON · WORN</div><div class="i">🏹</div><div class="n">Longbow</div></div>
+          <div class="tile"><div class="k">TRINKET</div><div class="i">◆</div><div class="n">Company Standard</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dossier">
+      <div class="kind"><span>CHAMPION · FIELD · PRECISION</span><span class="rank">RANK B</span></div>
+      <div class="banner" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/shade.png');">
+        <div class="scrim"></div>
+        <div class="id">
+          <div class="name">Shade</div>
+          <div class="sub">Basic attacks damage enemies</div>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip c-hp"><div class="l">HEALTH</div><div class="v">113</div></div>
+        <div class="chip c-pow"><div class="l">POWER</div><div class="v">9</div></div>
+        <div class="chip c-rea"><div class="l">REACH</div><div class="v">1</div></div>
+        <div class="chip c-cad"><div class="l">CADENCE</div><div class="v">0.6s</div></div>
+        <div class="chip c-mana"><div class="l">MANA / HIT</div><div class="v">5</div></div>
+        <div class="chip c-mana"><div class="l">MANA</div><div class="v">35</div></div>
+        <div class="chip c-crit"><div class="l">CRIT</div><div class="v">10%</div></div>
+      </div>
+      <div class="sect">
+        <div class="label">SIGNATURE · <span class="mana">◈ 35 MANA</span></div>
+        <div class="rule-name">Backstab</div>
+        <div class="rule">The current target takes 25 <em>damage</em>.</div>
+      </div>
+      <div class="sect">
+        <div class="label">BASIC ATTACK</div>
+        <div class="rule-name">Twin Daggers</div>
+        <div class="rule">Deals 9 <em>damage</em> every 0.6s at <b>reach</b> 1. 10% critical chance.</div>
+      </div>
+      <div class="deferred"><span>◆</span><span class="t">PASSIVE · COMBAT START</span><span>AMBUSH</span></div>
+      <div class="grow"></div>
+      <div class="actions">
+        <div class="btn">FORGE CEILING · WORN</div>
+        <div class="btn">MOVE TO RESERVE</div>
+        <div class="btn">DISMISS · <span class="cost">⧖ 2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rail">
+  <div class="identity">
+    <div class="eyebrow">WARBAND</div>
+    <div class="cap">FIELD 3 / 3</div>
+    <div class="manage">MANAGE WARBAND</div>
+  </div>
+  <div class="slots">
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png');"><div class="rankb">C</div></div>
+      <div class="uname">PHALANX</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard selected">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/shade.png');"><div class="rankb">B</div></div>
+      <div class="uname">SHADE</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk filled">⚡</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/banneret.png');"><div class="rankb">C</div></div>
+      <div class="uname">BANNERET</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard lockedcard"><div class="num">4</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">5</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">6</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+  </div>
+  <div class="reserve">
+    <div class="rlabel">RESERVE<br>0 / 2</div>
+    <div class="ucard lockedcard" style="opacity:.8;"><div class="num" style="background:#3c6ca8;color:#eaf2fc;">1</div><div class="d">+</div><div class="t">OPEN</div></div>
+    <div class="ucard lockedcard" style="opacity:.8;"><div class="num" style="background:#3c6ca8;color:#eaf2fc;">2</div><div class="d">+</div><div class="t">OPEN</div></div>
+  </div>
+  <div class="armory">
+    <div class="a1">ARMORY</div>
+    <div class="a2">0 STORED</div>
+    <div class="a3">OPEN DRAWER ▴</div>
+  </div>
+</div>
+
+<div class="note">STRUCTURAL PROTOTYPE · 1600×900 REFERENCE</div>
+<script>
+  if (location.hash === "#drawer") document.body.classList.add("drawer-open");
+</script>
+</body>
+</html>

@@ -15,3 +15,9 @@ client/Assets/GeneratedAssets/
 # UI QA / capture artifacts — synced for review, regenerable, never history
 client/TempCaptures/
 .playwright-mcp/
+
+# KayKit source packs unpacked for curation; only the curated subset lives in client/Assets.
+art-staging/
+
+# Research scratchpad — subagent findings, not a deliverable.
+tmp/

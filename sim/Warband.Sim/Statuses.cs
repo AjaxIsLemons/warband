@@ -50,6 +50,9 @@ namespace Warband.Sim
                           // cannot put a unit in the same Company twice. Stamped at BattleStart
                           // so PLACEMENT decides the roster, then read by radius-free selectors:
                           // the muster law of ADR 0014 survives the drift the fight causes.
+        Omitted,          // Missing Hour: alive but outside combat. Cannot act, be targeted,
+                          // receive effects, trigger personal rules, or occupy a hex. Its other
+                          // status clocks pause until the scheduled UnitReturned event.
     }
 
     public sealed class Status

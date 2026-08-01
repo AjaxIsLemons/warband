@@ -174,34 +174,6 @@
     font-size: 10px;
 }
 
-.feedback-label {
-    position: absolute;
-    left: 50%;
-    bottom: 374px;
-    width: 520px;
-    margin-left: -260px;
-    padding-left: 12px;
-    padding-right: 12px;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    color: rgb(236, 240, 248);
-    background-color: rgba(13, 18, 27, 0.90);
-    border-left-width: 2px;
-    border-left-color: rgb(76, 145, 247);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    font-size: 11px;
-    -unity-text-align: middle-center;
-    white-space: normal;
-}
-
-.feedback-label--error {
-    border-left-color: rgb(231, 91, 79);
-    color: rgb(255, 200, 194);
-}
-
 .muster-drawer {
     position: absolute;
     left: 24px;

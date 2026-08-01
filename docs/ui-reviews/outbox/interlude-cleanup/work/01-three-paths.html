@@ -1,0 +1,239 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>01 three paths</title>
+<style>
+  :root{
+    --ink:#070B11; --obsidian:#0D141E; --slate:#162131; --slate2:#1A2739;
+    --iron:#40536B; --iron-dim:rgba(64,83,107,.55); --ash:#8C9AAF; --bone:#ECE8DF;
+    --sand:#D9A43A; --blue:#68A5E7; --verdant:#65C99A; --blood:#B44C43;
+    --mana:#45C8C0; --haste:#B39DF3; --dmg:#E0755A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-variant-emoji:text;width:2554px;height:1303px;overflow:hidden;background:var(--ink);
+    font-family:'Adwaita Sans','Segoe UI','DejaVu Sans',sans-serif;color:var(--bone)}
+  .kw-mana{color:var(--mana);font-weight:600}.kw-shield{color:var(--blue);font-weight:600}
+  .kw-haste{color:var(--haste);font-weight:600}.kw-dmg{color:var(--dmg);font-weight:600}
+  .kw-heal{color:var(--verdant);font-weight:600}.kw-reach{color:var(--blue);font-weight:600}
+  .kw-sand{color:var(--sand);font-weight:600}
+
+  /* ---- schematic dimmed workbench behind the scrim ---- */
+  .backdrop{position:absolute;inset:0;opacity:.55}
+  .bd-top{position:absolute;top:0;left:0;right:0;height:96px;border-bottom:1px solid var(--iron-dim);
+    display:flex;align-items:center;padding:0 40px;gap:60px}
+  .bd-top .act{font-size:13px;letter-spacing:2px;color:var(--ash)}
+  .bd-top .name{font-size:30px;font-weight:800;letter-spacing:4px;color:var(--bone)}
+  .bd-top .sand-pill{margin-left:auto;border:1px solid var(--sand);color:var(--sand);
+    padding:10px 22px;font-size:22px;font-weight:700}
+  .bd-top .breach{border:1px solid var(--iron);color:var(--ash);padding:12px 26px;
+    font-size:15px;letter-spacing:2px;font-weight:700}
+  .bd-rail{position:absolute;top:130px;left:24px;width:520px;bottom:180px;
+    border:1px solid var(--iron-dim);background:var(--obsidian)}
+  .bd-rail .h{padding:18px 22px;font-size:12px;letter-spacing:2px;color:var(--ash)}
+  .bd-band{position:absolute;left:0;right:0;bottom:0;height:150px;border-top:1px solid var(--iron-dim);
+    background:var(--obsidian)}
+  .scrim{position:absolute;inset:0;background:rgba(3,6,11,.88)}
+
+  /* ---- the modal ---- */
+  .modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:2150px;background:rgba(9,16,25,.998);
+    border:1px solid rgba(102,132,168,.8);border-left:3px solid var(--sand);
+    padding:30px 38px 26px}
+  .mhead{display:flex;align-items:flex-end;gap:40px;margin-bottom:24px}
+  .mhead .eyebrow{color:var(--sand);font-size:13px;font-weight:700;letter-spacing:3px}
+  .mhead h1{font-size:33px;font-weight:800;margin-top:6px;letter-spacing:.3px}
+  .mhead .brief{color:var(--ash);font-size:14px;margin-top:8px}
+  .mrule{margin-left:auto;max-width:430px;border:1px solid var(--iron-dim);
+    background:var(--obsidian);padding:12px 16px;color:var(--ash);font-size:12.5px;line-height:1.5}
+  .mrule b{color:var(--bone)}
+
+  .paths{display:flex;gap:22px;align-items:stretch}
+  .path{border:1px solid var(--iron-dim);background:rgba(13,20,30,.6);padding:16px;
+    display:flex;flex-direction:column}
+  .path-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .path-glyph{width:34px;height:34px;border:1px solid var(--iron);display:flex;align-items:center;
+    justify-content:center;font-size:17px;color:var(--bone);align-self:center}
+  .path-name{font-size:15px;font-weight:800;letter-spacing:2.5px;color:var(--bone)}
+  .path-sub{color:var(--ash);font-size:12px}
+  .path-meaning{color:var(--ash);font-size:12px;margin:2px 0 14px 46px}
+  .cards{display:flex;gap:14px;flex:1}
+
+  .card{background:var(--slate);border:1px solid var(--iron-dim);border-top:2px solid var(--iron);
+    padding:16px 18px;display:flex;flex-direction:column;width:296px}
+  .card.hover{border-color:var(--blue);border-top-color:var(--blue);background:var(--slate2)}
+  .c-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  .c-icon{width:40px;height:40px;border:1px solid var(--iron);background:var(--obsidian);
+    display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+  .c-class{color:var(--ash);font-size:10px;font-weight:700;letter-spacing:1.5px}
+  .c-title{font-size:19px;font-weight:800;line-height:1.15;margin-top:3px;
+    overflow-wrap:anywhere}
+  .rule-block{border-left:2px solid var(--iron);padding:8px 0 8px 12px;margin:6px 0}
+  .rb-trigger{color:var(--ash);font-size:9.5px;font-weight:700;letter-spacing:1.5px}
+  .rb-name{color:var(--bone);font-size:11px;font-weight:800;letter-spacing:1px;margin-top:2px}
+  .rb-text{color:#B4C5DA;font-size:12.5px;line-height:1.5;margin-top:5px}
+  .chips{display:flex;gap:6px;margin-top:auto;padding-top:12px;flex-wrap:wrap}
+  .chip{border:1px solid var(--iron-dim);background:var(--obsidian);padding:5px 9px;
+    font-size:10.5px;font-weight:700;color:var(--ash)}
+  .chip b{color:var(--bone);margin-left:5px}
+  .chip.good b{color:var(--verdant)}
+  .tag{margin-top:9px;color:var(--iron);font-size:9.5px;font-weight:700;letter-spacing:1.2px}
+
+  /* treasury gets its own compact shape */
+  .card.treasury{width:300px;border-top:2px solid var(--sand);justify-content:flex-start}
+  .t-amount{font-size:44px;font-weight:900;color:var(--sand);letter-spacing:1px;margin:14px 0 2px}
+  .t-amount span{font-size:19px;letter-spacing:3px}
+  .mfoot{display:flex;align-items:center;margin-top:22px;color:var(--ash);font-size:12.5px}
+  .mfoot .cap{margin-left:auto;color:var(--ash)}
+  .mfoot .cap b{color:var(--verdant);font-weight:700}
+</style></head>
+<body>
+
+<div class="backdrop">
+  <div class="bd-top">
+    <div><div class="act">ACT 1 / 3</div><div class="name">WORKBENCH</div></div>
+    <div><div class="act" style="color:var(--sand)">BEAT 3 / 5</div>
+      <div style="color:var(--ash);font-size:15px;margin-top:6px">No battle here. Choose certainty, equipment, or a run-wide rule.</div></div>
+    <div class="sand-pill">⌛︎ 16</div>
+    <div class="breach">TO THE BREACH →</div>
+  </div>
+  <div class="bd-rail"><div class="h">LIVE MARKET · 5 LIVE OFFERS</div></div>
+  <div class="bd-band"></div>
+</div>
+<div class="scrim"></div>
+
+<div class="modal">
+  <div class="mhead">
+    <div>
+      <div class="eyebrow">INTERLUDE</div>
+      <h1>Choose what this quiet Hour leaves behind</h1>
+      <div class="brief">No battle here. Choose certainty, equipment, or a run-wide rule.</div>
+    </div>
+    <div class="mrule"><b>Every offered reward is shown before you choose.</b><br>
+      The choice also unlocks the next field capacity.</div>
+  </div>
+
+  <div class="paths">
+
+    <div class="path">
+      <div class="path-head"><div class="path-glyph">◇</div>
+        <div><div class="path-name">TREASURY</div></div></div>
+      <div class="path-meaning">Certainty — a fixed reserve</div>
+      <div class="cards">
+        <div class="card treasury">
+          <div class="c-top"><div class="c-icon">◇</div>
+            <div><div class="c-class">FIXED · NO FURTHER CHOICE</div></div></div>
+          <div class="t-amount">+5 <span>SAND</span></div>
+          <div class="rule-block">
+            <div class="rb-trigger">TREASURY · FIXED</div>
+            <div class="rb-name">CERTAIN RESERVE</div>
+            <div class="rb-text">Take a fixed reserve with no equipment choice.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="path">
+      <div class="path-head"><div class="path-glyph">⚔︎</div>
+        <div><div class="path-name">ARMORY</div></div></div>
+      <div class="path-meaning">One piece of Worn equipment</div>
+      <div class="cards">
+        <div class="card">
+          <div class="c-top"><div class="c-icon">⚔︎</div>
+            <div><div class="c-class">WORN · SABRE</div><div class="c-title">Officer's Sabre</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">BASIC ATTACK · ALWAYS</div>
+            <div class="rb-name">BASIC ATTACK</div>
+            <div class="rb-text">Deals 7 every 0.7s at <span class="kw-reach">reach</span> 1.
+              Gains 7 <span class="kw-mana">Mana</span> per completed swing.</div>
+          </div>
+          <div class="rule-block">
+            <div class="rb-trigger">MASTERY · SPECIALISTS</div>
+            <div class="rb-name">SABRE MASTERY</div>
+            <div class="rb-text">The first auto after each cast is a guaranteed crit.</div>
+          </div>
+          <div class="chips"><div class="chip">POWER<b>7</b></div>
+            <div class="chip">CADENCE<b>0.7s</b></div><div class="chip">REACH<b>1</b></div></div>
+          <div class="tag">WORN → HONED → RELIC</div>
+        </div>
+        <div class="card hover">
+          <div class="c-top"><div class="c-icon">✚︎</div>
+            <div><div class="c-class">WORN · CENSER</div><div class="c-title">Censer</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">BASIC ATTACK · ALWAYS</div>
+            <div class="rb-name">RESTORING ATTACK</div>
+            <div class="rb-text"><span class="kw-heal">Heals</span> the most wounded ally for 7
+              every 1.0s at <span class="kw-reach">reach</span> 3. Gains 10
+              <span class="kw-mana">Mana</span> per completed swing.</div>
+          </div>
+          <div class="rule-block">
+            <div class="rb-trigger">MASTERY · SPECIALISTS</div>
+            <div class="rb-name">CENSER MASTERY</div>
+            <div class="rb-text">Overhealing becomes <span class="kw-shield">Shield</span>.</div>
+          </div>
+          <div class="chips"><div class="chip">POWER<b>7</b></div>
+            <div class="chip">CADENCE<b>1.0s</b></div><div class="chip">REACH<b>3</b></div></div>
+          <div class="tag">WORN → HONED → RELIC</div>
+        </div>
+        <div class="card">
+          <div class="c-top"><div class="c-icon">◈</div>
+            <div><div class="c-class">TRINKET</div><div class="c-title">Deepwell Reliquary</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">EQUIPMENT · PASSIVE</div>
+            <div class="rb-name">TRINKET RULE</div>
+            <div class="rb-text">Signature threshold +15 <span class="kw-mana">Mana</span>.
+              Always: +3 basic <span class="kw-dmg">power</span>.</div>
+          </div>
+          <div class="chips"><div class="chip">MANA<b>+15</b></div>
+            <div class="chip good">POWER<b>+3</b></div></div>
+          <div class="tag">ONE EQUIPPED TRINKET PER CHAMPION</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="path">
+      <div class="path-head"><div class="path-glyph">⌛︎</div>
+        <div><div class="path-name">HOURSTONE</div></div></div>
+      <div class="path-meaning">One run-wide law, bound for the rest of the run</div>
+      <div class="cards">
+        <div class="card">
+          <div class="c-top"><div class="c-icon">⌛︎</div>
+            <div><div class="c-class">RUN-WIDE RULE</div><div class="c-title">Bronze Testament</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">HOURSTONE · ALWAYS</div>
+            <div class="rb-name">HOURSTONE LAW</div>
+            <div class="rb-text">When combat starts: Grant 20 <span class="kw-shield">Shield</span>
+              to allies within 99 <span class="kw-reach">hexes</span>.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="c-top"><div class="c-icon">⌛︎</div>
+            <div><div class="c-class">RUN-WIDE RULE</div><div class="c-title">The Wound Clock</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">HOURSTONE · ALWAYS</div>
+            <div class="rb-name">HOURSTONE LAW</div>
+            <div class="rb-text">After <span class="kw-dmg">damage</span> is dealt if the target is
+              allied and the event did not come from the overtime storm: Grant 5
+              <span class="kw-mana">Mana</span> to the triggering target.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="c-top"><div class="c-icon">⌛︎</div>
+            <div><div class="c-class">RUN-WIDE RULE</div><div class="c-title">The Third Chime</div></div></div>
+          <div class="rule-block">
+            <div class="rb-trigger">HOURSTONE · ALWAYS</div>
+            <div class="rb-name">HOURSTONE LAW</div>
+            <div class="rb-text">After every 3rd time an ally casts their signature: Apply
+              <span class="kw-haste">Haste</span> 20% to allies within 99
+              <span class="kw-reach">hexes</span> for 3s.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mfoot">
+    <div>One choice seals the Hour. Armory gear arrives Worn · Hourstone laws hold for the rest of the run.</div>
+    <div class="cap">This Interlude also unlocks <b>FIELD 4</b></div>
+  </div>
+</div>
+
+</body></html>

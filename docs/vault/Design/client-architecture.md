@@ -13,11 +13,12 @@ Bring-up (item 4), render polish (4b) and the PoC shell (4c) are built and verif
   and the shell parks it on any transition to a non-board screen.
 - **Shell pattern (extend, don't fork):** `RunShellModel` (plain view-models) · `IRunScreenView` +
   `RunShellActions` (render out, intent in) · `RunShell` (router, and the ONLY place content ids
-  become words). Flow is `ManagementView` → `WagerView` → `DeployView` → board-only Fight;
-  management still shares one plain `PlanningModel`.
+  become words). Flow is `RecruitView` → `WorkbenchView` (`RunScreen.Management`) → `WagerView`
+  → `DeployView` → board-only Fight; the Hall still shares one plain `PlanningModel`.
   `PresentationCatalog` owns art/copy/icon references; composed `UnitDef` owns every mechanical
-  number. `WarbandCard` and `InspectorPanel` are shared UXML-backed renderers;
-  `PlanningWorkspaceStyles.uss` owns layout/motion tokens.
+  number. `CardModel` is shared hydrated data; purpose-built `MusterCard`, `MarketOfferCard`,
+  Workbench renderers, and `InspectorPanel` own the current surfaces.
+  `PlanningWorkspaceStyles.uss` retains the shared card/interaction paint tokens.
   **Views may not reference `Warband.*`, so a raw id physically cannot reach the UI.**
   The opening draft is the deliberate exception to universal-card reuse: `MusterCard` accepts only
   three facts and two rules, and exact mechanics disclose inside its portrait.
@@ -26,6 +27,12 @@ Bring-up (item 4), render polish (4b) and the PoC shell (4c) are built and verif
   battlefield colour has one owner, the signature-matched tells in `tuning.json`.
 - **Tuning:** `StreamingAssets/tuning.json` + F1 debug cockpit (auto-generates sliders by
   reflection). Hot-reload, no recompile. F2 is the Flow Lab preview.
+- **Revision fullscreen rendering:** `RevisionScreenEffect` is the presentation-only state seam;
+  `RevisionFractureRendererFeature` composites the complete board after transparents and before
+  post-processing. Renderer wiring is a Unity-owned serialized change: run
+  `Warband/Revision/Install Temporal Fault Renderer`, never patch `PC_Renderer.asset` or
+  `Mobile_Renderer.asset` by hand. `Warband/Revision/Fracture Lab` drives and captures the effect
+  without mutating run or sim state.
 - **Reused USS across shell and Planning:** inherited *position* is context, inherited *paint* is
   language — override the first, keep the second.
 

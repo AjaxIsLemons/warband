@@ -1,0 +1,237 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>04 free market</title>
+<style>
+  :root{
+    --ink:#070B11; --obsidian:#0D141E; --slate:#162131; --slate2:#1A2739;
+    --iron:#40536B; --iron-dim:rgba(64,83,107,.55); --ash:#8C9AAF; --bone:#ECE8DF;
+    --sand:#D9A43A; --blue:#68A5E7; --verdant:#65C99A; --blood:#B44C43;
+    --mana:#45C8C0; --haste:#B39DF3; --dmg:#E0755A;
+    --cls-weapon:#C95744; --cls-trinket:#5B8FD9; --cls-inscription:#D9A43A;
+    --cls-treasury:#D9A43A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-variant-emoji:text;width:2554px;height:1303px;overflow:hidden;background:var(--ink);
+    font-family:'Adwaita Sans','Segoe UI','DejaVu Sans',sans-serif;color:var(--bone)}
+  .kw-mana{color:var(--mana);font-weight:600}.kw-shield{color:var(--blue);font-weight:600}
+  .kw-haste{color:var(--haste);font-weight:600}.kw-dmg{color:var(--dmg);font-weight:600}
+  .kw-heal{color:var(--verdant);font-weight:600}.kw-reach{color:var(--blue);font-weight:600}
+
+  /* top bar — same as workbench */
+  .top{height:100px;border-bottom:1px solid var(--iron-dim);display:flex;align-items:center;
+    padding:0 34px;gap:56px}
+  .top .id{border-left:4px solid var(--sand);padding-left:22px}
+  .top .act{font-size:13px;letter-spacing:2px;color:var(--ash)}
+  .top .name{font-size:31px;font-weight:800;letter-spacing:3px;margin-top:3px}
+  .top .beat{color:var(--sand);font-size:15px;letter-spacing:1.5px;font-weight:800}
+  .top .brief{color:var(--ash);font-size:15px;margin-top:7px}
+  .top .sand-pill{margin-left:auto;border:1px solid var(--sand);background:rgba(217,164,58,.08);
+    color:var(--sand);padding:12px 24px;font-size:23px;font-weight:800}
+  .top .breach{border:1px solid var(--iron);color:var(--ash);padding:16px 28px;
+    font-size:15px;letter-spacing:2px;font-weight:800;opacity:.55}
+
+  /* market band */
+  .market{padding:18px 34px 20px;border-bottom:1px solid var(--iron-dim)}
+  .m-head{display:flex;align-items:baseline;margin-bottom:14px}
+  .m-head .l1{font-size:13px;font-weight:800;letter-spacing:2px}
+  .m-head .l1 .free{color:var(--verdant)}
+  .m-head .l2{color:var(--ash);font-size:13px;letter-spacing:1.2px;margin-left:18px}
+  .m-head .quiet{margin-left:auto;color:var(--ash);font-size:12px;letter-spacing:2px;
+    border:1px solid var(--iron-dim);padding:9px 16px}
+  .tiles{display:flex;gap:14px;align-items:stretch}
+  .gap{width:16px;display:flex;align-items:center;justify-content:center}
+  .gap i{width:1px;height:82%;background:var(--iron-dim)}
+
+  .tile{width:252px;height:212px;background:var(--slate);border:1px solid var(--iron-dim);
+    border-top:3px solid var(--iron);display:flex;flex-direction:column;padding:12px 14px;
+    position:relative}
+  .tile.weapon{border-top-color:var(--cls-weapon)}
+  .tile.trinket{border-top-color:var(--cls-trinket)}
+  .tile.inscription{border-top-color:var(--cls-inscription)}
+  .tile.treasury{border-top-color:var(--cls-treasury)}
+  .tile.selected{border-color:var(--blue);border-left:3px solid var(--blue);background:var(--slate2)}
+  .t-class{font-size:10px;font-weight:800;letter-spacing:1.6px;color:var(--ash)}
+  .t-title{font-size:17.5px;font-weight:800;margin-top:4px;line-height:1.1}
+  .t-art{flex:1;margin-top:10px;border:1px solid rgba(64,83,107,.4);background:var(--obsidian);
+    display:flex;align-items:center;justify-content:center;font-size:52px;color:var(--iron)}
+  .tile.inscription .t-art{color:var(--sand)}
+  .tile.treasury .t-art{color:var(--sand);font-size:30px;font-weight:900;letter-spacing:1px}
+  .t-cost{position:absolute;right:12px;bottom:10px;font-size:15px;font-weight:900;
+    letter-spacing:1.5px;color:var(--verdant)}
+
+  /* dossier */
+  .dossier{position:absolute;top:432px;bottom:172px;left:0;right:0;display:flex;
+    padding:24px 34px 0;gap:30px}
+  .d-left{flex:0 0 330px;display:flex;flex-direction:column}
+  .d-art{height:300px;border:1px solid var(--iron);background:var(--obsidian);position:relative;
+    display:flex;align-items:center;justify-content:center;font-size:120px;color:var(--iron)}
+  .d-art .src{position:absolute;left:10px;bottom:10px;background:rgba(9,16,25,.9);
+    border:1px solid var(--iron-dim);color:var(--ash);font-size:9.5px;font-weight:800;
+    letter-spacing:1.5px;padding:5px 9px}
+  .d-name{font-size:29px;font-weight:900;margin-top:18px}
+  .d-sub{color:var(--ash);font-size:13px;margin-top:6px}
+  .d-cost{margin-top:14px;font-size:19px;font-weight:900;letter-spacing:2px;color:var(--verdant)}
+  .d-right{flex:1;min-width:0;display:flex;flex-direction:column}
+  .stat-row{display:flex;gap:12px}
+  .stat{width:128px;border:1px solid var(--iron-dim);padding:11px 14px}
+  .stat .lbl{font-size:10px;font-weight:800;letter-spacing:1.4px}
+  .stat .val{font-size:22px;font-weight:900;margin-top:5px;color:var(--bone)}
+  .stat.power{background:rgba(201,87,68,.16);border-color:rgba(201,87,68,.5)}
+  .stat.power .lbl{color:#E08A76}
+  .stat.reach{background:rgba(91,143,217,.14);border-color:rgba(91,143,217,.5)}
+  .stat.reach .lbl{color:#8FB4E6}
+  .stat.cadence{background:rgba(179,157,243,.12);border-color:rgba(179,157,243,.45)}
+  .stat.cadence .lbl{color:var(--haste)}
+  .d-rules{display:flex;gap:60px;margin-top:30px;border-top:1px solid var(--iron-dim);padding-top:24px}
+  .d-rule{flex:1;max-width:760px}
+  .d-rule .cap{color:var(--ash);font-size:11.5px;font-weight:800;letter-spacing:1.8px}
+  .d-rule .nm{font-size:19px;font-weight:900;letter-spacing:.5px;margin-top:10px}
+  .d-rule .tx{color:#B4C5DA;font-size:15px;line-height:1.55;margin-top:8px}
+  .d-passive{margin-top:auto;margin-bottom:16px;border:1px solid var(--iron-dim);
+    background:rgba(13,20,30,.7);display:flex;align-items:center;gap:16px;padding:14px 18px}
+  .d-passive .g{color:var(--sand)}
+  .d-passive .cap{color:var(--ash);font-size:11px;font-weight:800;letter-spacing:1.6px}
+  .d-passive .nm{font-size:13.5px;font-weight:900;letter-spacing:1px}
+  .d-passive .tx{color:#B4C5DA;font-size:13px;margin-left:8px}
+  .d-note{color:var(--ash);font-size:12.5px;margin-bottom:14px}
+  .d-note b{color:var(--verdant)}
+  .actions{display:flex;gap:14px}
+  .btn-take{flex:1;background:#2C63A8;border:1px solid var(--blue);color:var(--bone);
+    text-align:center;padding:19px 0;font-size:16px;font-weight:900;letter-spacing:2.5px}
+  .btn-take span{color:var(--verdant)}
+
+  /* warband band */
+  .band{position:absolute;left:0;right:0;bottom:0;height:172px;border-top:1px solid var(--iron-dim);
+    background:var(--obsidian);display:flex;align-items:center;padding:0 24px;gap:14px}
+  .band .blk{color:var(--ash);font-size:12px;font-weight:800;letter-spacing:1.5px;
+    line-height:1.6;margin-right:10px}
+  .band .blk b{color:var(--bone);font-size:15px}
+  .hero{width:104px;height:128px;border:1px solid var(--iron);background:var(--slate);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    padding-bottom:8px;gap:6px;position:relative}
+  .hero .p{position:absolute;top:8px;left:8px;width:20px;height:20px;background:var(--sand);
+    color:#171004;font-size:11px;font-weight:900;display:flex;align-items:center;
+    justify-content:center;border-radius:50%}
+  .hero .face{font-size:34px;color:var(--iron);margin-bottom:auto;margin-top:26px}
+  .hero .n{font-size:10px;font-weight:800;letter-spacing:1px}
+  .hero.locked{opacity:.45;justify-content:center}
+  .hero.locked .n{color:var(--ash)}
+  .band .right{margin-left:auto;text-align:right;color:var(--ash);font-size:12px;
+    font-weight:800;letter-spacing:1.5px;line-height:1.7}
+  .band .right b{color:var(--bone);font-size:15px}
+</style></head>
+<body>
+
+<div class="top">
+  <div class="id"><div class="act">ACT 1 / 3</div><div class="name">WORKBENCH</div></div>
+  <div><div class="beat">BEAT 3 / 5 · INTERLUDE</div>
+    <div class="brief">No battle here. The quiet Hour deals first — take one offer, free.</div></div>
+  <div class="sand-pill">⌛︎ 16</div>
+  <div class="breach">TO THE BREACH →</div>
+</div>
+
+<div class="market">
+  <div class="m-head">
+    <div class="l1">THE QUIET HOUR · <span class="free">7 FREE OFFERS</span></div>
+    <div class="l2">TAKE ONE · THEN THE MARKET DEALS · SELECT FOR FULL DOSSIER</div>
+    <div class="quiet">REROLL RETURNS WITH THE MARKET</div>
+  </div>
+  <div class="tiles">
+    <div class="tile treasury">
+      <div class="t-class">TREASURY</div>
+      <div class="t-title">Certain Reserve</div>
+      <div class="t-art">+5 ⌛︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="gap"><i></i></div>
+    <div class="tile weapon selected">
+      <div class="t-class">WEAPON · ARMORY</div>
+      <div class="t-title">Officer's Sabre</div>
+      <div class="t-art">⚔︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="tile weapon">
+      <div class="t-class">WEAPON · ARMORY</div>
+      <div class="t-title">Censer</div>
+      <div class="t-art">✚︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="tile trinket">
+      <div class="t-class">TRINKET · ARMORY</div>
+      <div class="t-title">Deepwell Reliquary</div>
+      <div class="t-art">◈</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="gap"><i></i></div>
+    <div class="tile inscription">
+      <div class="t-class">INSCRIPTION · HOURSTONE</div>
+      <div class="t-title">Bronze Testament</div>
+      <div class="t-art">⌛︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="tile inscription">
+      <div class="t-class">INSCRIPTION · HOURSTONE</div>
+      <div class="t-title">The Wound Clock</div>
+      <div class="t-art">⌛︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+    <div class="tile inscription">
+      <div class="t-class">INSCRIPTION · HOURSTONE</div>
+      <div class="t-title">The Third Chime</div>
+      <div class="t-art">⌛︎</div>
+      <div class="t-cost">FREE</div>
+    </div>
+  </div>
+</div>
+
+<div class="dossier">
+  <div class="d-left">
+    <div class="d-art">⚔︎<div class="src">QUIET HOUR · WEAPON</div></div>
+    <div class="d-name">Officer's Sabre</div>
+    <div class="d-sub">Worn · Sabre · arrives in your Armory</div>
+    <div class="d-cost">FREE · SEALS THE HOUR</div>
+  </div>
+  <div class="d-right">
+    <div class="stat-row">
+      <div class="stat power"><div class="lbl">POWER</div><div class="val">7</div></div>
+      <div class="stat reach"><div class="lbl">REACH</div><div class="val">1</div></div>
+      <div class="stat cadence"><div class="lbl">CADENCE</div><div class="val">0.7</div></div>
+    </div>
+    <div class="d-rules">
+      <div class="d-rule">
+        <div class="cap">BASIC ATTACK</div>
+        <div class="nm">BASIC ATTACK</div>
+        <div class="tx">Deals 7 every 0.7s at <span class="kw-reach">Reach</span> 1.
+          Gains 7 <span class="kw-mana">Mana</span> per completed swing.</div>
+      </div>
+      <div class="d-rule">
+        <div class="cap">MASTERY · SPECIALISTS</div>
+        <div class="nm">SABRE MASTERY</div>
+        <div class="tx">The first auto after each cast is a guaranteed crit.</div>
+      </div>
+    </div>
+    <div class="d-passive">
+      <div class="g">◇</div>
+      <div><span class="cap">TIER&nbsp;&nbsp;</span><span class="nm">WORN → HONED → RELIC</span></div>
+      <div class="tx">Worn gear can be Honed later at the Armory.</div>
+    </div>
+    <div class="d-note">Every offered reward is shown before you choose. Taking one seals the
+      Hour, unlocks <b>FIELD 4</b>, and the Live Market deals its normal stock.</div>
+    <div class="actions">
+      <div class="btn-take">TAKE OFFICER'S SABRE · <span>FREE</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="band">
+  <div class="blk">WARBAND<br><b>FIELD 3 / 3</b></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">PHALANX</div></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">SHADE</div></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">BANNERET</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="blk" style="margin-left:14px">RESERVE<br><b>0 / 2</b></div>
+  <div class="right">ARMORY · <b>0 STORED</b><br>OPEN DRAWER ▲</div>
+</div>
+
+</body></html>

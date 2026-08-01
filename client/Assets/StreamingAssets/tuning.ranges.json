@@ -1515,6 +1515,90 @@
     "min": 1.0,
     "max": 40.0
   },
+  "revision.firstOpenSeconds": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "revision.reopenSeconds": {
+    "min": 0.05,
+    "max": 0.5
+  },
+  "revision.tearSeconds": {
+    "min": 0.05,
+    "max": 0.6
+  },
+  "revision.rewindBaseSeconds": {
+    "min": 0.5,
+    "max": 3.0
+  },
+  "revision.rewindPerSecond": {
+    "min": 0.0,
+    "max": 0.4
+  },
+  "revision.rewindMaxSeconds": {
+    "min": 0.5,
+    "max": 3.0
+  },
+  "revision.vacuumSeconds": {
+    "min": 0.02,
+    "max": 0.4
+  },
+  "revision.landingSeconds": {
+    "min": 0.05,
+    "max": 0.8
+  },
+  "revision.receiptSeconds": {
+    "min": 0.2,
+    "max": 2.0
+  },
+  "revision.receiptTailSeconds": {
+    "min": 0.1,
+    "max": 1.0
+  },
+  "revision.heldLight": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.heldSaturation": {
+    "min": -100.0,
+    "max": 20.0
+  },
+  "revision.heldVignette": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.fractureStrength": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.futureEchoAlpha": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.rewindEchoCount": {
+    "min": 0.0,
+    "max": 6.0
+  },
+  "revision.landingPunch": {
+    "min": 0.0,
+    "max": 1.5
+  },
+  "revision.landingShake": {
+    "min": 0.0,
+    "max": 0.6
+  },
+  "revision.reducedOpenSeconds": {
+    "min": 0.05,
+    "max": 1.0
+  },
+  "revision.reducedRewindSeconds": {
+    "min": 0.1,
+    "max": 2.0
+  },
+  "revision.reducedReceiptSeconds": {
+    "min": 0.2,
+    "max": 2.0
+  },
   "fx.deathLingerSeconds": {
     "min": 0.0,
     "max": 4.0
@@ -4670,5 +4754,41 @@
   "waning.warnLeadTicks": {
     "min": 0,
     "max": 900
+  },
+  "revision.fractureStrength": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.fractureEdgeWidthPx": {
+    "min": 0.5,
+    "max": 8.0
+  },
+  "revision.fractureEdgeGlow": {
+    "min": 0.0,
+    "max": 4.0
+  },
+  "revision.fractureRefractionPx": {
+    "min": 0.0,
+    "max": 16.0
+  },
+  "revision.fracturePlateSlipPx": {
+    "min": 0.0,
+    "max": 16.0
+  },
+  "revision.fractureChromaticPx": {
+    "min": 0.0,
+    "max": 6.0
+  },
+  "revision.fractureFutureOpacity": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "revision.fractureHeldSeamStrength": {
+    "min": 0.0,
+    "max": 0.5
+  },
+  "revision.fractureSandFlow": {
+    "min": 0.0,
+    "max": 2.0
   }
 }

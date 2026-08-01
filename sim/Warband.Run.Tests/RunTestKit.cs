@@ -141,8 +141,13 @@ namespace Warband.Run.Tests
         /// <summary>Scripted full-run driver for the unified Planning workspace.</summary>
         public static RunState PlayOut(RunController run, FightTier tier = FightTier.Fraying)
         {
-            while (!run.State.Over)   // Complete or Defeated
+            while (!run.State.Over)   // the generic test driver retires rather than entering endless
             {
+                if (run.State.Phase == RunPhase.VictoryChoice)
+                {
+                    run.RetireWithVictory();
+                    continue;
+                }
                 if (run.State.Phase == RunPhase.Reward)
                 {
                     run.ChooseBossReward(0);

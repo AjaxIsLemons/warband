@@ -225,6 +225,11 @@
     padding-right: 0;
 }
 
+.market-offer-card__price-button .market-offer-card__price {
+    min-width: 0;
+    margin-left: 0;
+}
+
 .market-offer-card__price .currency-amount__icon {
     width: 21px;
     height: 21px;
@@ -310,21 +315,6 @@
     border-top-color: rgba(218, 90, 90, 0.78);
     border-bottom-color: rgba(218, 90, 90, 0.78);
 }
-
-/* Live combat tooltip uses the same family tiles despite living in its own UIDocument. */
-.combat-tooltip-stats {
-    flex-direction: row;
-    margin-top: 5px;
-}
-
-.combat-tooltip-stat {
-    min-width: 78px;
-    min-height: 52px;
-    margin-right: 5px;
-}
-
-.combat-tooltip-stat__label { font-size: 9px; }
-.combat-tooltip-stat__value { font-size: 14px; }
 
 .layout--phone .mechanic-stat-tile {
     min-width: 62px;

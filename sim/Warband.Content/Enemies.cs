@@ -65,7 +65,7 @@ namespace Warband.Content
             };
             if (warded)
             {
-                // WARD: 60% damage reduction that its escorts are holding up. Disclosed in the
+                // WARD: 50% damage reduction that its escorts are holding up. Disclosed in the
                 // encounter's rule text; the answer is "kill the escorts first", which fights the
                 // player's instinct to focus the biggest threat. Not an immunity — every shared
                 // verb still lands on it, and burst still beats it once the Ward drops.

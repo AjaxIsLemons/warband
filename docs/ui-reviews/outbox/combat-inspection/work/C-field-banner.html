@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shared.css">
+<style>
+/* C — THE FIELD BANNER (wildcard). The hypothesis: there is only ONE inspection
+   surface, at two sizes, and it is always attached to the body. Hover raises a
+   compact banner over the miniature; clicking expands THAT banner in place into
+   the full record. No modal, no dock, no second visual language to learn.
+   Material is pushed hardest here: bronze rails, rivets, a hex bezel cut to the
+   board tiles — a scried record the Hourstone is holding up, not a panel. */
+
+.banner {
+  position: absolute;
+  background:
+    linear-gradient(180deg, rgba(36, 50, 68, 0.98) 0%, rgba(11, 17, 26, 0.99) 46%, rgba(7, 11, 17, 0.995) 100%);
+  border: 1px solid rgba(150, 122, 74, 0.55);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(214, 180, 120, 0.28),
+    inset 0 0 0 1px rgba(9, 14, 21, 0.9);
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 11px, 100% calc(100% - 11px),
+                     calc(100% - 11px) 100%, 11px 100%, 0 calc(100% - 11px), 0 11px);
+}
+/* bronze cap rail across the top — the "held up" edge */
+.banner__rail {
+  height: 4px;
+  background: linear-gradient(90deg,
+    rgba(150,122,74,0) 0%, var(--sand) 22%, rgb(238, 205, 148) 50%, var(--sand) 78%, rgba(150,122,74,0) 100%);
+  opacity: .85;
+}
+.rivet {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgb(232,200,144), rgb(122, 96, 54));
+}
+
+/* the tail that plants the banner on the body */
+.tail { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; pointer-events: none; }
+
+/* ---- collapsed: hover ---- */
+.banner--compact { width: 300px; padding: 0 0 9px; }
+.banner--compact .row { display: flex; gap: 10px; align-items: center; padding: 9px 12px 0 11px; }
+.banner--compact .bezel { width: 46px; height: 52px; }
+.hpbar {
+  margin: 8px 12px 0 11px; height: 7px;
+  background: rgba(8, 13, 20, 0.9);
+  border: 1px solid rgba(97, 125, 158, 0.4);
+  position: relative;
+}
+.hpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--health); }
+.hpbar u { position: absolute; top: 0; bottom: 0; background: rgba(200, 214, 232, 0.85); }
+.banner--compact .statuses { padding: 8px 12px 0 11px; }
+.banner--compact .footer-cue { padding: 8px 12px 0 11px; }
+
+/* ---- expanded: click ---- */
+.banner--record { width: 436px; }
+.record__cap {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px 12px 13px;
+  border-bottom: 1px solid rgba(150, 122, 74, 0.32);
+  background: linear-gradient(180deg, rgba(48, 42, 30, 0.42) 0%, rgba(11,17,26,0) 100%);
+}
+.record__cap .bezel { width: 76px; height: 86px; }
+.banner--record .inner { padding: 13px 14px 13px 13px; }
+.banner--record .stats { margin-bottom: 12px; }
+.banner--record .block { margin-bottom: 13px; }
+.banner--record .rule-row { margin-bottom: 12px; }
+.record__foot {
+  padding: 10px 14px 11px 13px;
+  border-top: 1px solid rgba(150, 122, 74, 0.28);
+  background: rgba(10, 16, 25, 0.6);
+}
+.record__foot .eyebrow { margin-bottom: 6px; }
+</style></head>
+<body>
+<div class="board"></div>
+
+<svg class="tail">
+  <!-- compact banner planted on the near-right body -->
+  <path d="M 468 502 L 492 534 L 512 502 Z" fill="rgba(13,20,30,0.99)" stroke="rgba(150,122,74,0.55)" stroke-width="1"/>
+  <!-- record banner planted on the far body -->
+  <path d="M 1004 176 L 986 208 L 1022 200 Z" fill="rgba(13,20,30,0.99)" stroke="rgba(150,122,74,0.55)" stroke-width="1"/>
+</svg>
+
+<!-- ================= HOVER : the compact banner ================= -->
+<div class="banner banner--compact" style="left:318px; top:352px;">
+  <div class="banner__rail"></div>
+  <div class="rivet" style="left:7px; top:9px;"></div>
+  <div class="rivet" style="right:7px; top:9px;"></div>
+  <div class="row">
+    <div class="bezel bezel--ally">
+      <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/cleric.png">
+    </div>
+    <div style="min-width:0; flex:1">
+      <div class="eyebrow">Ally &middot; Mending</div>
+      <div class="unit-name" style="font-size:23px">Sister Maren</div>
+    </div>
+  </div>
+  <div class="hpbar"><i style="width:64%"></i><u style="left:64%; width:11%"></u></div>
+  <div class="statuses">
+    <span class="pill p-time">Haste <em>4.0s</em></span>
+    <span class="pill p-ward">Fortified</span>
+  </div>
+  <div class="footer-cue"><span class="kbd">Click</span> full record</div>
+</div>
+<div class="state-tag" style="left:318px; top:326px;">Hover &middot; the banner rises</div>
+
+<!-- ================= CLICK : the same banner, expanded in place ============ -->
+<div class="banner banner--record" style="left:1004px; top:106px;">
+  <div class="banner__rail"></div>
+  <div class="rivet" style="left:7px; top:9px;"></div>
+  <div class="rivet" style="right:7px; top:9px;"></div>
+
+  <div class="record__cap">
+    <div class="bezel bezel--enemy">
+      <div class="crest">
+        <svg viewBox="0 0 100 100" fill="none" stroke="rgb(224,152,110)" stroke-width="6" stroke-linecap="round">
+          <path d="M14 78 L62 30"/><path d="M8 86 L26 86"/>
+          <path d="M30 88 Q62 88 86 44" stroke-width="4" stroke-dasharray="7 9" opacity=".75"/>
+          <circle cx="88" cy="34" r="7" fill="rgb(224,152,110)" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div style="min-width:0; flex:1">
+      <div class="eyebrow eyebrow--enemy">Artillery &middot; Enemy</div>
+      <div class="unit-name">Sanddrift Gunner</div>
+      <div class="identity-line">Matchlock Musket</div>
+    </div>
+    <div style="font-family:'BarlowCondensed'; font-weight:600; font-size:12px; letter-spacing:1.5px;
+                color:rgb(160,180,204); border:1px solid rgba(150,122,74,0.45); padding:3px 8px 2px;">&times;</div>
+  </div>
+
+  <div class="inner">
+    <div class="stats">
+      <div class="stat s-health"><div class="stat__label">Health</div><div class="stat__value">62<small>/85</small></div></div>
+      <div class="stat s-power"><div class="stat__label">Power</div><div class="stat__value">28</div></div>
+      <div class="stat s-reach"><div class="stat__label">Reach</div><div class="stat__value">5</div></div>
+      <div class="stat s-cadence"><div class="stat__label">Cadence</div><div class="stat__value">1.5<small>s</small></div></div>
+    </div>
+
+    <div class="rule-row">
+      <span class="rule-row__key">Targets</span>
+      <span class="rule-row__val"><b>Farthest</b>, held at <b>5 hexes</b></span>
+    </div>
+
+    <div class="block">
+      <div class="section-head">How it fights</div>
+      <div class="rule-text" style="margin-top:5px">Shoots past your front line at whoever stands
+        <span class="kw kw--space">farthest</span> back, and gives ground to keep that
+        <span class="kw kw--space">reach</span>.</div>
+    </div>
+
+    <div class="block">
+      <div class="section-head">Basic attack</div>
+      <div class="rule-name">Matchlock Musket</div>
+      <div class="rule-text">28 <span class="kw kw--offense">damage</span> every 1.5<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 5.</div>
+    </div>
+
+    <div class="deferred"><b>No signature</b><span>&mdash; it never casts</span></div>
+  </div>
+
+  <div class="record__foot">
+    <div class="eyebrow">Live</div>
+    <div class="statuses">
+      <span class="pill p-time">Slow <em>2.0s</em></span>
+      <span class="pill p-burn">Burn <em>14</em></span>
+    </div>
+  </div>
+</div>
+<div class="state-tag" style="left:1004px; top:80px;">Click &middot; the same banner, expanded in place</div>
+
+</body></html>

@@ -99,8 +99,13 @@ namespace Warband.Run
             var run = new RunController(seed, content, StarterWarband(content, cfg), cfg);
             var report = new RunReport { Seed = seed, Final = run.State };
 
-            while (!run.State.Over)   // Complete or Defeated — both terminal
+            while (!run.State.Over)   // default policy banks the win and retires before endless
             {
+                if (run.State.Phase == RunPhase.VictoryChoice)
+                {
+                    run.RetireWithVictory();
+                    continue;
+                }
                 if (run.State.Phase == RunPhase.Reward)
                 {
                     run.ChooseBossReward(0);

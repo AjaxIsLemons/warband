@@ -27,7 +27,6 @@ public class TuningData
     public NumberTune numbers = new NumberTune();
     public ImpactTune impact = new ImpactTune();
     public FieldTune fields = new FieldTune();
-    public NameplateTune nameplates = new NameplateTune();
     public StoryTune story = new StoryTune();
     public WaningTune waning = new WaningTune();
     public MotionTune motion = new MotionTune();
@@ -35,8 +34,10 @@ public class TuningData
     public BarsTune bars = new BarsTune();
     public ModelsTune models = new ModelsTune();
     public BoardTune board = new BoardTune();
+    public EnvironmentTune environment = new EnvironmentTune();
     public PlaybackTune playback = new PlaybackTune();
     public AudioTune audio = new AudioTune();
+    public RevisionPresentationTune revision = new RevisionPresentationTune();
     public FxTune fx = new FxTune();
     // Replace (not populate) on reload, or PopulateObject appends the file's tells to the existing
     // list every time. Only the list needs this; the groups above populate in place so live
@@ -75,26 +76,6 @@ public class FieldTune
     public float musterBrightFill  = 1f;
 }
 
-/// <summary>
-/// World-space unit nameplates (chassis name over the HP bar). Read live every frame like the
-/// field colors, so a tuning.json hot-reload resizes/recolors/hides them with no rebuild.
-/// </summary>
-[Serializable]
-public class NameplateTune
-{
-    /// <summary>OFF by default since 2026-07-27, on capture evidence rather than taste. A
-    /// nameplate hangs ~2.37 world units above its unit while adjacent rows project only ~0.73
-    /// units apart at the shipped 25° pitch, so each plate covers the units up to THREE rows
-    /// behind it. The first board capture of the session (skirmish, 6 units) shows exactly that:
-    /// six labels colliding, Bulwark's plate lying across the Berserker's body, Cleric floating
-    /// over units two rows away. The status icon row above each unit survives and stays readable —
-    /// the name labels are what turn a cluster into a smear.
-    /// Unit identity is carried by silhouette, the ground disc, and the hover card (item 21).
-    /// One F1 toggle to bring them back; revisit when the camera pitch rises (audit headline A).</summary>
-    public bool show = false;
-    [Range(0.005f, 0.2f)] public float characterSize = 0.018f;
-    public Color color = new Color(0.88f, 0.88f, 0.82f); // soft off-white — reads on the dark board
-}
 
 /// <summary>
 /// Fight-story overlay: the kill feed's lifetime/size, the win-banner size, and how long the
@@ -107,6 +88,10 @@ public class StoryTune
     public bool feedShow = true;
     [Range(1f, 10f)] public float feedLifeSeconds = 5f;
     [Range(0.005f, 0.2f)] public float feedSize = 0.02f;
+    /// <summary>Baseline-to-baseline distance as a multiple of characterSize. The current bold
+    /// font's 0.02-size bounds are 0.287 world-units tall; 17x gives 0.34 units and 18% leading,
+    /// keeping simultaneous death lines distinct instead of overlapping by nearly half.</summary>
+    [Range(12f, 24f)] public float feedLineSpacing = 17f;
     [Range(0.01f, 0.4f)] public float bannerSize = 0.056f;
     [Range(0f, 15f)] public float endHoldSeconds = 4f;
     /// <summary>Where the kill/announce feed sits, in hexes out from the board's +X edge and in
@@ -115,9 +100,10 @@ public class StoryTune
     /// own width out, and its billboarded lines run further still, so the frame has to be wide
     /// enough for the board PLUS a text column beside it. Narrow the FOV to make units bigger and
     /// the feed is the first thing off the screen. Negative gap pulls it back over the board's
-    /// top corner, which is where most games in the genre put it. Defaults reproduce the old
-    /// anchor exactly. See Design/sim-render-audit.md §3.</summary>
-    [Range(-6f, 6f)] public float feedGapHexes = 1.6f;
+    /// top corner, which is where most games in the genre put it. Since ADR 0027 widened the board,
+    /// the feed is right-anchored and defaults just inside that edge; its lines grow left into the
+    /// stable board frame instead of widening the camera budget. See Design/sim-render-audit.md §3.</summary>
+    [Range(-6f, 6f)] public float feedGapHexes = -0.25f;
     [Range(0f, 8f)] public float feedHeight = 3f;
 }
 
@@ -216,6 +202,60 @@ public class AudioTune
     public bool enabled = false;
 }
 
+/// <summary>
+/// The flagship Revision ceremony. Every duration is REAL time: battle speed changes how quickly
+/// the ordinary replay advances, never how long it takes the player to seize, unwrite, and land an
+/// Hour. Keeping the complete sentence here prevents the same beat from being retuned independently
+/// in RunShell, ReplayPlayer, UI Toolkit, and audio.
+/// </summary>
+[Serializable]
+public class RevisionPresentationTune
+{
+    [Range(0.2f, 2f)] public float firstOpenSeconds = 0.90f;
+    [Range(0.05f, 0.5f)] public float reopenSeconds = 0.18f;
+    [Range(0.05f, 0.6f)] public float tearSeconds = 0.25f;
+    [Range(0.02f, 0.5f)] public float scrubPerSecond = 0.30f;
+    [Range(0.02f, 0.4f)] public float scrubMinSeconds = 0.12f;
+    [Range(0.1f, 1f)] public float scrubMaxSeconds = 0.85f;
+    [Range(0.5f, 3f)] public float rewindBaseSeconds = 1.35f;
+    [Range(0f, 0.4f)] public float rewindPerSecond = 0.10f;
+    [Range(0.5f, 3f)] public float rewindMaxSeconds = 1.85f;
+    /// <summary>Battle-seconds of already-witnessed run-up replayed before the split (Jake
+    /// 2026-07-29). 0 disables the run-up and lands on the anchor exactly as before.</summary>
+    [Range(0f, 10f)] public float runUpSeconds = 5f;
+    /// <summary>How held the board stays while the run-up re-treads known ground, 0..1. Colour
+    /// floods back on the landing punch, so this is what makes the split read as the change.</summary>
+    [Range(0f, 1f)] public float runUpDress = 0.45f;
+    [Range(0.02f, 0.4f)] public float vacuumSeconds = 0.10f;
+    /// <summary>Hold ON the fork frame before the landing punch, so the split registers as a beat
+    /// instead of a flicker (Jake 2026-07-29: "pause briefly on the fork moment").</summary>
+    [Range(0f, 1.5f)] public float forkHoldSeconds = 0.55f;
+    [Range(0.05f, 0.8f)] public float landingSeconds = 0.30f;
+    [Range(0.2f, 2f)] public float receiptSeconds = 0.55f;
+    [Range(0.1f, 1f)] public float receiptTailSeconds = 0.35f;
+
+    [Range(0f, 1f)] public float heldLight = 0.58f;
+    [Range(-100f, 20f)] public float heldSaturation = -62f;
+    [Range(0f, 1f)] public float heldVignette = 0.46f;
+    [Range(0f, 1f)] public float fractureStrength = 0.85f;
+    [Range(0.5f, 8f)] public float fractureEdgeWidthPx = 2.2f;
+    [Range(0f, 4f)] public float fractureEdgeGlow = 1.45f;
+    [Range(0f, 16f)] public float fractureRefractionPx = 5.5f;
+    [Range(0f, 16f)] public float fracturePlateSlipPx = 8.5f;
+    [Range(0f, 6f)] public float fractureChromaticPx = 1.75f;
+    [Range(0f, 1f)] public float fractureFutureOpacity = 0.92f;
+    [Range(0f, 0.5f)] public float fractureHeldSeamStrength = 0.16f;
+    [Range(0f, 2f)] public float fractureSandFlow = 1f;
+    [Range(0f, 1f)] public float futureEchoAlpha = 0.34f;
+    [Range(0, 6)] public int rewindEchoCount = 3;
+    [Range(0f, 1.5f)] public float landingPunch = 0.52f;
+    [Range(0f, 0.6f)] public float landingShake = 0.18f;
+
+    [Range(0.05f, 1f)] public float reducedOpenSeconds = 0.25f;
+    [Range(0.1f, 2f)] public float reducedRewindSeconds = 0.55f;
+    [Range(0.2f, 2f)] public float reducedReceiptSeconds = 0.70f;
+}
+
 /// <summary>Board geometry (Jake 2026-07-25: "space the hexes out — things feel cluttered").
 /// hexSize = world spacing between hex centers (units reposition live; tiles rebuild on
 /// reload); tileScale = tile footprint within its cell (smaller = wider gap lines).</summary>
@@ -224,6 +264,118 @@ public class BoardTune
 {
     [Range(0.6f, 2f)] public float hexSize = 1.15f;
     [Range(0.5f, 1f)] public float tileScale = 0.9f;
+}
+
+/// <summary>The shard frame (item 35 Stage 1, `Design/theme.md` "salvage spine"): the battle is
+/// fought on the last coherent shard of a dying era, floating in the void outside time. Everything
+/// here is render-only dressing built under ~generated — the sim never knows it exists, and every
+/// vertex is a deterministic function of (tuning, seed) so contact sheets stay byte-identical.
+/// enabled=false restores the bare pre-item-35 board exactly.</summary>
+[Serializable]
+public class EnvironmentTune
+{
+    public bool enabled = true;
+
+    // The shard: a fractured cliff skirt falling away from the board's rim into the void.
+    [Range(0.2f, 3f)] public float shardMargin = 0.9f;    // rim overhang beyond the tiles, in hexSize units
+    [Range(0.5f, 6f)] public float shardDepth = 2.6f;     // how far the cliff falls
+    [Range(0f, 1f)] public float shardJagged = 0.55f;     // fracture displacement amount
+    [Range(1, 9999)] public int shardSeed = 7;            // pick a different tear
+    public Color shardRim = new Color(0.086f, 0.129f, 0.192f);   // Slate — the Hall's palette
+    public Color shardCliff = new Color(0.051f, 0.078f, 0.118f); // Obsidian
+    public Color shardKeel = new Color(0.027f, 0.043f, 0.067f);  // Ink
+
+    // Board surface: quantized per-tile value jitter + a short skirt on each tile so the grout
+    // channels read as recessed cuts (SSAO does the rest).
+    [Range(0f, 0.2f)] public float tileVariation = 0.05f;
+    [Range(0f, 0.15f)] public float tileBevelDepth = 0.06f;
+
+    // The void: an inverted gradient dome. At the play camera (pitch 42) the visible band beyond
+    // the far rim is BELOW the horizon, so the glow band sits below the equator by default.
+    public Color voidTop = new Color(0.030f, 0.038f, 0.058f);
+    public Color voidGlow = new Color(0.095f, 0.115f, 0.165f);
+    [Range(-1f, 1f)] public float voidGlowHeight = -0.35f;  // -1 = bottom pole, 0 = equator, 1 = top
+    [Range(0.02f, 0.8f)] public float voidGlowWidth = 0.25f;
+    [Range(0, 12)] public int debrisCount = 6;              // torn shard-lets adrift below the board
+
+    // Authored void backdrop (item 35 Stage 2). A feathered billboard hung in the deep rather than
+    // a dome texture: the shard's void art is a VERTICAL depth composition, and squashing it into
+    // an equirect latitude band destroys the very depth it exists to show (measured 2026-07-30).
+    // Empty path = gradient dome only, exactly as Stage 1 shipped.
+    public string voidArt = "";                             // Resources path under Board/
+    [Range(-180f, 180f)] public float voidArtYawDeg = -12f;  // bearing from board centre (0 = +Z, far side)
+    // Sits BEYOND the Tower (towerDistance 150) so the Tower still silhouettes against it — ADR 0010
+    // keeps the Tower the constant, so the backdrop must never occlude it.
+    [Range(20f, 215f)] public float voidArtDistance = 180f;  // inside the dome's 220 radius
+    [Range(-320f, 40f)] public float voidArtCenterY = -140f;
+    [Range(5f, 400f)] public float voidArtWidth = 240f;      // height follows the texture's aspect
+    [Range(0f, 1f)] public float voidArtOpacity = 1f;
+
+    // The Tower — the constant, visible from every shard (ADR 0010 law 3). It rises from DEEPER
+    // in the void: the play camera looks down, so a horizon tower would never be in frame.
+    public bool towerEnabled = true;
+    [Range(-180f, 180f)] public float towerYawDeg = -16f;   // direction from board center (0 = +Z, the far side)
+    [Range(30f, 200f)] public float towerDistance = 110f;
+    [Range(-80f, 60f)] public float towerTopY = -14f;       // where the spire tip reaches
+    [Range(20f, 160f)] public float towerHeight = 85f;      // rise from base to tip
+    public Color towerColor = new Color(0.035f, 0.045f, 0.070f);
+
+    // Light rig on top of the scene's authored key: cool fill + a warm Sand rim from behind —
+    // the one warmth in the frame (Sand is time; everything else in the void stays cold).
+    [Range(0f, 1.5f)] public float fillIntensity = 0.35f;
+    public Color fillColor = new Color(0.45f, 0.62f, 0.85f);   // Tower blue, desaturated
+    [Range(0f, 2f)] public float rimIntensity = 0.6f;
+    public Color rimColor = new Color(0.851f, 0.643f, 0.227f); // Sand
+
+    // Stage 2: the era's dressing kit planted on the fracture shelf.
+    public RimDressTune rim = new RimDressTune();
+}
+
+/// <summary>One entry in an era's dressing kit. `model` is a Resources path under Board/ — that
+/// indirection is the whole point: the next era (KayKit Medieval Hexagon, CC0) is a data edit
+/// here, not a code change.</summary>
+[Serializable]
+public class RimPropTune
+{
+    public string model = "";                            // e.g. "KayKit/Props/spear_A"
+    [Range(0f, 8f)] public float weight = 1f;            // relative share of the prop budget
+    // Size in WORLD UNITS along the prop's longest axis, not a raw multiplier. KayKit authors its
+    // packs at wildly different scales — a Weapons Bits spear mesh is 0.031u long (it only works in
+    // a hand slot because the rig's bone chain scales it), while a dungeon banner is 3.7u — so a raw
+    // multiplier would need a magic constant per kit and break "the next kit is a data edit".
+    [Range(0.05f, 6f)] public float targetSize = 1.2f;
+    [Range(0f, 1f)] public float sizeJitter = 0.25f;
+    [Range(-180f, 180f)] public float pitchDeg = 0f;     // stand up a prop authored lying down
+    [Range(-1f, 1f)] public float sink = 0.03f;          // bed the measured BASE into the shelf
+}
+
+/// <summary>Rim dressing (item 35 Stage 2): the kit planted along the shard's fracture shelf so the
+/// board edge reads as a place someone fought over. Placement is a deterministic function of
+/// (tuning, seed); enabled=false leaves the Stage 1 frame exactly as it shipped.</summary>
+[Serializable]
+public class RimDressTune
+{
+    public bool enabled = true;
+    [Range(0, 80)] public int count = 16;
+    [Range(1, 9999)] public int seed = 21;
+
+    // Where to stand, as a fraction of shardMargin measured OUT from the board's envelope. The
+    // BoardBase plane ends at exactly the envelope, and the cliff's ring 0 is +0.2 / ring 1 is +1.0
+    // — so positive values put props on the narrow falling ledge and NEGATIVE values plant them on
+    // the visible flat apron between the outermost tiles and the lip. The apron is what reads.
+    [Range(-1.4f, 1.4f)] public float bandInner = -0.42f;
+    [Range(-1.4f, 1.4f)] public float bandOuter = -0.06f;
+
+    // The camera lives on -Z. Props inside this arc stand between lens and front rank, so the
+    // near side stays bare (Stage 1 learned the same lesson with debris).
+    [Range(0f, 200f)] public float nearGapDeg = 96f;
+
+    [Range(0f, 30f)] public float leanDeg = 7f;          // seeded lean off vertical
+    [Range(0f, 180f)] public float yawJitterDeg = 25f;   // off the outward-facing normal
+    public Color tint = new Color(0.44f, 0.49f, 0.58f);  // multiplies the kit texture: desaturate + darken
+
+    [Newtonsoft.Json.JsonProperty(ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace)]
+    public List<RimPropTune> props = new List<RimPropTune>();
 }
 
 /// <summary>KayKit board models (fight-legibility Phase 2). enabled=false collapses every unit

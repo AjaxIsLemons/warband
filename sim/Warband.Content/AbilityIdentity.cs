@@ -29,12 +29,8 @@ namespace Warband.Content
         }
 
         /// <summary>Player-facing name for a resolved ability id — a node's if it names one,
-        /// else the chassis's, else the raw id (un-authored content stays readable).</summary>
-        public static string DisplayName(string abilityId)
-        {
-            if (ContentLexicon.Nodes.TryGetValue(abilityId, out var node)) return node.Name;
-            if (ContentLexicon.Chassis_.TryGetValue(abilityId, out var chassis)) return chassis.Name;
-            return abilityId;
-        }
+        /// else the base Signature's, else the raw id (un-authored content stays readable).</summary>
+        public static string DisplayName(string abilityId) =>
+            ContentLexicon.Signature(abilityId).Name;
     }
 }

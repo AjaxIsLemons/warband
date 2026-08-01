@@ -14,7 +14,6 @@ internal sealed class MenuView : IRunScreenView
     private readonly Label _tagline;
     private readonly Label _seed;
     private readonly Button _continue;
-    private readonly Label _notice;
     private readonly Label _version;
 
     public RunScreen Screen => RunScreen.Menu;
@@ -64,13 +63,6 @@ internal sealed class MenuView : IRunScreenView
         quit.AddToClassList("btn--ghost");
         column.Add(quit);
 
-        // A discarded save has to say so here. Failing CONTINUE silently would look like the
-        // button is broken, which is exactly the impression a lost run should not also make.
-        _notice = new Label();
-        _notice.AddToClassList("body-copy");
-        _notice.AddToClassList("feedback--error");
-        column.Add(_notice);
-
         _version = new Label();
         _version.AddToClassList("body-copy");
         _root.Add(_version);
@@ -83,13 +75,11 @@ internal sealed class MenuView : IRunScreenView
         _title.text = menu.Title;
         _tagline.text = menu.Tagline;
         _seed.text = menu.SeedLabel;
-        _notice.text = menu.Notice;
         _version.text = menu.VersionLine;
 
         SetDisplayed(_tagline, !string.IsNullOrEmpty(menu.Tagline));
         SetDisplayed(_seed, !string.IsNullOrEmpty(menu.SeedLabel));
         SetDisplayed(_continue, menu.CanContinue);
-        SetDisplayed(_notice, !string.IsNullOrEmpty(menu.Notice));
         SetDisplayed(_version, !string.IsNullOrEmpty(menu.VersionLine));
     }
 

@@ -55,6 +55,8 @@ public static class WarbandBuild
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "warband-builds");
     private static string ClientDir => Path.Combine(BuildsRoot, "WindowsClient");
     private static string ManifestPath => Path.Combine(BuildsRoot, "release.json");
+    private static string AutomationStatusPath => Path.Combine(BuildsRoot, "build-status.json");
+    private static bool s_AutomationBuildQueued;
 
     [Serializable]
     private sealed class ReleaseArtifact
@@ -77,6 +79,17 @@ public static class WarbandBuild
         public bool dirty;
         public string exe = ExeName;
         public ReleaseArtifact client;
+    }
+
+    [Serializable]
+    private sealed class AutomationStatus
+    {
+        public int schemaVersion = 1;
+        public string requestId;
+        public string state;
+        public string message;
+        public string version;
+        public string updatedAtUtc;
     }
 
     [MenuItem("Warband/Build Windows Client")]
@@ -142,6 +155,66 @@ public static class WarbandBuild
             DeletePath(ManifestPath);
             Debug.LogError($"[WarbandBuild] v{version} FAILED; no release manifest written.\n{ex}");
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Read-only readiness used by the homeserv release client. The project is deliberately built
+    /// in the already-open Editor: launching a second batch-mode Unity against this checkout would
+    /// collide with Library/ and violate the shared-editor lease.
+    /// </summary>
+    public static string AutomationReadiness()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return "PLAY_MODE";
+        if (EditorApplication.isCompiling) return "COMPILING";
+        if (EditorApplication.isUpdating) return "IMPORTING";
+        if (BuildPipeline.isBuildingPlayer) return "BUILDING";
+        if (s_AutomationBuildQueued) return "QUEUED";
+        return "READY";
+    }
+
+    /// <summary>
+    /// Queue a player build for the next editor update and return immediately to the MCP caller.
+    /// A full build can exceed an MCP tool timeout, so the homeserv follows
+    /// <see cref="AutomationStatusPath"/> instead. The old manifest is removed before this method
+    /// returns; polling can therefore never mistake the previous build for the requested one.
+    /// </summary>
+    public static void QueueWindowsClientBuild(string requestId)
+    {
+        if (string.IsNullOrWhiteSpace(requestId))
+            throw new ArgumentException("release request id is required", nameof(requestId));
+
+        string readiness = AutomationReadiness();
+        if (readiness != "READY")
+            throw new BuildFailedException($"cannot queue automated build: editor is {readiness}");
+
+        s_AutomationBuildQueued = true;
+        DeletePath(ManifestPath);
+        WriteAutomationStatus(requestId, "queued", "Waiting for the next Editor update.");
+        EditorApplication.delayCall += () => RunQueuedBuild(requestId);
+        Debug.Log($"[WarbandBuild] queued homeserv release build {requestId}.");
+    }
+
+    private static void RunQueuedBuild(string requestId)
+    {
+        try
+        {
+            WriteAutomationStatus(requestId, "running", "Unity player build is running.");
+            BuildWindowsClient();
+            var manifest = JsonUtility.FromJson<ReleaseManifest>(File.ReadAllText(ManifestPath));
+            WriteAutomationStatus(
+                requestId, "succeeded", "Unity player build succeeded.", manifest?.version ?? "");
+        }
+        catch (Exception ex)
+        {
+            WriteAutomationStatus(requestId, "failed", ex.ToString());
+            // BuildWindowsClient already logs the build failure. Keep this wrapper from throwing
+            // on a delayCall and destabilizing the shared Editor; the status file is the caller's
+            // authoritative failure channel.
+        }
+        finally
+        {
+            s_AutomationBuildQueued = false;
         }
     }
 
@@ -300,6 +373,24 @@ public static class WarbandBuild
         File.WriteAllText(temp, JsonUtility.ToJson(manifest, true));
         DeletePath(ManifestPath);
         File.Move(temp, ManifestPath);
+    }
+
+    private static void WriteAutomationStatus(
+        string requestId, string state, string message, string version = "")
+    {
+        Directory.CreateDirectory(BuildsRoot);
+        var status = new AutomationStatus
+        {
+            requestId = requestId,
+            state = state,
+            message = message,
+            version = version,
+            updatedAtUtc = DateTime.UtcNow.ToString("O"),
+        };
+        string temp = AutomationStatusPath + ".tmp";
+        File.WriteAllText(temp, JsonUtility.ToJson(status, true));
+        DeletePath(AutomationStatusPath);
+        File.Move(temp, AutomationStatusPath);
     }
 
     private static void DeletePath(string path)

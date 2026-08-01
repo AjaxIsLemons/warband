@@ -13,6 +13,9 @@ Read this first. One line per page; open only what's relevant. Update on every a
   universal equip, mastery riders, Worn→Honed→Relic temper, forge law, and fidelity seams.
 - [Design/inscriptions.md](Design/inscriptions.md) — Hourstone fiction and persistent
   Inscriptions: ownership, authoring families, cascade law, 24-effect rollout, and badge UI.
+- [Design/events-and-inscriptions.md](Design/events-and-inscriptions.md) — plan of record for item 15:
+  the Interlude becomes a data-driven event pool, Inscription `Duration`, why hero-scoped
+  inscriptions are rejected on evidence, and the 12→24 catalog target.
 - [Design/combat-grammar.md](Design/combat-grammar.md) — THE SOUL: clock + field, full effect vocabulary.
 - [Design/pve-encounters.md](Design/pve-encounters.md) — partial PvE authoring law: the
   encounter is the boss, it rules and teaches its act, mechanics are disclosed, shared
@@ -153,6 +156,19 @@ Read this first. One line per page; open only what's relevant. Update on every a
 - [Decisions/0023-authored-enemies-and-encounter-composition.md](Decisions/0023-authored-enemies-and-encounter-composition.md) —
   enemies are authored not composed, composition is the act's difficulty lever, the two disclosed
   rules that bend the shared model, and the encounter-brief contract.
+- [Decisions/0027-board-8x8.md](Decisions/0027-board-8x8.md) — the board is 8×8, not 8×6. Load-bearing
+  for camera framing, placement geometry, and every `scenarios.json` row.
+- [Decisions/0028-revisions.md](Decisions/0028-revisions.md) — the Revisions layer (2026-07-28), which
+  drives the revision VFX/SFX lane and several open play-pass items.
+- [Decisions/0029-one-frame-one-card.md](Decisions/0029-one-frame-one-card.md) — the workbench frame is
+  the game's main UI system; every post-round choice reuses the market card + dossier. Rank-up's modal
+  is the sole exception. Read before authoring any new choice surface.
+- [Decisions/0030-beyond-the-hour.md](Decisions/0030-beyond-the-hour.md) — defeating the Waning Crown
+  banks a real victory, then the existing Workbench offers retirement or a three-fight-plus-Crown
+  endless cycle using the existing Act 3 pool, economy, scaling, save, and telemetry systems.
+- [Decisions/0031-encounter-competence-ladder.md](Decisions/0031-encounter-competence-ladder.md) —
+  item 32's three-rung authoring instrument: no-response full-run bot, disclosed-rule responsive
+  floor, and deconfounded answer axes before targeted encounter composition changes.
 
 ## Projects
 - [Projects/balance-baseline.md](Projects/balance-baseline.md) — **committed golden numbers** for every
@@ -164,6 +180,8 @@ Read this first. One line per page; open only what's relevant. Update on every a
   log. Sessions plan from here (CLAUDE.md Planning SOP).
 - [Projects/play-pass.md](Projects/play-pass.md) — what to watch next time Jake plays (he
   playtests continuously — feedback, never a board item). Sessions keep it current.
+- [Projects/blocked.md](Projects/blocked.md) — the gate register: work that is real and still wanted
+  but cannot move, each entry naming its gate and its unblocker. Read before answering "what's next".
 - [Projects/roadmap-done-archive.md](Projects/roadmap-done-archive.md) — full detail of completed
   and parked roadmap items, the laws pages (5/5a/6), and state snapshots — cut out of the board
   2026-07-27/28. Read only when you need the blow-by-blow; the board is the priority list.
@@ -174,8 +192,23 @@ Read this first. One line per page; open only what's relevant. Update on every a
   per-class deltas, the new Shade flag, and a fresh (non-comparable) tier baseline.
 - [Projects/unity-mcp-playtests.md](Projects/unity-mcp-playtests.md) — stable editor bridge,
   deterministic remote stepping, UI capture, and domain-reload rules for Unity verification.
-- [Projects/planning-system.md](Projects/planning-system.md) — live Planning implementation:
-  boundary map, transactional actions, commit law, consumable/economy extension recipes,
-  Unity seams, verification, and remaining integrations.
+- [Projects/planning-system.md](Projects/planning-system.md) — ⚠ **not the roadmap planning SOP** (that
+  lives in `CLAUDE.md` + the roadmap's own Stages block). This is the in-game `PlanningSession`
+  implementation: boundary map, transactional actions, commit law, consumable/economy extension
+  recipes, Unity seams, verification, and remaining integrations.
+- [Projects/vfx-lab.md](Projects/vfx-lab.md) — the VFX Lab editor window (2026-07-29): all recipes
+  editable live, `Warband/VFX Lab/*` menu items. The iteration surface for combat FX.
+- [Projects/sweep-2026-07-23.md](Projects/sweep-2026-07-23.md) — the first balance sweep
+  (superseded by `sweep-2026-07-25.md`; kept for the delta).
+- [Projects/oath-probe-2026-07-24.md](Projects/oath-probe-2026-07-24.md) and
+  [Projects/oath-probe-2026-07-25.md](Projects/oath-probe-2026-07-25.md) — Last Oath `--oath`
+  what-if runs; the 07-25 pass is the one that answered "does placement choose the survivor?".
 
-*(Daily/ and Bugs/ get created when first needed.)*
+## Daily, Bugs, Inbox
+- `Daily/` — session notes, one per day, `2026-07-22` → present.
+- `Bugs/` — created when first needed.
+- `Inbox/` — ⚠ **undeclared staging area** holding unrouted design content (a UI/UX redesign brief, a
+  roster expansion plan, a market advanced-preview spec, plus reference images). Nothing in the
+  documented process says who drains it. Read before proposing anything in those areas, and note the
+  roster expansion plan sits against the `Design/content-budget.md` hard cap and the roadmap's
+  explicit "deliberately NOT proposed: more heroes".

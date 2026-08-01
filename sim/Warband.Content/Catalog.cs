@@ -207,6 +207,12 @@ namespace Warband.Content
                 // Paradox gating decides which SURFACES can offer the entry, so it changes what a
                 // run can reach — hashed for the same reason the spec offer pools are.
                 h.Add(Inscriptions[id].Paradox);
+                // Duration changes how many combats the rule actually rides for, so the same id can
+                // produce a different battle on the same seed. Without this, a retuned duration
+                // resumes a save silently under rules it was never played against — precisely the
+                // trap ContentVersion exists to catch.
+                h.Add((int)Inscriptions[id].Duration);
+                h.Add(Inscriptions[id].Fights);
             }
 
             // The spec offer pools decide which nodes a run can even reach, so a changed offer

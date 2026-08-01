@@ -1,7 +1,7 @@
 /*
- * Persistent Planning workspace. Durations are interaction tokens:
+ * Shared decision-card and interaction styles retained from the original Planning workspace.
+ * Durations are interaction tokens:
  * hover 90ms, selection 140ms, panel 180ms, purchase 260ms, rank 450ms, reward 500ms.
- * Reroll stagger (40ms/card, 300ms cap) is applied by PlanningView's pooled CardStrip.
  */
 
 .planning-workspace {
@@ -306,10 +306,6 @@
     top: 102px;
     bottom: 320px;
     width: 356px;
-}
-
-.planning-feedback {
-    bottom: 302px;
 }
 
 .planning-dock {

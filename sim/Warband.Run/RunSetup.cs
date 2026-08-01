@@ -49,7 +49,8 @@ namespace Warband.Run
         /// exception from deep inside the machine.
         /// </summary>
         public static RunController Begin(ulong seed, IRunContent content,
-                                          IReadOnlyList<string> pickedChassis, RunConfig? config = null)
+                                          IReadOnlyList<string> pickedChassis, RunConfig? config = null,
+                                          string revisionId = RevisionCatalog.BorrowedFutureId)
         {
             if (content == null) throw new ArgumentNullException(nameof(content));
             if (pickedChassis == null) throw new ArgumentNullException(nameof(pickedChassis));
@@ -62,7 +63,7 @@ namespace Warband.Run
                 throw new ArgumentException("cannot start with the same hero twice");
 
             var band = pickedChassis.Select(id => new HeroInstance { ChassisId = id }).ToList();
-            return new RunController(seed, content, band, cfg);
+            return new RunController(seed, content, band, cfg, revisionId);
         }
 
         /// <summary>How many recruits the player still owes before the run can begin.</summary>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: 2560px; height: 1440px; margin: 0; overflow: hidden; background: #07080d; }
+  body { font-family: "Arial Narrow", "Roboto Condensed", sans-serif; color: #e8edf5; }
+  .logical {
+    width: 1600px; height: 900px; transform: scale(1.6); transform-origin: top left;
+    position: relative; overflow: hidden;
+    background: #090b12 url("../../workbench-refactor/implementation/impl-1600x900-workbench-market-recruit.png") center/1600px 900px no-repeat;
+  }
+  .veil {
+    position: absolute; inset: 0;
+    background: rgba(4, 6, 12, .78);
+  }
+  .veil::before {
+    content: ""; position: absolute; inset: 58px 0 172px;
+    background: radial-gradient(circle at 50% 44%, rgba(35, 85, 117, .18), transparent 52%);
+  }
+  .scrim {
+    position: absolute; left: 170px; top: 108px; width: 1260px; height: 610px;
+    padding: 28px 34px 32px;
+    background: rgba(10, 14, 22, .98);
+    border: 1px solid #5c6678;
+    box-shadow: 0 18px 70px rgba(0,0,0,.78), inset 0 0 0 1px rgba(255,255,255,.025);
+  }
+  .bank {
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    height: 30px; color: #f0b62e; font-size: 13px; font-weight: 800; letter-spacing: 2.4px;
+  }
+  .bank::before, .bank::after { content: ""; width: 110px; height: 1px; background: #805f1d; }
+  .title { margin-top: 10px; text-align: center; font-size: 34px; line-height: 1; font-weight: 900; letter-spacing: .6px; }
+  .copy { margin: 13px auto 0; width: 830px; text-align: center; color: #aeb8ca; font-size: 16px; line-height: 1.35; }
+  .choices { display: flex; gap: 22px; margin-top: 27px; }
+  .card {
+    position: relative; flex: 1; height: 390px; padding: 22px 24px;
+    background: #101722; border: 1px solid #465267;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.04);
+  }
+  .card.retire { border-top: 3px solid #dda82c; }
+  .card.continue { border-top: 3px solid #4fa8dd; background: linear-gradient(155deg, #101824 20%, #0d1e2a 100%); }
+  .eyebrow { color: #8390a5; font-size: 12px; font-weight: 800; letter-spacing: 1.8px; }
+  .card h2 { margin: 12px 0 8px; font-size: 26px; line-height: 1.05; letter-spacing: .3px; }
+  .rule { color: #bdc7d6; font-size: 16px; line-height: 1.42; width: 90%; }
+  .seal {
+    width: 104px; height: 104px; margin: 26px auto 20px; display: grid; place-items: center;
+    border: 2px solid #be9028; border-radius: 50%; color: #e6b43d; font-size: 48px;
+    box-shadow: 0 0 24px rgba(216, 162, 35, .12);
+  }
+  .continue .seal {
+    border-color: #4798c8; color: #72c7f0; border-radius: 12px; transform: rotate(45deg);
+    box-shadow: 0 0 34px rgba(63, 173, 230, .18);
+  }
+  .continue .seal span { transform: rotate(-45deg); }
+  .facts { display: flex; justify-content: center; gap: 10px; margin-top: 6px; }
+  .fact { padding: 7px 11px; border: 1px solid #344156; background: #0b1019; color: #aab6c8; font-size: 12px; font-weight: 700; letter-spacing: .8px; }
+  .action {
+    position: absolute; left: 24px; right: 24px; bottom: 20px; height: 46px; display: grid; place-items: center;
+    border: 1px solid #5a6b84; border-radius: 4px; color: #dce5ef; font-size: 14px; font-weight: 900; letter-spacing: 1px;
+  }
+  .retire .action { border-color: #9e7a27; background: #2a2110; }
+  .continue .action { border-color: #63aee0; background: #235f9e; color: white; }
+  .note { position: absolute; right: 14px; bottom: 10px; color: #6f7889; font-size: 10px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div class="logical">
+  <div class="veil"></div>
+  <section class="scrim">
+    <div class="bank">VICTORY BANKED · THE WANING CROWN HAS FALLEN</div>
+    <div class="title">The Hour held. What happens next?</div>
+    <div class="copy">The authored run is won. Leave with the victory, or carry this exact warband into escalating cycles until a deeper Hour finally breaks it.</div>
+    <div class="choices">
+      <article class="card retire">
+        <div class="eyebrow">SEAL THE HOUR</div>
+        <h2>Retire with victory</h2>
+        <div class="rule">End the expedition here. The completed run and final warband become the record.</div>
+        <div class="seal">⌛</div>
+        <div class="facts"><span class="fact">3 ACTS CLEARED</span><span class="fact">VICTORY PRESERVED</span></div>
+        <div class="action">RETIRE WITH VICTORY</div>
+      </article>
+      <article class="card continue">
+        <div class="eyebrow">BEYOND THE HOUR</div>
+        <h2>Continue with this warband</h2>
+        <div class="rule">Enter three escalating fights and face the Waning Crown again. Defeat cannot erase the victory already earned.</div>
+        <div class="seal"><span>◇</span></div>
+        <div class="facts"><span class="fact">CYCLE 1</span><span class="fact">ACT 3 POOL</span><span class="fact">CROWN +25%</span></div>
+        <div class="action">CONTINUE BEYOND THE HOUR</div>
+      </article>
+    </div>
+    <div class="note">STRUCTURAL PROTOTYPE · ACTUAL WORKBENCH BACKDROP</div>
+  </section>
+</div>
+</body>
+</html>

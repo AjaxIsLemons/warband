@@ -17,6 +17,7 @@ internal sealed class MarketOfferCard
     private static VisualTreeAsset s_template;
 
     private readonly Action<string> _onSelected;
+    private readonly Action<string> _onActivated;
     private readonly Action<CardModel, VisualElement> _onHover;
     private readonly Action _onLeave;
     private readonly Label _classification;
@@ -31,14 +32,21 @@ internal sealed class MarketOfferCard
     private readonly Label _ruleName;
     private readonly Label _ruleCopy;
     private readonly VisualElement _commerce;
+    private readonly Label _mustered;
+    private readonly Label _slotBadge;
+    private readonly VisualElement _tierStrip;
+    private readonly Label _tierLabel;
     private readonly Label _held;
     private readonly Label _economyState;
+    private readonly Button _priceButton;
+    private readonly Label _buyLabel;
     private readonly HourstoneAmount _price;
     private readonly MarketOfferArtwork _artwork;
 
     private MarketOfferCardModel _model = new MarketOfferCardModel();
     private string _key = "";
     private bool _selectable;
+    private bool _confirmable;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     private string _lastLayoutWarning = "";
 #endif
@@ -47,9 +55,11 @@ internal sealed class MarketOfferCard
 
     public MarketOfferCard(Action<string> onSelected,
                            Action<CardModel, VisualElement> onHover = null,
-                           Action onLeave = null)
+                           Action onLeave = null,
+                           Action<string> onActivated = null)
     {
         _onSelected = onSelected;
+        _onActivated = onActivated;
         _onHover = onHover;
         _onLeave = onLeave;
 
@@ -82,13 +92,36 @@ internal sealed class MarketOfferCard
         _economyState = Required<Label>(Root, "economy-state");
         Label legacyPrice = Required<Label>(Root, "price");
         legacyPrice.RemoveFromHierarchy();
+        // Unit offers carry their tier + path state in the commerce row's dead left half —
+        // the rail cards' diamond language on the shop shelf (workbench-refactor).
+        _tierStrip = new VisualElement();
+        _tierStrip.AddToClassList("market-tier-strip");
+        _tierLabel = new Label();
+        _tierLabel.AddToClassList("market-tier-strip__label");
+        _tierStrip.Add(_tierLabel);
+        _commerce.Insert(0, _tierStrip);
+        _priceButton = new Button();
+        _priceButton.AddToClassList("market-offer-card__price-button");
+        _buyLabel = new Label("BUY");
+        _buyLabel.AddToClassList("market-offer-card__buy-label");
+        _priceButton.Add(_buyLabel);
         _price = new HourstoneAmount(0, "market-offer-card__price");
-        _commerce.Add(_price);
+        _priceButton.Add(_price);
+        _commerce.Add(_priceButton);
+        // Muster (workbench-frame): picked candidates trade the price corner for a
+        // MUSTERED mark + a gold slot badge.
+        _mustered = new Label("✓ MUSTERED");
+        _mustered.AddToClassList("market-offer-card__mustered");
+        _commerce.Add(_mustered);
+        _slotBadge = new Label();
+        _slotBadge.AddToClassList("market-offer-card__slot-badge");
+        Root.Add(_slotBadge);
 
         _artwork = new MarketOfferArtwork();
         _artVectorHost.Add(_artwork);
 
         Root.RegisterCallback<ClickEvent>(OnClick);
+        _priceButton.RegisterCallback<ClickEvent>(OnPriceClicked);
         Root.RegisterCallback<KeyDownEvent>(OnKeyDown);
         Root.RegisterCallback<PointerEnterEvent>(_ => _onHover?.Invoke(_model.Detail, Root));
         Root.RegisterCallback<PointerLeaveEvent>(_ => _onLeave?.Invoke());
@@ -104,6 +137,8 @@ internal sealed class MarketOfferCard
         _model = model ?? new MarketOfferCardModel();
         _key = _model.Key;
         _selectable = !_model.Sold && !_model.Disabled && !string.IsNullOrEmpty(_key);
+        _confirmable = _selectable && _model.Selected && _model.Affordable &&
+                       _model.CurrencyCost >= 0;
 
         Root.userData = _key;
         Root.SetEnabled(_selectable);
@@ -124,6 +159,14 @@ internal sealed class MarketOfferCard
         _held.text = _model.Frozen ? "HELD" : "";
         _economyState.text = _model.EconomyState;
         _price.Bind(_model.CurrencyCost);
+        _priceButton.SetEnabled(!_model.Selected || _confirmable);
+        _priceButton.tooltip = !_model.Selected
+            ? "Select this offer."
+            : _confirmable
+                ? $"Buy {_model.Title} for {_model.CurrencyCost} Hourstone."
+                : _model.CurrencyCost >= 0 && !_model.Affordable
+                    ? "Not enough Hourstone."
+                    : "This offer cannot be purchased right now.";
 
         string kind = KindName(_model.Kind);
         foreach (string value in KindClasses)
@@ -134,7 +177,7 @@ internal sealed class MarketOfferCard
         Root.EnableInClassList("market-offer-card--unaffordable", false);
         Root.EnableInClassList("market-offer-card--frozen", _model.Frozen);
         Root.EnableInClassList("market-offer-card--sold", _model.Sold);
-        WarbandCard.SetAccent(Root, _model.Accent);
+        DecisionCardPresentation.ApplyAccent(Root, _model.Accent);
 
         Texture2D texture = string.IsNullOrEmpty(_model.ArtworkResource)
             ? null
@@ -153,11 +196,45 @@ internal sealed class MarketOfferCard
         SetDisplayed(_qualifier, false);
         SetDisplayed(_rule, !_model.Sold && !string.IsNullOrEmpty(_model.ExactRule));
         SetDisplayed(_held, _model.Frozen);
-        SetDisplayed(_price, _model.CurrencyCost >= 0);
+        SetDisplayed(_priceButton, _model.CurrencyCost >= 0);
+        SetDisplayed(_buyLabel, _model.Selected);
+        bool mustered = _model.MusterSlot >= 0 && !_model.Sold;
+        Root.EnableInClassList("market-offer-card--mustered", mustered);
+        SetDisplayed(_mustered, mustered);
+        SetDisplayed(_slotBadge, mustered);
+        if (mustered)
+        {
+            _slotBadge.text = (_model.MusterSlot + 1).ToString();
+            Root.tooltip = $"{_model.Classification}. Mustered into slot " +
+                           $"{_model.MusterSlot + 1}. Select again to release.";
+        }
+        BindTierStrip();
         _artwork.SetKind(_model.Kind);
 
         SyncMetrics(_model.Metrics);
         MarketOfferPresentationContract.ValidateOrWarn(_model);
+    }
+
+    private void BindTierStrip()
+    {
+        bool shown = !_model.Sold && !string.IsNullOrEmpty(_model.TierLabel);
+        SetDisplayed(_tierStrip, shown);
+        while (_tierStrip.childCount > 1)
+            _tierStrip.RemoveAt(_tierStrip.childCount - 1);
+        if (!shown) return;
+        _tierLabel.text = _model.TierLabel;
+        foreach (RankTierSlotModel tier in _model.PathTiers)
+        {
+            var pip = new Label(
+                tier.State == RankTierSlotState.Selected ? "◆" :
+                tier.State == RankTierSlotState.Pending ? "◈" : "◇");
+            pip.AddToClassList("market-tier-strip__pip");
+            if (tier.State == RankTierSlotState.Selected)
+                pip.AddToClassList("market-tier-strip__pip--filled");
+            else if (tier.State == RankTierSlotState.Pending)
+                pip.AddToClassList("market-tier-strip__pip--pending");
+            _tierStrip.Add(pip);
+        }
     }
 
     private void SyncMetrics(IReadOnlyList<StatChipModel> models)
@@ -178,7 +255,21 @@ internal sealed class MarketOfferCard
 
     private void OnClick(ClickEvent evt)
     {
-        if (_selectable) _onSelected?.Invoke(_key);
+        if (!_selectable) return;
+        if (evt != null && evt.clickCount >= 2)
+            _onActivated?.Invoke(_key);
+        else
+            _onSelected?.Invoke(_key);
+    }
+
+    private void OnPriceClicked(ClickEvent evt)
+    {
+        if (!_selectable) return;
+        if (_confirmable)
+            _onActivated?.Invoke(_key);
+        else
+            _onSelected?.Invoke(_key);
+        evt.StopPropagation();
     }
 
     private void OnKeyDown(KeyDownEvent evt)
@@ -194,7 +285,7 @@ internal sealed class MarketOfferCard
         if (Root.panel == null || _model.Sold || Root.resolvedStyle.display == DisplayStyle.None)
             return;
         // Stock profile deliberately removes the entire mechanics/read region. Its layout
-        // contract is enforced by ManagementView against the visible identity + commerce dock;
+        // contract is enforced by the Workbench against the visible identity + commerce dock;
         // measuring a hidden rule label here reports intentional progressive disclosure as clip.
         if (_rule.parent != null &&
             _rule.parent.resolvedStyle.display == DisplayStyle.None)

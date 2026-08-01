@@ -15,7 +15,8 @@ using System.Collections.Generic;
 internal enum RunScreen
 {
     Menu,
-    Recruit,
+    // Recruit and RevisionDraft retired (workbench-frame): muster and the first-revision
+    // choice are Management states — the workbench is THE out-of-combat frame.
     Management,
     Wager,
     Planning,
@@ -39,9 +40,16 @@ internal enum PlanningTab
 internal enum PlanningBeat
 {
     Fight,
+    RevisionUpgrade,
     Interlude,
     Boss,
     BossReward,
+    /// <summary>The authored victory is already banked; choose whether to retire or carry this
+    /// exact warband into Beyond the Hour.</summary>
+    EndlessChoice,
+    /// <summary>Beat #0: the first-revision choice, presented over the muster state the
+    /// moment BEGIN RUN is pressed (workbench-frame). The run does not exist yet.</summary>
+    StartingRevision,
 }
 
 /// <summary>One selectable/inspectable hero, wherever a hero is shown.</summary>
@@ -105,15 +113,40 @@ internal sealed class DeployModel
 {
     public string Heading = "";
     public string Instruction = "";
-    public string Feedback = "";
-    public bool FeedbackIsError;
     public bool CanCommit;
     public string PrimaryText = "";
     public int Placed;
     public int Total;
     public List<HeroCardModel> Roster = new List<HeroCardModel>();  // Selected = awaiting a hex
-    public List<string> EnemyPreview = new List<string>();
+    /// <summary>One row per enemy body. Structured, not a dot-separated string: the row carries
+    /// the same facts the combat card does, so the two can never disagree.</summary>
+    public List<DeployEnemyRowModel> Enemies = new List<DeployEnemyRowModel>();
+    public string EncounterRuleName = "";
     public string EncounterRule = "";
+    /// <summary>The shared unit card, bound to whichever enemy row is selected. Null = closed.</summary>
+    public InspectorModel SelectedEnemy;
+}
+
+/// <summary>One enemy in the deployment preview. Selecting it opens the shared unit card.</summary>
+internal sealed class DeployEnemyRowModel
+{
+    public string Key = "";
+    public string Name = "";
+    public string Role = "";
+    public int Row;
+    public int MaxHp;
+    public int Attack;
+    public int Range;
+    public int AttackIntervalTicks;
+    public int ManaMax;
+    public int ManaPerSwing;
+    public int CritChance;
+    public int CleavePct;
+    public bool HealAutos;
+    public string WeaponName = "";
+    public string Behavior = "";
+    public string Accent = "";
+    public bool Selected;
 }
 
 /// <summary>A labelled number. Kept generic so new stats never need a new view.</summary>
@@ -204,86 +237,6 @@ internal enum UiGlyphId
     Hourstone,
 }
 
-internal enum MusterFactKind
-{
-    Health,
-    Basic,
-    Reach,
-}
-
-/// <summary>One of the three fixed scan facts on every opening-draft card.</summary>
-internal sealed class MusterFactModel
-{
-    public PresentationFactId Id;
-    public MusterFactKind Kind;
-    public UiGlyphId Icon;
-    public UiGlyphId SecondaryIcon;
-    public string Value = "";
-    public string SecondaryValue = "";
-    public string AccessibleLabel = "";
-    public string TooltipTitle = "";
-    public string TooltipBody = "";
-}
-
-internal enum MusterRuleKind
-{
-    Signature,
-    Passive,
-}
-
-/// <summary>
-/// A named combat rule. The short keyword is for scanning; ExactRule is generated from the same
-/// authored primitives the simulation reads and is disclosed in the portrait lens.
-/// </summary>
-internal sealed class MusterRuleModel
-{
-    public MusterRuleKind Kind;
-    public UiGlyphId Icon;
-    public UiGlyphId KeywordIcon;
-    public string Name = "";
-    public string Keyword = "";
-    public string Context = "";
-    public string ExactRule = "";
-    public string AdvancedRule = "";
-    public int ManaCost = -1;
-    public List<string> KeywordNotes = new List<string>();
-}
-
-/// <summary>
-/// Dedicated opening-draft projection. It deliberately cannot carry weapon footers, flavor
-/// paragraphs, price, rank, or an arbitrary list of stats.
-/// </summary>
-internal sealed class MusterCardModel
-{
-    public string Key = "";
-    public string Name = "";
-    public string Role = "";
-    public UiGlyphId RoleIcon;
-    public string PortraitResource = "";
-    public string PortraitFallback = "";
-    public string Accent = "";
-    public bool Selected;
-    public bool CanToggle = true;
-    public string DisabledReason = "";
-    public int SelectedSlot = -1;
-    public List<MusterFactModel> Facts = new List<MusterFactModel>();
-    public MusterRuleModel Signature = new MusterRuleModel
-        { Kind = MusterRuleKind.Signature };
-    public MusterRuleModel Passive = new MusterRuleModel
-        { Kind = MusterRuleKind.Passive };
-}
-
-internal sealed class MusterSelectionSlotModel
-{
-    public int Index;
-    public bool Filled;
-    public string ChampionKey = "";
-    public string Name = "";
-    public string PortraitResource = "";
-    public string PortraitFallback = "";
-    public string Accent = "";
-}
-
 /// <summary>
 /// The Market has a dedicated scan grammar. These are presentation kinds, not run-domain offer
 /// kinds: Capacity and Sold are deliberate Market objects even though neither is normal stock.
@@ -318,6 +271,13 @@ internal sealed class MarketOfferCardModel
     public string RuleName = "";
     public string ExactRule = "";
     public string Qualifier = "";        // e.g. optional crit, kept out of the metric grid
+    /// <summary>Unit offers only: "RANK C" / "C → B" + the B/A/S ladder for the commerce-row
+    /// tier strip (workbench-refactor). Empty label hides the strip.</summary>
+    public string TierLabel = "";
+    public List<RankTierSlotModel> PathTiers = new List<RankTierSlotModel>();
+    /// <summary>Muster only: 0-based slot this candidate is picked into, -1 = not picked.
+    /// Picked cards show the slot badge + MUSTERED state instead of commerce.</summary>
+    public int MusterSlot = -1;
     public string Price = "";
     public int CurrencyCost = -1;
     public int CurrencyBalance = -1;
@@ -332,13 +292,18 @@ internal sealed class MarketOfferCardModel
 }
 
 /// <summary>
-/// The one visual card grammar used by draft, market, roster, rewards, and inspector-adjacent
-/// lists. The controller decides every label and action; WarbandCard only renders this object.
+/// The one card-data grammar used by draft, market, roster, rewards, and inspector-adjacent
+/// lists. The controller decides every label and action; views only render this object.
 /// </summary>
 internal sealed class CardModel
 {
     public string Key = "";               // UI selection address, never shown
     public string ContentId = "";         // Resources/presentation lookup, never shown
+    /// <summary>Stable identity for an Armory item. Inventory indices shift after every equip,
+    /// so pointer gestures must never carry only <see cref="Key"/>.</summary>
+    public long ItemInstanceId;
+    /// <summary>Warband.Run.ItemKind for Armory cards; -1 for every non-equipment card.</summary>
+    public int EquipmentKind = -1;
     public string Eyebrow = "";
     public string Title = "";
     public string Subtitle = "";
@@ -362,6 +327,9 @@ internal sealed class CardModel
     public string PassiveName = "";
     public string PassiveSummary = "";
     public string WeaponSummary = "";
+    /// <summary>The Weapon property/mastery paired with the composed attack facts. The panel
+    /// keeps its concise rule visible and uses the exact rule for disclosure.</summary>
+    public RuleDeltaModel WeaponProperty;
     public List<string> KeywordNotes = new List<string>();
     public bool Selected;
     /// <summary>
@@ -375,10 +343,17 @@ internal sealed class CardModel
     public List<StatChipModel> Stats = new List<StatChipModel>();
     public List<string> Tags = new List<string>();
     public List<WarbandSpecBadgeModel> Traits = new List<WarbandSpecBadgeModel>();
+    /// <summary>The B/A/S ladder with chosen picks + awaiting slots — the PATH section and the offer tier strips read this (workbench-refactor).</summary>
+    public List<RankTierSlotModel> PathTiers = new List<RankTierSlotModel>();
     public string ComparisonTitle = "";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
     public List<ChoicePreviewModel> ChoicePreviews = new List<ChoicePreviewModel>();
     public RankUpDetailModel RankUpDetail;
+    /// <summary>
+    /// Structured unit-sheet data. Null keeps non-unit cards on the generic dossier grammar.
+    /// Workbench and combat both feed this contract so renderer changes cannot make them drift.
+    /// </summary>
+    public UnitSheetModel UnitSheet;
 }
 
 internal enum HallActionId
@@ -462,6 +437,35 @@ internal sealed class InspectorSectionModel
     public List<ChoicePreviewModel> Choices = new List<ChoicePreviewModel>();
 }
 
+/// <summary>One visible live state chip in the compact combat footer.</summary>
+internal sealed class UnitStatusModel
+{
+    public string Label = "";
+    public string Tooltip = "";
+    public string Tone = "";
+}
+
+/// <summary>
+/// The shared hero/enemy sheet contract. Every variable-arity region is an ordered collection:
+/// adding a Weapon fact/property or Passive changes an adapter, never the renderer.
+/// </summary>
+internal sealed class UnitSheetModel
+{
+    public bool Combat;
+    public bool Enemy;
+    public List<StatChipModel> CoreFacts = new List<StatChipModel>();
+    public string WeaponIcon = "⚔";
+    public string WeaponName = "";
+    public List<StatChipModel> WeaponFacts = new List<StatChipModel>();
+    public List<RuleDeltaModel> WeaponProperties = new List<RuleDeltaModel>();
+    public InspectorSectionModel Signature;
+    public string PassivesLabel = "PASSIVES";
+    public List<InspectorSectionModel> Passives = new List<InspectorSectionModel>();
+    public List<RankTierSlotModel> Specs = new List<RankTierSlotModel>();
+    public string Targeting = "";
+    public List<UnitStatusModel> Statuses = new List<UnitStatusModel>();
+}
+
 internal enum SpecRuleContext
 {
     Passive,
@@ -473,6 +477,9 @@ internal enum SpecRuleContext
 internal sealed class InspectorModel
 {
     public bool Empty;
+    /// <summary>Instructional copy for the empty state — the old header brief's new home
+    /// (workbench-refactor approval). Blank keeps the panel's default line.</summary>
+    public string EmptyHint = "";
     public string Key = "";
     public DecisionDetailKind Kind = DecisionDetailKind.Champion;
     public string Eyebrow = "";
@@ -490,15 +497,23 @@ internal sealed class InspectorModel
     public string PassiveTrigger = "";
     public string PassiveName = "";
     public string PassiveSummary = "";
+    /// <summary>The targeting rule, already phrased for display ("Farthest, held at 5 hexes").
+    /// Blank hides the row — only a live combatant has one.</summary>
+    public string Targeting = "";
+    /// <summary>C / B / A / S. Drives the rank badge's escalation; blank hides it.</summary>
+    public string Rank = "";
     public string WeaponIcon = "⚔";
     public string WeaponName = "";
     public string WeaponSummary = "";
+    public RuleDeltaModel WeaponProperty;
     public string Price = "";
     public int CurrencyCost = -1;
     public int CurrencyBalance = -1;
     public List<StatChipModel> Stats = new List<StatChipModel>();
     public List<string> Tags = new List<string>();
     public List<WarbandSpecBadgeModel> Traits = new List<WarbandSpecBadgeModel>();
+    /// <summary>The B/A/S ladder with chosen picks + awaiting slots — the PATH section and the offer tier strips read this (workbench-refactor).</summary>
+    public List<RankTierSlotModel> PathTiers = new List<RankTierSlotModel>();
     public List<string> KeywordNotes = new List<string>();
     public List<InspectorActionModel> Actions = new List<InspectorActionModel>();
     public string ComparisonTitle = "";
@@ -507,6 +522,7 @@ internal sealed class InspectorModel
     public List<InspectorSectionModel> Sections = new List<InspectorSectionModel>();
     public EquipmentPreviewModel EquipmentPreview;
     public RankUpDetailModel RankUpDetail;
+    public UnitSheetModel UnitSheet;
 }
 
 internal enum RankTierSlotState
@@ -523,6 +539,7 @@ internal sealed class RankTierSlotModel
     public RankTierSlotState State = RankTierSlotState.Locked;
     public string Icon = "◇";
     public string Name = "";
+    public string Summary = "";
     public string Rule = "";
     public string Accent = "";
 }
@@ -560,6 +577,8 @@ internal sealed class StatComparisonModel
 internal sealed class RuleDeltaModel
 {
     public string RuleName = "";
+    /// <summary>Optional compact scan label. RuleName remains the exact tooltip title.</summary>
+    public string DisplayName = "";
     public string ShortSummary = "";
     public string FullDescription = "";
     public string Icon = "◇";
@@ -666,6 +685,25 @@ internal enum WarbandBarMode
     ResultReadOnly,
 }
 
+/// <summary>Shared UI-only payload for a champion's equipment socket. Both the persistent
+/// warband rail and the Workbench Armory inspect this marker while resolving a drop.</summary>
+internal sealed class WarbandEquipmentDropTarget
+{
+    public long HeroInstanceId;
+    public int Kind;
+    public bool Armory;
+}
+
+/// <summary>Shared UI-only payload for a whole champion card. Gear may be dropped anywhere on
+/// the portrait, while roster drags still use the zone and slot fields.</summary>
+internal sealed class WarbandRosterDropTarget
+{
+    public long HeroInstanceId;
+    public bool Reserve;
+    public int SlotIndex;
+    public bool Locked;
+}
+
 internal sealed class WarbandEquipmentModel
 {
     public int Kind;                         // Warband.Run.ItemKind, kept out of the view contract
@@ -687,6 +725,7 @@ internal sealed class WarbandSpecBadgeModel
     public string Rank = "";
     public string Icon = "";
     public string Name = "";
+    public string Summary = "";   // authored one-liner (ContentLexicon); Rule is the contract
     public string Rule = "";
     public string Accent = "";
     public SpecRuleContext Context = SpecRuleContext.Passive;
@@ -700,6 +739,10 @@ internal sealed class WarbandHeroModel
     public bool Reserve;
     public bool Empty;
     public bool Locked;
+    /// <summary>Muster only: the next seat to fill — an invitation, not a locked slot
+    /// (workbench-frame). Renders gold-dashed with <see cref="AwaitingLabel"/>.</summary>
+    public bool Awaiting;
+    public string AwaitingLabel = "";
     public bool Selected;
     public bool Placed;
     public string ClassName = "";
@@ -711,6 +754,12 @@ internal sealed class WarbandHeroModel
     public WarbandEquipmentModel Weapon = new WarbandEquipmentModel();
     public WarbandEquipmentModel Trinket = new WarbandEquipmentModel();
     public List<WarbandSpecBadgeModel> Specs = new List<WarbandSpecBadgeModel>();
+    /// <summary>Kit-row disclosure slot (workbench-refactor): the active ability. Never an
+    /// equip target — the tooltip carries the exact rule; forks keep it honest upstream.</summary>
+    public string SignatureIcon = "";
+    public string SignatureName = "";
+    public string SignatureRule = "";
+    public int SignatureMana = -1;
 }
 
 /// <summary>
@@ -721,6 +770,12 @@ internal sealed class WarbandBarModel
 {
     public WarbandBarMode Mode;
     public bool Compact;
+    /// <summary>Pre-run muster: seats fill as candidates are picked; the armory chip and
+    /// every manage/equip affordance are hidden (nothing exists to store or move).</summary>
+    public bool MusterMode;
+    /// <summary>The rank-up modal owns the stage (workbench-frame): the shell-owned rail
+    /// sits outside the workbench scrim, so it dims itself while the choice is pending.</summary>
+    public bool Dimmed;
     public int FieldCount;
     public int FieldCapacity;
     public int MaxFieldCapacity;
@@ -750,10 +805,20 @@ internal sealed class InterludeChoiceModel
     public int Path;
     public int Option;
     public CardModel Card = new CardModel();
+    /// <summary>Optional explicit footer used when the whole card is a consequential action.</summary>
+    public string ActionLabel = "";
+    /// <summary>Optional compact public facts. Ordinary Interludes leave this empty.</summary>
+    public List<string> Facts = new List<string>();
 }
 
 internal sealed class PlanningModel
 {
+    /// <summary>Header title. The workbench is THE out-of-combat frame (workbench-frame):
+    /// run-play reads WORKBENCH, the pre-run state reads MUSTER YOUR WARBAND.</summary>
+    public string Title = "WORKBENCH";
+    /// <summary>Pre-run muster state: market = candidates, no prices, no hourstones, no
+    /// armory; the continue button is BEGIN RUN.</summary>
+    public bool MusterMode;
     public string Act = "";
     public string Beat = "";
     public string Sand = "";
@@ -761,8 +826,6 @@ internal sealed class PlanningModel
     public string Heading = "";
     public string Brief = "";
     public string Rule = "";
-    public string Feedback = "";
-    public bool FeedbackIsError;
     public PlanningBeat BeatKind;
     public PlanningTab ActiveTab;
     public bool CanReroll;
@@ -861,24 +924,7 @@ internal sealed class MenuModel
     public string Tagline = "";
     public string SeedLabel = "";
     public bool CanContinue;          // a run is in progress, in memory or on disk
-    /// <summary>Why CONTINUE just failed, if it did — a discarded save must not fail silently.</summary>
-    public string Notice = "";
     public string VersionLine = "";
-}
-
-internal sealed class RecruitModel
-{
-    public string Heading = "";
-    public string Instruction = "";
-    public string Feedback = "";
-    public bool FeedbackIsError;
-    public bool ReducedMotion;
-    public int Picked;
-    public int Capacity;
-    public bool CanBegin;
-    public string OfferGeneration = "";
-    public List<MusterCardModel> Offer = new List<MusterCardModel>();
-    public List<MusterSelectionSlotModel> Slots = new List<MusterSelectionSlotModel>();
 }
 
 /// <summary>One node on the act track. The whole act is shown up front: ADR 0016 / pve-encounters
@@ -941,18 +987,39 @@ internal sealed class SpecOptionModel
     public string Name = "";
     public string Text = "";
     public string Change = "";
+    /// <summary>Glyph shown on the option tile and previewed inside the hero card's
+    /// awaiting path slot while the option is hovered (workbench-frame modal).</summary>
+    public string Icon = "◆";
     public List<StatComparisonModel> Comparisons = new List<StatComparisonModel>();
 }
 
 /// <summary>The rank-up choice. Blocking: while pending, every other shop action is
 /// refused by the run layer, so the view must present it as a modal, not a side panel.
 /// Options is however many the run layer drew — views must render the list, never assume
-/// two, because a non-fork rank draws a subset of a pool that may be wider.</summary>
+/// two, because a non-fork rank draws a subset of a pool that may be wider.
+/// Presented by the workbench rank-up modal (workbench-frame approval): the hero's
+/// progression card sits center-stage and the bind fills its awaiting path slot.</summary>
 internal sealed class SpecChoiceModel
 {
     public bool Pending;
     public string HeroName = "";
     public string RankLabel = "";
+    /// <summary>True when this rank is the chassis' fork — the eyebrow names THE FORK.</summary>
+    public bool Fork;
+    public string FromRank = "";
+    public string ToRank = "";
+    /// <summary>The flat bump this rank granted (applied at purchase), e.g.
+    /// "+30 HEALTH · +2 POWER". Empty hides the line.</summary>
+    public string BumpText = "";
+    public string PortraitResource = "";
+    public string PortraitFallback = "";
+    public string Accent = "";
+    public string SignatureIcon = "";
+    public bool WeaponFilled;
+    public bool TrinketFilled;
+    /// <summary>The hero's B/A/S ladder with the pending rank in the Pending state — the
+    /// modal card's awaiting slot reads this.</summary>
+    public List<RankTierSlotModel> PathTiers = new List<RankTierSlotModel>();
     public List<SpecOptionModel> Options = new List<SpecOptionModel>();
 }
 
@@ -962,8 +1029,6 @@ internal sealed class ShopModel
     public string Gold = "";
     public string RerollCost = "";
     public bool CanReroll;
-    public string Feedback = "";
-    public bool FeedbackIsError;
     public List<ShopOfferModel> Offers = new List<ShopOfferModel>();
     public List<HeroCardModel> Field = new List<HeroCardModel>();
     public List<HeroCardModel> Bench = new List<HeroCardModel>();
@@ -991,7 +1056,6 @@ internal sealed class RunShellModel
 {
     public RunScreen Screen = RunScreen.Menu;
     public MenuModel Menu = new MenuModel();
-    public RecruitModel Recruit = new RecruitModel();
     public WagerModel Wager = new WagerModel();
     public PlanningModel Planning = new PlanningModel();
     public MapModel Map = new MapModel();

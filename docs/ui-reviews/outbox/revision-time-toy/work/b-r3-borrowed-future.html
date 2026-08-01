@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>B r3 — Borrowed Future</title>
+<link rel="stylesheet" href="_dial.css">
+<style>
+  /* ONE cluster, directly over the champion's head. Nothing else on screen. */
+  .carry { position:absolute; transform:translate(-50%,-100%); text-align:center; }
+  .carry b { display:block; font-size:124px; font-weight:800; letter-spacing:-5px; color:#8FE3FF;
+    line-height:.84; text-shadow:0 0 40px rgba(60,180,255,1), 0 7px 0 rgba(4,10,20,.92); }
+
+  /* Mana caps, so the remainder becomes Shield. The orb fills; the white ring is the spill. */
+  .orb { position:absolute; transform:translate(-50%,-50%);
+    width:132px; height:132px; border-radius:50%;
+    background:radial-gradient(circle, #5FD0FF 0 62%, #2E9BD6 100%);
+    border:5px solid rgba(205,242,255,.95);
+    box-shadow:0 0 54px rgba(70,190,255,.95), inset 0 -14px 26px rgba(0,40,80,.55);
+    display:grid; place-items:center; }
+  .orb i { font-style:normal; font-size:40px; font-weight:800; color:#06222F;
+    text-shadow:0 1px 0 rgba(255,255,255,.5); }
+  .orb u { position:absolute; left:50%; bottom:-34px; transform:translateX(-50%);
+    text-decoration:none; font-size:20px; font-weight:800; letter-spacing:3px; color:#BFE7FF;
+    text-shadow:0 2px 6px #000; white-space:nowrap; }
+
+  .spill { position:absolute; transform:translate(-50%,-50%) rotate(-38deg);
+    width:196px; height:196px; border-radius:50%;
+    border:11px solid rgba(246,250,255,.97);
+    border-bottom-color:transparent; border-left-color:transparent; border-right-color:transparent;
+    filter:drop-shadow(0 0 24px rgba(255,255,255,.9)); }
+  .spillnum { position:absolute; transform:translate(-50%,-50%);
+    font-size:40px; font-weight:800; color:#FFFFFF;
+    text-shadow:0 0 22px rgba(255,255,255,.95), 0 3px 6px #000; }
+  .spilllab { position:absolute; transform:translate(-50%,-50%);
+    font-size:18px; font-weight:800; letter-spacing:3px; color:#E8F2FB;
+    text-shadow:0 2px 6px #000; }
+</style>
+<body>
+<div class="board"></div>
+<div class="vig"></div>
+<div class="chrome">
+
+  <!-- eligible, unchosen: a quiet ring and not one word -->
+  <div class="ring ally" style="left:58.6%; top:59.5%"></div>
+  <div class="ring ally" style="left:43.2%; top:33.5%"></div>
+
+  <!-- the chosen champion -->
+  <div class="ring ally pick" style="left:30.0%; top:63.5%"></div>
+  <div class="carry"   style="left:30.0%; top:40.5%"><b>+33</b></div>
+  <div class="spill"   style="left:30.0%; top:48.5%"></div>
+  <div class="spillnum" style="left:35.6%; top:43.0%">8</div>
+  <div class="spilllab" style="left:36.2%; top:46.6%">SHIELD</div>
+  <div class="orb"     style="left:30.0%; top:48.5%"><i>40</i><u>MANA · FULL</u></div>
+
+  <div class="dial">
+    <div class="fill"></div>
+    <div class="lineage">BORROWED FUTURE</div>
+    <div class="notch"    style="left:113px; top:156px"><b>6s</b></div>
+    <div class="notch"    style="left:170px; top:103px"><b>5s</b></div>
+    <div class="notch"    style="left:241px; top:70px"><b>4s</b></div>
+    <div class="notch"    style="left:319px; top:60px"><b>3s</b></div>
+    <div class="notch on" style="left:396px; top:75px"><b>2s</b></div>
+    <div class="notch"    style="left:464px; top:113px"><b>1s</b></div>
+    <div class="knob"     style="left:396px; top:75px"></div>
+    <div class="read">
+      <div class="num">2<u>s</u></div>
+      <div class="sub">ROLLED BACK</div>
+    </div>
+  </div>
+
+  <div class="hint">TURN THE HOURSTONE &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT THE HOUR</div>
+
+</div>
+</body>
+</html>

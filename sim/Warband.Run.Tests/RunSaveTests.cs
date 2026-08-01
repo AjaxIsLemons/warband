@@ -26,7 +26,10 @@ namespace Warband.Run.Tests
                 if (run.State.Phase != RunPhase.Planning) break;
                 switch (run.CurrentNodeKind)
                 {
-                    case NodeKind.Event: run.ResolveInterlude(InterludePath.Treasury); break;
+                    case NodeKind.Event:
+                        run.ChooseRevisionUpgrade(0);
+                        run.ResolveInterlude(InterludePath.Treasury);
+                        break;
                     case NodeKind.Fight: run.ResolveFight(FightTier.Stable, Kit.AutoPlace(run)); break;
                     case NodeKind.Boss: run.ResolveBoss(Kit.AutoPlace(run)); break;
                 }
@@ -59,6 +62,8 @@ namespace Warband.Run.Tests
             Assert.Equal(before.PendingBossSand, after.PendingBossSand);
             Assert.Equal(before.Banners, after.Banners);
             Assert.Equal(before.PendingBossRewards, after.PendingBossRewards);
+            Assert.Equal(before.Revision.RevisionId, after.Revision.RevisionId);
+            Assert.Equal(before.Revision.UpgradeIds, after.Revision.UpgradeIds);
 
             Assert.Equal(before.ActMaps.Length, after.ActMaps.Length);
             for (int a = 0; a < before.ActMaps.Length; a++)
@@ -421,6 +426,7 @@ namespace Warband.Run.Tests
                 switch (run.CurrentNodeKind)
                 {
                     case NodeKind.Event:
+                        run.ChooseRevisionUpgrade(0);
                         log.Add($"interlude a{run.State.Act} n{run.State.NodeIndex} " +
                                 $"+{run.ResolveInterlude(InterludePath.Treasury).Sand}");
                         break;

@@ -45,7 +45,8 @@ namespace Warband.Run
         {
             var line = Header(s, utc, "start")
                 .Str("seed", s.Seed.ToString("x16", CultureInfo.InvariantCulture))
-                .Str("content", s.ContentVersion ?? "");
+                .Str("content", s.ContentVersion ?? "")
+                .Str("revision", s.Revision.RevisionId ?? "");
             if (_app.Length > 0) line.Str("app", _app);
             line.Raw("party", PartyJson(s.Field));
             return line.Close();
@@ -63,9 +64,15 @@ namespace Warband.Run
                 .Str("tier", tier.ToString())
                 .Str("encounter", encounter ?? "")
                 .Bool("won", outcome.Won)
+                .Bool("revised", outcome.Revised)
                 .Num("killed", outcome.EnemiesKilled)
                 .Num("enemies", outcome.EnemyCount)
                 .Num("sandEarned", outcome.SandEarned);
+            if (outcome.Revised)
+            {
+                line.Num("presentTick", outcome.PresentTick)
+                    .Num("branchTick", outcome.BranchTick);
+            }
             if (summary != null)
             {
                 line.Num("ticks", summary.EndTick);
@@ -107,6 +114,14 @@ namespace Warband.Run
         public string RerollLine(RunState s, DateTime utc, int cost) =>
             Header(s, utc, "reroll").Num("cost", cost).Close();
 
+        /// <summary>
+        /// Marks entry into one coarse player-facing run phase. Consecutive phase timestamps
+        /// make wall-clock dwell measurable without recording individual clicks or coupling the
+        /// pure run layer to the client's screen types.
+        /// </summary>
+        public string PhaseLine(RunState s, DateTime utc, string phase) =>
+            Header(s, utc, "phase").Str("phase", phase ?? "").Close();
+
         public string SlotLine(RunState s, DateTime utc, int cost) =>
             Header(s, utc, "slot").Num("cost", cost).Close();
 
@@ -132,12 +147,58 @@ namespace Warband.Run
                 .Str("reward", rewardId ?? "")
                 .Close();
 
+        public string RevisionUpgradeLine(
+            RunState s, DateTime utc, RevisionUpgradeDef upgrade) =>
+            Header(s, utc, "revisionUpgrade")
+                .Str("revision", s.Revision.RevisionId ?? "")
+                .Num("tier", upgrade?.Tier ?? 0)
+                .Str("id", upgrade?.Id ?? "")
+                .Close();
+
+        public string RevisionLine(
+            RunState s, DateTime utc, bool finalChance, RevisionChoice choice,
+            FightOutcome original, FightOutcome revised)
+        {
+            var targets = new StringBuilder("[");
+            if (choice != null)
+                for (int i = 0; i < choice.TargetIds.Count; i++)
+                {
+                    if (i > 0) targets.Append(',');
+                    targets.Append(choice.TargetIds[i].ToString(CultureInfo.InvariantCulture));
+                }
+            targets.Append(']');
+            return Header(s, utc, "revision")
+                .Str("revision", s.Revision.RevisionId ?? "")
+                .Bool("finalChance", finalChance)
+                .Num("presentTick", choice?.PresentTick ?? -1)
+                .Num("branchTick", choice?.BranchTick ?? -1)
+                .Bool("originalWon", original?.Won ?? false)
+                .Bool("revisedWon", revised?.Won ?? false)
+                .Bool("flipped", original != null && revised != null &&
+                                 original.Won != revised.Won)
+                .Raw("targets", targets.ToString())
+                .Close();
+        }
+
         public string BossRewardLine(RunState s, DateTime utc, int option, string id) =>
             Header(s, utc, "bossReward").Num("option", option).Str("id", id ?? "").Close();
 
+        public string EndlessChoiceLine(RunState s, DateTime utc, bool continueRun) =>
+            Header(s, utc, "endlessChoice")
+                .Str("choice", continueRun ? "continue" : "retire")
+                .Close();
+
+        public string EndlessCycleLine(RunState s, DateTime utc) =>
+            Header(s, utc, "endlessCycle")
+                .Num("cycles", s.EndlessCycles)
+                .Num("beat", s.EndlessBeat)
+                .Close();
+
         public string EndLine(RunState s, DateTime utc)
         {
-            var line = Header(s, utc, s.Victory ? "victory" : "defeat")
+            string type = s.EndlessDefeat ? "endlessDefeat" :
+                          s.Victory ? "victory" : "defeat";
+            var line = Header(s, utc, type)
                 .Num("bossWins", s.BossWins)
                 .Num("bossLosses", s.BossLosses);
             line.Raw("party", PartyJson(s.Field));
@@ -147,7 +208,7 @@ namespace Warband.Run
         private JsonLine Header(RunState s, DateTime utc, string type)
         {
             if (s == null) throw new ArgumentNullException(nameof(s));
-            return new JsonLine()
+            var line = new JsonLine()
                 .Num("v", SchemaVersion)
                 .Str("run", _runId)
                 .Str("t", type)
@@ -156,13 +217,21 @@ namespace Warband.Run
                 .Num("act", s.Act)
                 .Num("node", s.NodeIndex)
                 .Num("sand", s.Sand);
+            if (s.VictoryBanked || s.InEndless || s.EndlessCycles > 0)
+            {
+                line.Bool("victoryBanked", s.Victory)
+                    .Bool("endless", s.InEndless)
+                    .Num("endlessCycles", s.EndlessCycles)
+                    .Num("endlessBeat", s.EndlessBeat);
+            }
+            return line;
         }
 
         private static string PartyJson(IReadOnlyList<HeroInstance> field)
         {
             var sb = new StringBuilder(64);
             sb.Append('[');
-            for (int i = 0; i < (field?.Count ?? 0); i++)
+            for (int i = 0; i < field.Count; i++)
             {
                 if (i > 0) sb.Append(',');
                 HeroInstance h = field[i];
@@ -239,11 +308,11 @@ namespace Warband.Run
 
         private static string Escape(string s)
         {
-            StringBuilder sb = null;
+            StringBuilder? sb = null;
             for (int i = 0; i < s.Length; i++)
             {
                 char c = s[i];
-                string replacement = null;
+                string? replacement = null;
                 if (c == '"') replacement = "\\\"";
                 else if (c == '\\') replacement = "\\\\";
                 else if (c == '\n') replacement = "\\n";

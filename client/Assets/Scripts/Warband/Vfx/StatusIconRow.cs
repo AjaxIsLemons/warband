@@ -43,6 +43,11 @@ public sealed class StatusIconRow
     private const int LabelFontSize = 180;
     private const float CountCharSize = 0.026f;
     private const float ChipCharSize = 0.036f;
+    /// <summary>The active-rule badge is a literal state read, not another transient effect.
+    /// Text + diamond means it survives color-vision differences and a still capture.</summary>
+    private const float LiveCharSize = 0.022f;
+    private const float LivePopSeconds = 0.18f;
+    private const float LivePopAmount = 0.24f;
 
     private static readonly int ColorId = Shader.PropertyToID("_Color");
     private static readonly int RadiusId = Shader.PropertyToID("_Radius");
@@ -90,6 +95,11 @@ public sealed class StatusIconRow
     private readonly List<Slot> _slots = new List<Slot>();
     private TextMesh _chip;
     private MeshRenderer _plate;
+    private Transform _live;
+    private TextMesh _liveLabel;
+    private MeshRenderer _livePlate;
+    private float _livePopT;
+    private int _liveCountSig = -1;
 
     // Retained scratch — the sync path allocates nothing after the first rebuild.
     private readonly List<(StatusKind Kind, int Mag, int ExpiryTick)> _cache =
@@ -145,6 +155,9 @@ public sealed class StatusIconRow
         }
         if (_chip != null) _chip.gameObject.SetActive(false);
         if (_plate != null) _plate.gameObject.SetActive(false);
+        if (_live != null) _live.gameObject.SetActive(false);
+        _livePopT = 0f;
+        _liveCountSig = -1;
         _spans.Clear();
         _cache.Clear();
         _agg.Clear();
@@ -157,15 +170,19 @@ public sealed class StatusIconRow
         if (fx == null) fx = FallbackFx;
         _clock = clock;
         _tps = Mathf.Max(0.01f, ticksPerSecond);
+        int liveCount = u.ActiveRules != null ? u.ActiveRules.Count : 0;
         if (Same(u.Statuses) && _sizeSig == fx.statusIconSize && _gapSig == fx.statusIconGap
-            && _capSig == fx.statusIconCap) return;
+            && _capSig == fx.statusIconCap && _liveCountSig == liveCount) return;
 
         _cache.Clear();
         _cache.AddRange(u.Statuses);
         _sizeSig = fx.statusIconSize; _gapSig = fx.statusIconGap; _capSig = fx.statusIconCap;
+        if (_liveCountSig != liveCount && liveCount > 0) _livePopT = 1f;
+        _liveCountSig = liveCount;
 
         Aggregate();
         Layout(fx);
+        LayoutLive(fx, liveCount);
         Apply();   // pose at the current clock immediately — a row built inside ApplyFold must not
                    // render one frame of raw material defaults before the first Step (FieldView law)
     }
@@ -186,8 +203,10 @@ public sealed class StatusIconRow
     /// play does — two captures of the same tick at different advances differ by construction.</summary>
     public void Step(float dt)
     {
-        if (_slots.Count == 0) return;
+        if (_slots.Count == 0 && (_live == null || !_live.gameObject.activeSelf)) return;
         _clock += dt * _tps;
+        if (_livePopT > 0f)
+            _livePopT = Mathf.Max(0f, _livePopT - dt / LivePopSeconds);
         for (int i = 0; i < _slots.Count; i++)
         {
             var s = _slots[i];
@@ -253,6 +272,65 @@ public sealed class StatusIconRow
             default:
                 return 3;
         }
+    }
+
+    /// <summary>
+    /// The inspector already names every passive; this is the board-level binary answer it lacked:
+    /// at least one conditional rule is online RIGHT NOW. The fold's ActiveRules list is authority,
+    /// so a scrub, live replay, and capture all show the same state without re-running a predicate.
+    /// It owns a lane just below mana, where it stays attached to the body without consuming a
+    /// status slot, covering a health read, or pretending to be a timed status.
+    /// </summary>
+    private void LayoutLive(FxTune fx, int count)
+    {
+        if (count <= 0)
+        {
+            if (_live != null) _live.gameObject.SetActive(false);
+            return;
+        }
+
+        EnsureLive();
+        if (!_live.gameObject.activeSelf) _live.gameObject.SetActive(true);
+        float size = Mathf.Max(0.02f, fx.statusIconSize);
+        // The row anchor is 0.17 world-units above HP at the default tune — not enough room for
+        // another 0.12-high plate. Give LIVE its own lane below mana instead of painting it over
+        // the health read. Because the anchor inherits each chassis' bar offset, the lane follows
+        // tall silhouettes without a second model-specific table.
+        _live.localPosition = new Vector3(0f, -size * 1.95f, 0f);
+
+        string text = count > 1 ? $"◆ LIVE ×{count}" : "◆ LIVE";
+        _liveLabel.text = text;
+        _liveLabel.color = new Color(0.95f, 0.76f, 0.31f);
+        _liveLabel.characterSize = size * LiveCharSize;
+        _liveLabel.transform.localPosition = new Vector3(0f, 0f, -0.01f);
+        if (!_liveLabel.gameObject.activeSelf) _liveLabel.gameObject.SetActive(true);
+
+        float width = size * (count > 1 ? 2.25f : 1.70f);
+        _livePlate.transform.localScale = new Vector3(width, size * 0.54f, 1f);
+        ApplyLive();
+    }
+
+    private void EnsureLive()
+    {
+        if (_live != null) return;
+        _live = new GameObject("rule-live").transform;
+        _live.SetParent(_group, false);
+
+        _livePlate = Quad("plate", _live, VfxLibrary.QuadMesh,
+                          VfxLibrary.MaterialFor(VfxLibrary.ShaderGroundFill, null), 0.03f);
+        var mpb = new MaterialPropertyBlock();
+        mpb.SetColor(ColorId, new Color(0.03f, 0.035f, 0.05f, 0.72f));
+        _livePlate.SetPropertyBlock(mpb);
+
+        _liveLabel = Label("label", _live, TextAnchor.MiddleCenter);
+        _live.gameObject.SetActive(false);
+    }
+
+    private void ApplyLive()
+    {
+        if (_live == null || !_live.gameObject.activeSelf) return;
+        float pop = 1f + LivePopAmount * Mathf.Clamp01(_livePopT);
+        _live.localScale = new Vector3(pop, pop, 1f);
     }
 
     /// <summary>Family glyph per kind. The hourglass carries every control status by law (§5: "the
@@ -406,6 +484,7 @@ public sealed class StatusIconRow
             s.RingMpb.SetFloat(ArcFillId, Mathf.Clamp01(left));
             s.Ring.SetPropertyBlock(s.RingMpb);
         }
+        ApplyLive();
     }
 
     // ---- construction --------------------------------------------------------

@@ -6,6 +6,8 @@ Keep it honest: the board must match reality better than memory.
 **ACTIONABLE-ONLY LAW (Jake, 2026-07-28, second re-cut):** every numbered item here is **DESIGN**
 (drive the chat with concrete proposals, then build on his nod) or **BUILD/SPEC'D** (start now).
 Nothing parks here — no status essays, no VERIFY limbo, no laws. Where the rest went:
+- **Blocked work — what's waiting, on whom, and what unblocks it: `Projects/blocked.md`**
+  (read it before answering "what's next" — an item there is NOT an answer to that question)
 - Play-pass feedback list (sessions keep it current): **`Projects/play-pass.md`**
 - Client architecture + session gotchas: **`Design/client-architecture.md`**
 - Content budget (the hard cap): **`Design/content-budget.md`**
@@ -31,46 +33,54 @@ evidence, not a failed test.
 
 ## Now / Next (ordered — top item a session can start is "what's next"; Jake reorders at will)
 
-**1. Item 30 — combat payoff slice** — **BUILD** (2026-07-28: unit-HUD readability sub-slice
-   SHIPPED — number attribution by perspective (crimson incoming / typed output / gold =
-   player crits + "!"), shield at the bar tip, delayed damage trail, status-row plates,
-   magnitude→size/lifetime/luminance ramp; capture-verified + contact-sheet byte-identical ×2;
-   plan/evidence in `docs/ui-reviews/outbox/unit-hud-readability/`. Remaining from that review:
-   P2 TMP double-outline text (needs an editor font-asset session) and P4 bar-contrast tuning;
-   play-pass watches filed). The build already asks enough pre-fight
-   questions; now make the answer readable and satisfying at the real play camera. Finish
-   event-driven Attack/Cast/Hit/Death crossfades on the existing KayKit units; tune camera,
-   unit scale, beat sequencing, hit-stop, battle speed, combat mix, and the major cast/death
-   effects; keep authored enemy roles distinct in motion. Fold old items 25/26 into this slice:
-   conditional passives need a persistent on-body LIVE mark, and overlapping muster rings need
-   per-owner identity. Also fold: the world-space kill feed clips at the right frame edge on the
-   8-wide board (anchor sits outside fov 34's horizontal budget — ADR 0027, seen in captures). Existing assets/native effects only — no paid pack or new sim verb.
-   Acceptance: autos, casts, deaths, enemy threats, and build-rule activations read without the
-   inspector at 0.5×/1×/2×; representative normal/boss/swarm/ritual/Inscription fights are
-   capture-checked, then watched in motion.
-**2. Item 31 — run pacing + decision economy** — **DESIGN, evidence-first.** The first input is
+> **Board state, 2026-07-30 (late):** Items 13, 32 and 35 are complete. **Item 15 is SPEC'D — Jake
+> approved the researched build order, so it is the top item a session can start and it needs no
+> Play Mode.** Items 31 and 34 are both gated on Jake at the machine (he is away until Sat
+> 2026-08-01 night); they and everything else waiting now live in **`Projects/blocked.md`** rather
+> than cluttering this list.
+
+**1. Item 15 — THE EVENT + the Inscription layer** — **SPEC'D (Jake approved the build order
+   2026-07-30). Build autonomously; it is sim-side and needs no Play Mode.** Plan of record:
+   `Design/events-and-inscriptions.md` (research pass, 5 axes, ~15 games). The Interlude becomes a
+   data-driven event pool — no new nodes, no added run length. **Approved order: A + C + D + F,
+   then I, then B, then E. G is rejected on evidence.**
+   - **A.** `Duration` enum `{ Run, ThisFight }` on `InscriptionDef`, hashed into `ContentVersion`,
+     + tray countdown + at-the-unit rendering (Law 6c). Start binary; `ThreeFights` only if play
+     demands it. · **C.** Event pool schema + today's Treasury/Armory/Hourstone kept as the
+     guaranteed floor, its values reading run state. · **D.** `followupAfterFights`, scheduled by
+     fight count. · **F.** Status source-tagging. · **I.** Next-combat debuff as the downside
+     currency. · **B.** 4–5 temporary Paradoxes (the family is currently ONE). · **E.** 12
+     *branching* events.
+   - Laws that must not be skipped: drawback by choice never RNG · duration ticks on combats only ·
+     anything granted survives expiry · no information-removing, agency-removing or time-wasting
+     Paradoxes · price in Sand, never a new currency · event selection a pure function of seed.
+**2. Item 31 — run pacing + decision economy** — **DESIGN, evidence-first. BLOCKED — see
+   `Projects/blocked.md` §1.** The first input is
    Jake's fresh baseline run and its telemetry. Measure total run time, fight time, Hall dwell,
    purchase/rank/roster timing, unused Sand, and repeated or no-op decisions. Tune the existing
    12-fight / 3-Interlude / 3-boss structure to 45–60 minutes while preserving visible build
    evolution. Remove/compress decisions that do not change the warband; add no currency, offer
-   layer, hero, item, or progression system.
-**3. Item 32 — encounter differentiation + difficulty curve** — **DESIGN.** Current probe:
-   three of six node families are free/flat for purpose-built parties while the naive line
-   completes 1/12 runs. Rework or retune The Gnawing Hour, The Long Range at its intended acts,
-   and The Long Procession; close the weak-legal-comp versus competent-party gap; restore a
-   credible third answer to the act-1 boss on the 8-wide board. Use the existing five-role
-   grammar and protect the strong formation sensitivity/multiple answers already present in
-   Ninth Bell, The Drop, Slagworks, Ashfall Battery, and Waning Crown. Human telemetry decides
-   direction; probes confirm the result, never set a uniform win-rate target.
-**4. Item 15 — THE EVENT** — **DESIGN.** Spend the budgeted ONE event on a genuine run gamble,
-   distinct from the deterministic Interlude reward choice. Reuse existing rewards and
-   consequences; place it where item 31's telemetry finds the largest pacing valley. Do not
-   create an event catalog.
-**5. Item 13 — Beyond the Hour, the endless seam** — **DESIGN, then a small build.** After the
-   final boss, offer RETIRE WITH VICTORY or CONTINUE with the same warband. Reuse act 3's pool in
-   escalating cycles; initial score = cycles + beats survived; endless defeat preserves the
-   standard-run victory. Persist continuation/cycle/score in save/resume and telemetry. No endless
-   economy, special reward pool, leaderboard, or metagame in this slice.
+   layer, hero, item, or progression system. **2026-07-29 evidence seam:** Jake's first trail was
+   a 90-second Fraying loss in The Drop (1/3 enemies, one Revision, no purchases, Sand 4→4), so it
+   exposed continuation pressure but not run pacing. Append-only phase-entry telemetry now
+   separates planning, wager, deploy, fight, result, Revision evolution, Interlude, and boss
+   reward dwell. **Opening cadence approved 2026-07-29:** Muster → starting Revision → Wager →
+   Deployment → Fight; no pre-fight Workbench and starting Sand remains 4. Next input: one fresh
+   baseline on the instrumented build.
+**3. Item 34 — BLOCKED (`Projects/blocked.md` §1) — workbench as THE frame: fold muster + starting revision in; rank-up goes modal**
+   — **BUILD (2026-07-28: Jake approved `workbench-frame/01-muster-state` +
+   `02-rankup-modal`; condition: rank-up modal entrance is a BIG animated moment, "a
+   dopamine shot", reduced-motion respected. Spec in
+   `docs/ui-reviews/outbox/workbench-frame/implementation/spec.md`. 2026-07-29:
+   implementation candidate is ready — 95/95 Workbench matrix, 534/534 headless tests,
+   client compile clean, live Muster → first Revision → Wager seam green, and QHD/1080
+   evidence packaged. Awaiting Jake's actual-Unity visual acceptance before DONE).**
+   Muster becomes a workbench state (5-candidate offer in the market grid, dossier = inspection,
+   rail = the 3 selection slots filling in, BEGIN RUN in the continue slot); starting revision
+   becomes choice-scrim beat #0 (Interlude/RevisionUpgrade/BossReward already live there);
+   RecruitView + MusterCard + RevisionDraftView retire. The unit rank-up 1-of-2 spec pick moves
+   from the inline dossier ladder to its own hero-centric modal — the one interruptive chrome.
+   Wager screen fold-in is explicitly out of scope (open question for later).
 ## Deferred (explicitly NOT now — don't resurrect without Jake; detail in the archive)
 - **Gated/parked:** Inscription wave 3, 12→24 (gated: the twelve must stay legible in play) ·
   risk-tier mutation of encounters · item 27's Workbench polish batch · item 1b's remaining Hall
@@ -93,6 +103,14 @@ evidence, not a failed test.
   the content doctrine until playtest #1.
 
 ## Design backlog (unranked ammo for DESIGN chats — not scheduled)
+- **Spec offers are static in a randomised game** (surfaced by the 2026-07-30 research pass;
+  detail in `Design/events-and-inscriptions.md` §4b). Measured: all **39** live `Offer()` rows are
+  2 entries and `SpecChoices = 2`, so every rank-up shows the whole pool — perfect information,
+  identical every run. This is the pattern that killed Underlords' talent trees ("every single
+  hobgen take the same talents"; cut 8 weeks after shipping). Mitigating factors: warband is PvE,
+  and a knowable tree may serve the system-breaking north star. **The draft machinery already
+  exists and is dormant only because pools are size 2** — growing a row to 4 entries makes that
+  rank-up a real seeded draft with zero code. Content decision, gated on playtest #1.
 - **Wide Banner** reads as "inner circle gets innate+crown" instead of "reach replaces"; ADR 0022
   makes the real design a one-liner (`SignaturePatch = Patch(radius: 1)`). Needs Jake's nod.
 - **Content-fidelity leftovers** (2026-07-23 de-SIMPLIFY pass): Twist's crit-memory is a 30-tick
@@ -106,6 +124,73 @@ evidence, not a failed test.
   four node pairs lopsided ≥25 · `shade:reaper+widowmaker` dead at 8–9%.
 
 ## Done — one line each; full detail + all older lines in `roadmap-done-archive.md`
+- **2026-07-30 — Item 35 Stage 2, rim dressing + the void backdrop:** `RimDressing.cs` plants an
+  era's kit on the shard apron, entirely data-driven from `environment.rim.props` and sized by
+  **`targetSize` in world units** (KayKit packs are authored at wildly different scales — a spear
+  mesh is 0.031u, a banner 3.7u — so raw multipliers would need a magic constant per kit).
+  `BuildVoidArt` hangs an authored backdrop billboard beyond the Tower. Three concepts generated on
+  Jake's approval; he picked `sunken-strata`. Verified: compile PASS, 7/7 models resolve, console
+  0/0, three kill-switches negative-controlled on two fixtures, Tower occlusion confirmed, captures
+  reviewed across five probe rounds. **Two findings worth more than the art:** the skybox/cubemap
+  route is structurally incapable of "nothing beneath you" (don't re-attempt in Stage 3), and the
+  8×8 board fills the dialed frame so completely that a backdrop only reaches a 1202×136 top strip
+  at ≤34/255 — **framing, not art, is the blocker on any future void work.** Job:
+  `docs/art-reviews/outbox/shard-void-backdrop/`. Not seen in motion → `play-pass.md`.
+  **KayKit Medieval Hexagon kit landed the same day and PROVED the systems claim: a pure
+  `tuning.json` edit, zero code changed.** The rim now reads as an encampment (tents, barrels,
+  crates, weapon racks, rocks). Get KayKit packs from **`github.com/KayKit-Game-Assets/*` branch
+  zips**, not itch — itch's file endpoint needs an authenticated browser session, the GitHub mirror
+  needs nothing (this is how Shoota's packs were obtained; CC0 confirmed in the pack's own LICENSE).
+  Known limit: `rim.tint` is a colour MULTIPLY, so it darkens and cools but cannot DESATURATE — the
+  hexagon atlas stays inherently warm terracotta. A real saturation knob needs a shader, deferred.
+- **2026-07-30 — Item 32, encounter differentiation:** added the no-response / responsive /
+  answer-axis competence ladder, removed the dead-Banneret control confound, and reshaped Gnawing
+  Hour, Long Range, and Long Procession with existing roles only. All three now admit 3–4 answers
+  with measured placement spread; Last Oath is back to three without a boss change. 559 tests,
+  byte-stable baseline, 17 replay round-trips, actual-Unity formation captures, and console passed.
+- **2026-07-30 — Item 13, Beyond the Hour:** the final Crown banks victory before an explicit
+  Retire/Continue fork; endless repeats three Act 3 fights plus a scaling Crown, with persistent
+  cycle/beat score. 556 tests, save/runtime/telemetry seams, QHD/1080 layout, red/green gates, and
+  Unity console passed; Jake accepted R2.
+- **2026-07-29 — Combat inspection rebuilt (Jake-driven, not a board item).** The in-fight hover
+  tooltip and the world-space text nameplates are deleted; unit inspection is ONE pinned card
+  (`InspectorPanel`, already shared with the Workbench dossier) floating tethered to its subject,
+  never covering a fight that no longer pauses. Sections became SIGNATURE / WEAPON / PASSIVES /
+  SPECS with the weapon owning the attack row; rank gained a C/B/A/S escalation badge; sand is now
+  Hourstone-cost-only (signature mana went teal, TARGETS went Space blue); `FormatInline` colours
+  magnitude+unit runs instead of forty common English words; Deploy's enemy CSV became selectable
+  rows opening the same card. Full record, samples and spec:
+  `docs/ui-reviews/outbox/combat-inspection/`. Verified: UI QA 19/19, 0 structural failures,
+  `make test` 534/534, `make check-client` PASS — **which now also compiles `#if UNITY_EDITOR`
+  blocks in runtime scripts**, a gap that let a stale fixture reach Unity green.
+  In-fight card is unseen in motion → `Projects/play-pass.md`.
+
+- **2026-07-29** — Item 30, combat payoff slice: event-driven KayKit Attack/Cast/Hit/Death,
+  authored enemy motion language, camera/beat/hit-stop/ender choreography, combat SFX buses,
+  persistent fold-driven conditional-passive LIVE mark, per-owner overlapping muster identity,
+  and inward-growing measured killfeed. Normal/boss/swarm/ritual/Inscription captures reviewed;
+  0.5×/1×/2× live contact states reviewed; 533 tests, client compile, SFX contract/density, and
+  Unity console all green. Subjective ears/feel remain on `Projects/play-pass.md`.
+- **2026-07-29** — PC VFX Lab: dedicated Unity scene + dockable embedded viewport; all 38
+  recipes with draft/asset/C# resolution and particle/quad/light/curve editing; contextual tell
+  tuning, automatic replay signature bookmarks for special systems, full dual-time Revision
+  scrub, production/neutral/isolation environment A/B, mixed/raw audio audition, and optional
+  scenario bookmarks. Explicit Apply protects recipe assets and `tuning.json`. Unity contract +
+  mode smoke + UI construction PASS, console 0/0. Guide: `Projects/vfx-lab.md`.
+- **2026-07-28** — Item 33, Workbench column refactor (Jake-approved `05-shopfront-obsidian` +
+  header node map): 46px header w/ beat-track pips, market 3×2 + vertical reroll rail, 30%
+  dossier column w/ PATH tier-up rows, offer tier strips (pre-specced recruits ready), 186px
+  rail progression cards (Signature + W/T + B/A/S), armory floating rack, obsidian style.
+  70/70 matrix ×3 + rank-up regression + by-eye vs approved sample; 4:3 keeps the slim rail
+  card. Job: `docs/ui-reviews/outbox/workbench-refactor/`. Unseen in motion → play-pass.
+- **2026-07-28** — Revisions (ADR 0028): one provisional watched timeline split per battle,
+  proactive or held before terminal defeat; Borrowed Future + Recall to Formation with all six
+  evolutions each; First Draft + blocking Interlude growth; whole-second timeline, target rings,
+  flagship split/rewind/landing ceremony, authoritative change receipt, dedicated Revision VFX/SFX
+  lane, native URP dual-time fracture compositor, Reduced Motion, save + telemetry. 533 tests, headless
+  client compile PASS, First Draft + held-Hour captures reviewed, real Play Mode
+  open→target→commit branch PASS, 22-frame live-board fracture matrix reviewed, Unity console
+  0 warnings/errors, build preflight invoked.
 - **2026-07-28** — Item 28, dead-view cleanup: reference-proved and deleted the unregistered
   ManagementView/ShopView/PlanningView + WarbandCard/CardRulesPopover stack and its three dead
   UXML trees (3,105 lines); moved the one live accent helper to DecisionCardPresentation.
@@ -126,7 +211,7 @@ evidence, not a failed test.
   (look-at pulled toward the near edge — high pitch makes center-aim waste the top while the
   front rank clips). Full board in frame on Waning Crown + overtime captures. Discovered: the
   world-space kill feed clips at the right edge on the wider board (anchor outside fov 34's
-  budget) — folded into item 30.
+  budget) — closed by item 30 on 2026-07-29.
 - **2026-07-28** — Item 29, enemy board identity: `RoleId` on the wire (replay v9), seven authored
   role bodies replacing borrowed hero minis + per-role ground tells (artillery firing line, ritual
   clock); two new role fixtures; 522 tests, contact sheet byte-stable B/C/D.
@@ -143,7 +228,8 @@ evidence, not a failed test.
 - **2026-07-28** — Item 11, THE WANING: clock/warn/storm capture-verified at t=800/950;
   render-only; `overtime` fixture.
 - **2026-07-27** — Item 10, the impact balloon: `impact.punchScale` 0.5 (worst tell +90% → +45%).
-- **2026-07-27** — 2b, the muster rings (13 tests, capture-verified); shared-gold open → item 26.
+- **2026-07-27** — 2b, the muster rings (13 tests, capture-verified); overlapping-owner identity
+  completed by item 30 on 2026-07-29.
 - **2026-07-27** — Item 1c, the combat recap: sim-side fold (8 tests), pixel-verified.
 - **2026-07-27** — Item 1e, responsive Workbench correction pass (82/82 + 65/65 matrices).
 - **2026-07-27** — Item 1f, footer roster drag/drop + keyboard parity (239/239).

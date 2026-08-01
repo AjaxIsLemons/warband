@@ -44,7 +44,9 @@ public static class EncounterProbe
     public sealed class NaiveLine
     {
         public int Completed, Total;
+        public int AdaptedPlacements;
         public List<(string Where, int Count)> Deaths = new List<(string, int)>();
+        public List<(string Response, int Count)> Responses = new List<(string, int)>();
     }
 
     public static List<Row> Collect()
@@ -87,11 +89,39 @@ public static class EncounterProbe
     /// </summary>
     public static NaiveLine CollectNaiveLine()
     {
-        var reports = RunHarness.PlayMany(12, seedBase: 4000, new Catalog());
+        return CollectFullRunLine(responsive: false);
+    }
+
+    /// <summary>
+    /// The same fixed starter, greedy shop, Fraying wager and seeds as the no-response line, but
+    /// it reads the exact disclosed encounter id and makes one plain-language formation response.
+    /// It never simulates ahead or searches the six probe formations. This is ADR 0031's missing
+    /// rung between "ignore the fight" and purpose-built parties choosing their oracle-best shape.
+    /// </summary>
+    public static NaiveLine CollectResponsiveLine()
+    {
+        return CollectFullRunLine(responsive: true);
+    }
+
+    private static NaiveLine CollectFullRunLine(bool responsive)
+    {
+        var content = new Catalog();
+        var responseCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        RunPolicy? policy = responsive
+            ? new RunPolicy
+            {
+                Place = run => ResponsivePlacement(run, content, responseCounts),
+            }
+            : null;
+        var reports = RunHarness.PlayMany(
+            12, seedBase: 4000, content, policy: policy);
         var line = new NaiveLine
         {
             Total = 12,
             Completed = reports.Count(r => r.Final.Phase == RunPhase.Complete),
+            AdaptedPlacements = responseCounts
+                .Where(pair => pair.Key != "DEFAULT")
+                .Sum(pair => pair.Value),
         };
         line.Deaths = reports.Where(r => r.Final.Phase != RunPhase.Complete)
             .Select(r => r.Fights.LastOrDefault())
@@ -100,8 +130,57 @@ public static class EncounterProbe
             .Select(g => (Where: g.Key, Count: g.Count()))
             .OrderByDescending(g => g.Count).ThenBy(g => g.Where, StringComparer.Ordinal)
             .ToList();
+        line.Responses = responseCounts
+            .Select(pair => (Response: pair.Key, Count: pair.Value))
+            .OrderByDescending(pair => pair.Count)
+            .ThenBy(pair => pair.Response, StringComparer.Ordinal)
+            .ToList();
         return line;
     }
+
+    private static IReadOnlyList<Hex> ResponsivePlacement(
+        RunController run, IRunContent content, Dictionary<string, int> responseCounts)
+    {
+        string encounterId = run.PreviewBrief(FightTier.Fraying).Id;
+        string response = ResponseFor(encounterId);
+        responseCounts.TryGetValue(response, out int previous);
+        responseCounts[response] = previous + 1;
+
+        List<Hex> baseline = RunHarness.DefaultPlacement(run, content).ToList();
+        int[] splitColumns = { 0, 7, 1, 6, 2, 5, 3, 4 };
+        int[] rightColumns = { 6, 5, 7, 4, 3, 2, 1, 0 };
+        for (int i = 0; i < baseline.Count; i++)
+        {
+            Hex slot = baseline[i];
+            baseline[i] = response switch
+            {
+                "ADVANCE" => Hex.FromRowCol(Math.Min(3, slot.Row + 2), slot.Col),
+                "TURTLE" => Hex.FromRowCol(Math.Max(0, slot.Row - 2), slot.Col),
+                "SPLIT" => Hex.FromRowCol(slot.Row, splitColumns[i]),
+                "RIGHT STACK" => Hex.FromRowCol(slot.Row, rightColumns[i]),
+                _ => slot,
+            };
+        }
+        return baseline;
+    }
+
+    /// <summary>
+    /// An authored response to the disclosed problem, not an outcome lookup. New encounter ids
+    /// fall back safely to the default range-aware formation and appear as DEFAULT in the report.
+    /// </summary>
+    private static string ResponseFor(string encounterId) => encounterId switch
+    {
+        "gnawing-hour" => "TURTLE",
+        "the-long-range" => "ADVANCE",
+        "ninth-bell" => "ADVANCE",
+        "the-drop" => "ADVANCE",
+        "slagworks" => "SPLIT",
+        "long-procession" => "ADVANCE",
+        "bonded-pair" => "RIGHT STACK",
+        "ashfall-battery" => "SPLIT",
+        "waning-crown" => "ADVANCE",
+        _ => "DEFAULT",
+    };
 
     public static void Run(bool includeCandidates = false)
     {
@@ -145,10 +224,26 @@ public static class EncounterProbe
         }
 
         var naive = CollectNaiveLine();
-        report.AppendLine("## The naive line (bot: fixed comp, default placement)");
+        report.AppendLine("## Full-run floor 1 — no response");
         report.AppendLine();
+        report.AppendLine("Same plausible starter and greedy-legal shop policy as the harness; " +
+                          "range-aware default placement never changes for the disclosed rule.");
         report.AppendLine($"- Runs completed: **{naive.Completed}/{naive.Total}**");
         foreach (var (where, count) in naive.Deaths)
+            report.AppendLine($"- died at {where}: {count}×");
+        report.AppendLine();
+
+        var responsive = CollectResponsiveLine();
+        report.AppendLine("## Full-run floor 2 — disclosed-rule response");
+        report.AppendLine();
+        report.AppendLine("Same seeds, starter, shop policy and wagers; placement makes one " +
+                          "deterministic response to the published encounter id. It does not " +
+                          "simulate ahead or search for the best formation.");
+        report.AppendLine($"- Runs completed: **{responsive.Completed}/{responsive.Total}**");
+        report.AppendLine($"- adapted placements: **{responsive.AdaptedPlacements}**");
+        foreach (var (response, count) in responsive.Responses)
+            report.AppendLine($"- {response}: {count}×");
+        foreach (var (where, count) in responsive.Deaths)
             report.AppendLine($"- died at {where}: {count}×");
         report.AppendLine();
 

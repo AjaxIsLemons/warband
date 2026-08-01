@@ -95,7 +95,12 @@ namespace Warband.Sim
             foreach (string s in c.Specializations) Add(s);
             if (c.StarterWeapon != null) AddWeapon(c.StarterWeapon); else Add("no-starter");
             AddEffects(c.Signature);
-            AddTriggers(c.Passives);
+            // SignatureTriggers is a presentation-identity split inside the chassis trigger
+            // sequence. Hash the combined executable sequence exactly as before: moving an
+            // unchanged trigger between those channels cannot invalidate saves or replays.
+            Add(c.SignatureTriggers.Count + c.Passives.Count);
+            foreach (Trigger trigger in c.SignatureTriggers) AddTrigger(trigger);
+            foreach (Trigger trigger in c.Passives) AddTrigger(trigger);
             AddStatRules(c.StatRules);
             return this;
         }
@@ -145,14 +150,16 @@ namespace Warband.Sim
         public ContentHash AddTriggers(List<Trigger> triggers)
         {
             Add(triggers.Count);
-            foreach (var t in triggers)
-            {
-                Add((int)t.On).Add(t.OncePerRoot).Add(t.EveryN);
-                Add(t.When.Count);
-                foreach (var c in t.When) AddCond(c);
-                AddEffects(t.Do);
-            }
+            foreach (var t in triggers) AddTrigger(t);
             return this;
+        }
+
+        private void AddTrigger(Trigger trigger)
+        {
+            Add((int)trigger.On).Add(trigger.OncePerRoot).Add(trigger.EveryN);
+            Add(trigger.When.Count);
+            foreach (var condition in trigger.When) AddCond(condition);
+            AddEffects(trigger.Do);
         }
 
         public ContentHash AddEffects(List<EffectDef> effects)

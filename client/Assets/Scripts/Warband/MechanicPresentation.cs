@@ -154,11 +154,24 @@ internal static class MechanicPresentation
                 UiGlyphId.Hourstone, 228, 177, 64, 55, 40, 16),
         };
 
+    /// <summary>
+    /// What gets coloured inside ordinary prose. Two groups, in this order:
+    ///
+    /// <para>1. A MAGNITUDE WITH ITS UNIT, as one run — "45 seconds", "3 hexes", "12 damage".
+    /// The old regex matched bare words anywhere they appeared, so "The Waning begins after 45
+    /// seconds." coloured the unit and left the number grey, which is exactly backwards: the
+    /// number is the fact. Matching them together also stops a magnitude being split across two
+    /// colours when the unit belongs to a different family than the sentence.</para>
+    ///
+    /// <para>2. NOUNS the player has to learn — mana, shield, ward, Riposte. Verbs and connective
+    /// words ("attacks", "line", "area", "second", "duration") are deliberately NOT here: colouring
+    /// every occurrence of forty common English words turned rule prose into confetti, which is
+    /// most of why the fight surfaces read as a web page.</para>
+    /// </summary>
     private static readonly Regex InlineTerms = new Regex(
-        @"\b(health|hp|damage|power|attack|attacks|heal|heals|healing|restore|restores|" +
-        @"restoration|regeneration|regen|reach|range|hex|hexes|area|line|distance|" +
-        @"cadence|second|seconds|duration|haste|slow|slowed|mana|shield|shields|" +
-        @"armor|armour|ward|barrier|protection)\b",
+        @"(?<magnitude>\b\d+(?:\.\d+)?\s*(?:%|s\b|hexes?\b|damage\b|hp\b|mana\b|shields?\b))" +
+        @"|(?<noun>\b(?:health|hp|damage|healing|regeneration|regen|reach|hex|hexes|" +
+        @"cadence|haste|slow|mana|shield|shields|armor|armour|ward|barrier)\b)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static MechanicDefinition Definition(MechanicFamily family) =>
@@ -218,10 +231,37 @@ internal static class MechanicPresentation
         if (string.IsNullOrEmpty(text)) return text ?? "";
         return InlineTerms.Replace(text, match =>
         {
-            MechanicDefinition definition = Definition(Family(match.Value));
-            string hex = ColorUtility.ToHtmlStringRGB(definition.Color);
-            return $"<color=#{hex}><b>{match.Value}</b></color>";
+            MechanicFamily family = match.Groups["magnitude"].Success
+                ? MagnitudeFamily(match.Value)
+                : Family(match.Value);
+            if (family == MechanicFamily.Neutral) return match.Value;
+            string hex = ColorUtility.ToHtmlStringRGB(Definition(family).Color);
+            // Colour carries the family; bold is NOT also needed. Bolding every magnitude widened
+            // rule prose enough to add a wrapped line, which overflowed the dossier's detail
+            // column at 1280x720 (UI QA, 2026-07-29). Keyword nouns keep their weight because
+            // they are the words a player scans for; the numbers beside them do not compete.
+            return match.Groups["magnitude"].Success
+                ? $"<color=#{hex}>{match.Value}</color>"
+                : $"<color=#{hex}><b>{match.Value}</b></color>";
         });
+    }
+
+    /// <summary>The family of a "12 damage" / "1.5s" / "3 hexes" run comes from its UNIT, not
+    /// from the digits. A bare percentage stays neutral: it is a modifier on whatever sentence
+    /// it sits in, and guessing a family for it was how crit prose ended up pink.</summary>
+    private static MechanicFamily MagnitudeFamily(string run)
+    {
+        string value = (run ?? "").Trim().ToUpperInvariant();
+        if (value.EndsWith("%", StringComparison.Ordinal)) return MechanicFamily.Neutral;
+        if (value.EndsWith("DAMAGE", StringComparison.Ordinal)) return MechanicFamily.Offense;
+        if (value.EndsWith("HEX", StringComparison.Ordinal) ||
+            value.EndsWith("HEXES", StringComparison.Ordinal)) return MechanicFamily.Space;
+        if (value.EndsWith("HP", StringComparison.Ordinal)) return MechanicFamily.Durability;
+        if (value.EndsWith("MANA", StringComparison.Ordinal)) return MechanicFamily.Mana;
+        if (value.EndsWith("SHIELD", StringComparison.Ordinal) ||
+            value.EndsWith("SHIELDS", StringComparison.Ordinal)) return MechanicFamily.Protection;
+        if (value.EndsWith("S", StringComparison.Ordinal)) return MechanicFamily.Time;
+        return MechanicFamily.Neutral;
     }
 
     public static void BindInline(Label label, string text)

@@ -8,6 +8,10 @@ Shoota's Linux server build, catching missing usings, wrong overloads and typos 
 
     make check-client        # or: python3 tools/check-client-compile.py
 
+Runtime scripts are compiled with UNITY_EDITOR and DEVELOPMENT_BUILD defined (see the shim in
+main()), so the `#if UNITY_EDITOR` fixture/report blocks inside them ARE checked. They were not
+until 2026-07-29, and a stale UI QA fixture reached Unity green from here as a result.
+
 What it CANNOT catch, by construction:
   * Editor scripts (`client/Assets/Editor/`) — a player build ships no `UnityEditor.dll`, so those
     are excluded. They still type-check only inside Unity.
@@ -52,6 +56,31 @@ def main():
     refs = [r for r in refs if os.path.exists(r)]
 
     os.makedirs(OUT, exist_ok=True)
+
+    # Runtime scripts touch exactly three UnityEditor symbols, all inside `#if UNITY_EDITOR`
+    # debug paths. Stubbing them is what lets UNITY_EDITOR be defined below, which in turn is
+    # what puts the Editor*Fixture methods (the UI QA fixtures) under the compiler at all.
+    # If a fourth symbol ever appears the build fails loudly here — which is the right outcome,
+    # because a runtime script reaching further into UnityEditor is itself worth a look.
+    shim = os.path.join(OUT, "_unity_editor_shim.cs")
+    with open(shim, "w") as f:
+        f.write("namespace UnityEditor {\n"
+                "  [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]\n"
+                "  internal sealed class MenuItemAttribute : System.Attribute {\n"
+                "    public MenuItemAttribute(string itemName) { }\n"
+                "    public MenuItemAttribute(string itemName, bool isValidateFunction) { }\n"
+                "    public MenuItemAttribute(string itemName, bool isValidateFunction, int priority) { }\n"
+                "  }\n"
+                "  internal static class EditorApplication {\n"
+                "    public static bool isPlaying { get; set; }\n"
+                "    public static bool isCompiling { get; set; }\n"
+                "  }\n"
+                "  internal static class AssetDatabase {\n"
+                "    public static void ImportAsset(string path) { }\n"
+                "    public static void Refresh() { }\n"
+                "  }\n}\n")
+    srcs = srcs + [shim]
+
     proj = os.path.join(OUT, "client-check.csproj")
     with open(proj, "w") as f:
         f.write("<Project Sdk=\"Microsoft.NET.Sdk\">\n"
@@ -59,6 +88,13 @@ def main():
                 "    <TargetFramework>netstandard2.1</TargetFramework><LangVersion>9.0</LangVersion>\n"
                 "    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n"
                 "    <AssemblyName>WarbandClientCheck</AssemblyName>\n"
+                # DEVELOPMENT_BUILD turns on every `#if UNITY_EDITOR || DEVELOPMENT_BUILD` block
+                # in a RUNTIME script — the Editor*Fixture methods on RunShell, the layout-report
+                # helpers on each view. Those are ~15 blocks the check was blind to, and on
+                # 2026-07-29 one of them (a stale DeployModel fixture) reached Unity green from
+                # here. No `UnityEditor` symbol is legal in these files anyway (runtime asmdef),
+                # so enabling the define costs nothing and closes the gap.
+                "    <DefineConstants>UNITY_EDITOR;DEVELOPMENT_BUILD</DefineConstants>\n"
                 "    <NoWarn>CS0169;CS0414;CS0649;CS0108;CS0114</NoWarn>\n"
                 "  </PropertyGroup>\n  <ItemGroup>\n")
         for s in srcs:

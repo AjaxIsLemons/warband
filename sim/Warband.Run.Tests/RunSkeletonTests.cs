@@ -29,6 +29,8 @@ namespace Warband.Run.Tests
                 ResolveCurrent(run);
         }
 
+        private static void Evolve(RunController run) => run.ChooseRevisionUpgrade(0);
+
         // ---- Structure -------------------------------------------------------------
 
         [Fact]
@@ -168,6 +170,7 @@ namespace Warband.Run.Tests
             var cfg = new RunConfig();
             while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
             int before = run.State.Sand;
+            Evolve(run);
             var reward = run.ResolveInterlude(InterludePath.Treasury);
             Assert.Equal(cfg.InterludeTreasurySand, reward.Sand);
             Assert.Equal(before + reward.Sand, run.State.Sand);
@@ -186,6 +189,7 @@ namespace Warband.Run.Tests
             {
                 while (run.CurrentNodeKind != NodeKind.Event)
                     ResolveCurrent(run);
+                Evolve(run);
                 run.ResolveInterlude(InterludePath.Treasury);
                 Assert.Equal(3 + act, run.State.UnlockedFieldSlots);
                 Assert.True(run.SlotOfferOpen);
@@ -209,12 +213,14 @@ namespace Warband.Run.Tests
         {
             var run = NewRun();
             while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            Evolve(run);
             run.ResolveInterlude(InterludePath.Treasury);          // unlock 4, skip purchase
             DriveToBoss(run);
             run.ResolveBoss(Kit.AutoPlace(run));
             run.ChooseBossReward(0);
 
             while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            Evolve(run);
             run.ResolveInterlude(InterludePath.Treasury);          // cap now 5
             run.State.Sand = 100;
             run.BuySlot();
@@ -237,6 +243,7 @@ namespace Warband.Run.Tests
             var cfg = new RunConfig { SlotCosts = new[] { 9999, 9999, 9999 } };
             var run = NewRun(cfg: cfg);
             while (run.CurrentNodeKind != NodeKind.Event) ResolveCurrent(run);
+            Evolve(run);
             run.ResolveInterlude(InterludePath.Treasury);
             Assert.True(run.SlotOfferOpen);
             Assert.Throws<InvalidOperationException>(() => run.BuySlot());

@@ -55,6 +55,12 @@ internal static class DecisionCardPresentation
         "protection",
     };
 
+    private static readonly string[] AccentClasses =
+    {
+        "ward", "mending", "precision", "power", "affliction", "tempo", "reaction",
+        "utility",
+    };
+
     private static readonly DecisionFactDefinition Unknown = new DecisionFactDefinition(
         "", "neutral", UiGlyphId.Unknown, "Additional decision information.",
         MechanicFamily.Neutral);
@@ -78,7 +84,10 @@ internal static class DecisionCardPresentation
                 "Mana required to cast the Signature.", MechanicFamily.Mana),
             [PresentationFactId.ManaPerSwing] = Fact("MANA / HIT", "mana", UiGlyphId.Mana,
                 "Mana gained when a basic attack resolves.", MechanicFamily.Mana),
-            [PresentationFactId.Protection] = Fact("PROTECTION", "protection",
+            // SHIELD, not PROTECTION: Protection is the FAMILY name (the colour/glyph bucket).
+            // Leaking it into a stat label meant the same number read as PROTECTION on one
+            // surface and SHIELD on another.
+            [PresentationFactId.Protection] = Fact("SHIELD", "protection",
                 UiGlyphId.Shield, "Shield or other damage prevention currently active.",
                 MechanicFamily.Protection),
             [PresentationFactId.CritChance] = Fact("CRIT", "precision", UiGlyphId.Sniper,
@@ -111,12 +120,6 @@ internal static class DecisionCardPresentation
             return Healing;
         return Fact(fact?.Id ?? PresentationFactId.Unknown);
     }
-
-    public static PresentationFactId FactId(MusterFactKind kind) =>
-        kind == MusterFactKind.Health ? PresentationFactId.Hp :
-        kind == MusterFactKind.Basic ? PresentationFactId.BasicPower :
-        kind == MusterFactKind.Reach ? PresentationFactId.Reach :
-        PresentationFactId.Unknown;
 
     public static PresentationFactId FactId(string label) =>
         (label ?? "").Trim().ToUpperInvariant() switch
@@ -151,6 +154,13 @@ internal static class DecisionCardPresentation
         string selected = profile.ToString().ToLowerInvariant();
         foreach (string value in ProfileClasses)
             root.EnableInClassList("decision-card--" + value, value == selected);
+    }
+
+    public static void ApplyAccent(VisualElement root, string accent)
+    {
+        if (root == null) return;
+        foreach (string value in AccentClasses)
+            root.EnableInClassList("accent--" + value, value == accent);
     }
 
     public static void ApplyFact(VisualElement root, PresentationFactId id)

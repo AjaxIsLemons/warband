@@ -1,0 +1,161 @@
+{
+    "Active": true,
+    "RunId": "20260729-184037",
+    "Mode": "combat-unit-sheet",
+    "Phase": "load",
+    "Index": 8,
+    "Frames": 0,
+    "CapturePath": "",
+    "OutputDirectory": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037",
+    "OffscreenCapture": true,
+    "PreferOffscreenCapture": true,
+    "LiveRankUpRegression": "PASS · pending B fork safely defers the following A-rank Market preview",
+    "Items": [
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Width": 1024,
+            "Height": 768,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Width": 1280,
+            "Height": 720,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "enemy",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Width": 2556,
+            "Height": 1317,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "enemy",
+            "Width": 2556,
+            "Height": 1317,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Width": 3440,
+            "Height": 1440,
+            "ExpandedText": false,
+            "ForcePhone": false
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "stress",
+            "Width": 1600,
+            "Height": 900,
+            "ExpandedText": true,
+            "ForcePhone": false
+        }
+    ],
+    "Results": [
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Viewport": "1024x768",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=389.1×692.6; contained=True; weapon facts=4; properties=1; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-1024x768-combat-ally.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Viewport": "1280x720",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388.8×706.3; contained=True; weapon facts=4; properties=1; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-1280x720-combat-ally.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388×705; contained=True; weapon facts=4; properties=1; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-1600x900-combat-ally.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "enemy",
+            "Viewport": "1600x900",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388×450; contained=True; weapon facts=4; properties=0; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-1600x900-combat-enemy.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Viewport": "2556x1317",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388.2×697.7; contained=True; weapon facts=4; properties=1; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-2556x1317-combat-ally.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "enemy",
+            "Viewport": "2556x1317",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388.2×446.2; contained=True; weapon facts=4; properties=0; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-2556x1317-combat-enemy.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "ally",
+            "Viewport": "3440x1440",
+            "ExpandedText": false,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388.1×701.3; contained=True; weapon facts=4; properties=1; passives=1; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-3440x1440-combat-ally.png"
+        },
+        {
+            "Surface": "combat",
+            "Fixture": "stress",
+            "Viewport": "1600x900",
+            "ExpandedText": true,
+            "ForcePhone": false,
+            "Layout": "Combat inspector: PASS · card=388×828; contained=True; weapon facts=5; properties=2; passives=2; capture=offscreen-panel-fallback",
+            "Diagnostics": "",
+            "Image": "C:\\Dev\\game\\warband\\client\\TempCaptures\\ui-qa\\20260729-184037\\ui-qa-20260729-184037-1600x900-combat-stress-expanded.png"
+        }
+    ]
+}

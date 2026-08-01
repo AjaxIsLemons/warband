@@ -1,0 +1,377 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>workbench-frame · 02 rank-up modal (structural prototype)</title>
+<style>
+  /* Base frame: verbatim from approved workbench-refactor/05-shopfront-obsidian,
+     dimmed beneath the rank-up scrim. Content abbreviated where it sits under the dim. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    font-family: "Liberation Sans Narrow", "Arial Narrow", "DejaVu Sans", sans-serif;
+    background: #050508; color: #e9e9f2; position: relative;
+  }
+  .wash {
+    position: absolute; inset: 0;
+    background: radial-gradient(1100px 640px at 50% -8%,
+      #14141f 0%, #0a0a10 55%, #050508 100%);
+    border-left: 54px solid rgba(16,16,24,.6); border-right: 54px solid rgba(16,16,24,.6);
+  }
+  .safe { position: absolute; left: 22px; right: 22px; top: 14px; bottom: 200px; }
+  .under { filter: brightness(.5) saturate(.7); }
+
+  .header {
+    height: 46px; display: flex; align-items: center;
+    background: rgba(17,17,26,.82); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 0 12px 0 18px; gap: 18px;
+  }
+  .header .title { font-size: 20px; font-weight: 700; letter-spacing: 4px; color: #f4ecd8; }
+  .header .meta  { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; color: #8f8fa8; }
+  .header .grow { flex: 1; }
+  .track { display: flex; align-items: center; gap: 7px; margin-left: 6px; }
+  .tn { width: 21px; height: 21px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.16); background: rgba(26,26,40,.5);
+    color: #8f8fa8; font-size: 10.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .tn.past { background: rgba(230,185,92,.16); border-color: rgba(230,185,92,.4); color: #c9a75e; }
+  .tn.current { border-color: #e6b95c; color: #f2cf74; background: rgba(46,35,14,.7); }
+  .tn.ilude { font-size: 9px; }
+  .tn.boss { width: auto; padding: 0 9px; border-radius: 7px; letter-spacing: 1.2px; font-size: 9.5px; }
+  .sand {
+    display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px;
+    background: rgba(46,35,14,.65); border: 1px solid rgba(230,185,92,.5);
+    border-radius: 999px; color: #f2cf74; font-size: 19px; font-weight: 700;
+  }
+  .wager { height: 36px; padding: 0 20px; display: flex; align-items: center;
+    background: linear-gradient(180deg, #3b79dd, #2258b8); border-radius: 999px;
+    color: #eef4ff; font-size: 13px; font-weight: 700; letter-spacing: 1.6px; }
+
+  .cols { display: flex; gap: 12px; height: 632px; margin-top: 8px; }
+  .market { flex: 1; display: flex; gap: 8px; padding: 10px;
+    background: rgba(14,14,22,.66); border: 1px solid rgba(255,255,255,.07); border-radius: 14px; }
+  .reroll-rail { width: 52px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px; background: rgba(22,22,34,.7);
+    border: 1px solid rgba(255,255,255,.09); border-radius: 10px;
+    color: #b9b9d0; font-size: 12px; font-weight: 700; text-align: center; line-height: 15px; }
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(2, 1fr); gap: 8px; }
+  .offer { background: rgba(19,19,30,.72); border: 1px solid rgba(255,255,255,.08);
+    border-top: 2px solid var(--accent, #5b7ea9); border-radius: 12px;
+    display: flex; flex-direction: column; padding: 10px 12px 8px; }
+  .offer .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+                    color: var(--accent, #8f8fa8); }
+  .offer .name { font-size: 19px; font-weight: 700; color: #f2eee0; margin-top: 3px; }
+  .offer .art { flex: 1; margin-top: 8px; border: 1px solid rgba(255,255,255,.06);
+    border-radius: 8px; background-color: rgba(8,8,14,.8); background-size: cover;
+    background-position: center 20%; display: flex; align-items: center; justify-content: center; }
+  .offer .sigil { width: 84px; height: 84px; border: 3px solid #d9a43a; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #d9a43a; font-size: 44px; }
+  .offer .commerce { height: 32px; display: flex; align-items: center;
+    justify-content: flex-end; gap: 6px; color: #f0c75e; font-size: 17px; font-weight: 700; }
+
+  .dossier { width: 466px; background: rgba(15,15,24,.8);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden; }
+  .dossier .kind { height: 30px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 12px; background: rgba(24,24,38,.8);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #b48ad6; }
+  .dossier .kind .rank { color: #8f8fa8; }
+  .banner { height: 132px; position: relative; background-size: cover;
+    background-position: center 18%; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .banner .scrim { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(7,12,19,0) 30%, rgba(10,10,16,.94) 100%); }
+  .banner .id { position: absolute; left: 12px; bottom: 8px; }
+  .banner .name { font-size: 26px; font-weight: 700; color: #f2eee0; letter-spacing: 1px; }
+
+  .rail { position: absolute; left: 0; right: 0; bottom: 0; height: 186px;
+    background: rgba(10,10,16,.94); border-top: 1px solid rgba(255,255,255,.07);
+    display: flex; align-items: center; padding: 0 10px; gap: 10px; }
+  .rail .identity { width: 150px; padding-left: 8px; }
+  .rail .identity .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+  .rail .identity .cap { font-size: 20px; font-weight: 700; color: #f2eee0; margin: 4px 0; }
+  .rail .slots { display: flex; gap: 8px; flex: 1; justify-content: center; }
+  .ucard { width: 148px; height: 166px; background: rgba(19,19,30,.8);
+    border: 1px solid rgba(255,255,255,.09); border-radius: 12px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .ucard .portrait { height: 78px; background-size: cover; background-position: center 15%;
+    position: relative; }
+  .ucard .rankb { position: absolute; top: 5px; left: 5px; width: 22px; height: 22px;
+    border-radius: 50%; background: #e6b95c; color: #221703; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .ucard .uname { height: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; color: #e8eef6;
+    background: rgba(26,26,40,.85); }
+  .srow { display: flex; justify-content: center; gap: 6px; padding-top: 6px; }
+  .slot { width: 30px; height: 26px; border: 1px solid rgba(255,255,255,.12); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    background: rgba(26,26,40,.6); position: relative; }
+  .slot.filled { border-color: rgba(230,185,92,.65); color: #f2cf74; }
+  .slot.empty { color: #4a4a66; border-style: dashed; }
+  .slot .tier { position: absolute; right: 1px; bottom: 0; font-size: 8px; color: #8f8fa8; }
+  .slot.perk { font-size: 11px; font-weight: 700; }
+  .ucard.lockedcard { opacity: .55; align-items: center; justify-content: center; gap: 6px; }
+  .ucard.lockedcard .num { width: 24px; height: 24px; border-radius: 50%; background: #e6b95c;
+    color: #221703; font-weight: 700; font-size: 13px; display: flex; align-items: center;
+    justify-content: center; }
+  .ucard.lockedcard .d { font-size: 20px; color: #4a4a66; }
+  .ucard.lockedcard .t { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #8f8fa8; }
+  .rail .armory { width: 150px; height: 158px; border: 1px solid rgba(255,255,255,.09);
+    border-radius: 12px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; background: rgba(19,19,30,.8); }
+  .rail .armory .a1 { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+  .rail .armory .a2 { font-size: 19px; font-weight: 700; color: #f2eee0; }
+  .rail .armory .a3 { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; color: #e6b95c; }
+
+  /* ================= RANK-UP MODAL ================= */
+  .modal-scrim { position: absolute; inset: 0; z-index: 50;
+    background: radial-gradient(900px 620px at 50% 42%,
+      rgba(8,8,14,.55) 0%, rgba(5,5,8,.82) 70%, rgba(5,5,8,.92) 100%); }
+  .modal { position: absolute; z-index: 60; left: 50%; top: 46%;
+    transform: translate(-50%, -50%); width: 1040px;
+    display: flex; flex-direction: column; align-items: center; }
+  .m-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 5px; color: #e6b95c;
+    text-shadow: 0 0 20px rgba(230,185,92,.5); }
+  .m-title { font-size: 30px; font-weight: 700; letter-spacing: 3px; color: #f4ecd8;
+    margin-top: 6px; text-shadow: 0 0 26px rgba(230,185,92,.3); }
+  .m-bump { margin-top: 8px; font-size: 14px; font-weight: 700; letter-spacing: 1.6px;
+    color: #a9a9c2; }
+  .m-bump b { color: #e88d8f; } .m-bump i { font-style: normal; color: #eda953; }
+
+  .m-row { display: flex; align-items: stretch; gap: 22px; margin-top: 22px; }
+
+  .m-option { width: 330px; border-radius: 14px; padding: 18px 20px 16px;
+    background: rgba(17,17,27,.96); border: 1px solid rgba(255,255,255,.1);
+    display: flex; flex-direction: column;
+    box-shadow: 0 18px 50px rgba(0,0,0,.6); }
+  .m-option.hovered { border-color: rgba(230,185,92,.75);
+    box-shadow: 0 18px 50px rgba(0,0,0,.6), 0 0 34px rgba(230,185,92,.22); }
+  .m-option .o-head { display: flex; align-items: center; gap: 12px; }
+  .m-option .o-icon { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+    border: 1px solid rgba(230,185,92,.55); color: #f2cf74; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(46,35,14,.5); }
+  .m-option .o-kind { font-size: 10.5px; font-weight: 700; letter-spacing: 2px; color: #8f8fa8; }
+  .m-option .o-name { font-size: 21px; font-weight: 700; color: #f2eee0; margin-top: 2px; }
+  .m-option .o-rule { font-size: 14px; color: #a9a9c2; line-height: 20px; margin-top: 12px;
+    flex: 1; }
+  .m-option .o-bind { height: 42px; margin-top: 16px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; letter-spacing: 2px;
+    border: 1px solid rgba(255,255,255,.16); color: #d5d5e8; background: rgba(26,26,40,.6); }
+  .m-option.hovered .o-bind { background: rgba(46,35,14,.8);
+    border-color: rgba(230,185,92,.65); color: #f2cf74;
+    box-shadow: 0 0 22px rgba(230,185,92,.2); }
+
+  /* the hero's progression card, center-stage — the pick fills its B slot */
+  .m-card { width: 210px; border-radius: 14px; overflow: hidden; position: relative;
+    background: rgba(19,19,30,.95); border: 1px solid rgba(230,185,92,.5);
+    display: flex; flex-direction: column;
+    box-shadow: 0 18px 60px rgba(0,0,0,.7), 0 0 40px rgba(230,185,92,.16); }
+  .m-card .portrait { height: 128px; background-size: cover; background-position: center 12%;
+    position: relative; }
+  .m-card .rankwrap { position: absolute; top: 8px; left: 8px; display: flex;
+    align-items: center; gap: 5px; }
+  .m-card .rc { width: 24px; height: 24px; border-radius: 50%; font-size: 13px;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    background: rgba(26,26,40,.85); color: #8f8fa8;
+    border: 1px solid rgba(255,255,255,.2); }
+  .m-card .arrow { color: #e6b95c; font-size: 13px; font-weight: 700;
+    text-shadow: 0 0 10px rgba(230,185,92,.6); }
+  .m-card .rb { width: 28px; height: 28px; border-radius: 50%; font-size: 15px;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    background: #e6b95c; color: #221703; box-shadow: 0 0 18px rgba(230,185,92,.55); }
+  .m-card .uname { height: 26px; display: flex; align-items: center; justify-content: center;
+    font-size: 13.5px; font-weight: 700; letter-spacing: 1.6px; color: #f2eee0;
+    background: rgba(26,26,40,.9); }
+  .m-card .srow { display: flex; justify-content: center; gap: 8px; padding-top: 10px; }
+  .m-card .slot { width: 38px; height: 33px; border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; background: rgba(26,26,40,.6); position: relative; }
+  .m-card .slot.filled { border-color: rgba(230,185,92,.65); color: #f2cf74; }
+  .m-card .slot.empty { color: #4a4a66; border-style: dashed; }
+  .m-card .slot .tier { position: absolute; right: 2px; bottom: 1px; font-size: 9px;
+    color: #8f8fa8; }
+  .m-card .slot.perk { font-size: 13px; font-weight: 700; }
+  .m-card .slot.perk.await { border: 1px dashed rgba(230,185,92,.85); color: #c9a75e;
+    background: rgba(46,35,14,.45); box-shadow: 0 0 16px rgba(230,185,92,.3); }
+  .m-card .slot.perk.await .preview { font-size: 15px; color: #f2cf74; opacity: .75; }
+  .m-card .cardfoot { padding: 10px 0 12px; text-align: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+
+  .m-hint { margin-top: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1.6px;
+    color: #8f8fa8; }
+
+  .note { position: absolute; right: 30px; top: 1px; font-size: 9px; color: #3c3c52;
+          letter-spacing: 1px; font-weight: 700; z-index: 70; }
+</style>
+</head>
+<body>
+<div class="wash"></div>
+
+<!-- ================= the workbench, dimmed beneath ================= -->
+<div class="safe under">
+  <div class="header">
+    <div><span class="title">WORKBENCH</span></div>
+    <div class="meta">ACT 1 / 3</div>
+    <div class="track">
+      <span class="tn past">1</span>
+      <span class="tn past ilude">◆</span>
+      <span class="tn past">3</span>
+      <span class="tn current">4</span>
+      <span class="tn">5</span>
+      <span class="tn boss">BOSS</span>
+    </div>
+    <div class="grow"></div>
+    <div class="sand">⧖ 6</div>
+    <div class="wager">CHOOSE NEXT WAGER &nbsp;→</div>
+  </div>
+
+  <div class="cols">
+    <div class="market">
+      <div class="reroll-rail"><div style="font-size:22px;">↻</div>R<br>E<br>R<br>O<br>L<br>L<div style="color:#f2cf74;font-size:13px;">⧖ 1</div></div>
+      <div class="grid">
+        <div class="offer" style="--accent:#cf5a52;">
+          <div class="eyebrow">RECRUIT · TEMPO</div>
+          <div class="name">Berserker</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/berserker.png');"></div>
+          <div class="commerce">⧖ 5</div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">RANK UP</div>
+          <div class="name">Phalanx</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png');"></div>
+          <div class="commerce">SOLD</div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">INSCRIPTION · RUN LAW</div>
+          <div class="name">The Closed Gate</div>
+          <div class="art"><div class="sigil">⧖</div></div>
+          <div class="commerce">⧖ 7</div>
+        </div>
+        <div class="offer" style="--accent:#d9a43a;">
+          <div class="eyebrow">INSCRIPTION · RUN LAW</div>
+          <div class="name">Bronze Testament</div>
+          <div class="art"><div class="sigil">⧖</div></div>
+          <div class="commerce">⧖ 7</div>
+        </div>
+        <div class="offer" style="--accent:#57b06a;">
+          <div class="eyebrow">CAPACITY · RUN-WIDE</div>
+          <div class="name">Unlock Field 4</div>
+          <div class="art"><div class="sigil" style="border-radius:12px;border-color:#4fa3d9;color:#4fa3d9;">+</div></div>
+          <div class="commerce">⧖ 8</div>
+        </div>
+        <div class="offer" style="--accent:#5b7189; opacity:.5;">
+          <div class="eyebrow">MARKET RECEIPT</div>
+          <div class="name">Sold</div>
+          <div class="art"></div>
+          <div class="commerce"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dossier">
+      <div class="kind"><span>CHAMPION · FIELD · REACTION</span><span class="rank">RANK C</span></div>
+      <div class="banner" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png');">
+        <div class="scrim"></div>
+        <div class="id"><div class="name">Phalanx</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rail under">
+  <div class="identity">
+    <div class="eyebrow">WARBAND</div>
+    <div class="cap">FIELD 3 / 3</div>
+  </div>
+  <div class="slots">
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png');"><div class="rankb">C</div></div>
+      <div class="uname">PHALANX</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/shade.png');"><div class="rankb">B</div></div>
+      <div class="uname">SHADE</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk filled">⚡</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/banneret.png');"><div class="rankb">C</div></div>
+      <div class="uname">BANNERET</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard lockedcard"><div class="num">4</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">5</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">6</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+  </div>
+  <div class="armory">
+    <div class="a1">ARMORY</div>
+    <div class="a2">3 STORED</div>
+    <div class="a3">OPEN DRAWER ▴</div>
+  </div>
+</div>
+
+<!-- ================= the rank-up interruption ================= -->
+<div class="modal-scrim"></div>
+<div class="modal">
+  <div class="m-eyebrow">RANK UP · THE FORK</div>
+  <div class="m-title">PHALANX · C → B</div>
+  <div class="m-bump"><b>+30 HEALTH</b> · <i>+2 POWER</i> — THEN BIND HIS PATH</div>
+
+  <div class="m-row">
+    <div class="m-option hovered">
+      <div class="o-head">
+        <div class="o-icon">↶</div>
+        <div>
+          <div class="o-kind">REACTION</div>
+          <div class="o-name">Pikewall</div>
+        </div>
+      </div>
+      <div class="o-rule">The wall: he counters everything, and punishes anyone who
+        Leaps in.</div>
+      <div class="o-bind">BIND PIKEWALL</div>
+    </div>
+
+    <div class="m-card">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png');">
+        <div class="rankwrap">
+          <div class="rc">C</div><div class="arrow">→</div><div class="rb">B</div>
+        </div>
+      </div>
+      <div class="uname">PHALANX</div>
+      <div class="srow">
+        <div class="slot filled">✦</div>
+        <div class="slot filled">⚔<span class="tier">W</span></div>
+        <div class="slot empty">◇</div>
+      </div>
+      <div class="srow">
+        <div class="slot perk await"><span class="preview">↶</span></div>
+        <div class="slot perk empty">A</div>
+        <div class="slot perk empty">S</div>
+      </div>
+      <div class="cardfoot">HIS CARD REMEMBERS</div>
+    </div>
+
+    <div class="m-option">
+      <div class="o-head">
+        <div class="o-icon">⟶</div>
+        <div>
+          <div class="o-kind">POWER</div>
+          <div class="o-name">Lancer</div>
+        </div>
+      </div>
+      <div class="o-rule">The lunge: the thrust runs through every enemy standing on
+        the line.</div>
+      <div class="o-bind">BIND LANCER</div>
+    </div>
+  </div>
+
+  <div class="m-hint">THE WORKBENCH WAITS UNTIL HE CHOOSES</div>
+</div>
+
+<div class="note">STRUCTURAL PROTOTYPE · RANK-UP MODAL · 1600×900</div>
+</body>
+</html>

@@ -73,16 +73,24 @@ namespace Warband.Sim
 
         private readonly List<(FieldDef Def, Hex Center, int OwnerTeam)> _initialFields;
         private readonly Rng _rng;
+        private readonly TimelineIntervention? _intervention;
+        private readonly Dictionary<int, Hex> _initialPositions = new Dictionary<int, Hex>();
+        private readonly Dictionary<int, int> _afterthoughtRefund = new Dictionary<int, int>();
+        private readonly Dictionary<int, OmittedReturn> _omittedReturns = new Dictionary<int, OmittedReturn>();
+        private bool _revisionApplied;
 
         public Battle(IEnumerable<UnitState> units,
                       IEnumerable<(int Team, Trigger T)>? teamTriggers = null,
                       IEnumerable<(FieldDef Def, Hex Center, int OwnerTeam)>? initialFields = null,
-                      ulong seed = 1)
+                      ulong seed = 1,
+                      TimelineIntervention? intervention = null)
         {
             _units = units.OrderBy(u => u.Id).ToList();
             _teamTriggers = teamTriggers?.ToList() ?? new List<(int, Trigger)>();
             _initialFields = initialFields?.ToList() ?? new List<(FieldDef, Hex, int)>();
             _rng = new Rng(seed);
+            _intervention = intervention?.Clone();
+            foreach (var unit in _units) _initialPositions[unit.Id] = unit.Pos;
             // BEFORE the initial view: ViewOf projects each unit's rule span, so a table built after
             // it would leave the tick-0 snapshot at -1 while every later projection carried the real
             // base — and the fold guardrail would fail on the first tick of every fight.
@@ -206,6 +214,301 @@ namespace Warband.Sim
             }
         }
 
+        private sealed class OmittedReturn
+        {
+            public int Tick;
+            public bool Root;
+            public bool EmptyMana;
+            public int DisarmTicks;
+        }
+
+        /// <summary>
+        /// Revision is a root event at the selected step boundary. All consequences then use the
+        /// ordinary mutation grammar, so triggers, folds and the renderer observe one truthful log.
+        /// </summary>
+        private void ApplyRevisionIfDue()
+        {
+            if (_revisionApplied || _intervention == null || _tick != _intervention.BranchTick)
+                return;
+            _revisionApplied = true;
+            if (_intervention.Targets.Count == 0)
+                throw new InvalidOperationException("a Revision needs a target");
+
+            switch (_intervention.Kind)
+            {
+                case RevisionEffectKind.BorrowedFuture:
+                    ApplyBorrowedFuture(_intervention);
+                    break;
+                case RevisionEffectKind.RecallToFormation:
+                    ApplyRecall(_intervention);
+                    break;
+                default:
+                    throw new InvalidOperationException("unknown Revision effect");
+            }
+            Drain();
+        }
+
+        private void ApplyBorrowedFuture(TimelineIntervention revision)
+        {
+            int limit = revision.Modifiers.HasFlag(RevisionModifier.Convergence) ? 2 : 1;
+            if (revision.Targets.Count > limit)
+                throw new InvalidOperationException($"Borrowed Future accepts at most {limit} target(s)");
+
+            var directlyRevised = new HashSet<int>();
+            int primaryCarry = 0;
+            for (int i = 0; i < revision.Targets.Count; i++)
+            {
+                var request = revision.Targets[i];
+                var target = ById(request.UnitId);
+                if (target == null || target.Team != 0 || target.Def.ManaMax <= 0)
+                    throw new InvalidOperationException(
+                        $"Borrowed Future target {request.UnitId} is not an active allied Mana user");
+                if (!directlyRevised.Add(target.Id))
+                    throw new InvalidOperationException("Borrowed Future cannot target one ally twice");
+
+                EmitRevision(target, revision);
+                int minimum = revision.Modifiers.HasFlag(RevisionModifier.DeepReserve) ? 25 : 15;
+                int carried = Math.Max(minimum, Math.Max(0, request.PresentMana - target.Mana));
+                int manaAdded = Math.Min(carried, target.Def.ManaMax - target.Mana);
+                if (manaAdded > 0)
+                {
+                    target.Mana += manaAdded;
+                    Emit(new BattleEvent
+                    {
+                        Kind = EventKind.ManaChanged, Target = target.Id,
+                        Amount = manaAdded, PostMana = target.Mana,
+                    });
+                }
+                int overflow = carried - manaAdded;
+                if (overflow > 0)
+                {
+                    target.Shield += overflow;
+                    Emit(new BattleEvent
+                    {
+                        Kind = EventKind.ShieldChanged, Target = target.Id,
+                        Amount = overflow, PostShield = target.Shield,
+                    });
+                }
+                if (revision.Modifiers.HasFlag(RevisionModifier.ClearIntention))
+                {
+                    RemoveRevisionStatus(target, StatusKind.Silence);
+                    RemoveRevisionStatus(target, StatusKind.Disarm);
+                }
+                if (revision.Modifiers.HasFlag(RevisionModifier.Afterthought) && manaAdded > 0)
+                    _afterthoughtRefund[target.Id] = manaAdded / 2;
+                if (i == 0) primaryCarry = carried;
+            }
+
+            if (!revision.Modifiers.HasFlag(RevisionModifier.SharedPremonition)
+                || primaryCarry <= 1)
+                return;
+            var primary = ById(revision.Targets[0].UnitId)!;
+            UnitState? shared = null;
+            foreach (var ally in _units)
+            {
+                if (!Targetable(ally) || ally.Team != 0 || ally.Def.ManaMax <= 0
+                    || directlyRevised.Contains(ally.Id))
+                    continue;
+                if (shared == null
+                    || Hex.Distance(primary.Pos, ally.Pos) < Hex.Distance(primary.Pos, shared.Pos)
+                    || (Hex.Distance(primary.Pos, ally.Pos) == Hex.Distance(primary.Pos, shared.Pos)
+                        && ally.Id < shared.Id))
+                    shared = ally;
+            }
+            if (shared != null) GainMana(shared, primaryCarry / 2);
+        }
+
+        private void ApplyRecall(TimelineIntervention revision)
+        {
+            if (revision.Targets.Count != 1)
+                throw new InvalidOperationException("Recall to Formation accepts one primary target");
+            var primary = ById(revision.Targets[0].UnitId);
+            if (primary == null || primary.Team != 1)
+                throw new InvalidOperationException(
+                    $"Recall target {revision.Targets[0].UnitId} is not an active enemy");
+
+            var recalled = new List<UnitState> { primary };
+            if (revision.Modifiers.HasFlag(RevisionModifier.GeneralRecall))
+            {
+                foreach (var enemy in _units)
+                    if (Targetable(enemy) && enemy.Team == 1 && enemy.Id != primary.Id)
+                        recalled.Add(enemy);
+                recalled.Sort(1, recalled.Count - 1, Comparer<UnitState>.Create((a, b) =>
+                    a.Id.CompareTo(b.Id)));
+            }
+            else if (revision.Modifiers.HasFlag(RevisionModifier.RollCall))
+            {
+                UnitState? second = null;
+                foreach (var enemy in _units)
+                {
+                    if (!Targetable(enemy) || enemy.Team != 1 || enemy.Id == primary.Id) continue;
+                    if (second == null
+                        || Hex.Distance(primary.Pos, enemy.Pos) < Hex.Distance(primary.Pos, second.Pos)
+                        || (Hex.Distance(primary.Pos, enemy.Pos) == Hex.Distance(primary.Pos, second.Pos)
+                            && enemy.Id < second.Id))
+                        second = enemy;
+                }
+                if (second != null) recalled.Add(second);
+            }
+
+            for (int i = 0; i < recalled.Count; i++)
+            {
+                var target = recalled[i];
+                EmitRevision(target, revision);
+                bool omitted = i == 0
+                    && revision.Modifiers.HasFlag(RevisionModifier.MissingHour);
+                int disarm = i == 0
+                    ? (revision.Modifiers.HasFlag(RevisionModifier.LongPeace) ? 25 : 15)
+                    : 10;
+                bool root = i == 0 && revision.Modifiers.HasFlag(RevisionModifier.FixedPoint);
+                bool emptyMana = i == 0
+                    && revision.Modifiers.HasFlag(RevisionModifier.EmptyHands);
+
+                if (omitted)
+                {
+                    target.StepStart = target.StepEnd = _tick;
+                    ApplyRevisionStatus(target, StatusKind.Omitted, -1);
+                    _omittedReturns[target.Id] = new OmittedReturn
+                    {
+                        Tick = _tick + 20,
+                        Root = root,
+                        EmptyMana = emptyMana,
+                        DisarmTicks = disarm,
+                    };
+                    Emit(new BattleEvent
+                    {
+                        Kind = EventKind.UnitOmitted, Target = target.Id, Amount = _tick + 20,
+                    });
+                    continue;
+                }
+
+                RecallNow(target);
+                if (emptyMana) EmptyMana(target);
+                ApplyRevisionStatus(target, StatusKind.Disarm, disarm);
+                if (root) ApplyRevisionStatus(target, StatusKind.Root, 15);
+            }
+        }
+
+        private void ReturnOmittedUnits()
+        {
+            if (_omittedReturns.Count == 0) return;
+            var due = _omittedReturns
+                .Where(pair => pair.Value.Tick == _tick)
+                .OrderBy(pair => pair.Key)
+                .ToList();
+            foreach (var pair in due)
+            {
+                var target = Raw(pair.Key);
+                _omittedReturns.Remove(pair.Key);
+                if (target == null || !target.Alive) continue;
+                RemoveRevisionStatus(target, StatusKind.Omitted);
+                RecallNow(target);
+                Emit(new BattleEvent { Kind = EventKind.UnitReturned, Target = target.Id });
+                if (pair.Value.EmptyMana) EmptyMana(target);
+                ApplyRevisionStatus(target, StatusKind.Disarm, pair.Value.DisarmTicks);
+                if (pair.Value.Root) ApplyRevisionStatus(target, StatusKind.Root, 15);
+            }
+            Drain();
+        }
+
+        private void EmitRevision(UnitState target, TimelineIntervention revision)
+        {
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.RevisionApplied,
+                Target = target.Id,
+                Amount = (int)revision.Kind,
+                Aux = (int)revision.Modifiers,
+            });
+        }
+
+        private void RecallNow(UnitState target)
+        {
+            target.StepStart = target.StepEnd = _tick;
+            target.BlockedTargetId = -1;
+            Hex destination = RecallDestination(target);
+            target.Pos = destination;
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.Move, Source = target.Id,
+                Amount = destination.Q, Aux = destination.R,
+            });
+        }
+
+        private Hex RecallDestination(UnitState target)
+        {
+            Hex origin = _initialPositions[target.Id];
+            var occupied = new HashSet<Hex>();
+            foreach (var other in _units)
+                if (other.Alive && !other.Has(StatusKind.Omitted) && other.Id != target.Id)
+                {
+                    occupied.Add(other.Pos);
+                    occupied.Add(other.StepTo);
+                }
+            foreach (var field in _fields)
+                if (field.Def.IsWall)
+                    occupied.UnionWith(HexesOf(field));
+            if (!occupied.Contains(origin)) return origin;
+
+            var legal = new List<Hex>();
+            for (int row = 0; row < BoardRows; row++)
+                for (int col = 0; col < BoardCols; col++)
+                {
+                    Hex candidate = Hex.FromRowCol(row, col);
+                    if (!occupied.Contains(candidate)) legal.Add(candidate);
+                }
+            if (legal.Count == 0)
+                throw new InvalidOperationException("Recall has no legal destination");
+            return legal
+                .OrderBy(h => Hex.Distance(origin, h))
+                .ThenBy(h => h.Row)
+                .ThenBy(h => h.Col)
+                .First();
+        }
+
+        private void EmptyMana(UnitState target)
+        {
+            if (target.Mana <= 0) return;
+            int lost = target.Mana;
+            target.Mana = 0;
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.ManaChanged, Target = target.Id,
+                Amount = -lost, PostMana = 0,
+            });
+        }
+
+        private void ApplyRevisionStatus(UnitState target, StatusKind kind, int ticks)
+        {
+            var status = new Status
+            {
+                Kind = kind,
+                TicksLeft = ticks,
+                SourceId = -1,
+            };
+            target.Statuses.Add(status);
+            Emit(new BattleEvent
+            {
+                Kind = EventKind.StatusApplied, Target = target.Id,
+                Aux = (int)kind, Aux2 = Countdown(ticks), Aux3 = -1,
+            });
+        }
+
+        private void RemoveRevisionStatus(UnitState target, StatusKind kind)
+        {
+            for (int i = target.Statuses.Count - 1; i >= 0; i--)
+            {
+                var status = target.Statuses[i];
+                if (status.Kind != kind) continue;
+                target.Statuses.RemoveAt(i);
+                Emit(new BattleEvent
+                {
+                    Kind = EventKind.StatusExpired, Target = target.Id,
+                    Amount = status.Mag, Aux = (int)status.Kind,
+                });
+            }
+        }
+
         /// <summary>
         /// Land every committed step whose arrival tick has come — BEFORE anything decides, so a
         /// unit that arrives this tick may depart again this tick. That back-to-back handoff is what
@@ -225,6 +528,8 @@ namespace Warband.Sim
 
         private void Step()
         {
+            ReturnOmittedUnits();
+            ApplyRevisionIfDue();
             Arrivals();
             EnginePhase();
             Drain();
@@ -239,7 +544,8 @@ namespace Warband.Sim
             // the same tile mid-walk — the thing hex-teleporting never had to think about.
             var bodies = new HashSet<Hex>();
             foreach (var x in _units)
-                if (x.Alive) { bodies.Add(x.Pos); bodies.Add(x.StepTo); }
+                if (x.Alive && !x.Has(StatusKind.Omitted))
+                { bodies.Add(x.Pos); bodies.Add(x.StepTo); }
             var walls = new HashSet<Hex>();
             foreach (var f in _fields)
                 if (f.Def.IsWall)
@@ -257,7 +563,7 @@ namespace Warband.Sim
             AcquireTargets();
             foreach (var u in _units)
             {
-                if (!u.Alive || u.Has(StatusKind.Stun)) continue;
+                if (!u.Alive || u.Has(StatusKind.Stun) || u.Has(StatusKind.Omitted)) continue;
 
                 if (u.Def.ManaMax > 0 && u.Mana >= u.Def.ManaMax && !IsSilenced(u))
                     casts.Add(u);
@@ -458,6 +764,11 @@ namespace Warband.Sim
                 var ctx = new BattleEvent { Kind = EventKind.Cast, Source = u.Id, Target = u.TargetId };
                 foreach (var eff in u.Def.Signature)
                     ApplyEffectDef(u, eff, ctx, Cause.Ability, 0, u.Id);
+                if (_afterthoughtRefund.TryGetValue(u.Id, out int refund))
+                {
+                    _afterthoughtRefund.Remove(u.Id);
+                    GainMana(u, refund, sourceId: -1, root: u.Id);
+                }
             }
 
             Drain();
@@ -493,7 +804,8 @@ namespace Warband.Sim
                     u.RuleActive = new bool[rules.Count];
                 for (int i = 0; i < rules.Count; i++)
                 {
-                    bool now = u.Alive && CondsOk(u, rules[i].When, NullEvent);
+                    bool now = u.Alive && !u.Has(StatusKind.Omitted)
+                        && CondsOk(u, rules[i].When, NullEvent);
                     if (now == u.RuleActive[i]) continue;
                     u.RuleActive[i] = now;
                     Emit(new BattleEvent
@@ -553,7 +865,7 @@ namespace Warband.Sim
             bool pulse = _tick > 0 && _tick % PulseInterval == 0;
             foreach (var u in _units)
             {
-                if (!u.Alive) continue;
+                if (!u.Alive || u.Has(StatusKind.Omitted)) continue;
 
                 u.RecentDamage.RemoveAll(d => d.Tick < _tick - RecentWindow);
 
@@ -607,7 +919,7 @@ namespace Warband.Sim
                 var hexes = HexesOf(f);
                 foreach (var u in _units)
                 {
-                    if (!u.Alive) continue;
+                    if (!u.Alive || u.Has(StatusKind.Omitted)) continue;
                     bool inside = hexes.Contains(u.Pos) && Field.TeamMatches(f.Def.PresenceAffects, f.OwnerTeam, u.Team);
                     bool has = false;
                     foreach (var s in u.Statuses)
@@ -637,7 +949,8 @@ namespace Warband.Sim
                     {
                         var hexes = HexesOf(f);
                         foreach (var u in _units)
-                            if (u.Alive && hexes.Contains(u.Pos) && Field.TeamMatches(f.Def.PulseAffects, f.OwnerTeam, u.Team))
+                            if (u.Alive && !u.Has(StatusKind.Omitted) && hexes.Contains(u.Pos)
+                                && Field.TeamMatches(f.Def.PulseAffects, f.OwnerTeam, u.Team))
                                 foreach (var eff in f.Def.Pulse)
                                     ApplyToTarget(f.OwnerId, u, eff, Cause.Field, 0, f.OwnerId, eff.Amount);
                     }
@@ -645,7 +958,8 @@ namespace Warband.Sim
             for (int i = _fields.Count - 1; i >= 0; i--)
             {
                 var f = _fields[i];
-                bool anchorGone = f.AttachedUnitId >= 0 && ById(f.AttachedUnitId) == null;
+                var anchor = Raw(f.AttachedUnitId);
+                bool anchorGone = f.AttachedUnitId >= 0 && (anchor == null || !anchor.Alive);
                 if (anchorGone || (f.TicksLeft > 0 && --f.TicksLeft == 0))
                     RemoveField(f);
             }
@@ -717,7 +1031,7 @@ namespace Warband.Sim
 
                 foreach (var owner in _units)
                 {
-                    if (!owner.Alive) continue;
+                    if (!owner.Alive || owner.Has(StatusKind.Omitted)) continue;
                     for (int i = 0; i < owner.Def.Triggers.Count; i++)
                         FireIfMatch(owner, owner.Def.Triggers[i], ev, owner.TriggerBase + i);
                 }
@@ -727,7 +1041,7 @@ namespace Warband.Sim
                         var (t, trig) = _teamTriggers[i];
                         if (t != team) continue;
                         foreach (var owner in _units)
-                            if (owner.Alive && owner.Team == team)
+                            if (owner.Alive && !owner.Has(StatusKind.Omitted) && owner.Team == team)
                             { FireIfMatch(owner, trig, ev, _teamRuleBase + i); break; } // once per team, lowest-id rep
                     }
             }
@@ -848,7 +1162,8 @@ namespace Warband.Sim
                     {
                         ok = true;
                         foreach (var e in _units)
-                            if (e.Alive && e.Team != owner.Team && Hex.Distance(owner.Pos, e.Pos) <= c.Amount)
+                            if (Targetable(e) && e.Team != owner.Team
+                                && Hex.Distance(owner.Pos, e.Pos) <= c.Amount)
                             { ok = false; break; }
                         break;
                     }
@@ -858,7 +1173,7 @@ namespace Warband.Sim
                         ok = false;
                         if (t != null)
                             foreach (var a in _units)
-                                if (a.Alive && a.Team == owner.Team && a.Id != owner.Id
+                                if (Targetable(a) && a.Team == owner.Team && a.Id != owner.Id
                                     && Hex.Distance(a.Pos, t.Pos) == 1)
                                 { ok = true; break; }
                         break;
@@ -868,7 +1183,7 @@ namespace Warband.Sim
                         ok = false;
                         foreach (var e in _units)
                         {
-                            if (!e.Alive || e.Team == owner.Team) continue;
+                            if (!Targetable(e) || e.Team == owner.Team) continue;
                             foreach (var s in e.Statuses)
                                 if (s.Kind == StatusKind.Taunt && s.SourceId == owner.Id) { ok = true; break; }
                             if (ok) break;
@@ -894,7 +1209,8 @@ namespace Warband.Sim
                     {
                         ok = false;
                         foreach (var e in _units)
-                            if (e.Alive && e.Team != owner.Team && e.Has(c.Status)) { ok = true; break; }
+                            if (Targetable(e) && e.Team != owner.Team && e.Has(c.Status))
+                            { ok = true; break; }
                         break;
                     }
                     case CondKind.TargetInFieldOfOwner:
@@ -991,7 +1307,8 @@ namespace Warband.Sim
         /// toward them; a clear line cuts air.</summary>
         private void PerformEffectSwing(UnitState owner, UnitState intended, EffectDef eff, int depth)
         {
-            if (!owner.Alive || owner.Has(StatusKind.Disarm) || owner.Has(StatusKind.Stun)) return;
+            if (!owner.Alive || owner.Has(StatusKind.Omitted)
+                || owner.Has(StatusKind.Disarm) || owner.Has(StatusKind.Stun)) return;
             UnitState? victim = intended;
             var cause = eff.AsCounter ? Cause.Counter : Cause.Attack;
             if (eff.AsCounter && Hex.Distance(owner.Pos, intended.Pos) > owner.Def.Range)
@@ -1041,7 +1358,8 @@ namespace Warband.Sim
         {
             var occupied = new HashSet<Hex>();
             foreach (var x in _units)
-                if (x.Alive) { occupied.Add(x.Pos); occupied.Add(x.StepTo); } // reserved hexes are taken
+                if (x.Alive && !x.Has(StatusKind.Omitted))
+                { occupied.Add(x.Pos); occupied.Add(x.StepTo); } // reserved hexes are taken
             foreach (var f in _fields)
                 if (f.Def.IsWall)
                     occupied.UnionWith(HexesOf(f));
@@ -1076,6 +1394,7 @@ namespace Warband.Sim
         private void ApplyToTarget(int sourceId, UnitState target, EffectDef eff, Cause cause, int depth, int root, int amount)
         {
             if (!target.Alive && eff.Kind != EffectKind.RemoveStatus) return; // corpses only host field spawns
+            if (target.Has(StatusKind.Omitted)) return;
             switch (eff.Kind)
             {
                 case EffectKind.Damage: DealDamage(sourceId, target, amount, cause, depth, root); break;
@@ -1109,12 +1428,15 @@ namespace Warband.Sim
                     Emit(new BattleEvent { Kind = EventKind.StatusApplied, Source = sourceId, Target = target.Id, Amount = amount, Aux = (int)eff.Status, Aux2 = Countdown(applied.TicksLeft), Aux3 = Countdown(applied.SwingsLeft), Depth = depth, Root = root });
                     break;
                 case EffectKind.RemoveStatus:
+                    int remaining = eff.Amount;
                     for (int i = target.Statuses.Count - 1; i >= 0; i--)
                         if (target.Statuses[i].Kind == eff.Status)
                         {
                             var s = target.Statuses[i];
                             target.Statuses.RemoveAt(i);
                             Emit(new BattleEvent { Kind = EventKind.StatusExpired, Target = target.Id, Amount = s.Mag, Aux = (int)s.Kind, Depth = depth, Root = root });
+                            if (remaining > 0 && --remaining == 0)
+                                break;
                         }
                     break;
                 case EffectKind.Execute:
@@ -1129,7 +1451,8 @@ namespace Warband.Sim
         private bool HasAdjacentAlly(UnitState u)
         {
             foreach (var x in _units)
-                if (x.Alive && x.Id != u.Id && x.Team == u.Team && Hex.Distance(u.Pos, x.Pos) == 1)
+                if (Targetable(x) && x.Id != u.Id && x.Team == u.Team
+                    && Hex.Distance(u.Pos, x.Pos) == 1)
                     return true;
             return false;
         }
@@ -1151,7 +1474,11 @@ namespace Warband.Sim
                 && (sel.BelowHpPct <= 0 || u.Hp * 100 < sel.BelowHpPct * u.Def.MaxHp)
                 && (!sel.AdjacentToAlly || HasAdjacentAlly(u))
                 && !(sel.ExcludeAnchorUnit && u.Id == anchorId);
-            void AddIf(UnitState? u) { if (u != null && u.Alive && StatusOk(u)) result.Add(u); }
+            void AddIf(UnitState? u)
+            {
+                if (u != null && u.Alive && !u.Has(StatusKind.Omitted) && StatusOk(u))
+                    result.Add(u);
+            }
 
             switch (sel.Kind)
             {
@@ -1194,7 +1521,8 @@ namespace Warband.Sim
                 {
                     UnitState? best = null;
                     foreach (var u in _units)
-                        if (u.Alive && u.Team == owner.Team && !(sel.ExcludeSelf && u.Id == owner.Id) && StatusOk(u))
+                        if (u.Alive && !u.Has(StatusKind.Omitted) && u.Team == owner.Team
+                            && !(sel.ExcludeSelf && u.Id == owner.Id) && StatusOk(u))
                             if (best == null || u.Hp < best.Hp)
                                 best = u;
                     if (best != null) result.Add(best);
@@ -1202,7 +1530,8 @@ namespace Warband.Sim
                 }
                 case SelKind.AlliesWithin:
                     foreach (var u in _units)
-                        if (u.Alive && u.Team == owner.Team && !(sel.ExcludeSelf && u.Id == owner.Id)
+                        if (u.Alive && !u.Has(StatusKind.Omitted) && u.Team == owner.Team
+                            && !(sel.ExcludeSelf && u.Id == owner.Id)
                             && StatusOk(u) && Hex.Distance(anchor, u.Pos) <= sel.Range)
                             result.Add(u);
                     break;
@@ -1252,7 +1581,8 @@ namespace Warband.Sim
 
         private void DealDamage(int sourceId, UnitState target, int amount, Cause cause, int depth, int root, bool crit = false)
         {
-            if (amount <= 0 || !target.Alive || target.Has(StatusKind.Phase)) return; // Phase = immune
+            if (amount <= 0 || !target.Alive || target.Has(StatusKind.Phase)
+                || target.Has(StatusKind.Omitted)) return; // Phase/Omitted = immune
             int taken = 100 + target.Sum(StatusKind.DamageTakenUp) - target.Sum(StatusKind.DamageTakenDown);
             if (taken != 100) amount = amount * (taken < 0 ? 0 : taken) / 100;
             if (amount <= 0) return;
@@ -1273,7 +1603,7 @@ namespace Warband.Sim
 
         private void Heal(int sourceId, UnitState target, int amount, int depth, int root)
         {
-            if (amount <= 0 || !target.Alive) return;
+            if (amount <= 0 || !target.Alive || target.Has(StatusKind.Omitted)) return;
             // The Bloodless Hour (ADR 0026's first Paradox): while held, healing cannot restore
             // HP — the WHOLE amount becomes Shield, not just the overflow like OverhealToShield.
             // Checked before any HP math so no Heal event exists under it: on-Heal engines (Tithe
@@ -1312,7 +1642,7 @@ namespace Warband.Sim
 
         private void GainMana(UnitState u, int amount, int sourceId = -1, int depth = 0, int root = -1)
         {
-            if (u.Def.ManaMax == 0 || IsSilenced(u) || !u.Alive) return;
+            if (u.Def.ManaMax == 0 || IsSilenced(u) || !u.Alive || u.Has(StatusKind.Omitted)) return;
             int gained = Math.Min(amount, u.Def.ManaMax - u.Mana);
             if (gained <= 0) return;
             u.Mana += gained;
@@ -1375,7 +1705,7 @@ namespace Warband.Sim
         {
             foreach (var u in _units)
             {
-                if (!u.Alive) continue;
+                if (!u.Alive || u.Has(StatusKind.Omitted)) continue;
 
                 UnitState? taunter = null;
                 foreach (var s in u.Statuses)
@@ -1463,13 +1793,14 @@ namespace Warband.Sim
         {
             UnitState? best = null;
             foreach (var a in _units)
-                if (a.Alive && a.Team == u.Team && Hex.Distance(u.Pos, a.Pos) <= u.Def.Range)
+                if (Targetable(a) && a.Team == u.Team && Hex.Distance(u.Pos, a.Pos) <= u.Def.Range)
                     if (best == null || a.Hp < best.Hp)
                         best = a;
             return best;
         }
 
-        private static bool Targetable(UnitState u) => u.Alive && !u.Has(StatusKind.Phase);
+        private static bool Targetable(UnitState u) =>
+            u.Alive && !u.Has(StatusKind.Phase) && !u.Has(StatusKind.Omitted);
 
         /// <summary>Taunt bundles Silence behavior (Bulwark dive): no casting, no mana.</summary>
         private static bool IsSilenced(UnitState u) => u.Has(StatusKind.Silence) || u.Has(StatusKind.Taunt);
@@ -1478,7 +1809,7 @@ namespace Warband.Sim
         {
             UnitState? best = null;
             foreach (var a in _units)
-                if (a.Alive && a.Team == u.Team)
+                if (Targetable(a) && a.Team == u.Team)
                     if (best == null || a.Hp < best.Hp)
                         best = a;
             return best;
@@ -1502,7 +1833,7 @@ namespace Warband.Sim
         private UnitState? ById(int id)
         {
             var u = Raw(id);
-            return u != null && u.Alive ? u : null;
+            return u != null && u.Alive && !u.Has(StatusKind.Omitted) ? u : null;
         }
 
         private UnitState? Raw(int id)

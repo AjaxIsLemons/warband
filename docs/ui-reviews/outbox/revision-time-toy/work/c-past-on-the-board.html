@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>C — The Past Is On The Board</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:2560px; height:1440px; overflow:hidden; }
+  body {
+    background:#0b1018 url(board.png) center/cover no-repeat;
+    font-family:"DejaVu Sans", system-ui, sans-serif; position:relative;
+    filter:saturate(.40);
+  }
+  .vig { position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0) 40%, rgba(2,5,10,.80) 100%); }
+  .chrome { position:absolute; inset:0; filter:saturate(2.0); }
+
+  /* ---- a unit's own past, laid on the hexes it actually stood on ---- */
+  .ghost { position:absolute; transform:translate(-50%,-50%);
+    width:118px; height:58px; border-radius:50%;
+    border:3px dashed rgba(190,220,250,.55);
+    background:radial-gradient(ellipse, rgba(150,200,255,.16), rgba(0,0,0,0) 70%); }
+  .ghost.g2 { opacity:.62; } .ghost.g3 { opacity:.36; }
+  .ghost b { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-size:19px; font-weight:800; color:#CFE6FF; letter-spacing:1px;
+    text-shadow:0 2px 5px #000; }
+
+  /* ---- landmarks live ON the hex where they happened, and are grabbable ---- */
+  .mark { position:absolute; transform:translate(-50%,-100%); text-align:center; cursor:pointer; }
+  .mark .glyph { width:104px; height:104px; margin:0 auto; border-radius:50%;
+    display:grid; place-items:center; font-size:52px;
+    background:rgba(10,16,24,.82); border:5px solid; box-shadow:0 6px 20px rgba(0,0,0,.7); }
+  .mark .when { margin-top:9px; font-size:27px; font-weight:800; letter-spacing:2px;
+    padding:5px 15px; border-radius:999px; display:inline-block; text-shadow:0 2px 4px #000; }
+  .mark.death .glyph { border-color:#FF9C8C; color:#FFD9D2;
+    box-shadow:0 0 40px rgba(255,110,90,.75); }
+  .mark.death .when { background:rgba(230,103,91,.95); color:#1b0605; }
+  .mark.cast  .glyph { border-color:#8FE3FF; color:#DAF3FF;
+    box-shadow:0 0 40px rgba(90,200,255,.6); }
+  .mark.cast  .when { background:rgba(113,198,245,.92); color:#04141f; }
+
+  /* the one you are standing on right now */
+  .mark.here .glyph { border-color:#FFFFFF; border-width:7px; transform:scale(1.14);
+    box-shadow:0 0 60px rgba(255,255,255,.95); }
+  .mark.here .when { background:#FFFFFF; color:#0d1a26; }
+  .halo { position:absolute; transform:translate(-50%,-50%);
+    width:230px; height:230px; border-radius:50%; border:4px solid rgba(255,255,255,.5);
+    box-shadow:0 0 60px rgba(255,255,255,.35), inset 0 0 50px rgba(255,255,255,.12); }
+
+  /* ---- unit callouts ---- */
+  .ring { position:absolute; transform:translate(-50%,-50%);
+    width:150px; height:74px; border-radius:50%;
+    border:5px solid rgba(255,206,110,.9); box-shadow:0 0 30px rgba(255,190,80,.7); }
+  .ring.pick { border-color:#8FE3FF; border-width:7px; box-shadow:0 0 52px rgba(90,200,255,1); }
+  .ring.revive { border-color:#fff; box-shadow:0 0 56px rgba(255,255,255,.95); }
+
+  .pin { position:absolute; transform:translate(-50%,-100%); text-align:center; }
+  .orb { width:106px; height:106px; border-radius:50%; margin:0 auto 10px;
+    background:conic-gradient(#5FD0FF 0 72%, rgba(255,255,255,.10) 72% 100%);
+    border:5px solid rgba(200,240,255,.95); display:grid; place-items:center;
+    box-shadow:0 0 44px rgba(70,190,255,.9), inset 0 0 26px rgba(0,40,80,.6);
+    font-size:29px; font-weight:800; color:#EAF8FF; text-shadow:0 2px 4px #000; }
+  .carry { font-size:84px; font-weight:800; letter-spacing:-3px; color:#8FE3FF; line-height:.9;
+    text-shadow:0 0 30px rgba(60,180,255,1), 0 6px 0 rgba(4,10,20,.85); }
+  .carry small { display:block; font-size:21px; font-weight:700; letter-spacing:3px;
+    color:#CDEBFF; margin-top:8px; text-shadow:0 2px 6px #000; }
+
+  .tag { position:absolute; transform:translate(-50%,-100%);
+    padding:10px 20px; border-radius:999px; font-size:24px; font-weight:800; letter-spacing:2px;
+    white-space:nowrap; background:rgba(252,253,255,.96); color:#0f1e2b;
+    box-shadow:0 0 38px rgba(255,255,255,.9); }
+
+  /* the ONLY chrome: a sand counter riding the cursor */
+  .cursor { position:absolute; left:37.5%; top:44%; }
+  .cursor .arrow { font-size:52px; color:#fff; text-shadow:0 3px 10px #000; }
+  .cursor .sand { position:absolute; left:44px; top:26px; white-space:nowrap;
+    background:rgba(10,16,24,.92); border:3px solid #E9B55F; border-radius:14px;
+    padding:12px 20px; box-shadow:0 8px 26px rgba(0,0,0,.7); }
+  .cursor .sand b { font-size:52px; font-weight:800; color:#FFE9BC; letter-spacing:-1px;
+    text-shadow:0 0 26px rgba(255,190,90,.9); }
+  .cursor .sand i { font-style:normal; display:block; font-size:18px; letter-spacing:4px;
+    color:#C6A876; font-weight:800; margin-top:2px; }
+
+  .hint { position:absolute; left:50%; bottom:40px; transform:translateX(-50%);
+    font-size:27px; letter-spacing:5px; font-weight:800; color:#C6A876;
+    text-shadow:0 2px 8px #000; }
+  .hint b { color:#FFE9BC; }
+</style>
+<body>
+<div class="vig"></div>
+<div class="chrome">
+
+  <!-- each unit drags its own past behind it, on real hexes -->
+  <div class="ghost g2" style="left:33.4%; top:60.0%"><b>−1s</b></div>
+  <div class="ghost g3" style="left:37.0%; top:56.4%"><b>−2s</b></div>
+
+  <div class="ghost g2" style="left:55.6%; top:56.0%"><b>−1s</b></div>
+  <div class="ghost g3" style="left:52.8%; top:52.4%"><b>−2s</b></div>
+
+  <!-- the landmark you are standing on: it IS the anchor -->
+  <div class="halo" style="left:43.2%; top:33.0%"></div>
+  <div class="mark death here" style="left:43.2%; top:28.0%">
+    <div class="glyph">☠</div>
+    <div class="when">BRAM FELL &nbsp;−1.3s</div>
+  </div>
+  <div class="ring revive" style="left:43.2%; top:33.5%"></div>
+  <div class="tag" style="left:43.2%; top:19.0%">◄ RETURN HERE AND HE IS UP</div>
+
+  <!-- other grabbable moments, sitting on the hex where they happened -->
+  <div class="mark cast" style="left:61.6%; top:20.0%">
+    <div class="glyph">✦</div>
+    <div class="when">SEER CAST &nbsp;−2.4s</div>
+  </div>
+  <div class="mark death" style="left:48.4%; top:41.0%">
+    <div class="glyph">☠</div>
+    <div class="when">REAVER FELL &nbsp;−3.1s</div>
+  </div>
+
+  <!-- target: the number is over its head, nowhere else -->
+  <div class="ring pick" style="left:30.0%; top:63.5%"></div>
+  <div class="pin" style="left:30.0%; top:55.5%">
+    <div class="orb">25</div>
+    <div class="carry">+33<small>CARRIED BACK</small></div>
+  </div>
+  <div class="ring" style="left:58.6%; top:59.5%"></div>
+
+  <div class="cursor">
+    <div class="arrow">➤</div>
+    <div class="sand"><b>−1.3s</b><i>GRAB A MOMENT</i></div>
+  </div>
+
+  <div class="hint">CLICK A MOMENT ON THE BOARD &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT THE HOUR</div>
+
+</div>
+</body>
+</html>

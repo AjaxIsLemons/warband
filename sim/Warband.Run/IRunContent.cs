@@ -8,6 +8,27 @@ namespace Warband.Run
     /// seam where encounters and ghost bosses come from — bot-ghost generation (roadmap 1d)
     /// and the server-backed pool (roadmap 5) plug in here without touching the machine.
     /// </summary>
+    /// <summary>
+    /// How long an inscription rides with the warband. `Run` is every inscription authored before
+    /// 2026-07-30 and stays the default, so existing content and existing saves are unaffected.
+    ///
+    /// The unit is COMBATS, never acts or nodes: with 12 combats in a run, "one act" is ~4 combats
+    /// and prices completely differently at act 1 than act 3 — the same authored row would be
+    /// effectively permanent early and expire into nothing late. Interludes, shops and planning must
+    /// not tick it (Hades ships exactly this bug: its curses count encounters while the HUD counts
+    /// chambers, so four separate community guides teach players to do the arithmetic by hand).
+    ///
+    /// Deliberately binary for now. Guildrun — same genre, same ~12-fight run, same no-persistent-HP
+    /// constraint — ships only "next combat" or permanent, with no mid-length band anywhere in its
+    /// event layer. Add a middle only if play asks for one.
+    /// See `Design/events-and-inscriptions.md` §3 law 4.
+    /// </summary>
+    public enum InscriptionDuration
+    {
+        Run = 0,
+        ThisFight = 1,
+    }
+
     /// <summary>A law in the Hourstone: whole-team rules that ride into battle as team triggers
     /// (ADR 0017/0026 — the layer legacy code called Banners).</summary>
     public sealed class InscriptionDef
@@ -19,6 +40,13 @@ namespace Warband.Run
         /// reachable ONLY through boss rewards — the Workshop and the Hourstone Interlude filter
         /// them out — so the commitment always arrives as a considered choice, never shop filler.</summary>
         public bool Paradox;
+
+        /// <summary>Default `Run` keeps every pre-existing inscription exactly as authored.</summary>
+        public InscriptionDuration Duration = InscriptionDuration.Run;
+
+        /// <summary>Combats this rides for when <see cref="Duration"/> is not `Run`. Authored so the
+        /// count is data, not a constant baked into the tick.</summary>
+        public int Fights = 1;
     }
 
     /// <summary>

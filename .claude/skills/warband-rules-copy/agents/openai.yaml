@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Rules Copy"
+  short_description: "Write exact, data-powered Warband rules text"
+  default_prompt: "Use $warband-rules-copy to turn authoritative Warband mechanics into concise player-facing rules text and verify it against the game data."

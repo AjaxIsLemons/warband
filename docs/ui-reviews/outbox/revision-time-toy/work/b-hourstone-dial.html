@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>B — Hourstone Dial</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:2560px; height:1440px; overflow:hidden; }
+  body {
+    background:#0b1018 url(board.png) center/cover no-repeat;
+    font-family:"DejaVu Sans", system-ui, sans-serif; position:relative;
+    filter:saturate(.42);
+  }
+  .vig { position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0) 34%, rgba(2,5,10,.82) 100%); }
+  .chrome { position:absolute; inset:0; filter:saturate(2.0); }
+
+  /* ---------- the dial: a stone ring you physically turn ---------- */
+  .dial { position:absolute; left:50%; bottom:-236px; transform:translateX(-50%);
+    width:620px; height:620px; border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(6,11,18,.94) 0 62%, rgba(0,0,0,0) 63%),
+      conic-gradient(from 180deg,
+        #E9B55F 0deg 46deg,
+        rgba(233,181,95,.16) 46deg 180deg,
+        rgba(233,181,95,.16) 180deg 314deg,
+        #E9B55F 314deg 360deg);
+    box-shadow:0 0 90px rgba(255,180,70,.40), inset 0 0 70px rgba(0,0,0,.8);
+    border:8px solid rgba(150,120,70,.6);
+  }
+
+  .notch { position:absolute; transform:translate(-50%,-50%);
+    width:12px; height:12px; border-radius:50%;
+    background:rgba(216,232,248,.45); }
+  .notch.on { width:30px; height:30px; background:#FFE6B0;
+    box-shadow:0 0 34px rgba(255,215,130,1); }
+  .notch b { position:absolute; left:50%; top:34px; transform:translateX(-50%);
+    font-size:22px; font-weight:800; color:#C6A876; letter-spacing:1px; }
+  .notch.on b { color:#FFE9BC; font-size:26px; top:40px; }
+
+  /* the grab handle — the thing that says "this is a toy, turn me" */
+  .knob { position:absolute; transform:translate(-50%,-50%);
+    width:64px; height:64px; border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, #FFF3D6, #E9B55F 60%, #A8763A);
+    box-shadow:0 0 52px rgba(255,200,100,1), 0 6px 14px rgba(0,0,0,.75);
+    border:4px solid rgba(255,246,222,.95); }
+  .knob::after { content:"↻"; position:absolute; inset:0; display:grid; place-items:center;
+    font-size:34px; font-weight:800; color:#6B4416; }
+
+  .read { position:absolute; left:50%; top:96px; transform:translateX(-50%);
+    text-align:center; width:420px; }
+  .num { font-size:152px; font-weight:800; color:#FFE9BC; line-height:.82;
+    letter-spacing:-8px; text-shadow:0 0 54px rgba(255,190,90,.9), 0 6px 0 rgba(0,0,0,.55); }
+  .num u { text-decoration:none; font-size:64px; letter-spacing:0; }
+  .sub { margin-top:10px; font-size:25px; letter-spacing:7px; font-weight:800; color:#D9BE8A; }
+  .grains { margin-top:12px; font-size:30px; letter-spacing:10px; color:#E9B55F; opacity:.85; }
+
+  /* ---------- unit callouts ---------- */
+  .ring { position:absolute; transform:translate(-50%,-50%);
+    width:150px; height:74px; border-radius:50%;
+    border:5px solid rgba(255,206,110,.9);
+    box-shadow:0 0 30px rgba(255,190,80,.7), inset 0 0 22px rgba(255,180,60,.3); }
+  .ring.pick { border-color:#8FE3FF; border-width:7px; box-shadow:0 0 52px rgba(90,200,255,1); }
+  .ring.revive { border-color:#fff; box-shadow:0 0 56px rgba(255,255,255,.95); }
+
+  .pin { position:absolute; transform:translate(-50%,-100%); text-align:center; }
+  .orb { width:112px; height:112px; border-radius:50%; margin:0 auto 10px;
+    background:conic-gradient(#5FD0FF 0 72%, rgba(255,255,255,.10) 72% 100%);
+    border:5px solid rgba(200,240,255,.95); display:grid; place-items:center;
+    box-shadow:0 0 44px rgba(70,190,255,.9), inset 0 0 26px rgba(0,40,80,.6);
+    font-size:31px; font-weight:800; color:#EAF8FF; text-shadow:0 2px 4px #000; }
+  .carry { font-size:88px; font-weight:800; letter-spacing:-3px; color:#8FE3FF; line-height:.9;
+    text-shadow:0 0 30px rgba(60,180,255,1), 0 6px 0 rgba(4,10,20,.85); }
+  .carry small { display:block; font-size:22px; font-weight:700; letter-spacing:3px;
+    color:#CDEBFF; margin-top:8px; text-shadow:0 2px 6px #000; }
+
+  .tag { position:absolute; transform:translate(-50%,-100%);
+    padding:10px 20px; border-radius:999px; font-size:24px; font-weight:800; letter-spacing:2px;
+    white-space:nowrap; text-shadow:0 2px 4px #000; }
+  .tag.back { background:rgba(252,253,255,.96); color:#0f1e2b;
+    box-shadow:0 0 38px rgba(255,255,255,.9); }
+
+  .hint { position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
+    font-size:26px; letter-spacing:5px; font-weight:800; color:#C6A876; opacity:.95;
+    text-shadow:0 2px 8px #000; }
+  .hint b { color:#FFE9BC; }
+</style>
+<body>
+<div class="vig"></div>
+<div class="chrome">
+
+  <div class="ring" style="left:58.6%; top:59.5%"></div>
+
+  <div class="ring pick" style="left:30.0%; top:63.5%"></div>
+  <div class="pin" style="left:30.0%; top:55.5%">
+    <div class="orb">25</div>
+    <div class="carry">+33<small>CARRIED BACK</small></div>
+  </div>
+
+  <div class="ring revive" style="left:43.2%; top:33.5%"></div>
+  <div class="tag back" style="left:43.2%; top:26.0%">◄ STILL STANDING HERE</div>
+
+  <div class="dial">
+    <div class="notch" style="left:113px; top:156px"><b>6s</b></div>
+    <div class="notch" style="left:170px; top:103px"><b>5s</b></div>
+    <div class="notch" style="left:241px; top:70px"><b>4s</b></div>
+    <div class="notch" style="left:319px; top:60px"><b>3s</b></div>
+    <div class="notch on" style="left:396px; top:75px"><b>2s</b></div>
+    <div class="notch" style="left:464px; top:113px"><b>1s</b></div>
+    <div class="knob" style="left:396px; top:75px"></div>
+    <div class="read">
+      <div class="num">2<u>s</u></div>
+      <div class="sub">ROLLED BACK</div>
+      <div class="grains">· · ·</div>
+    </div>
+  </div>
+
+  <div class="hint">TURN THE HOURSTONE &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT THE HOUR</div>
+
+</div>
+</body>
+</html>

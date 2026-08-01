@@ -571,12 +571,6 @@
     -unity-text-align: middle-center;
 }
 .hub-workspace__footer { display: none; }
-.hub .management-feedback {
-    left: 30px;
-    right: auto;
-    bottom: 154px;
-    max-width: 680px;
-}
 
 /* Dossier becomes progressive disclosure and owns interaction while open. */
 .hub-inspector-scrim {
@@ -840,7 +834,6 @@
     min-height: 56px;
     font-size: 12px;
 }
-.layout--phone .hub .management-feedback { left: 18px; bottom: 152px; }
 .layout--phone .hub-inspector-scrim {
     left: -8px;
     right: -8px;

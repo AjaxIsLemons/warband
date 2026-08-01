@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shared.css">
+<style>
+/* B — ANCHORED. The hypothesis: since the fight does NOT pause, no inspection
+   surface may cover the board. The identity card is TETHERED to the body it
+   describes (leader stem + target ring) instead of floating at the cursor, and
+   the full record docks to the right edge as a rail — no scrim, nothing hidden. */
+
+/* The dock pushes the playfield left rather than covering it. */
+.board { right: 430px; background-size: 1600px 900px; background-position: left top; }
+.board::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(7,11,17,0) 62%, rgba(7,11,17,0.55) 100%);
+}
+
+/* ---- tether ---- */
+.tether { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; pointer-events: none; }
+.ring {
+  position: absolute; left: 952px; top: 180px; width: 64px; height: 64px;
+  border: 2px solid rgba(198, 92, 64, 0.95);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  box-shadow: 0 0 22px rgba(198, 92, 64, 0.55);
+}
+
+.hover-card {
+  position: absolute;
+  left: 545px; top: 152px;
+  width: 372px;
+  padding: 13px 15px 11px 17px;
+}
+.hover-head { display: flex; gap: 12px; align-items: flex-start; }
+.hover-head .bezel { width: 60px; height: 68px; }
+.hover-card .stats { margin-top: 11px; }
+.hover-card .rule-row { margin-top: 8px; }
+.hover-card .statuses { margin-top: 8px; }
+.hover-card .footer-cue {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid rgba(97, 125, 158, 0.28);
+}
+
+/* ---- the dock ---- */
+.dock {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 430px;
+  background: linear-gradient(180deg, rgba(19,29,43,0.985) 0%, rgba(7,11,17,0.995) 100%);
+  border-left: 1px solid rgba(120, 150, 184, 0.42);
+  box-shadow: -22px 0 52px rgba(0, 0, 0, 0.65);
+  display: flex; flex-direction: column;
+  clip-path: none;
+}
+.dock__head { display: flex; gap: 13px; padding: 16px 16px 13px 18px; align-items: flex-start; }
+.dock__head .bezel { width: 82px; height: 92px; }
+.dock__body { padding: 0 16px 14px 18px; flex: 1 1 auto; }
+.dock__block { margin-bottom: 14px; }
+.dock .stats { margin-bottom: 13px; }
+.dock__close {
+  margin-left: auto; align-self: flex-start;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 12px; letter-spacing: 1.6px; color: rgb(150, 172, 198);
+  border: 1px solid rgba(110, 140, 174, 0.45); padding: 4px 9px 3px;
+}
+.dock__spine { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+/* Live state stays pinned at the foot of the dock: the fight is still running. */
+.dock__live {
+  margin-top: auto; padding: 11px 16px 13px 18px;
+  border-top: 1px solid rgba(97, 125, 158, 0.3);
+  background: rgba(10, 16, 25, 0.7);
+}
+.dock__live .eyebrow { margin-bottom: 7px; }
+</style></head>
+<body>
+<div class="board"></div>
+
+<!-- the hovered body is ringed on the board, and the card grows out of it -->
+<svg class="tether">
+  <path d="M 917 214 L 952 214" stroke="rgba(198,92,64,0.9)" stroke-width="2" fill="none"/>
+  <circle cx="917" cy="214" r="3.5" fill="rgb(198,92,64)"/>
+</svg>
+<div class="ring"></div>
+
+<!-- ================= HOVER : anchored identity card ================= -->
+<div class="plate hover-card">
+  <div class="spine spine--enemy"></div>
+  <div class="hover-head">
+    <div class="bezel bezel--enemy">
+      <div class="crest">
+        <svg viewBox="0 0 100 100" fill="none" stroke="rgb(214,132,104)" stroke-width="6" stroke-linecap="round">
+          <path d="M14 78 L62 30"/><path d="M8 86 L26 86"/>
+          <path d="M30 88 Q62 88 86 44" stroke-width="4" stroke-dasharray="7 9" opacity=".75"/>
+          <circle cx="88" cy="34" r="7" fill="rgb(214,132,104)" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div style="min-width:0">
+      <div class="eyebrow eyebrow--enemy">Artillery &middot; Enemy</div>
+      <div class="unit-name">Sanddrift Gunner</div>
+      <div class="identity-line">Matchlock Musket</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat s-health"><div class="stat__label">Health</div><div class="stat__value">62<small>/85</small></div></div>
+    <div class="stat s-power"><div class="stat__label">Power</div><div class="stat__value">28</div></div>
+    <div class="stat s-reach"><div class="stat__label">Reach</div><div class="stat__value">5</div></div>
+    <div class="stat s-cadence"><div class="stat__label">Cadence</div><div class="stat__value">1.5<small>s</small></div></div>
+  </div>
+
+  <div class="rule-row">
+    <span class="rule-row__key">Targets</span>
+    <span class="rule-row__val"><b>Farthest</b>, held at <b>5 hexes</b></span>
+  </div>
+
+  <div class="statuses">
+    <span class="pill p-time">Slow <em>2.0s</em></span>
+    <span class="pill p-burn">Burn <em>14</em></span>
+  </div>
+
+  <div class="footer-cue"><span class="kbd">Click</span> full record</div>
+</div>
+<div class="state-tag" style="left:545px; top:126px;">Hover &middot; tethered to the body</div>
+
+<!-- ================= CLICK : the right dock ================= -->
+<div class="dock">
+  <div class="dock__spine spine--ally"></div>
+  <div class="dock__head">
+    <div class="bezel bezel--ally">
+      <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png">
+    </div>
+    <div style="min-width:0">
+      <div class="eyebrow">Ally &middot; Reaction</div>
+      <div class="unit-name">Leonnatos</div>
+      <div class="identity-line">Phalanx &middot; <b>Rank A</b> &middot; Pike</div>
+    </div>
+    <div class="dock__close">Close &times;</div>
+  </div>
+
+  <div class="dock__body">
+    <div class="stats">
+      <div class="stat s-health"><div class="stat__label">Health</div><div class="stat__value">118<small>/150</small></div></div>
+      <div class="stat s-shield"><div class="stat__label">Shield</div><div class="stat__value">20</div></div>
+      <div class="stat s-mana"><div class="stat__label">Mana</div><div class="stat__value">28<small>/35</small></div></div>
+    </div>
+
+    <div class="rule-row" style="margin-bottom:14px;">
+      <span class="rule-row__key">Targets</span>
+      <span class="rule-row__val"><b>Nearest</b></span>
+    </div>
+
+    <div class="dock__block">
+      <div class="section-head">Signature <span class="trig">at 35 mana</span></div>
+      <div class="rule-name">Skewer</div>
+      <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+    </div>
+
+    <div class="dock__block">
+      <div class="section-head">Passive <span class="trig">when hit</span></div>
+      <div class="rule-name">Riposte</div>
+      <div class="rule-text">Spends a stored <span class="kw kw--offense">Riposte</span> to counterattack the attacker.</div>
+    </div>
+
+    <div class="dock__block">
+      <div class="section-head">Basic attack</div>
+      <div class="rule-name">Pike</div>
+      <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+    </div>
+
+    <div class="deferred"><b>Pikewall</b><span>&mdash; spec</span><span class="hint">Hover</span></div>
+    <div class="deferred"><b>Bracing Line</b><span>&mdash; spec</span><span class="hint">Hover</span></div>
+  </div>
+
+  <div class="dock__live">
+    <div class="eyebrow">Live</div>
+    <div class="statuses">
+      <span class="pill p-ward">Fortified <em>3.0s</em></span>
+      <span class="pill p-control">Mustered</span>
+    </div>
+  </div>
+</div>
+<div class="state-tag" style="right:442px; top:14px;">Click &middot; dock &mdash; board reframes, nothing covered</div>
+
+</body></html>

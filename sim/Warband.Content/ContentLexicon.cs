@@ -24,6 +24,29 @@ namespace Warband.Content
         public static LexEntry Chassis(string id) =>
             Chassis_.TryGetValue(id, out var e) ? e : Lexicon.Fallback(id);
 
+        /// <summary>
+        /// Stable player-facing identity for the Signature a composed unit actually casts.
+        /// Base ability names are authored here; specialization abilities reuse their node name.
+        /// Mechanical text never lives in either table — <see cref="PlayerRuleProjection"/> binds
+        /// the resolved <see cref="UnitDef"/> to <see cref="MechanicalRulePresenter"/>.
+        /// </summary>
+        public static LexEntry Signature(string abilityId)
+        {
+            if (Signatures.TryGetValue(abilityId, out var signature)) return signature;
+            if (Nodes.TryGetValue(abilityId, out var node))
+                return new LexEntry(node.Name, "", node.Kind);
+            return Lexicon.Fallback(abilityId);
+        }
+
+        /// <summary>
+        /// Stable identity for a chassis's innate rule. The effects are deliberately absent:
+        /// they come from the chassis triggers/stat rules after composition.
+        /// </summary>
+        public static LexEntry Innate(string chassisId) =>
+            Innates.TryGetValue(chassisId, out var innate)
+                ? innate
+                : Lexicon.Fallback(chassisId);
+
         public static readonly IReadOnlyDictionary<string, LexEntry> Chassis_ =
             new Dictionary<string, LexEntry>
             {
@@ -43,6 +66,32 @@ namespace Warband.Content
                     "Leonnatos of the Unbroken Line. Spacing and punishment — he owns the hex nobody wants to approach.", LexKind.Reaction),
                 ["banneret"] = new LexEntry("Banneret",
                     "Capitana Vespera, Banner of the Turning Age. The captain: whoever stands beside the banner at placement is sworn to the Company, and every rally reaches them for the rest of the fight.", LexKind.Utility),
+            };
+
+        public static readonly IReadOnlyDictionary<string, LexEntry> Signatures =
+            new Dictionary<string, LexEntry>
+            {
+                ["cleric"] = new LexEntry("Sanctified Pyre", "", LexKind.Mending),
+                ["bulwark"] = new LexEntry("Shield Slam", "", LexKind.Control),
+                ["shade"] = new LexEntry("Backstab", "", LexKind.Precision),
+                ["sharpshot"] = new LexEntry("Piercing Bolt", "", LexKind.Power),
+                ["pyromancer"] = new LexEntry("Fire Glyph", "", LexKind.Affliction),
+                ["berserker"] = new LexEntry("Frenzy", "", LexKind.Tempo),
+                ["phalanx"] = new LexEntry("Skewer", "", LexKind.Reaction),
+                ["banneret"] = new LexEntry("Rally", "", LexKind.Utility),
+            };
+
+        public static readonly IReadOnlyDictionary<string, LexEntry> Innates =
+            new Dictionary<string, LexEntry>
+            {
+                ["cleric"] = new LexEntry("Mercy Aura", "", LexKind.Mending),
+                ["bulwark"] = new LexEntry("Bastion", "", LexKind.Ward),
+                ["shade"] = new LexEntry("Ambush", "", LexKind.Evasion),
+                ["sharpshot"] = new LexEntry("Full Draw", "", LexKind.Power),
+                ["pyromancer"] = new LexEntry("Firebrand", "", LexKind.Affliction),
+                ["berserker"] = new LexEntry("Burning Hours", "", LexKind.Tempo),
+                ["phalanx"] = new LexEntry("Riposte", "", LexKind.Reaction),
+                ["banneret"] = new LexEntry("Standard-Bearer", "", LexKind.Utility),
             };
 
         public static readonly IReadOnlyDictionary<string, LexEntry> Nodes =
@@ -271,6 +320,11 @@ namespace Warband.Content
                     "The weapon's latent rider — live for specialists, and for everyone at Relic temper.",
                     LexKind.Utility);
             }
+            if (id.EndsWith("/signature", System.StringComparison.Ordinal))
+            {
+                string ability = id.Substring(0, id.Length - "/signature".Length);
+                return Signature(ability);
+            }
             if (id.StartsWith("inscription.", System.StringComparison.Ordinal))
             {
                 string key = id.Substring("inscription.".Length);
@@ -279,7 +333,7 @@ namespace Warband.Content
                     : Lexicon.Fallback(key);
             }
             if (Nodes.TryGetValue(id, out var node)) return node;
-            if (Chassis_.TryGetValue(id, out var chassis)) return chassis;
+            if (Innates.TryGetValue(id, out var innate)) return innate;
             if (Authored.TryGetValue(id, out var authored)) return authored;
             // A weapon name, a trinket name, or something not yet authored: the id IS the copy.
             return Lexicon.Fallback(id);

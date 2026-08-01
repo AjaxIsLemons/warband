@@ -305,11 +305,41 @@ namespace Warband.Sim.Tests
                 Do =
                 {
                     new EffectDef { Kind = EffectKind.Swing, AsCounter = true, Select = new Selector { Kind = SelKind.EventSource } },
-                    new EffectDef { Kind = EffectKind.RemoveStatus, Status = StatusKind.CounterCharge, Select = new Selector { Kind = SelKind.Self } },
+                    new EffectDef { Kind = EffectKind.RemoveStatus, Status = StatusKind.CounterCharge, Amount = 1, Select = new Selector { Kind = SelKind.Self } },
                 },
             });
             var result = new Battle(BattleTests.Duel(pike, BattleTests.Grunt(hp: 500, atk: 5))).Run();
             Assert.Equal(1, result.Events.Count(e =>
+                e.Kind == EventKind.DamageDealt && e.Cause == Cause.Counter));
+        }
+
+        [Fact]
+        public void RiposteSpendsOneStackPerIncomingAttack()
+        {
+            var pike = BattleTests.Grunt(hp: 800, atk: 10);
+            pike.Triggers.Add(AtStart(
+                Apply(StatusKind.CounterCharge, 1, SelKind.Self),
+                Apply(StatusKind.CounterCharge, 1, SelKind.Self)));
+            pike.Triggers.Add(new Trigger
+            {
+                On = EventKind.Attack,
+                When =
+                {
+                    new Cond { Kind = CondKind.TargetIsOwner },
+                    new Cond { Kind = CondKind.OwnerHasStatus, Status = StatusKind.CounterCharge },
+                    new Cond { Kind = CondKind.IsRootEvent },
+                },
+                Do =
+                {
+                    new EffectDef { Kind = EffectKind.Swing, AsCounter = true, Select = new Selector { Kind = SelKind.EventSource } },
+                    new EffectDef { Kind = EffectKind.RemoveStatus, Status = StatusKind.CounterCharge, Amount = 1, Select = new Selector { Kind = SelKind.Self } },
+                },
+            });
+
+            var result =
+                new Battle(BattleTests.Duel(pike, BattleTests.Grunt(hp: 500, atk: 5))).Run();
+
+            Assert.Equal(2, result.Events.Count(e =>
                 e.Kind == EventKind.DamageDealt && e.Cause == Cause.Counter));
         }
 

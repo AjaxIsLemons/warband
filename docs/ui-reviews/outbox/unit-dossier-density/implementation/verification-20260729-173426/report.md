@@ -1,0 +1,26 @@
+# Responsive UI QA
+
+- Run: `20260729-173426`
+- Matrix: `unit-dossier`
+- Captures: 15
+- Live rank-up regression: PASS · pending B fork safely defers the following A-rank Market preview
+- Pixel captures require human review; structural layout is the automated gate.
+- Captures marked `offscreen-panel-fallback` were rendered to the exact target without opening or focusing a Game View window.
+
+| Surface | Fixture | Viewport | Phone | Copy stress | Layout | Capture |
+|---|---|---:|:---:|:---:|---|---|
+| workbench | market-recruit | 1024x768 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1024x768-workbench-market-recruit.png |
+| workbench | rail-full | 1024x768 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1024x768-workbench-rail-full.png |
+| workbench | market-recruit | 1024x768 | no | 130% | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1024x768-workbench-market-recruit-expanded.png |
+| workbench | market-recruit | 1600x900 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-market-recruit.png |
+| workbench | rail-full | 1600x900 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-rail-full.png |
+| workbench | market-recruit | 1600x900 | no | 130% | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-market-recruit-expanded.png |
+| workbench | market-recruit | 2556x1317 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-2556x1317-workbench-market-recruit.png |
+| workbench | rail-full | 2556x1317 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-2556x1317-workbench-rail-full.png |
+| workbench | market-recruit | 2556x1317 | no | 130% | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-2556x1317-workbench-market-recruit-expanded.png |
+| workbench | market-recruit | 3440x1440 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-3440x1440-workbench-market-recruit.png |
+| workbench | rail-full | 3440x1440 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-3440x1440-workbench-rail-full.png |
+| workbench | market-recruit | 3440x1440 | no | 130% | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-3440x1440-workbench-market-recruit-expanded.png |
+| workbench | tooltip-weapon-fact | 1600x900 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-tooltip-weapon-fact.png |
+| workbench | tooltip-weapon-property | 1600x900 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-tooltip-weapon-property.png |
+| workbench | tooltip-unit-spec | 1600x900 | no | nominal | Workbench QA: PASS · Workbench: PASS; Runtime tooltip: PASS; Permanent warband rail: PASS; Warband roster interaction: PASS · 8 occupied · 0 open · 0 locked; capture=offscreen-panel-fallback | ui-qa-20260729-173426-1600x900-workbench-tooltip-unit-spec.png |

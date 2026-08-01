@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>R2 — Two Timelines</title>
+<link rel="stylesheet" href="_rw.css">
+<style>
+  /* The witnessed present is KEPT on screen as a pinned ghost of every unit, tethered to the live
+     body that is walking backwards. The gap between ghost and body IS how far you have reached —
+     it is the same information the numeral carries, but spatial and per-unit. */
+  .ghost { position:absolute; transform:translate(-50%,-100%);
+    width:96px; height:132px; border-radius:48px/58px;
+    background:linear-gradient(180deg, rgba(226,238,252,.30), rgba(180,210,245,.05));
+    border:3px dashed rgba(226,238,252,.72); }
+  .ghost.foe { background:linear-gradient(180deg, rgba(255,196,184,.28), rgba(255,150,130,.05));
+    border-color:rgba(255,196,184,.72); }
+  .ghost span { position:absolute; left:50%; top:-34px; transform:translateX(-50%);
+    font-size:17px; font-weight:800; letter-spacing:3px; color:#DCE9F8; white-space:nowrap;
+    text-shadow:0 2px 6px #000; }
+
+  .link { position:absolute; transform-origin:0 50%; height:4px;
+    background:repeating-linear-gradient(90deg,
+      rgba(226,238,252,.85) 0 12px, rgba(226,238,252,0) 12px 24px); }
+  .link.foe { background:repeating-linear-gradient(90deg,
+      rgba(255,186,172,.85) 0 12px, rgba(255,186,172,0) 12px 24px); }
+
+  .now { position:absolute; transform:translate(-50%,-50%);
+    padding:10px 22px; border-radius:999px; white-space:nowrap;
+    background:rgba(10,16,24,.9); border:3px solid rgba(226,238,252,.8);
+    font-size:22px; font-weight:800; letter-spacing:4px; color:#E8F1FB; }
+
+  .legend { position:absolute; left:70px; top:120px; }
+  .legend div { display:flex; align-items:center; margin-bottom:16px;
+    font-size:24px; font-weight:800; letter-spacing:3px; color:#CFE0F2;
+    text-shadow:0 2px 8px #000; }
+  .legend i { width:34px; height:34px; border-radius:50%; margin-right:16px; font-style:normal; }
+  .legend .g { border:3px dashed rgba(226,238,252,.85); }
+  .legend .b { background:rgba(143,227,255,.9); }
+</style>
+<body>
+<div class="board"></div><div class="vig"></div>
+<div class="chrome">
+
+  <!-- ally: ghost pinned at the witnessed present, body two seconds earlier -->
+  <div class="ghost" style="left:1010px; top:920px"><span>WHERE IT ENDS UP</span></div>
+  <div class="link" style="left:1010px; top:880px; width:236px; transform:rotate(163deg)"></div>
+
+  <div class="ghost" style="left:1360px; top:880px"></div>
+  <div class="link" style="left:1360px; top:846px; width:170px; transform:rotate(21deg)"></div>
+
+  <!-- enemies keep the same treatment in their own colour -->
+  <div class="ghost foe" style="left:1150px; top:640px"></div>
+  <div class="link foe" style="left:1150px; top:606px; width:180px; transform:rotate(-46deg)"></div>
+
+  <div class="ghost foe" style="left:1610px; top:400px"></div>
+  <div class="link foe" style="left:1610px; top:366px; width:150px; transform:rotate(-118deg)"></div>
+
+  <div class="now" style="left:1280px; top:196px">◄ GHOSTS = THE HOUR YOU WATCHED</div>
+
+  <div class="legend">
+    <div><i class="g"></i>WHERE IT WAS AT THE PRESENT</div>
+    <div><i class="b"></i>WHERE IT IS AT −2s</div>
+  </div>
+
+  <div class="stone"><u>2s</u></div>
+  <div class="cap"><b>◄◄ UNWRITING</b><i>THE GAP IS HOW FAR YOU HAVE REACHED</i></div>
+</div>
+</body>
+</html>

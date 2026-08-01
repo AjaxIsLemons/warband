@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -46,7 +47,14 @@ public class ReplayPlayer : MonoBehaviour
 
     /// <summary>Raised once when a non-looping live replay reaches its result tick.</summary>
     public event Action PlaybackEnded;
+    /// <summary>Raised when a provisional loss reaches the last reversible frame.</summary>
+    public event Action RevisionPauseReached;
     public bool IsEnding => _ending;
+    public bool IsPlaying => _playing;
+    public int CurrentTick => Mathf.Clamp(Mathf.FloorToInt(_clock), 0, _endTick);
+    public int EndTick => _endTick;
+    private int _pauseBeforeTick = -1;
+    private int _runUpStopTick = -1;
 
     // Event-viewer ring buffer (debug Events tab). Every dispatched event is appended here (tail =
     // newest, capped to RecentCap); EventSeq ticks up once per append. Poll contract for the menu:
@@ -73,13 +81,36 @@ public class ReplayPlayer : MonoBehaviour
     // One pool PER RECIPE: a VfxInstance owns the object graph its recipe needs, so it can only ever
     // replay that recipe. Same lifetime as the other pools — under _generated, dropped by Build.
     private readonly Dictionary<string, Stack<VfxInstance>> _vfxPools = new Dictionary<string, Stack<VfxInstance>>();
+    // Revision landing recipes are not Director tells: the shell holds the battle while their
+    // receipt is readable, so they need a tiny explicit list that can advance on unscaled ceremony
+    // time even while the playhead is stopped.
+    private readonly List<VfxInstance> _revisionVfx = new List<VfxInstance>();
+    private sealed class RevisionEchoView
+    {
+        public GameObject Root;
+        public Transform Transform;
+        public Renderer Renderer;
+        public MaterialPropertyBlock Block;
+    }
+    private readonly List<RevisionEchoView> _revisionEchoes = new List<RevisionEchoView>();
+    private static readonly int EchoColorId = Shader.PropertyToID("_Color");
+    private static readonly int EchoRadiusId = Shader.PropertyToID("_Radius");
+    private static readonly int EchoThicknessId = Shader.PropertyToID("_Thickness");
+    private static readonly int EchoSoftnessId = Shader.PropertyToID("_Softness");
+    private static readonly int EchoArcId = Shader.PropertyToID("_ArcFill");
+    private static readonly int EchoAlphaId = Shader.PropertyToID("_Alpha");
     private Transform _generated;
+    private Transform _planningDropMarker;
+    private Renderer _planningDropRenderer;
     private FeedbackDirector _director;
     private Mesh _hexMesh;
+    private Mesh _boardTileMesh; // beveled variant for the board only — fields keep the flat fan
+    private float _tileDress = float.NaN; // last-applied tile dress hash (ApplyBoardTune's rebuild test)
     private Font _font;
     private Quaternion _numberFace = Quaternion.identity;
     private TuningConfig _tuning;
     private TuningData _data = new TuningData();
+    private bool _revisionReducedMotion;
 
     // ---- fight-story overlay (world-space TextMesh, capture-verifiable) -------
     // Kill feed = FeedSlots fixed world-text lines beside the board (newest at top, each fading by
@@ -130,6 +161,9 @@ public class ReplayPlayer : MonoBehaviour
     {
         public Transform Root, Body;
         public Transform PlanningMarker;
+        public Transform MusterIdentity;
+        public MeshRenderer MusterIdentityRenderer;
+        public MaterialPropertyBlock MusterIdentityMpb;
         public Renderer BodyRenderer;
         public Transform HpFill, ShieldFill, ManaFill;
         // P5 damage trail state: TrailFar = the frozen far edge (bar fraction), TrailT = seconds
@@ -137,7 +171,6 @@ public class ReplayPlayer : MonoBehaviour
         // the "not yet folded" sentinel so a scenario switch snaps instead of draining a phantom.
         public Transform TrailFill;
         public float TrailFar, TrailT = 1000f, HpFrac = -1f;
-        public TextMesh Nameplate;
         // The status roster over the head — fold-driven, stepped by StepFx, popped by the Director.
         public StatusIconRow Icons;
         public int MaxHp, ManaMax;
@@ -175,7 +208,7 @@ public class ReplayPlayer : MonoBehaviour
         public Animator ModelAnimator;
         // The fold says this unit is dead but its corpse is still on the board (DeathSequence). The
         // ApplyFold visibility law is SetActive(!Dead || Lingering); everything else that reads a
-        // live view — nameplate styling, the icon billboard, the flinch — sits this one out.
+        // live view — the icon billboard, the flinch — sits this one out.
         public bool Lingering;
         private MaterialPropertyBlock _mpb;
 
@@ -1140,6 +1173,128 @@ public class ReplayPlayer : MonoBehaviour
                 pair.Value.PlanningMarker.gameObject.SetActive(pair.Key == selectedUnitId);
     }
 
+    /// <summary>
+    /// Move one frozen planning view under a captured pointer. This is presentation-only: RunShell
+    /// commits a Hex on release and immediately rebuilds the authoritative placement snapshot.
+    /// </summary>
+    public bool MovePlanningUnit(int unitId, Vector2 screenPos, out Hex nearestHex)
+    {
+        nearestHex = default;
+        if (!_views.TryGetValue(unitId, out UnitView view) ||
+            view?.Root == null ||
+            !TryScreenToBoardPoint(screenPos, out Vector3 point))
+            return false;
+
+        view.Root.position = point + Vector3.up * 0.18f;
+        if (view.PlanningMarker != null)
+            view.PlanningMarker.gameObject.SetActive(false);
+        return TryWorldToHex(point, out nearestHex);
+    }
+
+    /// <summary>Show the exact tile a planning drag would commit to. Gold means an ordinary move,
+    /// blue means a swap, and red means the pointer is over a board tile that cannot be used.</summary>
+    public void SetPlanningDropTarget(Hex hex, bool legal, bool swap)
+    {
+        if (_generated == null) return;
+        EnsurePlanningDropMarker();
+        if (_planningDropMarker == null || _planningDropRenderer == null) return;
+
+        _planningDropMarker.position = HexToWorld(hex) + Vector3.up * 0.055f;
+        _planningDropMarker.localScale =
+            new Vector3(hexSize * 0.86f, 0.014f, hexSize * 0.86f);
+        _planningDropRenderer.sharedMaterial = CachedMat(
+            legal
+                ? swap
+                    ? new Color(0.25f, 0.68f, 0.96f)
+                    : new Color(0.96f, 0.69f, 0.20f)
+                : new Color(0.86f, 0.24f, 0.20f),
+            false);
+        _planningDropMarker.gameObject.SetActive(true);
+    }
+
+    public void ClearPlanningDragFeedback()
+    {
+        if (_planningDropMarker != null)
+            _planningDropMarker.gameObject.SetActive(false);
+    }
+
+#if UNITY_EDITOR
+    public bool EditorPlanningDropTargetVisible =>
+        _planningDropMarker != null && _planningDropMarker.gameObject.activeSelf;
+#endif
+
+    private void EnsurePlanningDropMarker()
+    {
+        if (_planningDropMarker != null) return;
+        _planningDropMarker = MakePrimitive(
+            PrimitiveType.Cylinder,
+            _generated,
+            Vector3.zero,
+            new Vector3(hexSize * 0.86f, 0.014f, hexSize * 0.86f),
+            new Color(0.96f, 0.69f, 0.20f));
+        _planningDropMarker.name = "planning-drop-target";
+        _planningDropRenderer = _planningDropMarker.GetComponent<Renderer>();
+        _planningDropMarker.gameObject.SetActive(false);
+    }
+
+    /// <summary>Show the branch's legal Revision targets; selected targets receive the wider ring.</summary>
+    public void SetRevisionTargets(IReadOnlyCollection<int> eligible, IReadOnlyCollection<int> selected)
+    {
+        foreach (var pair in _views)
+        {
+            Transform marker = pair.Value.PlanningMarker;
+            if (marker == null) continue;
+            bool legal = eligible != null && eligible.Contains(pair.Key);
+            bool chosen = selected != null && selected.Contains(pair.Key);
+            marker.gameObject.SetActive(legal);
+            marker.localScale = chosen
+                ? new Vector3(0.92f, 0.018f, 0.92f)
+                : new Vector3(0.74f, 0.015f, 0.74f);
+        }
+    }
+
+    /// <summary>
+    /// Project the directly revised units into the fullscreen fault's coordinate space. The main
+    /// tear remains art-directed at screen centre; these positions only grow small causal
+    /// filaments toward the selected subjects. At most two direct targets exist (Convergence).
+    /// </summary>
+    public int GetRevisionTargetViewportPositions(
+        IReadOnlyCollection<int> targetIds,
+        out Vector4 positions)
+    {
+        positions = new Vector4(0.49f, 0.46f, 0.49f, 0.46f);
+        Camera camera = Camera.main;
+        if (camera == null || targetIds == null) return 0;
+
+        int count = 0;
+        foreach (int id in targetIds)
+        {
+            if (count >= 2 ||
+                !_views.TryGetValue(id, out UnitView view) ||
+                view.Root == null ||
+                !view.Root.gameObject.activeInHierarchy)
+                continue;
+
+            Vector3 viewport = camera.WorldToViewportPoint(
+                view.Root.position + Vector3.up * 0.7f);
+            if (viewport.z <= 0f) continue;
+            float x = Mathf.Clamp01(viewport.x);
+            float y = Mathf.Clamp01(viewport.y);
+            if (count == 0)
+            {
+                positions.x = x;
+                positions.y = y;
+            }
+            else
+            {
+                positions.z = x;
+                positions.w = y;
+            }
+            count++;
+        }
+        return count;
+    }
+
     /// <summary>Play a freshly resolved deterministic battle without serializing it to disk first.</summary>
     public void PlayBattle(BattleResult result)
     {
@@ -1150,12 +1305,117 @@ public class ReplayPlayer : MonoBehaviour
         // empty on a fresh boot, someone else's fight after a scenario. Found building the rail.
         _ruleIds = result.RuleIds ?? new List<string>();
         _ruleTeams = result.RuleTeams ?? new List<int>();
+        _pauseBeforeTick = -1;
         SetReplayData(result.InitialUnits, result.Events, result.EndTick, autoplay: true);
     }
+
+    /// <summary>
+    /// Resume an in-memory battle from a split. The board is first reconstructed one tick before
+    /// the branch, so the branch event and every tell after it dispatch exactly once.
+    /// </summary>
+    public void PlayBattleFrom(BattleResult result, int startTick)
+    {
+        if (result == null) throw new ArgumentNullException(nameof(result));
+        loop = false;
+        _ruleIds = result.RuleIds ?? new List<string>();
+        _ruleTeams = result.RuleTeams ?? new List<int>();
+        _pauseBeforeTick = -1;
+        SetReplayData(result.InitialUnits, result.Events, result.EndTick, autoplay: false);
+        int before = Mathf.Clamp(startTick - 1, -1, result.EndTick);
+        BuildRevisionPreview(before);
+        _fxCursor = 0;
+        while (_fxCursor < _events.Count && _events[_fxCursor].Tick <= before) _fxCursor++;
+        _clock = Mathf.Max(0, before);
+        _preRoll = 0f;
+        _ending = false;
+        _endHold = 0f;
+        _playing = true;
+        ClearStory();
+    }
+
+    /// <summary>
+    /// Rebuild the committed replay one tick before its branch but leave the playhead stopped. The
+    /// shell uses this during the landing vacuum so the first revised event can be struck once,
+    /// visibly, before ordinary autonomous playback resumes.
+    /// </summary>
+    public void PrepareRevisionBranch(BattleResult result, int startTick)
+    {
+        if (result == null) throw new ArgumentNullException(nameof(result));
+        loop = false;
+        _ruleIds = result.RuleIds ?? new List<string>();
+        _ruleTeams = result.RuleTeams ?? new List<int>();
+        _pauseBeforeTick = -1;
+        SetReplayData(result.InitialUnits, result.Events, result.EndTick, autoplay: false);
+        int before = Mathf.Clamp(startTick - 1, -1, result.EndTick);
+        BuildRevisionPreview(before);
+        _fxCursor = 0;
+        while (_fxCursor < _events.Count && _events[_fxCursor].Tick <= before) _fxCursor++;
+        _clock = Mathf.Max(0, before);
+        _preRoll = 0f;
+        _ending = false;
+        _endHold = 0f;
+        _playing = false;
+        ClearStory();
+    }
+
+    /// <summary>Strike the new branch's first frame and its event receipts while still paused.</summary>
+    public void LandRevisionBranch(int startTick)
+    {
+        int tick = Mathf.Clamp(startTick, 0, _endTick);
+        _clock = tick;
+        ApplyFold(tick);
+        SnapViews();
+        DispatchUpTo(tick);
+        _playing = false;
+    }
+
+    public void ResumeRevisionBattle()
+    {
+        _runUpStopTick = -1;
+        _preRoll = 0f;
+        _ending = false;
+        _endHold = 0f;
+        _playing = true;
+    }
+
+    /// <summary>
+    /// Play the committed branch's run-up: ordinary playback that halts exactly one tick before the
+    /// split. Polling <see cref="CurrentTick"/> from the ceremony would let a hitched frame carry the
+    /// playhead past the intervention, so the branch event would land as loose combat noise instead
+    /// of under the beat that was built to strike it.
+    /// </summary>
+    public void PlayRevisionRunUp(int stopBeforeTick)
+    {
+        _runUpStopTick = Mathf.Clamp(stopBeforeTick, 1, _endTick);
+        _pauseBeforeTick = -1;
+        _preRoll = 0f;
+        _ending = false;
+        _endHold = 0f;
+        _playing = true;
+    }
+
+    public bool RevisionRunUpRunning => _runUpStopTick > 0;
+
+    public void SetRevisionReducedMotion(bool reduced) =>
+        _revisionReducedMotion = reduced;
+
+    /// <summary>Pause a live playhead without touching Unity's global clock.</summary>
+    public int PauseForRevision()
+    {
+        _playing = false;
+        _preRoll = 0f;
+        _holdSeconds = 0f;
+        return CurrentTick;
+    }
+
+    /// <summary>Freeze immediately before a fatal event so a loss still offers one final split.</summary>
+    public void ArmRevisionPauseBefore(int tick) =>
+        _pauseBeforeTick = Mathf.Clamp(tick, 1, _endTick);
 
     private void SetReplayData(IEnumerable<PlaybackUnit> initial, IEnumerable<BattleEvent> events,
                                int endTick, bool autoplay)
     {
+        _runUpStopTick = -1;
         _initial = new List<PlaybackUnit>();
         foreach (var u in initial) _initial.Add(u.Clone());
         _events = new List<BattleEvent>(events);
@@ -1223,6 +1483,30 @@ public class ReplayPlayer : MonoBehaviour
         }
         if (_holdSeconds > 0f) _holdSeconds -= Time.deltaTime;
         else _clock += Time.deltaTime * ticksPerSecond * speed;
+        if (_pauseBeforeTick > 0 && _clock >= _pauseBeforeTick)
+        {
+            int before = _pauseBeforeTick - 1;
+            _pauseBeforeTick = -1;
+            _clock = before;
+            ApplyFold(before);
+            DispatchUpTo(before);
+            _playing = false;
+            _holdSeconds = 0f;
+            RevisionPauseReached?.Invoke();
+            return;
+        }
+        // Same stop, no final-chance offer: the run-up hands the split back to the ceremony.
+        if (_runUpStopTick > 0 && _clock >= _runUpStopTick)
+        {
+            int before = _runUpStopTick - 1;
+            _runUpStopTick = -1;
+            _clock = before;
+            ApplyFold(before);
+            DispatchUpTo(before);
+            _playing = false;
+            _holdSeconds = 0f;
+            return;
+        }
         if (_clock >= _endTick)
         {
             // Reach the end → freeze the playhead and HOLD, showing the win banner + readout, instead
@@ -1259,9 +1543,8 @@ public class ReplayPlayer : MonoBehaviour
                 float lean = v.LeanDeg + (v.Walking ? mo.leanAmount * Mathf.Rad2Deg * 0.1f : 0f);
                 var rot = Quaternion.Euler(lean, v.TargetYaw, 0f);
                 v.Body.localRotation = Quaternion.Slerp(v.Body.localRotation, rot, Mathf.Clamp01(mo.turnSpeed * dt));
-                // A lingering corpse wears no chrome: StyleNameplate would switch the nameplate back
-                // on every frame (it drives visibility from the tuning, not from the view).
-                if (!v.Lingering) { StyleNameplate(v); v.Icons.FaceCamera(_numberFace); }
+                // A lingering corpse wears no chrome.
+                if (!v.Lingering) v.Icons.FaceCamera(_numberFace);
             }
             if (v.FlashT > 0f) v.FlashT -= dt / v.FlashDur;
             if (v.PunchT > 0f) v.PunchT -= dt / v.PunchDur;
@@ -1283,6 +1566,7 @@ public class ReplayPlayer : MonoBehaviour
     private void StepFx(float dt)
     {
         _director?.Tick(dt);
+        StepRevisionVfx(dt);
         // Status rows: the countdown rings drain and any apply-pop runs out on this clock, which is
         // why two frozen captures of the SAME tick at different previewAdvanceSeconds show the
         // clocks at different fills instead of one static ring. The damage trail drains on the
@@ -1361,6 +1645,15 @@ public class ReplayPlayer : MonoBehaviour
 
     private readonly Dictionary<int, FieldView> _musterViews = new Dictionary<int, FieldView>();
     private readonly List<int> _staleMusters = new List<int>();
+    private static readonly Color[] MusterIdentityColors =
+    {
+        new Color(0.95f, 0.77f, 0.35f), // Sand
+        new Color(0.39f, 0.70f, 0.91f), // clear sky-blue
+        new Color(0.72f, 0.51f, 0.86f), // violet
+        new Color(0.42f, 0.78f, 0.62f), // mint
+        new Color(0.88f, 0.49f, 0.39f), // coral
+        new Color(0.78f, 0.82f, 0.88f), // pale steel
+    };
 
     /// <summary>
     /// FX seconds each ring has been on the board, kept OUTSIDE the view dictionary because the
@@ -1381,6 +1674,11 @@ public class ReplayPlayer : MonoBehaviour
     /// </summary>
     public void SetMusterRings(IReadOnlyList<MusterRing> rings)
     {
+        // The source mark is the legend: each footprint repeats its owner's color, arc gap and
+        // concentric lane. Hide first so a hero whose muster disappeared cannot keep a stale tag.
+        foreach (var unit in _views.Values)
+            if (unit.MusterIdentity != null) unit.MusterIdentity.gameObject.SetActive(false);
+
         _staleMusters.Clear();
         foreach (var kv in _musterViews)
         {
@@ -1398,8 +1696,9 @@ public class ReplayPlayer : MonoBehaviour
 
         if (rings == null) return;
         var fields = _data != null ? _data.fields : new FieldTune();
-        foreach (var ring in rings)
+        for (int identity = 0; identity < rings.Count; identity++)
         {
+            var ring = rings[identity];
             if (!_musterViews.TryGetValue(ring.OwnerId, out var view))
             {
                 // _generated is torn down and rebuilt by Build(); a ring created against a stale
@@ -1411,10 +1710,18 @@ public class ReplayPlayer : MonoBehaviour
                 _musterViews[ring.OwnerId] = view;
                 _musterAges[ring.OwnerId] = age;
             }
-            view.ColorOverride = fields.muster;
+            Color identityColor = MusterIdentityColors[identity % MusterIdentityColors.Length];
+            float radius = Mathf.Max(0.48f, 1f - identity * 0.20f);
+            float arc = Mathf.Max(0.56f, 1f - identity * 0.15f);
+            float phase = Mathf.Repeat(identity * 0.19f, 1f);
+            view.ColorOverride = identityColor;
             view.Emphasis = ring.Emphasised ? fields.musterBright : fields.musterQuiet;
             view.FillEmphasis = ring.Emphasised ? fields.musterBrightFill : fields.musterQuietFill;
+            view.RimRadiusScale = radius;
+            view.RimArcOverride = arc;
+            view.RimRotationOffset = phase;
             view.SetFootprint(ring.Hexes);
+            ShowMusterIdentity(ring.OwnerId, identityColor, arc, phase);
         }
     }
 
@@ -1423,6 +1730,45 @@ public class ReplayPlayer : MonoBehaviour
         foreach (var kv in _musterViews) kv.Value.Destroy();
         _musterViews.Clear();
         _musterAges.Clear();
+        foreach (var unit in _views.Values)
+            if (unit.MusterIdentity != null) unit.MusterIdentity.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Pair a planning footprint with its source using three redundant channels: color, arc gap,
+    /// and a literal mark under the owner. The matching source mark means the player never has to
+    /// memorize which arbitrary palette slot belongs to which hero.
+    /// </summary>
+    private void ShowMusterIdentity(int ownerId, Color color, float arc, float phase)
+    {
+        if (!_views.TryGetValue(ownerId, out var unit) || unit?.Root == null) return;
+        if (unit.MusterIdentity == null)
+        {
+            var go = new GameObject("muster-owner");
+            go.transform.SetParent(unit.Root, false);
+            go.transform.localPosition = new Vector3(0f, 0.065f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            go.transform.localScale = new Vector3(hexSize * 1.30f, hexSize * 1.30f, 1f);
+            go.AddComponent<MeshFilter>().sharedMesh = VfxLibrary.QuadMesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.sharedMaterial = VfxLibrary.MaterialFor(VfxLibrary.ShaderRing, null);
+            unit.MusterIdentity = go.transform;
+            unit.MusterIdentityRenderer = renderer;
+            unit.MusterIdentityMpb = new MaterialPropertyBlock();
+        }
+
+        var c = color;
+        c.a = 0.95f;
+        unit.MusterIdentityMpb.SetColor(EchoColorId, c);
+        unit.MusterIdentityMpb.SetFloat(EchoRadiusId, 0.72f);
+        unit.MusterIdentityMpb.SetFloat(EchoThicknessId, 0.13f);
+        unit.MusterIdentityMpb.SetFloat(EchoSoftnessId, 0.10f);
+        unit.MusterIdentityMpb.SetFloat(EchoArcId, arc);
+        unit.MusterIdentityMpb.SetFloat(Shader.PropertyToID("_Rotation"), phase);
+        unit.MusterIdentityRenderer.SetPropertyBlock(unit.MusterIdentityMpb);
+        unit.MusterIdentity.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -1513,7 +1859,7 @@ public class ReplayPlayer : MonoBehaviour
 
     // The camera's rationed channel. Position ONLY: FrameCamera caches the billboard quaternion
     // (_numberFace) from the camera's ROTATION, so translating the camera leaves every billboard —
-    // numbers, nameplates, status icons, the story feed — correct with no re-cache. Play mode only;
+    // numbers, status icons, the story feed — correct with no re-cache. Play mode only;
     // a frozen preview never moves the camera, or two captures of one tick would frame differently.
     private Vector3 _camBase, _camPush;
     private bool _camHasBase;
@@ -1557,6 +1903,102 @@ public class ReplayPlayer : MonoBehaviour
         { _punchAmt = punch; _punchLife = Mathf.Max(0.01f, fx.cameraPunchSeconds); _punchT = _punchLife; }
         if (shake > 0f)
         { _shakeAmt = shake; _shakeLife = Mathf.Max(0.01f, fx.cameraShakeSeconds); _shakeT = _shakeLife; _shakeClock = 0f; }
+    }
+
+    /// <summary>The branch landing is a first-class beat even before bespoke art/audio arrives.</summary>
+    private void BeginRevisionBeat(BattleEvent battleEvent)
+    {
+        RevisionEffectKind kind = (RevisionEffectKind)battleEvent.Amount;
+        if (_views.TryGetValue(battleEvent.Target, out var view))
+        {
+            view.FlashColor = kind == RevisionEffectKind.BorrowedFuture
+                ? new Color(0.32f, 0.82f, 1f)
+                : new Color(0.66f, 0.55f, 0.84f);
+            view.FlashDur = 0.52f;
+            view.FlashT = 1f;
+            view.PunchDur = 0.34f;
+            view.PunchAmt = 0.28f;
+            view.PunchT = 1f;
+            SpawnRevisionVfx(
+                kind == RevisionEffectKind.BorrowedFuture
+                    ? "revision-land-future"
+                    : "revision-land-recall",
+                view.Target,
+                view.Root,
+                battleEvent);
+        }
+        RevisionPresentationTune tune = _data?.revision ?? new RevisionPresentationTune();
+        CameraKick(
+            _revisionReducedMotion ? tune.landingPunch * 0.35f : tune.landingPunch,
+            _revisionReducedMotion ? 0f : tune.landingShake);
+        if (Application.isPlaying) _holdSeconds = Mathf.Max(_holdSeconds, tune.vacuumSeconds);
+        if (_data?.audio?.enabled == true)
+            SfxPlayer.Play(
+                kind == RevisionEffectKind.BorrowedFuture
+                    ? "revision_land_borrowed"
+                    : "revision_land_recall",
+                SfxBus.Revision);
+        string who = _fold?.ById(battleEvent.Target)?.Name;
+        PushFeedLine(string.IsNullOrEmpty(who)
+            ? "THE TIMELINE SPLITS"
+            : $"THE TIMELINE SPLITS — «{who}»");
+    }
+
+    private void BeginRevisionReturn(BattleEvent battleEvent)
+    {
+        if (!_views.TryGetValue(battleEvent.Target, out var view)) return;
+        view.FlashColor = new Color(1f, 0.86f, 0.55f);
+        view.FlashDur = 0.36f;
+        view.FlashT = 1f;
+        SpawnRevisionVfx("revision-return", view.Target, view.Root, battleEvent);
+        if (_data?.audio?.enabled == true)
+            SfxPlayer.Play("revision_return", SfxBus.Revision, 0.85f);
+        string who = _fold?.ById(battleEvent.Target)?.Name;
+        PushFeedLine(string.IsNullOrEmpty(who)
+            ? "THE MISSING HOUR RETURNS"
+            : $"RETURNED — «{who}»");
+    }
+
+    private void SpawnRevisionVfx(
+        string id,
+        Vector3 position,
+        Transform follow,
+        BattleEvent battleEvent)
+    {
+        VfxDef recipe = VfxLibrary.Get(id);
+        VfxInstance fx = GetVfx(recipe);
+        if (fx == null) return;
+        uint seed = unchecked((uint)(battleEvent.Tick * 397) ^
+                              (uint)(battleEvent.Target * 31) ^ 0x524556u);
+        fx.Play(
+            position,
+            Vector3.forward,
+            Color.white,
+            VfxLibrary.GlowRef,
+            1f,
+            seed,
+            _numberFace,
+            follow,
+            RecycleVfx);
+        _revisionVfx.Add(fx);
+    }
+
+    private void StepRevisionVfx(float dt)
+    {
+        for (int i = _revisionVfx.Count - 1; i >= 0; i--)
+            if (_revisionVfx[i] == null || !_revisionVfx[i].Step(dt))
+                _revisionVfx.RemoveAt(i);
+    }
+
+    private void ResetRevisionVfx()
+    {
+        foreach (VfxInstance fx in _revisionVfx)
+        {
+            if (fx == null) continue;
+            fx.Stop();
+            RecycleVfx(fx);
+        }
+        _revisionVfx.Clear();
     }
 
     /// <summary>Advance the board dim and the camera on the FX clock, alongside every other stepped
@@ -1617,7 +2059,10 @@ public class ReplayPlayer : MonoBehaviour
         if (_keyLight != null) return _keyLight;
         foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None))
         {
-            if (l.type != LightType.Directional || (l.cullingMask & 1) == 0) continue;
+            // The shard rig's fill/rim are Directional and DO light layer 0 — the name prefix is
+            // what keeps the Deathless dim from grabbing (and "restoring") the wrong light.
+            if (l.type != LightType.Directional || (l.cullingMask & 1) == 0
+                || l.name.StartsWith(ShardEnvironment.EnvLightPrefix, StringComparison.Ordinal)) continue;
             _keyLight = l;
             _keyBase = l.intensity;
             return l;
@@ -1726,12 +2171,366 @@ public class ReplayPlayer : MonoBehaviour
             {
                 v.Root.position = v.Smoothed + v.MotionOffset + Vector3.up * Footfall(v, _data.motion);
                 v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f); // SNAP (no slerp) so a frozen capture shows facing
-                if (!v.Lingering) { StyleNameplate(v); v.Icons.FaceCamera(_numberFace); }
+                if (!v.Lingering) v.Icons.FaceCamera(_numberFace);
             }
             v.ApplyVisual();
         }
         if (tick >= _endTick) BeginEnding();   // a capture at/after the end shows the win banner
         LayoutStory(true);                     // frozen alpha; positions feed + banner for the shot
+    }
+
+    /// <summary>
+    /// Timeline scrub used by Revisions. It reconstructs truth at a tick but intentionally emits
+    /// no attack/death tells: during a held Hour, the board is evidence, not a replaying spectacle.
+    /// </summary>
+    public void BuildRevisionPreview(int tick)
+    {
+        RenderRevisionFrame(tick);
+    }
+
+    /// <summary>
+    /// Fractional Revision scrub. Re-folding is cheap compared with rebuilding every unit and lets
+    /// committed walks run backward continuously instead of jumping through eight screenshots.
+    /// </summary>
+    public void RenderRevisionFrame(float clock)
+    {
+        _playing = false;
+        _lastPreviewTick = Mathf.FloorToInt(clock);
+        _clock = Mathf.Clamp(clock, -1f, _endTick);
+        _fold = PlaybackState.From(_initial, _ruleIds);
+        _director?.Reset();
+        _director = MakeDirector();
+        ResetAnim();
+        int tick = Mathf.FloorToInt(_clock);
+        ApplyFold(tick, _clock);
+        SnapViews();
+        ClearStory();
+        LayoutStory(true);
+    }
+
+    /// <summary>
+    /// Per-frame frame of a continuous walk, once <see cref="RenderRevisionFrame"/> has torn the
+    /// board down at the start of the walk. It re-folds and re-places, and nothing else.
+    ///
+    /// The full path allocates a FeedbackDirector, hands every corpse's body and material back,
+    /// rebuilds the field views and re-runs ResetDress — which also drags Camera.main back to its
+    /// base and writes the ender vignette. Running that on every frame of a scrub is both a hitch
+    /// and a fight: ResetDress undoes the held-Hour dress that the shell re-applies immediately
+    /// after, which is why the walk needed a Volume lookup per frame to look correct.
+    /// </summary>
+    public void ScrubRevisionFrame(float clock)
+    {
+        _playing = false;
+        _lastPreviewTick = Mathf.FloorToInt(clock);
+        _clock = Mathf.Clamp(clock, -1f, _endTick);
+        _fold = PlaybackState.From(_initial, _ruleIds);
+        int tick = Mathf.FloorToInt(_clock);
+        ApplyFold(tick, _clock);
+        SnapViews();
+    }
+
+    /// <summary>Desaturate and dim the held Hour; restored through the authored post profile.</summary>
+    public void SetRevisionFreeze(bool frozen) => SetRevisionFreeze(frozen ? 1f : 0f);
+
+    /// <summary>Smooth dress ramp for the rupture/landing. Amount is presentation-only, 0..1.</summary>
+    public void SetRevisionFreeze(float amount)
+    {
+        amount = Mathf.Clamp01(amount);
+        RevisionPresentationTune tune = _data?.revision ?? new RevisionPresentationTune();
+        if (_keyLight != null && _keyBase >= 0f)
+            _keyLight.intensity = _keyBase * Mathf.Lerp(1f, tune.heldLight, amount);
+        var volume = FindFirstObjectByType<Volume>();
+        if (volume == null || volume.sharedProfile == null) return;
+        if (volume.sharedProfile.TryGet<ColorAdjustments>(out var color))
+            color.saturation.value = Mathf.Lerp(_data.post.saturation, tune.heldSaturation, amount);
+        if (volume.sharedProfile.TryGet<Vignette>(out var vignette))
+            vignette.intensity.value = Mathf.Lerp(
+                _data.post.vignette,
+                Mathf.Max(tune.heldVignette, _data.post.vignette),
+                amount);
+    }
+
+    /// <summary>Advance paused landing VFX and flashes on the shell's unscaled ceremony clock.</summary>
+    public void StepRevisionPresentation(float dt)
+    {
+        StepFx(Mathf.Max(0f, dt));
+    }
+
+    /// <summary>
+    /// Draw a few proven future positions behind the backwards playhead. They are ground echoes,
+    /// not duplicate bodies: enough to make direction obvious without implying that two units exist.
+    /// </summary>
+    /// <summary>
+    /// R1 "Undertow" (approved 2026-07-29): EVERY living body drags a trail of where it just was,
+    /// not just the Revision's targets. One unit moving backwards is ambiguous; the whole board
+    /// moving backwards together is not, and direction-of-time becomes readable from a single frame.
+    ///
+    /// The old shape re-folded the entire battle once per echo, which was affordable for one or two
+    /// targets and is not affordable for a full board. It now folds once per sample depth and reads
+    /// every unit out of that fold.
+    /// </summary>
+    public void SetRevisionRewindEchoes(
+        IReadOnlyCollection<int> emphasisIds,
+        float clock,
+        float witnessedPresent,
+        RevisionEffectKind kind,
+        float progress)
+    {
+        RevisionPresentationTune tune = _data?.revision ?? new RevisionPresentationTune();
+        int depth = Mathf.Max(0, tune.rewindEchoCount);
+        if (depth <= 0 || _fold == null) { ClearRevisionRewindEchoes(); return; }
+
+        Color lane = kind == RevisionEffectKind.BorrowedFuture
+            ? new Color(0.34f, 0.78f, 1f)
+            : new Color(0.66f, 0.55f, 0.84f);
+        Color crowd = new Color(0.62f, 0.72f, 0.86f);
+        float wave = Mathf.Sin(Mathf.Clamp01(progress) * Mathf.PI);
+
+        // The witnessed present decides who is coming BACK: alive here, dead there.
+        PlaybackState present = PlaybackState.From(_initial, _ruleIds);
+        present.AdvanceToTick(_events, Mathf.FloorToInt(witnessedPresent));
+
+        var samples = new List<PlaybackState>(depth);
+        for (int i = 0; i < depth; i++)
+        {
+            float k = (i + 1f) / (depth + 1f);
+            PlaybackState sample = PlaybackState.From(_initial, _ruleIds);
+            sample.AdvanceToTick(_events, Mathf.FloorToInt(Mathf.Lerp(clock, witnessedPresent, k)));
+            samples.Add(sample);
+        }
+
+        int living = 0;
+        foreach (PlaybackUnit u in _fold.Units) if (!u.Dead) living++;
+        EnsureRevisionEchoes(living * (depth + 1));
+
+        int at = 0;
+        foreach (PlaybackUnit here in _fold.Units)
+        {
+            if (here.Dead) continue;
+            bool emphasis = emphasisIds != null && emphasisIds.Contains(here.Id);
+            PlaybackUnit later = present.ById(here.Id);
+            bool returning = later == null || later.Dead;   // dead at the present, standing now
+
+            for (int i = 0; i < depth; i++)
+            {
+                float k = (i + 1f) / (depth + 1f);
+                PlaybackUnit trail = samples[i].ById(here.Id);
+                RevisionEchoView echo = _revisionEchoes[at++];
+                if (echo.Root == null) continue;
+                if (trail == null || trail.Dead) { echo.Root.SetActive(false); continue; }
+                echo.Root.SetActive(true);
+                echo.Transform.SetPositionAndRotation(
+                    EchoPosition(trail, Mathf.Lerp(clock, witnessedPresent, k)) +
+                        Vector3.up * (0.055f + i * 0.004f),
+                    Quaternion.Euler(90f, 0f, 0f));
+                float size = Mathf.Lerp(1.45f, 0.86f, k) * (emphasis ? 1f : 0.78f);
+                echo.Transform.localScale = new Vector3(size, size, size);
+                float alpha = tune.futureEchoAlpha * Mathf.Lerp(0.95f, 0.25f, k) * wave *
+                              (emphasis ? 1f : 0.5f);
+                echo.Block.SetColor(EchoColorId, (emphasis ? lane : crowd) * 2.2f);
+                echo.Block.SetFloat(EchoRadiusId, 0.78f);
+                echo.Block.SetFloat(EchoThicknessId, 0.055f);
+                echo.Block.SetFloat(EchoSoftnessId, 0.22f);
+                echo.Block.SetFloat(EchoArcId, 0.88f);
+                echo.Block.SetFloat(EchoAlphaId, alpha);
+                echo.Renderer.SetPropertyBlock(echo.Block);
+            }
+
+            // A body that had already fallen at the present is the single loudest proof that time
+            // is running backwards, so it gets its own bright ring rather than a dimmer trail.
+            RevisionEchoView back = _revisionEchoes[at++];
+            if (back.Root == null) continue;
+            if (!returning) { back.Root.SetActive(false); continue; }
+            back.Root.SetActive(true);
+            back.Transform.SetPositionAndRotation(
+                EchoPosition(here, clock) + Vector3.up * 0.075f,
+                Quaternion.Euler(90f, 0f, 0f));
+            float pulse = 1.7f + 0.35f * Mathf.Sin(progress * Mathf.PI * 3f);
+            back.Transform.localScale = new Vector3(pulse, pulse, pulse);
+            back.Block.SetColor(EchoColorId, new Color(1f, 1f, 1f) * 3.1f);
+            back.Block.SetFloat(EchoRadiusId, 0.72f);
+            back.Block.SetFloat(EchoThicknessId, 0.09f);
+            back.Block.SetFloat(EchoSoftnessId, 0.16f);
+            back.Block.SetFloat(EchoArcId, 1f);
+            back.Block.SetFloat(EchoAlphaId, Mathf.Clamp01(0.85f * wave + 0.15f));
+            back.Renderer.SetPropertyBlock(back.Block);
+        }
+        for (; at < _revisionEchoes.Count; at++)
+            if (_revisionEchoes[at].Root != null) _revisionEchoes[at].Root.SetActive(false);
+    }
+
+    private readonly List<RevisionEchoView> _revisionSand = new List<RevisionEchoView>();
+
+    private void EnsureRevisionSand(int count)
+    {
+        if (_generated == null) return;
+        PruneRevisionPool(_revisionSand);
+        while (_revisionSand.Count < count)
+        {
+            var go = new GameObject("revision-sand");
+            go.transform.SetParent(_generated, false);
+            go.hideFlags = HideFlags.DontSave;
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = VfxLibrary.QuadMesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = VfxLibrary.MaterialFor(VfxLibrary.ShaderRing, null);
+            _revisionSand.Add(new RevisionEchoView
+            {
+                Root = go,
+                Transform = go.transform,
+                Renderer = renderer,
+                Block = new MaterialPropertyBlock(),
+            });
+        }
+    }
+
+    /// <summary>
+    /// R1 "Undertow": sand falls UP while the Hour unwinds. A global, unit-independent signal — it
+    /// still reads when every body happens to be standing still, which the trails do not.
+    /// Scatter is hashed off the index rather than random so it does not crawl between frames.
+    /// </summary>
+    public void SetRevisionSand(float progress, float rise)
+    {
+        const int Motes = 46;
+        EnsureRevisionSand(Motes);
+        if (_revisionSand.Count < Motes) return;
+        if (_revisionSand[0].Root == null) return;
+        float wave = Mathf.Sin(Mathf.Clamp01(progress) * Mathf.PI);
+        Vector3 centre = Vector3.zero;
+        int n = 0;
+        foreach (PlaybackUnit u in _initial) { centre += HexToWorld(u.Pos); n++; }
+        if (n > 0) centre /= n;
+        float spread = hexSize * 7.5f;
+        for (int i = 0; i < Motes; i++)
+        {
+            RevisionEchoView mote = _revisionSand[i];
+            if (mote.Root == null) continue;
+            float hx = Frac(i * 0.7548776662f);      // additive-recurrence scatter, stable per index
+            float hz = Frac(i * 0.5698402909f);
+            float hy = Frac(i * 0.3819660112f);
+            float climb = Frac(hy + rise);
+            mote.Root.SetActive(wave > 0.02f);
+            mote.Transform.SetPositionAndRotation(
+                centre + new Vector3(
+                    (hx - 0.5f) * 2f * spread,
+                    0.15f + climb * 3.4f,
+                    (hz - 0.5f) * 2f * spread),
+                Quaternion.Euler(0f, 0f, 0f));
+            float size = 0.10f + hy * 0.06f;
+            mote.Transform.localScale = new Vector3(size, size * 3.2f, size);
+            mote.Block.SetColor(EchoColorId, new Color(1f, 0.84f, 0.55f) * 2.6f);
+            mote.Block.SetFloat(EchoRadiusId, 0.5f);
+            mote.Block.SetFloat(EchoThicknessId, 0.5f);
+            mote.Block.SetFloat(EchoSoftnessId, 0.4f);
+            mote.Block.SetFloat(EchoArcId, 1f);
+            // Fade in as it leaves the floor and out as it reaches the top of its climb.
+            mote.Block.SetFloat(EchoAlphaId, wave * Mathf.Sin(climb * Mathf.PI) * 0.85f);
+            mote.Renderer.SetPropertyBlock(mote.Block);
+        }
+    }
+
+    private static float Frac(float v) => v - Mathf.Floor(v);
+
+    /// <summary>
+    /// Drop entries whose GameObject Build() destroyed. These pools hang off <c>_generated</c>, so a
+    /// rebuild or scenario switch kills every child while the list keeps its references; touching
+    /// one then throws MissingReferenceException from inside the ceremony coroutine, which kills the
+    /// coroutine and leaves the cinematic lock on — the fight freezes.
+    /// </summary>
+    private static void PruneRevisionPool(List<RevisionEchoView> pool)
+    {
+        for (int i = pool.Count - 1; i >= 0; i--)
+            if (pool[i] == null || pool[i].Root == null) pool.RemoveAt(i);
+    }
+
+    public void ClearRevisionSand()
+    {
+        PruneRevisionPool(_revisionSand);
+        foreach (RevisionEchoView mote in _revisionSand)
+            if (mote.Root != null) mote.Root.SetActive(false);
+    }
+
+    /// <summary>
+    /// R3 "The Fork": the beat the whole mechanic exists for. Two rings bloom out of the split —
+    /// one bright for the Hour that runs, one grey for the Hour being discarded — so the pause has
+    /// something to be a pause ON.
+    /// </summary>
+    public void SetRevisionFork(IReadOnlyCollection<int> targetIds, float progress)
+    {
+        if (targetIds == null || targetIds.Count == 0) { ClearRevisionSand(); return; }
+        EnsureRevisionSand(targetIds.Count * 2);
+        if (_revisionSand.Count == 0) return;
+        float t = Mathf.Clamp01(progress);
+        int at = 0;
+        foreach (int id in targetIds)
+        {
+            if (!_views.TryGetValue(id, out UnitView view) || view?.Root == null) continue;
+            for (int lane = 0; lane < 2 && at < _revisionSand.Count; lane++, at++)
+            {
+                RevisionEchoView ring = _revisionSand[at];
+                if (ring.Root == null) continue;
+                ring.Root.SetActive(true);
+                bool kept = lane == 0;
+                // The kept Hour blooms outward; the discarded one collapses and fades.
+                float scale = kept
+                    ? Mathf.Lerp(0.6f, 3.4f, t)
+                    : Mathf.Lerp(3.0f, 1.2f, t);
+                ring.Transform.SetPositionAndRotation(
+                    view.Root.position + Vector3.up * (0.08f + lane * 0.01f),
+                    Quaternion.Euler(90f, 0f, 0f));
+                ring.Transform.localScale = new Vector3(scale, scale, scale);
+                ring.Block.SetColor(EchoColorId,
+                    (kept ? new Color(1f, 0.95f, 0.82f) : new Color(0.55f, 0.58f, 0.64f)) * 3f);
+                ring.Block.SetFloat(EchoRadiusId, 0.74f);
+                ring.Block.SetFloat(EchoThicknessId, kept ? 0.10f : 0.05f);
+                ring.Block.SetFloat(EchoSoftnessId, 0.2f);
+                ring.Block.SetFloat(EchoArcId, 1f);
+                ring.Block.SetFloat(EchoAlphaId,
+                    kept ? Mathf.Sin(t * Mathf.PI) : (1f - t) * 0.7f);
+                ring.Renderer.SetPropertyBlock(ring.Block);
+            }
+        }
+        for (; at < _revisionSand.Count; at++)
+            if (_revisionSand[at].Root != null) _revisionSand[at].Root.SetActive(false);
+    }
+
+    public void ClearRevisionRewindEchoes()
+    {
+        PruneRevisionPool(_revisionEchoes);
+        foreach (RevisionEchoView echo in _revisionEchoes)
+            if (echo.Root != null) echo.Root.SetActive(false);
+        ClearRevisionSand();
+    }
+
+    private Vector3 EchoPosition(PlaybackUnit unit, float clock)
+    {
+        if (!unit.Walking) return HexToWorld(unit.Pos);
+        float span = Mathf.Max(1, unit.StepEnd - unit.StepStart);
+        float t = Mathf.Clamp01((clock - unit.StepStart) / span);
+        return Vector3.Lerp(HexToWorld(unit.Pos), HexToWorld(unit.StepTo), t);
+    }
+
+    private void EnsureRevisionEchoes(int count)
+    {
+        if (_generated == null) return;
+        PruneRevisionPool(_revisionEchoes);
+        while (_revisionEchoes.Count < count)
+        {
+            var go = new GameObject("revision-future-echo");
+            go.transform.SetParent(_generated, false);
+            go.hideFlags = HideFlags.DontSave;
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = VfxLibrary.QuadMesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = VfxLibrary.MaterialFor(VfxLibrary.ShaderRing, null);
+            _revisionEchoes.Add(new RevisionEchoView
+            {
+                Root = go,
+                Transform = go.transform,
+                Renderer = renderer,
+                Block = new MaterialPropertyBlock(),
+            });
+        }
     }
 
     /// <summary>Hot-reload entry: re-read the (already-reloaded) tuning and rebuild so it shows.</summary>
@@ -1761,16 +2560,23 @@ public class ReplayPlayer : MonoBehaviour
     {
         var bd = _data != null ? _data.board : null;
         if (bd == null || _generated == null) return;
-        bool changed = !Mathf.Approximately(hexSize, bd.hexSize);
+        var env = _data.environment;
+        // Tile DRESS (scale/bevel/variation/seed) folds into the rebuild test — a slider that only
+        // takes effect when hexSize also happens to move is not a slider (the ReapplyTuning anchor
+        // comment's law). These fields bake into tile meshes/materials, so they need the rebuild.
+        float dress = bd.tileScale * 397f + (env == null ? -1f
+            : env.tileBevelDepth * 31f + env.tileVariation * 131f + env.shardSeed * 0.013f + (env.enabled ? 1000f : 0f));
+        bool changed = !Mathf.Approximately(hexSize, bd.hexSize) || !Mathf.Approximately(dress, _tileDress);
         hexSize = bd.hexSize;
+        _tileDress = dress;
         var tiles = _generated.Find("Tiles");
         var slab = _generated.Find("BoardBase");
         if (changed || tiles == null)
         {
             if (tiles != null) DestroyImmediate(tiles.gameObject);
             if (slab != null) DestroyImmediate(slab.gameObject);
-            _hexMesh = null; // vertices bake hexSize — force regeneration
-            BuildBoard();
+            _hexMesh = null; _boardTileMesh = null; // vertices bake hexSize — force regeneration
+            BuildBoard(); // rebuilds the shard frame too
             // Field views bake hexSize into their overlay scale — drop them; SyncFields recreates
             // them (replaying the spawn-in, which is the honest read of a rebuilt board). Death marks
             // bake the old hex CENTRES the same way, so the graveyard goes with them.
@@ -1782,15 +2588,20 @@ public class ReplayPlayer : MonoBehaviour
             RecomputeStoryAnchors();
             if (Application.isPlaying && _fold != null) ApplyFold(Mathf.FloorToInt(_clock), _clock);
         }
+        else BuildShardEnvironment(); // env colors/rig/void/Tower sliders apply without a board rebuild
     }
 
     public void ClearGenerated()
     {
         // Death state points INTO _generated (corpse views, marks, the props they hid), so it goes
         // with it — a sequence aborted after this would be reaching into destroyed objects.
+        ResetRevisionVfx();
         _deaths.Clear(); _hiddenProps.Clear(); _marks = null;
         _views.Clear(); _fieldViews.Clear(); _musterViews.Clear(); _numberPool.Clear();
         _tracerPool.Clear(); _burstPool.Clear(); _vfxPools.Clear();
+        _revisionEchoes.Clear();
+        _planningDropMarker = null;
+        _planningDropRenderer = null;
         // The VFX light budget is a static live count; destroying the pools underneath it would
         // otherwise leak the lights of a board that no longer exists.
         VfxInstance.ResetLightBudget();
@@ -1836,7 +2647,7 @@ public class ReplayPlayer : MonoBehaviour
         _generated.gameObject.hideFlags = HideFlags.DontSave;
 
         if (_data != null && _data.board != null) hexSize = _data.board.hexSize;
-        _hexMesh = null; // vertices bake hexSize — regenerate per build so a tuned size shows
+        _hexMesh = null; _boardTileMesh = null; // vertices bake hexSize — regenerate per build so a tuned size shows
         BuildBoard();
         foreach (var u in _initial) SpawnView(u);
         // The first rendered frame after a rebuild must already be PLACED and POSED. The shell
@@ -1870,6 +2681,7 @@ public class ReplayPlayer : MonoBehaviour
     private void ResetAnim()
     {
         ResetDeaths();      // corpses first: it hands bodies/materials/props back before anything else runs
+        ResetRevisionVfx();
         foreach (var v in _views.Values)
         {
             v.FlashT = 0f; v.PunchT = 0f; v.Icons?.Reset();
@@ -1902,7 +2714,6 @@ public class ReplayPlayer : MonoBehaviour
             v.Smoothed = v.Target;
             v.Root.position = v.Target + Vector3.up * Footfall(v, _data.motion);
             v.Body.localRotation = Quaternion.Euler(v.LeanDeg, v.TargetYaw, 0f);
-            StyleNameplate(v);
             v.Icons.FaceCamera(_numberFace);
             v.ApplyVisual();
         }
@@ -1948,6 +2759,15 @@ public class ReplayPlayer : MonoBehaviour
                 // tell is authored in tuning.json. Fold is already advanced this frame, so names resolve.
                 // The corpse's linger starts here for the same reason: it must not depend on a tell row.
                 if (e.Kind == EventKind.Death) { PushKill(e); BeginDeath(e.Target); }
+                if (e.Kind == EventKind.RevisionApplied) BeginRevisionBeat(e);
+                if (e.Kind == EventKind.UnitOmitted)
+                {
+                    string who = _fold?.ById(e.Target)?.Name;
+                    PushFeedLine(string.IsNullOrEmpty(who)
+                        ? "A MOMENT GOES MISSING"
+                        : $"MISSING HOUR — «{who}»");
+                }
+                if (e.Kind == EventKind.UnitReturned) BeginRevisionReturn(e);
                 // The badge rail hooks TriggerFired the same way: a law announcing itself is not a
                 // tell-dependent effect, it IS the passive layer's visibility (ADR 0026 §rail).
                 if (e.Kind == EventKind.TriggerFired || e.Kind == EventKind.RuleProgress)
@@ -2105,7 +2925,9 @@ public class ReplayPlayer : MonoBehaviour
         RecomputeStoryAnchors();
 
         _feedSlots = new TextMesh[FeedSlots];
-        for (int i = 0; i < FeedSlots; i++) _feedSlots[i] = MakeWorldText(TextAnchor.UpperLeft);
+        // Right-anchored inside the board frame: long cast/kill lines grow toward the board
+        // instead of extending out of camera budget (ADR 0027's 8-wide regression).
+        for (int i = 0; i < FeedSlots; i++) _feedSlots[i] = MakeWorldText(TextAnchor.UpperRight);
         _bannerText = MakeWorldText(TextAnchor.MiddleCenter);
         _readoutText = MakeWorldText(TextAnchor.UpperCenter);
         _clockText = MakeWorldText(TextAnchor.MiddleCenter);
@@ -2147,8 +2969,8 @@ public class ReplayPlayer : MonoBehaviour
         Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
         Vector3 center = (min + max) * 0.5f;
         var st = _data != null && _data.story != null ? _data.story : new StoryTune();
-        // Beside the board by default; tunable because this anchor sets the frame's horizontal
-        // budget and so caps how far the camera can be tightened (StoryTune.feedGapHexes).
+        // Just inside the board's right edge by default; tunable, but the right-anchored text grows
+        // toward the board so a long line cannot silently widen the combat camera's budget.
         _feedAnchor = new Vector3(max.x + st.feedGapHexes * hexSize, st.feedHeight, center.z);
         // The rail mirrors the feed across the board: same gap, same height, opposite edge.
         _bannerAnchor = new Vector3(center.x, 3.7f, center.z);              // floating above center
@@ -2166,7 +2988,11 @@ public class ReplayPlayer : MonoBehaviour
         tm.font = _font;
         go.GetComponent<MeshRenderer>().sharedMaterial = _font.material;
         tm.anchor = anchor;
-        tm.alignment = anchor == TextAnchor.UpperLeft ? TextAlignment.Left : TextAlignment.Center;
+        tm.alignment = anchor == TextAnchor.UpperLeft
+            ? TextAlignment.Left
+            : anchor == TextAnchor.UpperRight
+                ? TextAlignment.Right
+                : TextAlignment.Center;
         tm.fontStyle = FontStyle.Bold;
         tm.fontSize = 180; // high-res glyph texture; world size comes from characterSize (crisp text fix)
         tm.text = "";
@@ -2230,7 +3056,7 @@ public class ReplayPlayer : MonoBehaviour
     {
         if (_feedSlots == null) return;
         var st = _data.story;
-        float gap = st.feedSize * 8f;                 // world spacing scales with text size
+        float gap = st.feedSize * st.feedLineSpacing; // measured leading scales with text size
         float fade = Mathf.Max(0.01f, Mathf.Min(1f, st.feedLifeSeconds)); // fade over the last ≤1 s
 
         for (int i = 0; i < _feedSlots.Length; i++)
@@ -2411,25 +3237,171 @@ public class ReplayPlayer : MonoBehaviour
     /// this class's: the board owns geometry and dispatch, the content assembly owns words.</summary>
     public string RuleIdAt(int index) => _fold != null ? _fold.RuleId(index) : "";
 
-    /// <summary>Screen-space nearest live unit within <paramref name="maxPixels"/> of a screen point,
-    /// or null — the Tooltip's only window into the fold. Null in edit mode, without a camera, during
-    /// the fight-end hold, or when nothing is close. No colliders: MakePrimitive strips them.</summary>
-    public PlaybackUnit PickUnit(Vector2 screenPos, float maxPixels)
+    /// <summary>
+    /// Screen-space body hit test. Each unit contributes the projected bounds of its visible body,
+    /// enlarged by <paramref name="paddingPixels"/> and a minimum finger-sized target. This replaces
+    /// the old ground-pivot distance, which missed the torso/head players were actually clicking.
+    /// Optional allowed ids keep an ineligible foreground body from stealing a Revision target.
+    /// </summary>
+    public PlaybackUnit PickUnit(
+        Vector2 screenPos,
+        float paddingPixels,
+        IReadOnlyCollection<int> allowedIds = null)
     {
         if (!Application.isPlaying || _fold == null || _ending) return null;
         var cam = Camera.main;
         if (cam == null) return null;
-        int best = -1; float bestSq = maxPixels * maxPixels;
+        int best = -1;
+        float bestSq = float.PositiveInfinity;
+        float bestDepth = float.PositiveInfinity;
         foreach (var kv in _views)
         {
+            if (allowedIds != null && !allowedIds.Contains(kv.Key)) continue;
             var v = kv.Value;
             if (v.Root == null || !v.Root.gameObject.activeSelf) continue;
-            Vector3 sp = cam.WorldToScreenPoint(v.Root.position);
-            if (sp.z <= 0f) continue; // behind the camera
-            float dsq = (new Vector2(sp.x, sp.y) - screenPos).sqrMagnitude;
-            if (dsq < bestSq) { bestSq = dsq; best = kv.Key; }
+            if (!TryGetUnitScreenRect(v, cam, paddingPixels, out Rect rect, out float depth))
+                continue;
+            float dx = screenPos.x < rect.xMin
+                ? rect.xMin - screenPos.x
+                : screenPos.x > rect.xMax ? screenPos.x - rect.xMax : 0f;
+            float dy = screenPos.y < rect.yMin
+                ? rect.yMin - screenPos.y
+                : screenPos.y > rect.yMax ? screenPos.y - rect.yMax : 0f;
+            float dsq = dx * dx + dy * dy;
+            if (dsq > 0.01f) continue;
+            if (dsq < bestSq - 0.01f ||
+                (Mathf.Abs(dsq - bestSq) <= 0.01f && depth < bestDepth))
+            {
+                bestSq = dsq;
+                bestDepth = depth;
+                best = kv.Key;
+            }
         }
         return best >= 0 ? _fold.ById(best) : null;
+    }
+
+    /// <summary>Union of projected body bounds, used to dock selection UI opposite its targets.</summary>
+    public bool TryGetUnitScreenBounds(
+        IReadOnlyCollection<int> unitIds,
+        out Rect bounds)
+    {
+        bounds = default;
+        if (unitIds == null || unitIds.Count == 0) return false;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        bool found = false;
+        foreach (int id in unitIds)
+        {
+            if (!_views.TryGetValue(id, out UnitView view) ||
+                view?.Root == null ||
+                !view.Root.gameObject.activeSelf ||
+                !TryGetUnitScreenRect(view, cam, 0f, out Rect rect, out _))
+                continue;
+            if (!found)
+            {
+                bounds = rect;
+                found = true;
+            }
+            else
+            {
+                bounds.xMin = Mathf.Min(bounds.xMin, rect.xMin);
+                bounds.yMin = Mathf.Min(bounds.yMin, rect.yMin);
+                bounds.xMax = Mathf.Max(bounds.xMax, rect.xMax);
+                bounds.yMax = Mathf.Max(bounds.yMax, rect.yMax);
+            }
+        }
+        return found;
+    }
+
+    /// <summary>
+    /// Screen point of a hex's centre. Recall's cluster has to draw the destination hex itself —
+    /// no unit stands there yet — so it cannot go through the unit-view path.
+    /// </summary>
+    public bool TryGetHexScreenPosition(Hex hex, out Vector2 screen)
+    {
+        screen = default;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        Vector3 point = cam.WorldToScreenPoint(HexToWorld(hex));
+        if (point.z <= 0f) return false;
+        screen = new Vector2(point.x, point.y);
+        return true;
+    }
+
+    /// <summary>
+    /// The live fold entry for a unit id, or null once it leaves the roster. Chrome that stays
+    /// open across ticks (the combat card) must re-read through this rather than hold the object
+    /// it was opened with, or it will render a snapshot of a unit that has since died.
+    /// </summary>
+    public PlaybackUnit FindUnit(int unitId)
+    {
+        foreach (PlaybackUnit unit in _fold.Units)
+            if (unit.Id == unitId) return unit;
+        return null;
+    }
+
+    /// <summary>Screen rect of one unit, for chrome that has to ride a body around the board.</summary>
+    public bool TryGetUnitScreenRect(int unitId, out Rect rect)
+    {
+        rect = default;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        return _views.TryGetValue(unitId, out UnitView view) &&
+               view?.Root != null &&
+               view.Root.gameObject.activeSelf &&
+               TryGetUnitScreenRect(view, cam, 0f, out rect, out _);
+    }
+
+    private static bool TryGetUnitScreenRect(
+        UnitView view,
+        Camera camera,
+        float paddingPixels,
+        out Rect rect,
+        out float depth)
+    {
+        Vector3 rootScreen = camera.WorldToScreenPoint(view.Root.position);
+        Vector3 topScreen = camera.WorldToScreenPoint(view.Root.position + Vector3.up * 1.85f);
+        depth = rootScreen.z;
+        if (rootScreen.z <= 0f || topScreen.z <= 0f)
+        {
+            rect = default;
+            return false;
+        }
+
+        float minX = Mathf.Min(rootScreen.x, topScreen.x);
+        float maxX = Mathf.Max(rootScreen.x, topScreen.x);
+        float minY = Mathf.Min(rootScreen.y, topScreen.y);
+        float maxY = Mathf.Max(rootScreen.y, topScreen.y);
+        if (view.BodyRenderer != null)
+        {
+            Bounds world = view.BodyRenderer.bounds;
+            Vector3 center = world.center;
+            Vector3 extents = world.extents;
+            for (int corner = 0; corner < 8; corner++)
+            {
+                Vector3 worldCorner = center + new Vector3(
+                    (corner & 1) == 0 ? -extents.x : extents.x,
+                    (corner & 2) == 0 ? -extents.y : extents.y,
+                    (corner & 4) == 0 ? -extents.z : extents.z);
+                Vector3 screen = camera.WorldToScreenPoint(worldCorner);
+                if (screen.z <= 0f) continue;
+                minX = Mathf.Min(minX, screen.x);
+                maxX = Mathf.Max(maxX, screen.x);
+                minY = Mathf.Min(minY, screen.y);
+                maxY = Mathf.Max(maxY, screen.y);
+                depth = Mathf.Min(depth, screen.z);
+            }
+        }
+
+        const float MinimumWidth = 42f;
+        const float MinimumHeight = 66f;
+        float extraX = Mathf.Max(0f, (MinimumWidth - (maxX - minX)) * 0.5f);
+        float extraY = Mathf.Max(0f, (MinimumHeight - (maxY - minY)) * 0.5f);
+        float padX = Mathf.Max(0f, paddingPixels) + extraX;
+        float padY = Mathf.Max(0f, paddingPixels) + extraY;
+        rect = Rect.MinMaxRect(
+            minX - padX, minY - padY, maxX + padX, maxY + padY);
+        return true;
     }
 
     /// <summary>
@@ -2439,12 +3411,38 @@ public class ReplayPlayer : MonoBehaviour
     public bool TryScreenToHex(Vector2 screenPos, out Hex hex)
     {
         hex = default;
-        var cam = Camera.main;
-        if (cam == null) return false;
-        var plane = new Plane(Vector3.up, Vector3.zero);
-        if (!plane.Raycast(cam.ScreenPointToRay(screenPos), out float enter)) return false;
+        if (!TryScreenToBoardPoint(screenPos, out Vector3 point)) return false;
+        return TryWorldToHex(point, out hex);
+    }
 
-        Vector3 point = cam.ScreenPointToRay(screenPos).GetPoint(enter);
+    /// <summary>Project an authored board hex through the live combat camera. This is primarily a
+    /// deterministic automation seam for exercising the same drag path as real pointer input.</summary>
+    public bool TryHexToScreen(Hex hex, out Vector2 screenPos)
+    {
+        screenPos = default;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        Vector3 projected = cam.WorldToScreenPoint(HexToWorld(hex));
+        if (projected.z <= 0f) return false;
+        screenPos = new Vector2(projected.x, projected.y);
+        return true;
+    }
+
+    private static bool TryScreenToBoardPoint(Vector2 screenPos, out Vector3 point)
+    {
+        point = default;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        Ray ray = cam.ScreenPointToRay(screenPos);
+        var plane = new Plane(Vector3.up, Vector3.zero);
+        if (!plane.Raycast(ray, out float enter)) return false;
+        point = ray.GetPoint(enter);
+        return true;
+    }
+
+    private bool TryWorldToHex(Vector3 point, out Hex hex)
+    {
+        hex = default;
         float bestSq = hexSize * hexSize;
         bool found = false;
         for (int row = 0; row < Battle.BoardRows; row++)
@@ -2482,14 +3480,20 @@ public class ReplayPlayer : MonoBehaviour
 
     private void BuildBoard()
     {
+        var env = _data != null ? _data.environment : null;
+        bool shard = env != null && env.enabled;
         var baseSlab = GameObject.CreatePrimitive(PrimitiveType.Plane);
         baseSlab.name = "BoardBase";
         baseSlab.transform.SetParent(_generated, false);
         Vector3 min = HexToWorld(new Hex(0, 0));
         Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
         Vector3 center = (min + max) * 0.5f;
-        float spanX = Mathf.Abs(max.x - min.x) + 4f * hexSize;
-        float spanZ = Mathf.Abs(max.z - min.z) + 4f * hexSize;
+        // With the shard frame on, the apron ends exactly at the cliff's ring-0 envelope —
+        // ShardEnvironment fits its outline to this same rectangle, so the plane always hides
+        // under the rim. The bare board keeps its legacy 2-hex apron.
+        float apron = shard ? 2f * (hexSize + 0.2f) : 4f * hexSize;
+        float spanX = Mathf.Abs(max.x - min.x) + apron;
+        float spanZ = Mathf.Abs(max.z - min.z) + apron;
         baseSlab.transform.position = new Vector3(center.x, -0.04f, center.z);
         baseSlab.transform.localScale = new Vector3(spanX / 10f, 1f, spanZ / 10f);
         Paint(baseSlab.GetComponent<Renderer>(), BaseDark);
@@ -2497,6 +3501,7 @@ public class ReplayPlayer : MonoBehaviour
 
         var tiles = new GameObject("Tiles").transform;
         tiles.SetParent(_generated, false);
+        var tileMesh = shard && env.tileBevelDepth > 0f ? BoardTileMesh(env.tileBevelDepth) : HexMesh();
         for (int row = 0; row < Battle.BoardRows; row++)
             for (int col = 0; col < Battle.BoardCols; col++)
             {
@@ -2505,10 +3510,66 @@ public class ReplayPlayer : MonoBehaviour
                 tile.transform.position = HexToWorld(Hex.FromRowCol(row, col));
                 float ts = _data != null && _data.board != null ? _data.board.tileScale : 0.9f;
                 tile.transform.localScale = new Vector3(ts, 1f, ts);
-                tile.AddComponent<MeshFilter>().sharedMesh = HexMesh();
+                tile.AddComponent<MeshFilter>().sharedMesh = tileMesh;
                 Color c = row <= 2 ? TileTeam0 : row >= Battle.BoardRows - 3 ? TileTeam1 : TileNeutral;
+                if (shard && env.tileVariation > 0f)
+                {
+                    // Quantized to 5 steps so the color-keyed material cache stays bounded
+                    // (≤5 materials per row band) instead of one material per tile.
+                    int level = Mathf.Min(4, (int)(ShardEnvironment.Hash01(
+                        (uint)Mathf.Max(1, env.shardSeed), row * 31 + col) * 5f));
+                    float dv = (level - 2) * 0.5f * env.tileVariation;
+                    c = new Color(Mathf.Clamp01(c.r + dv), Mathf.Clamp01(c.g + dv), Mathf.Clamp01(c.b + dv));
+                }
                 PaintTile(tile.AddComponent<MeshRenderer>(), c);
             }
+        BuildShardEnvironment();
+    }
+
+    /// <summary>(Re)build the shard frame (item 35). Its sliders are their own reload channel —
+    /// colors, the light rig, the Tower, and the void must apply without a board rebuild — so this
+    /// destroys and rebuilds unconditionally (a one-shot procedural build, milliseconds).</summary>
+    private void BuildShardEnvironment()
+    {
+        if (_generated == null) return;
+        var old = _generated.Find(ShardEnvironment.RootName);
+        if (old != null) DestroyImmediate(old.gameObject);
+        Vector3 min = HexToWorld(new Hex(0, 0));
+        Vector3 max = HexToWorld(Hex.FromRowCol(Battle.BoardRows - 1, Battle.BoardCols - 1));
+        ShardEnvironment.Build(_generated, _data != null ? _data.environment : null, min, max, hexSize);
+    }
+
+    /// <summary>Board tile: the flat fan plus a short inward-tapered skirt, so the grout gaps read
+    /// as recessed cuts instead of painted lines. Fields keep <see cref="HexMesh"/> — an overlay
+    /// with a hanging skirt would z-fight the tile it sits on.</summary>
+    private Mesh BoardTileMesh(float bevelDepth)
+    {
+        if (_boardTileMesh != null) return _boardTileMesh;
+        var verts = new List<Vector3>(31);
+        var tris = new List<int>(90);
+        verts.Add(Vector3.zero);
+        for (int i = 0; i < 6; i++)
+        {
+            float a = Mathf.Deg2Rad * (60f * i + 30f);
+            verts.Add(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * hexSize);
+        }
+        for (int i = 0; i < 6; i++) { tris.Add(0); tris.Add(1 + (i + 1) % 6); tris.Add(1 + i); }
+        for (int i = 0; i < 6; i++)
+        {
+            Vector3 top0 = verts[1 + i], top1 = verts[1 + (i + 1) % 6];
+            int at = verts.Count;
+            verts.Add(top0); verts.Add(top1);                       // duplicated: hard skirt edge
+            verts.Add(top1 * 0.9f + Vector3.down * bevelDepth);
+            verts.Add(top0 * 0.9f + Vector3.down * bevelDepth);
+            tris.AddRange(new[] { at, at + 2, at + 3, at, at + 1, at + 2 });
+        }
+        var m = new Mesh { name = "hex-tile" };
+        m.SetVertices(verts);
+        m.SetTriangles(tris, 0);
+        m.RecalculateNormals();
+        m.RecalculateBounds();
+        _boardTileMesh = m;
+        return m;
     }
 
     private Mesh HexMesh()
@@ -2605,8 +3666,6 @@ public class ReplayPlayer : MonoBehaviour
         // StatusIconRow.Layout — hence the anchor x of 0 where the pip strip started at its left end.
         var icons = StatusIconRow.Create(root, pipY, _font, StatusColor);
 
-        var nameplate = MakeNameplate(root, pipY + 0.30f, u.Name);
-
         body.localRotation = Quaternion.Euler(leanDeg, yaw0, 0f);
 
         _views[u.Id] = new UnitView
@@ -2614,7 +3673,7 @@ public class ReplayPlayer : MonoBehaviour
             Root = root, Body = body, BodyRenderer = torso, BodyBaseScale = Vector3.one,
             PlanningMarker = planningMarker,
             HpFill = hp, ShieldFill = shield, ManaFill = mana, TrailFill = trail,
-            Icons = icons, Nameplate = nameplate,
+            Icons = icons,
             RoleClock = roleClock, RoleClockMax = 0.68f,
             ManaFillBaseH = 0.06f, ManaPulse = bars.manaReadyPulse,
             // Models flash off WHITE (a team tint would permanently recolor the texture; team reads
@@ -2948,43 +4007,6 @@ public class ReplayPlayer : MonoBehaviour
         return null;
     }
 
-    /// <summary>Per-unit world-space nameplate (chassis name), pooled-free — one lives with the view.
-    /// Styled + billboarded live from <see cref="TuningData.nameplates"/> in Update/BuildPreview via
-    /// <see cref="StyleNameplate"/>, so a hot-reload resizes/recolors/hides it with no rebuild.</summary>
-    private TextMesh MakeNameplate(Transform parent, float y, string text)
-    {
-        var go = new GameObject("nameplate");
-        go.transform.SetParent(parent, false);
-        go.transform.localPosition = new Vector3(0f, y, 0f);
-        var tm = go.AddComponent<TextMesh>();
-        tm.font = _font;
-        go.GetComponent<MeshRenderer>().sharedMaterial = _font.material;
-        tm.anchor = TextAnchor.LowerCenter;
-        tm.alignment = TextAlignment.Center;
-        tm.fontStyle = FontStyle.Bold;
-        tm.fontSize = 180; // high-res glyph texture; world size comes from characterSize (crisp text fix)
-        tm.text = text;
-        var np = _data.nameplates;
-        tm.characterSize = np.characterSize;
-        tm.color = np.color;
-        go.SetActive(np.show);
-        return tm;
-    }
-
-    /// <summary>Re-reads nameplate tuning and billboards toward the camera every frame (fields-style
-    /// live re-apply). Call only for a visible view; a dead unit's Root is inactive, hiding it.</summary>
-    private void StyleNameplate(UnitView v)
-    {
-        if (v.Nameplate == null) return;
-        var np = _data.nameplates;
-        var go = v.Nameplate.gameObject;
-        if (go.activeSelf != np.show) go.SetActive(np.show);
-        if (!np.show) return;
-        v.Nameplate.characterSize = np.characterSize;
-        v.Nameplate.color = np.color;
-        v.Nameplate.transform.rotation = _numberFace;
-    }
-
     public void ApplyFold(int tick) => ApplyFold(tick, tick);
 
     /// <summary>
@@ -3002,10 +4024,18 @@ public class ReplayPlayer : MonoBehaviour
         foreach (var u in _fold.Units)
         {
             if (!_views.TryGetValue(u.Id, out var v)) continue;
+            bool omitted = false;
+            foreach (var status in u.Statuses)
+                if (status.Kind == StatusKind.Omitted) { omitted = true; break; }
             // The linger law: a dead unit keeps its body while its DeathSequence runs. Nothing below
             // this line touches it again — Target holds the hex it died on, so the corpse stays put.
-            v.Root.gameObject.SetActive(!u.Dead || v.Lingering);
-            if (u.Dead) { v.Walking = false; v.MotionOffset = Vector3.zero; continue; }
+            v.Root.gameObject.SetActive((!u.Dead || v.Lingering) && !omitted);
+            if (u.Dead || omitted)
+            {
+                v.Walking = false;
+                v.MotionOffset = Vector3.zero;
+                continue;
+            }
 
             Vector3 nt;
             if (u.Walking)
@@ -3255,7 +4285,9 @@ public class ReplayPlayer : MonoBehaviour
 
     private static readonly Dictionary<Color, Material> _matCache = new Dictionary<Color, Material>();
     private static Shader _runtimeLitShader;
-    private static Material CachedMat(Renderer r, Color c, bool doubleSided)
+    // Internal rather than private: ShardEnvironment paints its meshes through the same cache so
+    // the whole board world shares one material family (and the UUM-136536 guard below).
+    internal static Material CachedMat(Color c, bool doubleSided)
     {
         var key = doubleSided ? c + new Color(0.001f, 0f, 0f) : c;
         if (!_matCache.TryGetValue(key, out var mat) || mat == null)
@@ -3277,6 +4309,6 @@ public class ReplayPlayer : MonoBehaviour
         }
         return mat;
     }
-    private static void Paint(Renderer r, Color c) => r.sharedMaterial = CachedMat(r, c, false);
-    private static void PaintTile(Renderer r, Color c) => r.sharedMaterial = CachedMat(r, c, true);
+    private static void Paint(Renderer r, Color c) => r.sharedMaterial = CachedMat(c, false);
+    private static void PaintTile(Renderer r, Color c) => r.sharedMaterial = CachedMat(c, true);
 }

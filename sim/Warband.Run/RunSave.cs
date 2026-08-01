@@ -68,9 +68,33 @@ namespace Warband.Run
             Put(b, "nextItemInstanceId", s.NextItemInstanceId.ToString(CultureInfo.InvariantCulture));
             Put(b, "bossWins", s.BossWins);
             Put(b, "bossLosses", s.BossLosses);
+            Put(b, "victoryBanked", s.VictoryBanked);
+            Put(b, "inEndless", s.InEndless);
+            Put(b, "endlessCycles", s.EndlessCycles);
+            Put(b, "endlessBeat", s.EndlessBeat);
             Put(b, "pendingBossSand", s.PendingBossSand);
             Put(b, "banners", Join(s.Banners));
+            // Timed inscriptions ride as THREE parallel lists rather than one packed "id:n:n"
+            // field: that keeps every id going through Safe() unchanged and introduces no second
+            // delimiter for a future id to collide with. Absent keys load as zero timed, so every
+            // save written before this existed still resumes.
+            {
+                var ids = new List<string>();
+                var fights = new List<string>();
+                var taken = new List<string>();
+                foreach (var t in s.Timed)
+                {
+                    ids.Add(t.Id);
+                    fights.Add(t.FightsRemaining.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    taken.Add(t.TakenAtCombat.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+                Put(b, "timed.ids", Join(ids));
+                Put(b, "timed.fights", string.Join(ListSep.ToString(), fights));
+                Put(b, "timed.takenAt", string.Join(ListSep.ToString(), taken));
+            }
             Put(b, "pendingBossRewards", Join(s.PendingBossRewards));
+            Put(b, "revision.id", Safe(s.Revision.RevisionId, "Revision id"));
+            Put(b, "revision.upgrades", Join(s.Revision.UpgradeIds));
 
             // Act maps: one line per act, comma-joined beat kinds. The boss beat is implicit
             // (NodeIndex == NodesPerAct), so these are exactly the authored node kinds.
@@ -228,10 +252,41 @@ namespace Warband.Run
                 NextItemInstanceId = Long(kv, "nextItemInstanceId", 1),
                 BossWins = Int(kv, "bossWins"),
                 BossLosses = Int(kv, "bossLosses"),
+                VictoryBanked = Bool(kv, "victoryBanked"),
+                InEndless = Bool(kv, "inEndless"),
+                EndlessCycles = Int(kv, "endlessCycles"),
+                EndlessBeat = Int(kv, "endlessBeat"),
                 PendingBossSand = Int(kv, "pendingBossSand"),
+                Revision = new RevisionState
+                {
+                    RevisionId = Str(kv, "revision.id"),
+                },
             };
             s.Banners.AddRange(Split(Str(kv, "banners")));
+            {
+                var ids = Split(Str(kv, "timed.ids"));
+                var fights = Split(Str(kv, "timed.fights"));
+                var taken = Split(Str(kv, "timed.takenAt"));
+                if (ids.Length != fights.Length || ids.Length != taken.Length)
+                    throw new RunSaveException(
+                        $"timed inscriptions are inconsistent (ids {ids.Length}, fights {fights.Length}, " +
+                        $"takenAt {taken.Length}) — the save is corrupt rather than merely old.");
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    if (!int.TryParse(fights[i], System.Globalization.NumberStyles.Integer,
+                                      System.Globalization.CultureInfo.InvariantCulture, out int remaining))
+                        throw new RunSaveException($"timed inscription '{ids[i]}' has unreadable remaining '{fights[i]}'");
+                    if (!int.TryParse(taken[i], System.Globalization.NumberStyles.Integer,
+                                      System.Globalization.CultureInfo.InvariantCulture, out int at))
+                        throw new RunSaveException($"timed inscription '{ids[i]}' has unreadable takenAt '{taken[i]}'");
+                    // A spent row should never have been written; if one appears, drop it rather
+                    // than resume with a rule the player already burned off.
+                    if (remaining <= 0) continue;
+                    s.Timed.Add(new TimedInscription { Id = ids[i], FightsRemaining = remaining, TakenAtCombat = at });
+                }
+            }
             s.PendingBossRewards.AddRange(Split(Str(kv, "pendingBossRewards")));
+            s.Revision.UpgradeIds.AddRange(Split(Str(kv, "revision.upgrades")));
 
             int acts = Int(kv, "actMaps.count");
             var maps = new NodeKind[acts][];
@@ -394,8 +449,15 @@ namespace Warband.Run
             if (s.Act < 1) throw new RunSaveException($"act {s.Act} is not a real act");
             if (s.NodeIndex < 0) throw new RunSaveException($"node index {s.NodeIndex} is negative");
             if (s.ActMaps.Length == 0) throw new RunSaveException("save has no act maps");
-            if (s.Act > s.ActMaps.Length)
+            if (s.InEndless && !s.VictoryBanked)
+                throw new RunSaveException("endless continuation has no banked standard victory");
+            if (s.Phase == RunPhase.VictoryChoice && !s.VictoryBanked)
+                throw new RunSaveException("victory choice has no banked standard victory");
+            if (s.Act > s.ActMaps.Length && !(s.InEndless && s.Victory))
                 throw new RunSaveException($"act {s.Act} is past the saved act maps ({s.ActMaps.Length})");
+            if (s.EndlessCycles < 0 || s.EndlessBeat < 0 || s.EndlessBeat > 3)
+                throw new RunSaveException(
+                    $"invalid endless score {s.EndlessCycles} cycles / beat {s.EndlessBeat}");
             if (s.Field.Count == 0) throw new RunSaveException("save has an empty warband");
             foreach (var h in s.Field)
                 if (h.ChassisId.Length == 0) throw new RunSaveException("a fielded hero has no chassis");

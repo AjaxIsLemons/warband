@@ -40,9 +40,12 @@ engine detail in [[fx-runtime]]. This doc is the *workflow*. A project skill
    `fixture tick advance` lines to `%USERPROFILE%\warband-shots\probes.txt`, run menu
    `Warband/Render Probe Shots`, scp the PNGs. **Same fixture+tick twice = filename
    collision — run multi-advance pairs as separate passes.**
-5. **Gate:** `Warband/Render Contact Sheet` twice → binary-diff 28 PNGs. Byte-identical
+5. **Gate:** `Warband/Render Contact Sheet` twice → binary-diff **every** PNG. Byte-identical
    or you broke the determinism law (usually: unseeded particles, `_Time`, TrailRenderer,
-   wall-clock anything).
+   wall-clock anything). The count is `RenderShots.Ticks.Length` × the `*.bytes` fixtures in
+   `client/Assets/StreamingAssets/replays/` — 4 × 14 = 56 on 2026-07-29, and it grows with each
+   new fixture. **Count the directory; a hardcoded number here goes stale and half a diffed
+   sheet still reports green** (this line said 28 for four fixture additions).
 
 New sigil/texture wanted? GenerateAsset (mono mask, white on black, 512²) →
 `Resources/Board/FX/Sigils/<chassis>.png`; recipes no-op cleanly while it's missing.

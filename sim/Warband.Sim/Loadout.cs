@@ -42,6 +42,13 @@ namespace Warband.Sim
         public int RankAttack;                    // +Attack per rank step
         public List<string> Specializations = new List<string>(); // ADR 0012 category tags
         public List<EffectDef> Signature = new List<EffectDef>();
+        /// <summary>
+        /// Trigger-backed effects that ARE the Signature rather than an innate reacting to it.
+        /// Most Signatures resolve directly from <see cref="Signature"/>; this channel exists for
+        /// cast windows such as Frenzy so combat identity and card projection do not mislabel the
+        /// cast as the chassis passive.
+        /// </summary>
+        public List<Trigger> SignatureTriggers = new List<Trigger>();
         public List<Trigger> Passives = new List<Trigger>();
         public List<StatRule> StatRules = new List<StatRule>();
     }
@@ -183,6 +190,11 @@ namespace Warband.Sim
             // Cloned, not shared: node patches mutate this list in place, and the chassis'
             // own Signature is a static catalog instance reused by every later composition.
             foreach (var e in chassis.Signature) def.Signature.Add(e.Clone());
+            AddRules(
+                def,
+                chassis.SignatureTriggers,
+                new List<StatRule>(),
+                chassis.Id + "/signature");
             AddRules(def, chassis.Passives, chassis.StatRules, chassis.Id);
             AddRules(def, w.Triggers, w.StatRules, w.Name);
 

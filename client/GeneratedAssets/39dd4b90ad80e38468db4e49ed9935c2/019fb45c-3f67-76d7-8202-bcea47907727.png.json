@@ -1,0 +1,31 @@
+{
+    "asset": "39dd4b90ad80e38468db4e49ed9935c2",
+    "fileName": "019fb45c-3f67-76d7-8202-bcea47907727.png",
+    "prompt": "Looking steeply downward into a bottomless dark void beneath a floating fragment of land. The void below holds the unfinished remains of a world: fragments of architecture and terrain dissolving into flat untextured grey planes, hard-edged gaps and missing geometry, as if reality simply stopped being built. Extremely desaturated cold palette, near-black charcoal fading to cold slate blue-grey. A single faint warm amber rim light from behind and above grazes only a few topmost edges. NO horizon line, NO sky, NO stars, NO clouds, NO landscape at eye level — the viewer is looking DOWN into emptiness. Low contrast, heavy atmospheric depth haze, everything recedes into blackness. A quiet background plate that must never pull the eye. Painterly game concept art, muted, moody, uninhabited.",
+    "negativePrompt": "",
+    "model": "gemini-3.0-pro",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

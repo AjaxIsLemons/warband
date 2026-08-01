@@ -1,0 +1,31 @@
+{
+    "asset": "dc7bae887f3401944adf653fda9d1e7c",
+    "fileName": "019fb45d-2c38-72a2-be4b-a4b2e7fbb50e.png",
+    "prompt": "Looking steeply downward into a dark void below a floating fragment of land. Suspended in the darkness beneath: slow drifting veils and hanging columns of pale sand and ash, fine particulate caught mid-fall, lit by a single restrained warm amber glow. Extremely desaturated cold palette, near-black to cold slate blue-grey, with muted warm amber appearing ONLY in the suspended dust. NO horizon line, NO sky, NO stars, NO clouds, NO ground plane, NO landscape at eye level — the viewer looks DOWN into falling time. Soft, atmospheric, very low contrast, dreamlike, weightless. A quiet background plate that must never pull the eye. Painterly game concept art, muted, uninhabited.",
+    "negativePrompt": "",
+    "model": "gemini-3.0-pro",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

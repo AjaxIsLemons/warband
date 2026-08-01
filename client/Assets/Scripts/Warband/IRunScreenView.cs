@@ -51,17 +51,21 @@ internal sealed class RunShellActions
     public Action<string> ToggleRecruit = _ => { };
     public Action RerollSeed = () => { };
     public Action BeginRun = () => { };
+    public Action<string> ChooseStartingRevision = _ => { };
 
     // Persistent Planning workspace
     public Action<int> SetPlanningTab = _ => { };
     public Action<string> SelectPlanningCard = _ => { };
+    public Action<string> ActivatePlanningCard = _ => { };
     public Action<string> SelectComparisonTarget = _ => { };
     public Action OpenInspector = () => { };
     public Action CloseInspector = () => { };
     public Action BuySelectedOffer = () => { };
     public Action<HallActionId> InspectorAction = _ => { };
     public Action<int, int> ChooseInterlude = (_, __) => { };
+    public Action<int> ChooseRevisionUpgrade = _ => { };
     public Action<int> ChooseBossReward = _ => { };
+    public Action<bool> ChooseEndless = _ => { };
     public Action OpenHallOverview = () => { };
     public Action<int> OpenHallStation = _ => { };
     public Action<string> OpenLoadout = _ => { };
@@ -77,6 +81,7 @@ internal sealed class RunShellActions
     public Action<long, int, long> TransferWarbandEquipment = (_, __, ___) => { };
     public Action<long, int> UnequipWarbandEquipment = (_, __) => { };
     public Action<long> EquipSelectedWarbandItem = _ => { };
+    public Action<long, long> EquipWarbandItem = (_, __) => { };
 
     // Map / node
     public Action<int> ChooseTier = _ => { };
@@ -86,13 +91,19 @@ internal sealed class RunShellActions
     public Action WatchFightAgain = () => { };
     public Action ContinueFightResult = () => { };
 
-    // Deploy — the board handles hex clicks; these are the roster-side intents.
+    // Deploy — the board handles hex clicks and captured-pointer drags; these are the
+    // presentation-side intents. Pointer ids keep mouse/touch cancellation deterministic.
     public Action<int> SelectForDeploy = _ => { };   // field index; -1 clears
+    /// <summary>Open the shared unit card on one enemy in the deployment preview. "" closes it.</summary>
+    public Action<string> SelectDeployEnemy = _ => { };
     public Action ClearDeployment = () => { };
     public Action CommitDeployment = () => { };
-    /// <summary>A click on the board during deployment, in PANEL coordinates. The controller
-    /// owns the panel→screen→hex conversion; the view must not know the board exists.</summary>
-    public Action<UnityEngine.Vector2> BoardClicked = _ => { };
+    /// <summary>Deployment board gestures in PANEL coordinates. The controller owns unit/hex
+    /// resolution and the renderer owns world feedback; the view only captures the pointer.</summary>
+    public Action<UnityEngine.Vector2, int> BoardPointerDown = (_, __) => { };
+    public Action<UnityEngine.Vector2, int> BoardPointerMoved = (_, __) => { };
+    public Action<UnityEngine.Vector2, int> BoardPointerUp = (_, __) => { };
+    public Action<int> BoardPointerCanceled = _ => { };
 
     // Shop
     public Action<int> BuyOffer = _ => { };

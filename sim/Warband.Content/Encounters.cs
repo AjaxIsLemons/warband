@@ -187,21 +187,25 @@ namespace Warband.Content
         public static EncounterDef GnawingHour(int act)
         {
             // The act lever is BODIES, not bigger Hourlings: five is a problem a starting three can
-            // out-trade, ten is a problem that needs an actual answer.
-            int bodies = act <= 1 ? 5 : act == 2 ? 8 : 10;
+            // out-trade, ten is a problem that needs an actual answer. Item 32 / ADR 0031 makes
+            // their starting geometry two wedges: the old broad scatter collapsed into the same
+            // center scrum from every player formation and therefore measured FREE + FLAT.
+            int bodies = act <= 1 ? 7 : act == 2 ? 8 : 10;
             var slots = new[]
             {
-                (5, 0), (5, 3), (5, 6), (6, 1), (6, 4),
-                (4, 1), (4, 6), (6, 7), (7, 3), (7, 4),
+                // The act-1 lesson is deliberately uneven: three bodies pressure the left lane,
+                // two the right. Later acts fill both wedges before adding a center reserve.
+                (4, 0), (5, 1), (6, 0), (5, 7), (6, 6),
+                (4, 7), (7, 1), (7, 6), (6, 3), (6, 4),
             };
             var def = new EncounterDef
             {
                 Id = "gnawing-hour",
                 Name = "The Gnawing Hour",
-                Pressure = $"{bodies} bodies, none dangerous alone. Can you kill faster than they arrive?",
+                Pressure = $"Two wedges of {bodies} Hourlings close from both sides. Which side can your line hold?",
                 RuleName = "SWARM",
-                RuleText = $"{bodies} Hourlings, no encounter rule. They are fast, they are fragile, "
-                         + "and single-target damage will not keep up.",
+                RuleText = $"{bodies} Hourlings start in two wedges and have no encounter rule. "
+                         + "Each uses a reach-1 basic attack and acquires the nearest target.",
             };
             for (int i = 0; i < bodies; i++)
                 def.Enemies.Add(Place(Enemies.Hourling(), slots[i].Item1, slots[i].Item2, Enemies.Swarm));
@@ -217,14 +221,20 @@ namespace Warband.Content
         {
             Id = "the-long-range",
             Name = "The Long Range",
-            Pressure = "The wall is not the threat. Can you reach what is behind it?",
+            Pressure = "Two walls hold two lanes. Which gun can your warband reach?",
             RuleName = "WARD",
-            RuleText = "The Ashen Colossus takes 50% less damage while any Sanddrift Gunner lives. "
-                     + "Gunners fire at your FARTHEST unit and give ground to keep their distance.",
+            RuleText = "One Ashen Colossus starts with 50% damage reduction until another enemy "
+                     + "dies; the second Colossus is unwarded. All three Sanddrift Gunners acquire your "
+                     + "FARTHEST unit and give ground to keep their distance.",
             Enemies =
             {
-                Place(Enemies.Colossus(), 4, 3, Enemies.Anchor, "WARDED WALL"),
+                // Item 32 / ADR 0031: the old single center wall let four act-2 heroes overwhelm
+                // the whole formation without choosing a lane. One warded and one ordinary wall
+                // make the Battery's two-lane reach problem visible without adding its clock.
+                Place(Enemies.Colossus(), 4, 1, Enemies.Anchor, "WARDED WALL"),
+                Place(Enemies.Colossus(warded: false), 4, 6, Enemies.Anchor, "WALL"),
                 Place(Enemies.Gunner(), 7, 1, Enemies.Artillery),
+                Place(Enemies.Gunner(), 7, 3, Enemies.Artillery),
                 Place(Enemies.Gunner(), 7, 6, Enemies.Artillery),
             },
         };
@@ -333,9 +343,14 @@ namespace Warband.Content
         {
             // The court is the clock, so the COURT is the act lever: every body is both a threat
             // and 4 more mana the moment you answer it. Six measured FREE and flat at act 3
-            // (`--enc`, 2026-07-26) — the ritual fired but never mattered.
-            int court = act <= 2 ? 4 : 6;
-            var slots = new[] { (5, 0), (5, 6), (6, 1), (6, 4), (4, 3), (6, 7) };
+            // (`--enc`, 2026-07-26) — the ritual fired but never mattered. Item 32 / ADR 0031
+            // divides eight across two visible wings, leaving the Scribe as the center commitment.
+            int court = act <= 2 ? 4 : 8;
+            var slots = new[]
+            {
+                (4, 0), (4, 7), (5, 1), (5, 6),
+                (6, 0), (6, 7), (6, 2), (6, 5),
+            };
             var def = new EncounterDef
             {
                 Id = "long-procession",

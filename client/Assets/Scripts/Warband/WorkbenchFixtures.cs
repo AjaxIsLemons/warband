@@ -33,6 +33,10 @@ public static class WorkbenchFixtures
 
     public static readonly string[] Ids =
     {
+        "muster-state",
+        "muster-phalanx",
+        "rankup-modal",
+        "beyond-the-hour",
         "market-recruit",
         "market-rankup-b",
         "market-rankup-long",
@@ -45,6 +49,9 @@ public static class WorkbenchFixtures
         "rail-open",
         "tooltip-keyword",
         "tooltip-equipment",
+        "tooltip-weapon-fact",
+        "tooltip-weapon-property",
+        "tooltip-unit-spec",
         "tooltip-rank-tier",
     };
 
@@ -55,6 +62,9 @@ public static class WorkbenchFixtures
         var shell = BaseShell(expandedText, reducedMotion);
         switch (id)
         {
+            case "beyond-the-hour":
+                ApplyBeyondTheHour(shell);
+                break;
             case "market-rankup-b":
                 SelectRankUp(shell, RankUpInspector(expandedText, 1));
                 break;
@@ -66,6 +76,11 @@ public static class WorkbenchFixtures
                 break;
             case "tooltip-rank-tier":
                 SelectRankUp(shell, RankUpInspector(expandedText, 3));
+                break;
+            case "tooltip-weapon-fact":
+            case "tooltip-weapon-property":
+            case "tooltip-unit-spec":
+                shell.Planning.Inspector = HeroInspector(expandedText);
                 break;
             case "market-weapon":
                 Select(shell, "fixture:weapon", WeaponInspector(expandedText));
@@ -100,6 +115,17 @@ public static class WorkbenchFixtures
                 shell.Planning.Inspector = HeroInspector(expandedText);
                 shell.WarbandBar = OpenWarbandBar();
                 break;
+            case "muster-state":
+                ApplyMusterState(shell, expandedText);
+                break;
+            case "muster-phalanx":
+                ApplyMusterState(shell, expandedText);
+                ApplyPhalanxMusterReview(shell, expandedText);
+                break;
+            case "rankup-modal":
+                shell.Planning.SpecChoice = RankUpModalChoice(expandedText);
+                shell.WarbandBar.Dimmed = true;
+                break;
             case "tooltip-keyword":
                 shell.Planning.Inspector = KeywordInspector(expandedText);
                 break;
@@ -111,12 +137,70 @@ public static class WorkbenchFixtures
                 Select(shell, "fixture:recruit", RecruitInspector(expandedText));
                 break;
         }
+        // The running Workbench projects owned champions through UnitSheetModel. Keep the
+        // presentation-only fixtures on that same renderer so the matrix cannot pass or fail
+        // against the retired one-column champion anatomy. Muster and rank-up deliberately keep
+        // their bespoke approved layouts.
+        if (!shell.Planning.MusterMode &&
+            shell.Planning.Inspector != null &&
+            shell.Planning.Inspector.Kind == DecisionDetailKind.Champion &&
+            shell.Planning.Inspector.RankUpDetail == null &&
+            shell.Planning.Inspector.UnitSheet == null)
+            shell.Planning.Inspector.UnitSheet =
+                FixtureUnitSheet(shell.Planning.Inspector);
         MarketOfferPresentationContract.Validate(shell.Planning.MarketOffers);
         return new Fixture(
             id, shell,
             id == "tooltip-keyword",
             id == "tooltip-equipment",
-            id == "tooltip-rank-tier");
+            id == "tooltip-rank-tier" || id == "tooltip-unit-spec");
+    }
+
+    private static UnitSheetModel FixtureUnitSheet(InspectorModel inspector)
+    {
+        var sheet = new UnitSheetModel
+        {
+            Specs = new List<RankTierSlotModel>(inspector.PathTiers),
+        };
+        foreach (StatChipModel fact in inspector.Stats)
+        {
+            if (fact.Id == PresentationFactId.Hp)
+                sheet.CoreFacts.Add(fact);
+            else
+                sheet.WeaponFacts.Add(fact);
+        }
+        if (inspector.WeaponProperty != null)
+            sheet.WeaponProperties.Add(inspector.WeaponProperty);
+
+        foreach (InspectorSectionModel section in inspector.Sections)
+        {
+            if (section == null) continue;
+            if (string.Equals(section.Label, "SIGNATURE", StringComparison.OrdinalIgnoreCase))
+            {
+                sheet.Signature = section;
+                continue;
+            }
+            if (string.Equals(section.Label, "WEAPON", StringComparison.OrdinalIgnoreCase))
+            {
+                sheet.WeaponName = section.Name;
+                if (sheet.WeaponProperties.Count == 0)
+                    sheet.WeaponProperties.Add(new RuleDeltaModel
+                    {
+                        RuleName = section.Name,
+                        DisplayName = section.Name,
+                        ShortSummary = section.Summary,
+                        FullDescription = section.Summary,
+                        Applies = true,
+                    });
+                continue;
+            }
+            sheet.Passives.Add(section);
+        }
+        if (string.IsNullOrWhiteSpace(sheet.WeaponName))
+            sheet.WeaponName = string.IsNullOrWhiteSpace(inspector.WeaponName)
+                ? "BASIC ATTACK"
+                : inspector.WeaponName;
+        return sheet;
     }
 
     private static RunShellModel BaseShell(bool expanded, bool reducedMotion)
@@ -128,6 +212,17 @@ public static class WorkbenchFixtures
             {
                 Act = "ACT II · THE GILDED BREACH",
                 Beat = "HOUR 6 OF 9",
+                // The header node map is contract-checked (workbench-refactor): fixtures
+                // carry a representative act track like the live model does.
+                Track = new List<PlanningTrackNodeModel>
+                {
+                    new PlanningTrackNodeModel { Label = "1", Kind = "Fight", State = "past" },
+                    new PlanningTrackNodeModel { Label = "2", Kind = "Interlude", State = "past" },
+                    new PlanningTrackNodeModel { Label = "3", Kind = "Fight", State = "past" },
+                    new PlanningTrackNodeModel { Label = "4", Kind = "Fight", State = "current" },
+                    new PlanningTrackNodeModel { Label = "5", Kind = "Fight", State = "future" },
+                    new PlanningTrackNodeModel { Label = "BOSS", Kind = "Boss", State = "future" },
+                },
                 Brief = Expand(
                     "Prepare your warband. Changes remain reversible until you commit " +
                     "the Hourstone.", expanded),
@@ -148,6 +243,64 @@ public static class WorkbenchFixtures
         shell.Planning.PartyShelf.LoadoutInventory = Inventory(expanded);
         shell.Planning.PartyShelf.LoadoutInspector = HeroInspector(expanded);
         return shell;
+    }
+
+    private static void ApplyBeyondTheHour(RunShellModel shell)
+    {
+        PlanningModel planning = shell.Planning;
+        planning.Act = "VICTORY BANKED";
+        planning.Beat = "THE WANING CROWN HAS FALLEN";
+        planning.BeatKind = PlanningBeat.EndlessChoice;
+        planning.Heading = "THE HOUR HELD";
+        planning.Brief =
+            "The authored run is won. Leave with the victory, or carry this exact warband " +
+            "into escalating cycles until a deeper Hour finally breaks it.";
+        planning.Rule = "Victory is already preserved.";
+        planning.CanReroll = false;
+        planning.CanCommit = false;
+        planning.CommitLabel = "";
+        planning.Track = new List<PlanningTrackNodeModel>
+        {
+            new PlanningTrackNodeModel { Label = "1", Kind = "Fight", State = "past" },
+            new PlanningTrackNodeModel { Label = "2", Kind = "Interlude", State = "past" },
+            new PlanningTrackNodeModel { Label = "3", Kind = "Fight", State = "past" },
+            new PlanningTrackNodeModel { Label = "4", Kind = "Fight", State = "past" },
+            new PlanningTrackNodeModel { Label = "BOSS", Kind = "Boss", State = "past" },
+        };
+        planning.Interlude = new List<InterludeChoiceModel>
+        {
+            new InterludeChoiceModel
+            {
+                Path = -1,
+                Option = 0,
+                ActionLabel = "RETIRE WITH VICTORY",
+                Facts = new List<string> { "3 ACTS CLEARED", "VICTORY PRESERVED" },
+                Card = new CardModel
+                {
+                    Eyebrow = "SEAL THE HOUR",
+                    Title = "Retire with victory",
+                    AbilitySummary =
+                        "End the expedition here. The completed run and final warband become the record.",
+                    Accent = "sand",
+                },
+            },
+            new InterludeChoiceModel
+            {
+                Path = -1,
+                Option = 1,
+                ActionLabel = "CONTINUE BEYOND THE HOUR",
+                Facts = new List<string> { "CYCLE 1", "ACT 3 POOL", "CROWN +25%" },
+                Card = new CardModel
+                {
+                    Eyebrow = "BEYOND THE HOUR",
+                    Title = "Continue with this warband",
+                    AbilitySummary =
+                        "Enter three escalating fights and face the Waning Crown again. " +
+                        "Defeat cannot erase the victory already earned.",
+                    Accent = "tempo",
+                },
+            },
+        };
     }
 
     private static void Select(RunShellModel shell, string key, InspectorModel inspector)
@@ -203,7 +356,7 @@ public static class WorkbenchFixtures
                     Fact("CHOICE", "1 OF 2", PresentationFactId.ChoiceCount),
                 }),
             Offer("weapon", MarketOfferKind.Weapon, "WEAPON", "Sunforged Glaive",
-                "BASIC ATTACK", Expand(
+                "WEAPON", Expand(
                     "Deal 19 damage at Reach 2. Each swing grants 2 Mana to its wielder.",
                     expanded), 9, "power",
                 new List<StatChipModel>
@@ -278,10 +431,14 @@ public static class WorkbenchFixtures
 
     private static InspectorModel RecruitInspector(bool expanded)
     {
-        return new InspectorModel
+        var inspector = new InspectorModel
         {
             Key = "fixture:recruit",
             Kind = DecisionDetailKind.Recruit,
+            // Rank drives the badge's escalation (r4-rank-ladder). Fixtures carry it so the QA
+            // matrix guards the treatment instead of it only existing in a live run.
+            Rank = "C",
+            PathTiers = EmptyPathTiers(),
             Eyebrow = "LIVE MARKET · RECRUIT",
             Title = "Banneret",
             Subtitle = "Captain · Rank C · joins the field",
@@ -291,6 +448,10 @@ public static class WorkbenchFixtures
             CurrencyCost = 12,
             CurrencyBalance = 31,
             Stats = CombatStats("164", "14", "2", "1.1"),
+            WeaponProperty = WeaponProperty(
+                "COMPANY MUSTER", "MUSTER",
+                "Start: adjacent allies +10% Speed",
+                "At combat start, adjacent allies gain 10% Attack Speed."),
             KeywordNotes = new List<string>
             {
                 "PROTECTION · Absorbs incoming damage before Health.",
@@ -301,7 +462,7 @@ public static class WorkbenchFixtures
                 Rule("SIGNATURE", "HOLD THE LINE",
                     Expand("Grant 24 Protection to the two lowest-Health allies for 5 seconds.",
                         expanded), UiGlyphId.Mana, "70"),
-                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
+                Rule("WEAPON", "COMPANY STANDARD",
                     Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("PASSIVE", "COMMAND AURA",
                     Expand("At battle start, adjacent allies gain 18 Protection for 4 seconds.",
@@ -309,6 +470,7 @@ public static class WorkbenchFixtures
             },
             Actions = BuyActions("RECRUIT", 12),
         };
+        return inspector;
     }
 
     private static InspectorModel RankUpInspector(bool expanded, int nextTier)
@@ -341,6 +503,7 @@ public static class WorkbenchFixtures
         {
             Key = "fixture:rankup",
             Kind = DecisionDetailKind.RankUp,
+            Rank = "S",
             Eyebrow = "LIVE MARKET · RANK UP",
             Title = $"Cleric · Rank {next}",
             Subtitle = "Guaranteed growth · specialization follows purchase",
@@ -409,6 +572,7 @@ public static class WorkbenchFixtures
         {
             Key = "fixture:rankup",
             Kind = DecisionDetailKind.RankUp,
+            Rank = "B",
             Eyebrow = "LIVE MARKET · RANK UP",
             Title = "Phalanx · Rank B",
             Subtitle = "Guaranteed growth · specialization follows purchase",
@@ -449,13 +613,18 @@ public static class WorkbenchFixtures
     private static ChoicePreviewModel RealNodeChoice(
         string nodeId, string accent, bool expanded)
     {
-        MechanicalRule rule = MechanicalRulePresenter.Node(Kits.Nodes[nodeId]);
-        LexEntry lex = ContentLexicon.Node(nodeId);
+        string chassisId = nodeId.Substring(0, nodeId.IndexOf('.'));
+        UnitDef before = Loadout.Compose(Kits.Chassis[chassisId]).Def;
+        UnitDef after = Loadout.Compose(
+            Kits.Chassis[chassisId],
+            nodes: new[] { Kits.Nodes[nodeId] }).Def;
+        SpecializationRuleProjection rule = PlayerRuleProjection.Specialization(
+            chassisId, nodeId, before, after);
         return new ChoicePreviewModel
         {
             Change = rule.Change.ToString().ToUpperInvariant(),
-            Name = lex.Name,
-            Summary = lex.Text,
+            Name = rule.Name,
+            Summary = rule.Choice,
             Rule = Expand(rule.Full, expanded),
             Accent = accent,
         };
@@ -572,6 +741,7 @@ public static class WorkbenchFixtures
         {
             Key = "fixture:hero",
             Kind = DecisionDetailKind.Champion,
+            Rank = "A",
             Eyebrow = "FIELD I · RANK A",
             Title = "Banneret",
             Subtitle = "Captain · composed unit dossier",
@@ -579,6 +749,39 @@ public static class WorkbenchFixtures
             PortraitFallback = "BN",
             Accent = "precision",
             Stats = CombatStats("188", "17", "2", "1.1"),
+            WeaponProperty = WeaponProperty(
+                "COMPANY MUSTER", "MUSTER",
+                "Start: adjacent allies +10% Speed",
+                "At combat start, adjacent allies gain 10% Attack Speed."),
+            PathTiers = new List<RankTierSlotModel>
+            {
+                new RankTierSlotModel
+                {
+                    Rank = "B",
+                    State = RankTierSlotState.Selected,
+                    Icon = "✦",
+                    Name = "Rallying Standard",
+                    Rule = "At battle start, adjacent allies gain 12 Protection for 4 seconds.",
+                    Accent = "ward",
+                },
+                new RankTierSlotModel
+                {
+                    Rank = "A",
+                    State = RankTierSlotState.Selected,
+                    Icon = "ϟ",
+                    Name = "Last Command",
+                    Rule = "When this champion casts, adjacent allies gain Haste for 3 seconds.",
+                    Accent = "tempo",
+                },
+                new RankTierSlotModel
+                {
+                    Rank = "S",
+                    State = RankTierSlotState.Locked,
+                    Icon = "◇",
+                    Name = "AWAKENS AT RANK S",
+                    Rule = "A 1-of-2 specialization is offered at Rank S.",
+                },
+            },
             KeywordNotes = new List<string>
             {
                 "PROTECTION · Absorbs incoming damage before Health.",
@@ -608,7 +811,7 @@ public static class WorkbenchFixtures
                 Rule("SIGNATURE", "HOLD THE LINE",
                     Expand("Grant 24 Protection and Haste to the two lowest-Health allies.",
                         expanded), UiGlyphId.Mana, "70"),
-                Rule("BASIC ATTACK", "DISCIPLINED STRIKE",
+                Rule("WEAPON", "COMPANY STANDARD",
                     Expand("Deal 17 damage to the nearest enemy at Reach 2.", expanded)),
                 Rule("PASSIVE", "COMMAND AURA",
                     Expand("Adjacent allies begin battle with 18 Protection for 4 seconds.",
@@ -624,6 +827,10 @@ public static class WorkbenchFixtures
 
     private static InspectorModel KeywordInspector(bool expanded)
     {
+        UnitDef def = Loadout.Compose(Kits.Chassis["phalanx"]).Def;
+        ChampionRuleProjection rules = PlayerRuleProjection.Champion(def);
+        WeaponDef weapon = Weapons.All["pike"];
+        string mastery = MechanicalRulePresenter.WeaponMastery(weapon).Full;
         return new InspectorModel
         {
             Key = "fixture:keyword",
@@ -635,26 +842,21 @@ public static class WorkbenchFixtures
             PortraitFallback = "PH",
             Accent = "reaction",
             Stats = CombatStats("150", "14", "2", "1.0"),
-            KeywordNotes = new List<string>
-            {
-                "RIPOSTE · One stored counterattack; spent when it fires.",
-                "LINE · Hits every enemy on the traced hex line.",
-            },
+            WeaponProperty = WeaponProperty(
+                "SET THE PIKE", weapon.Name.ToUpperInvariant(), mastery, mastery),
+            KeywordNotes = new List<string>(PlayerRuleProjection.Keywords(def)),
             Sections = new List<InspectorSectionModel>
             {
-                Rule("SIGNATURE", "SKEWER",
-                    Expand(
-                        "Enemies on a 3-hex Line through the current target take 12 damage.",
-                        expanded), UiGlyphId.Mana, "35"),
+                Rule("SIGNATURE", rules.SignatureName,
+                    Expand(rules.SignatureText, expanded), UiGlyphId.Mana,
+                    def.ManaMax.ToString()),
                 // The semantic-keyword capture targets "Gain 1 Riposte" inside a rendered rule
                 // sentence, so this fixture keeps its passive PRIMARY on purpose — it stands in
                 // for any kind whose passive carries the keyword under test.
-                Rule("PASSIVE", "RIPOSTE",
-                    Expand(
-                        "Gain 1 Riposte. When hit by a basic attack, spend it to " +
-                        "counterattack that attacker.", expanded)),
-                Rule("BASIC ATTACK", "PIKE",
-                    Expand("Deal 14 damage to the nearest enemy at Reach 2.", expanded)),
+                Rule("PASSIVE", rules.PassiveName,
+                    Expand(rules.PassiveText, expanded)),
+                Rule("WEAPON", weapon.Name.ToUpperInvariant(),
+                    Expand(mastery, expanded)),
             },
         };
     }
@@ -758,6 +960,8 @@ public static class WorkbenchFixtures
             items.Add(new CardModel
             {
                 Key = "fixture:item:" + i,
+                ItemInstanceId = 1000 + i,
+                EquipmentKind = weapon ? 0 : 1,
                 Eyebrow = weapon ? "WEAPON · REFINED" : "TRINKET · BOUND",
                 Title = names[i],
                 RoleIcon = weapon ? "⚔" : "◇",
@@ -784,6 +988,384 @@ public static class WorkbenchFixtures
         items[0].Selected = true;
         items[0].Pinned = true;
         return items;
+    }
+
+    /// <summary>Muster state (workbench-frame): mirrors the approved 01-muster-state sample —
+    /// two candidates picked, Bulwark inspected, the third seat awaiting.</summary>
+    private static void ApplyMusterState(RunShellModel shell, bool expanded)
+    {
+        PlanningModel p = shell.Planning;
+        p.Title = "MUSTER YOUR WARBAND";
+        p.MusterMode = true;
+        p.Act = "BEFORE ACT 1";
+        p.Beat = "";
+        p.Sand = "";
+        p.CurrencyBalance = 0;
+        p.Brief = Expand(
+            "Choose three champions. Hover a stat or rule for exact mechanics.", expanded);
+        p.RerollCost = -1;
+        p.RerollLabel = "Reroll the muster offer · free";
+        p.CanReroll = true;
+        p.CanCommit = false;
+        p.CommitLabel = "BEGIN RUN · 2 / 3";
+        p.Track = new List<PlanningTrackNodeModel>
+        {
+            new PlanningTrackNodeModel { Label = "1", Kind = "Fight", State = "current" },
+            new PlanningTrackNodeModel { Label = "2", Kind = "Fight", State = "future" },
+            new PlanningTrackNodeModel { Label = "3", Kind = "Fight", State = "future" },
+            new PlanningTrackNodeModel { Label = "4", Kind = "Fight", State = "future" },
+            new PlanningTrackNodeModel { Label = "5", Kind = "Fight", State = "future" },
+            new PlanningTrackNodeModel { Label = "BOSS", Kind = "Boss", State = "future" },
+        };
+        p.PartyShelf = new PartyShelfModel();
+        p.MarketOffers = new List<MarketOfferCardModel>
+        {
+            MusterOffer("shade", "Shade", "DIVER · PRECISION", "precision",
+                "BACKSTAB", "The current target takes 25 damage.", 0, false, expanded),
+            MusterOffer("berserker", "Berserker", "BRUISER · TEMPO", "power",
+                "FRENZY", Expand("For the next 4 basic attacks, attack every 0.1s " +
+                    "while a target is in reach.", expanded), 1, false, expanded),
+            MusterOffer("bulwark", "Bulwark", "TANK · WARD", "ward",
+                "SHIELD SLAM", "The nearest enemy takes 10 damage and is Stunned for 1.0s.",
+                -1, true, expanded),
+            MusterOffer("cleric", "Cleric", "HEALER · MENDER", "mending",
+                "SANCTIFIED PYRE", Expand("Enemies within 1 hex take 12 damage. Allies " +
+                    "within 1 hex heal 10.", expanded), -1, false, expanded),
+            MusterOffer("sharpshot", "Sharpshot", "SNIPER · POWER", "power",
+                "PIERCING BOLT", Expand("Enemies in a line through the current target " +
+                    "take 14 damage.", expanded), -1, false, expanded),
+        };
+        p.Inspector = MusterInspector(expanded);
+        shell.WarbandBar = MusterBar();
+    }
+
+    /// <summary>
+    /// Regression fixture for the reported Phalanx dossier: Brace, Skewer and Riposte all wrap
+    /// above the fixed Specs row without any rule being clipped by its section.
+    /// </summary>
+    private static void ApplyPhalanxMusterReview(RunShellModel shell, bool expanded)
+    {
+        PlanningModel planning = shell.Planning;
+        int bulwark = planning.MarketOffers.FindIndex(
+            offer => offer.ContentId == "bulwark");
+        ChampionRuleProjection rules = PlayerRuleProjection.Champion(
+            Loadout.Compose(Kits.Chassis["phalanx"]).Def);
+        MarketOfferCardModel offer = MusterOffer(
+            "phalanx", "Phalanx", "FRONTLINE · REACTION", "space",
+            rules.SignatureName, rules.SignatureText, -1, true, expanded);
+        if (bulwark >= 0) planning.MarketOffers[bulwark] = offer;
+        else planning.MarketOffers.Add(offer);
+        planning.Inspector = MusterInspector(expanded, "phalanx");
+    }
+
+    private static MarketOfferCardModel MusterOffer(
+        string id, string title, string classification, string accent,
+        string ruleName, string exactRule, int musterSlot, bool inspected, bool expanded)
+    {
+        string key = "muster:" + id;
+        return new MarketOfferCardModel
+        {
+            Key = key,
+            ContentId = id,
+            Kind = MarketOfferKind.Recruit,
+            Classification = classification,
+            TierLabel = "RANK C",
+            PathTiers = EmptyPathTiers(),
+            MusterSlot = musterSlot,
+            Title = title,
+            Subtitle = "MUSTER",
+            ArtworkResource = "UI/Portraits/" + id,
+            ArtworkFallback = title.Substring(0, 2).ToUpperInvariant(),
+            Accent = accent,
+            RuleLabel = "SIGNATURE",
+            RuleName = ruleName,
+            ExactRule = exactRule,
+            Price = "MUSTER",
+            CurrencyCost = -1,
+            CurrencyBalance = -1,
+            Selected = inspected,
+            Affordable = true,
+            Metrics = new List<StatChipModel>
+            {
+                Fact("HP", "200", PresentationFactId.Hp),
+                Fact("POWER", "5", PresentationFactId.BasicPower),
+                Fact("REACH", "1", PresentationFactId.Reach),
+            },
+            Detail = new CardModel
+            {
+                Key = key,
+                Title = title,
+                AbilityName = ruleName,
+                AbilitySummary = exactRule,
+                Accent = accent,
+            },
+        };
+    }
+
+    private static List<RankTierSlotModel> EmptyPathTiers()
+    {
+        return new List<RankTierSlotModel>
+        {
+            new RankTierSlotModel
+            {
+                Rank = "B", State = RankTierSlotState.Locked, Icon = "◇",
+                Name = "AWAKENS AT RANK B · THE FORK",
+                Rule = "At Rank B this champion forks: a 1-of-2 choice that changes what it IS.",
+            },
+            new RankTierSlotModel
+            {
+                Rank = "A", State = RankTierSlotState.Locked, Icon = "◇",
+                Name = "AWAKENS AT RANK A",
+                Rule = "A 1-of-2 specialization is offered at Rank A.",
+            },
+            new RankTierSlotModel
+            {
+                Rank = "S", State = RankTierSlotState.Locked, Icon = "◇",
+                Name = "AWAKENS AT RANK S",
+                Rule = "A 1-of-2 specialization is offered at Rank S.",
+            },
+        };
+    }
+
+    private static InspectorModel MusterInspector(
+        bool expanded, string chassisId = "bulwark")
+    {
+        bool phalanx = chassisId == "phalanx";
+        UnitDef def = Loadout.Compose(Kits.Chassis[chassisId]).Def;
+        ChampionRuleProjection rules = PlayerRuleProjection.Champion(def);
+        WeaponDef weapon = Weapons.All[phalanx ? "pike" : "towershield"];
+        string mastery = MechanicalRulePresenter.WeaponMastery(weapon).Full;
+        string weaponRule = phalanx
+            ? mastery
+            : "Deals 5 damage every 1.4s at reach 1. 10% critical chance.";
+        var inspector = new InspectorModel
+        {
+            Key = "muster:" + chassisId,
+            Kind = DecisionDetailKind.Recruit,
+            Eyebrow = phalanx
+                ? "CANDIDATE · FRONTLINE · REACTION"
+                : "CANDIDATE · TANK · WARD",
+            Title = phalanx ? "Phalanx" : "Bulwark",
+            Subtitle = "Basic attacks damage enemies",
+            PortraitResource = "UI/Portraits/" + chassisId,
+            PortraitFallback = phalanx ? "PH" : "BU",
+            Accent = phalanx ? "space" : "ward",
+            AbilityIcon = "✸",
+            AbilityTrigger = "SIGNATURE",
+            AbilityName = rules.SignatureName,
+            AbilitySummary = rules.SignatureText,
+            AbilityManaCost = def.ManaMax,
+            PassiveIcon = "⬡",
+            PassiveTrigger = "PASSIVE",
+            PassiveName = rules.PassiveName,
+            PassiveSummary = rules.PassiveText,
+            WeaponName = weapon.Name,
+            WeaponSummary = Expand(weaponRule, expanded),
+            Stats = phalanx
+                ? CombatStats("150", "9", "2", "1.1", "11")
+                : CombatStats("200", "5", "1", "1.4", "16"),
+            WeaponProperty = phalanx
+                ? WeaponProperty(
+                    "BRACE", "BRACE", mastery, mastery)
+                : WeaponProperty(
+                    "SHIELDING BLOWS", "HOLD FAST",
+                    "Attacks grant 3 Shield",
+                    "Basic attacks grant the wielder 3 Shield."),
+            PathTiers = EmptyPathTiers(),
+            KeywordNotes = new List<string>(PlayerRuleProjection.Keywords(def)),
+            // Mirrors RunShell.BuildInspectorSections for a Recruit dossier — the live
+            // muster inspector always carries composed sections.
+            Sections = new List<InspectorSectionModel>
+            {
+                Rule("SIGNATURE", rules.SignatureName, Expand(
+                    rules.SignatureText, expanded),
+                    UiGlyphId.Mana, def.ManaMax.ToString()),
+                Rule("WEAPON", phalanx ? "Brace" : "Tower Shield",
+                    Expand(weaponRule, expanded)),
+                Rule("PASSIVE", rules.PassiveName, rules.PassiveText,
+                    role: InspectorSectionRole.Deferred),
+            },
+            Actions = new List<InspectorActionModel>
+            {
+                new InspectorActionModel
+                {
+                    Id = HallActionId.Buy,
+                    Label = "MUSTER · SLOT 3",
+                    Primary = true,
+                    Enabled = true,
+                },
+            },
+        };
+        // The reported Phalanx screen uses the live unit-sheet anatomy, where Riposte is fully
+        // expanded. Keep that exact renderer in the regression fixture; a deferred one-line row
+        // would let the clipping bug pass without ever laying out the passive copy.
+        if (phalanx) inspector.UnitSheet = FixtureUnitSheet(inspector);
+        return inspector;
+    }
+
+    private static WarbandBarModel MusterBar()
+    {
+        var bar = new WarbandBarModel
+        {
+            Mode = WarbandBarMode.HallEditable,
+            MusterMode = true,
+            FieldCount = 2,
+            FieldCapacity = 3,
+            MaxFieldCapacity = 6,
+            ReserveCount = 0,
+            ReserveCapacity = 2,
+            StoredItems = 0,
+            CanManage = false,
+            CanEdit = false,
+        };
+        string[] picked = { "shade", "berserker" };
+        string[] names = { "Shade", "Berserker" };
+        string[] accents = { "precision", "power" };
+        for (int i = 0; i < 6; i++)
+        {
+            if (i < picked.Length)
+            {
+                UnitDef def = Loadout.Compose(Kits.Chassis[picked[i]]).Def;
+                ChampionRuleProjection rules = PlayerRuleProjection.Champion(def);
+                bar.Field.Add(new WarbandHeroModel
+                {
+                    HeroInstanceId = 900_000_000 + i,
+                    FieldIndex = i,
+                    SlotIndex = i,
+                    ClassName = names[i],
+                    Role = "FIELD",
+                    Rank = "C",
+                    PortraitResource = "UI/Portraits/" + picked[i],
+                    PortraitFallback = names[i].Substring(0, 2).ToUpperInvariant(),
+                    Accent = accents[i],
+                    SignatureIcon = "✦",
+                    SignatureName = rules.SignatureName,
+                    SignatureRule = rules.SignatureText,
+                    SignatureMana = def.ManaMax,
+                    Weapon = new WarbandEquipmentModel
+                    {
+                        Kind = 0, Icon = "⚔",
+                        Name = i == 0 ? "Twin Daggers" : "Greataxe",
+                        Tier = "W",
+                        Rule = "Starter weapon.",
+                        Starter = true,
+                    },
+                    Trinket = new WarbandEquipmentModel
+                    {
+                        Kind = 1, Icon = "◇",
+                        Name = "Empty trinket socket",
+                        Empty = true,
+                    },
+                });
+            }
+            else if (i == picked.Length)
+            {
+                bar.Field.Add(new WarbandHeroModel
+                {
+                    FieldIndex = i,
+                    SlotIndex = i,
+                    Awaiting = true,
+                    AwaitingLabel = "3RD PICK",
+                });
+            }
+            else
+            {
+                bar.Field.Add(new WarbandHeroModel
+                {
+                    FieldIndex = i,
+                    SlotIndex = i,
+                    Empty = i < 3,
+                    Locked = i >= 3,
+                });
+            }
+        }
+        // No reserve at muster: nothing exists to hold back, so the group stays hidden.
+        return bar;
+    }
+
+    /// <summary>Rank-up modal (workbench-frame): Phalanx's real B fork — Pikewall vs
+    /// Lancer — with the awaiting B slot on the card. Mirrors the approved 02 sample.</summary>
+    private static SpecChoiceModel RankUpModalChoice(bool expanded)
+    {
+        return new SpecChoiceModel
+        {
+            Pending = true,
+            HeroName = "Phalanx",
+            RankLabel = "RANK B",
+            Fork = true,
+            FromRank = "C",
+            ToRank = "B",
+            BumpText = "+30 HEALTH · +2 POWER — THEN BIND THE PATH",
+            PortraitResource = "UI/Portraits/phalanx",
+            PortraitFallback = "PH",
+            Accent = "ward",
+            SignatureIcon = "↶",
+            WeaponFilled = true,
+            TrinketFilled = false,
+            PathTiers = new List<RankTierSlotModel>
+            {
+                new RankTierSlotModel
+                {
+                    Rank = "B", State = RankTierSlotState.Pending, Icon = "◈",
+                    Name = "THE FORK",
+                },
+                new RankTierSlotModel
+                {
+                    Rank = "A", State = RankTierSlotState.Locked, Icon = "◇",
+                    Name = "AWAKENS AT RANK A",
+                },
+                new RankTierSlotModel
+                {
+                    Rank = "S", State = RankTierSlotState.Locked, Icon = "◇",
+                    Name = "AWAKENS AT RANK S",
+                },
+            },
+            Options = new List<SpecOptionModel>
+            {
+                RealSpecOption("phalanx.pikewall", "↶", expanded),
+                RealSpecOption("phalanx.lancer", "⟶", expanded),
+            },
+        };
+    }
+
+    private static SpecOptionModel RealSpecOption(
+        string nodeId, string icon, bool expanded)
+    {
+        string chassisId = nodeId.Substring(0, nodeId.IndexOf('.'));
+        ChassisDef chassis = Kits.Chassis[chassisId];
+        UnitDef before = Loadout.Compose(chassis).Def;
+        UnitDef after = Loadout.Compose(
+            chassis, nodes: new[] { Kits.Nodes[nodeId] }).Def;
+        SpecializationRuleProjection rule = PlayerRuleProjection.Specialization(
+            chassisId, nodeId, before, after);
+        var option = new SpecOptionModel
+        {
+            Name = rule.Name,
+            Change = rule.Change.ToString().ToUpperInvariant(),
+            Icon = icon,
+            Text = Expand(rule.Choice, expanded),
+        };
+
+        int? beforeLine = SignatureLine(before);
+        int? afterLine = SignatureLine(after);
+        if (beforeLine.HasValue && afterLine.HasValue &&
+            beforeLine.Value != afterLine.Value)
+            option.Comparisons.Add(new StatComparisonModel
+            {
+                Label = "SIGNATURE LINE",
+                Before = beforeLine.Value <= 0 ? "BOARD" : beforeLine.Value.ToString(),
+                After = afterLine.Value <= 0 ? "BOARD" : afterLine.Value.ToString(),
+            });
+        return option;
+    }
+
+    private static int? SignatureLine(UnitDef unit)
+    {
+        foreach (EffectDef effect in unit.Signature)
+            if (effect.Select.Kind == SelKind.EnemiesOnLineThroughTarget ||
+                effect.Select.Kind == SelKind.EnemiesOnLineThroughFarthest)
+                return effect.Select.Range;
+        return null;
     }
 
     private static WarbandBarModel FullWarbandBar()
@@ -940,14 +1522,28 @@ public static class WorkbenchFixtures
         string label, string value, PresentationFactId id) =>
         new StatChipModel(label, value, id: id);
 
+    private static RuleDeltaModel WeaponProperty(
+        string name, string displayName, string summary, string fullRule,
+        bool applies = true) =>
+        new RuleDeltaModel
+        {
+            RuleName = name,
+            DisplayName = displayName,
+            ShortSummary = summary,
+            FullDescription = fullRule,
+            Icon = "◆",
+            Applies = applies,
+        };
+
     private static List<StatChipModel> CombatStats(
-        string hp, string power, string reach, string cadence) =>
+        string hp, string power, string reach, string cadence, string manaPerHit = "10") =>
         new List<StatChipModel>
         {
             Fact("HP", hp, PresentationFactId.Hp),
             Fact("POWER", power, PresentationFactId.BasicPower),
             Fact("REACH", reach, PresentationFactId.Reach),
             Fact("CADENCE", cadence, PresentationFactId.Cadence),
+            Fact("MANA / HIT", manaPerHit, PresentationFactId.ManaPerSwing),
         };
 
     private static string Expand(string text, bool expanded)

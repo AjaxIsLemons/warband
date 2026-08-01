@@ -3,7 +3,7 @@
 # pipeline (Syncthing + official Unity MCP relay over SSH). See CLAUDE.md + docs/vault/.
 
 .PHONY: help sync-status mcp-test test unity-sim replay scenarios coverage baseline enc boss oath \
-        content-version ship ship-preflight release-status launcher-release site-deploy \
+        content-version release ship ship-preflight release-status launcher-release site-deploy \
         sfx-lint sfx-bake sfx-sheet sfx-density sfx-serve sfx check-client
 
 WIN_SSH       ?= jwjwi@192.168.1.102
@@ -40,7 +40,7 @@ check-client: ## Compile the Unity client's C# headlessly (catches API errors be
 	@python3 tools/check-client-compile.py
 
 # Audio (Design/audio.md §6). Headless, stdlib Python, never touches Unity or Resources/.
-sfx-lint: ## Gate SHIPPED Resources/ clips on the contract. RED until audio.md step 5 promotes the bake — that is the point, not a broken target.
+sfx-lint: ## Gate SHIPPED Resources/ clips on the contract. GREEN since steps 5-6 landed (verified 2026-07-29) — a red run is a real regression now, not the old "expected red".
 	@python3 tools/sfx/sfx.py lint
 
 sfx-bake: ## docs/audio/src → docs/audio/baked: mono, trim to transient, cap, high-pass, normalise
@@ -77,6 +77,11 @@ content-version: ## Print the content fingerprint (ADR 0008) — compare against
 ship: ## Publish the Windows client from the Windows box (run Unity 'Warband/Build Windows Client' first)
 	@WIN_SSH="$(WIN_SSH)" WIN_KEY="$(WIN_KEY)" WIN_BUILDS="$(WIN_BUILDS)" \
 		RELEASES_DIR="$(RELEASES_DIR)" $(SHIP_SCRIPT) ship
+
+release: ## All-in-one: test + sync + build in the open Windows Unity Editor + publish for launchers
+	@WIN_SSH="$(WIN_SSH)" WIN_KEY="$(WIN_KEY)" WIN_DEVICE="$(WIN_DEVICE)" \
+		ST_FOLDER="$(ST_FOLDER)" WIN_BUILDS="$(WIN_BUILDS)" RELEASES_DIR="$(RELEASES_DIR)" \
+		MANIFEST_URL="$(LAUNCHER_MANIFEST_URL)" deploy/release-all.sh
 
 ship-preflight: ## Stage + verify the Windows build without publishing anything
 	@WIN_SSH="$(WIN_SSH)" WIN_KEY="$(WIN_KEY)" WIN_BUILDS="$(WIN_BUILDS)" \

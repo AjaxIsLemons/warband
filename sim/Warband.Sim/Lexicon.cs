@@ -77,6 +77,7 @@ namespace Warband.Sim
                 [StatusKind.Stun] = new LexEntry("Stun", "Cannot act — both the swing and move clocks stop.", LexKind.Control),
                 [StatusKind.Silence] = new LexEntry("Silence", "Cannot cast and gains no mana. Swings continue.", LexKind.Control),
                 [StatusKind.Disarm] = new LexEntry("Disarm", "Cannot swing. Casting continues.", LexKind.Control),
+                [StatusKind.Omitted] = new LexEntry("Omitted", "Outside the active hour. Cannot act or be affected.", LexKind.Control),
                 [StatusKind.Root] = new LexEntry("Root", "Cannot move.", LexKind.Control),
                 [StatusKind.Taunt] = new LexEntry("Taunt", "Forced to attack the taunter, and silenced while it holds.", LexKind.Control),
 
@@ -101,7 +102,7 @@ namespace Warband.Sim
                 [StatusKind.Phase] = new LexEntry("Phase", "Untargetable and immune. Attackers must find someone else.", LexKind.Evasion),
                 [StatusKind.CheatDeath] = new LexEntry("Deathless", "The next lethal blow leaves it standing at 1 HP.", LexKind.Evasion),
 
-                [StatusKind.CounterCharge] = new LexEntry("Riposte", "Ammunition for a counter-swing — spent when one fires.", LexKind.Reaction),
+                [StatusKind.CounterCharge] = new LexEntry("Riposte", "Spend 1 to Counter an incoming basic attack.", LexKind.Reaction),
 
                 [StatusKind.Mark] = new LexEntry("Marked", "A tag with no effect of its own. Other rules read it.", LexKind.Mark),
                 [StatusKind.Mustered] = new LexEntry("Mustered", "Sworn to a captain's Company at placement — its rallies reach this unit anywhere on the field.", LexKind.Mark),

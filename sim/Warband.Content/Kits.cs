@@ -6,6 +6,28 @@ using static Warband.Content.D;
 namespace Warband.Content
 {
     /// <summary>
+    /// One authored specialization pool. The simulation still consumes <see cref="Kits.Offers"/>;
+    /// this typed view lets headless presentation ask which rank owns a node without parsing a
+    /// string key or guessing from the order in which a hero selected nodes.
+    /// </summary>
+    public sealed class SpecOfferRow
+    {
+        public string ChassisId { get; }
+        public Rank Rank { get; }
+        public string? PathId { get; }
+        public IReadOnlyList<string> NodeIds { get; }
+
+        public SpecOfferRow(
+            string chassisId, Rank rank, string? pathId, IReadOnlyList<string> nodeIds)
+        {
+            ChassisId = chassisId;
+            Rank = rank;
+            PathId = pathId;
+            NodeIds = nodeIds;
+        }
+    }
+
+    /// <summary>
     /// The 8 settled kits (dive campaign, Design/dives/*). Every node traces to its dive
     /// doc; magnitudes are placeholder. Where a node needed a shape the sim lacks, the
     /// nearest grammar expression is used and marked SIMPLIFIED — candidates for the
@@ -26,6 +48,8 @@ namespace Warband.Content
         /// </summary>
         public static readonly Dictionary<string, List<string>> Offers = new Dictionary<string, List<string>>();
         public static readonly Dictionary<string, Rank> ForkRanks = new Dictionary<string, Rank>();
+        private static readonly List<SpecOfferRow> OfferRows_ = new List<SpecOfferRow>();
+        public static IReadOnlyList<SpecOfferRow> OfferRows => OfferRows_;
 
         /// <summary>
         /// CANDIDATE content: authored, testable, sweepable — and unreachable in a real run.
@@ -49,8 +73,12 @@ namespace Warband.Content
         public static readonly Dictionary<string, SpecNode> CandidateNodes = new Dictionary<string, SpecNode>();
         public static readonly Dictionary<string, List<string>> CandidateOffers = new Dictionary<string, List<string>>();
 
-        private static void Offer(string chassis, Rank rank, string? path, params string[] nodes) =>
-            Offers[$"{chassis}|{rank}|{path ?? "-"}"] = new List<string>(nodes);
+        private static void Offer(string chassis, Rank rank, string? path, params string[] nodes)
+        {
+            var authored = new List<string>(nodes);
+            Offers[$"{chassis}|{rank}|{path ?? "-"}"] = authored;
+            OfferRows_.Add(new SpecOfferRow(chassis, rank, path, authored));
+        }
 
         /// <summary>Extra pool entries merged onto the live row of the same key when candidates
         /// are enabled. A key with no live row is candidate-only and simply never resolves.</summary>
@@ -567,7 +595,11 @@ namespace Warband.Content
                 // Burning Hours: faster the lower his HP (per 10% missing).
                 StatRules = { Rule(StatKind.AttackSpeed, 100, StatScale.MissingHpPct10) },
                 Signature = new List<EffectDef>(),                   // Frenzy is the trigger below
-                Passives = { On(EventKind.Cast, W(SrcOwner), Status(StatusKind.Frenzied, 0, Self, swings: 4)) },
+                SignatureTriggers =
+                {
+                    On(EventKind.Cast, W(SrcOwner),
+                       Status(StatusKind.Frenzied, 0, Self, swings: 4)),
+                },
             };
             ForkRanks["berserker"] = Rank.B;
             Offer("berserker", Rank.B, null, "berserker.bloodreaver", "berserker.rampager");
@@ -635,11 +667,12 @@ namespace Warband.Content
                 Specializations = { "pike", "towershield" },
                 Passives =
                 {
-                    // Riposte: one charge, refreshed on cast; the answer is directional (law).
+                    // Riposte stacks at combat start and on each cast. An incoming basic attack
+                    // spends one stack; the Counter remains directional (law).
                     AtStart(Status(StatusKind.CounterCharge, 1, Self)),
                     On(EventKind.Cast, W(SrcOwner), Status(StatusKind.CounterCharge, 1, Self)),
                     On(EventKind.Attack, W(TgtOwner, OwnerHas(StatusKind.CounterCharge), RootEv),
-                        Swing(EvSrc, counter: true), Strip(StatusKind.CounterCharge, Self)),
+                        Swing(EvSrc, counter: true), Spend(StatusKind.CounterCharge, Self)),
                 },
                 Signature = { Dmg(Line(3), 12) },                    // Skewer: target + the hex behind
             };
@@ -679,7 +712,7 @@ namespace Warband.Content
                     AtStart(Status(StatusKind.CounterCharge, 1, Allies(1))),
                     On(EventKind.Cast, W(SrcOwner), Status(StatusKind.CounterCharge, 1, Allies(1))),
                     On(EventKind.Attack, W(TgtAlly(), TgtHas(StatusKind.CounterCharge), RootEv),
-                        Swing(EvSrc, counter: true), Strip(StatusKind.CounterCharge, EvTgt)),
+                        Swing(EvSrc, counter: true), Spend(StatusKind.CounterCharge, EvTgt)),
                 },
             });
             Node("phalanx.pikewall.givenoground", new SpecNode // fortified while his Taunt holds someone

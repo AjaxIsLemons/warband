@@ -1,12 +1,14 @@
 # Deep dive #7 — Phalanx (v1.0 SETTLED, 2026-07-23)
 
-Status: **SETTLED** with three Jake amendments: **(1) Leap-Taunt radius 1→2** — now
+Status: **SETTLED** with four Jake amendments: **(1) Leap-Taunt radius 1→2** — now
 exactly his reach, so the punish Counter always connects · **(2) Counter law is
 DIRECTIONAL, not fizzle** — a Counter swings toward the attacker and strikes the first
 enemy within reach on that line (ranged poking him can riposte into their own
 frontline; the outplay is a clear firing line, not just range) · **(3) Skewer
 hex-behind accepted with a flagged worry** — vs spaced backlines the second hex may
-often be empty; playtest watch-item, not a redraw. Champion working name adopted:
+often be empty; playtest watch-item, not a redraw · **(4) Riposte is stackable** —
+combat start and each Signature cast grant 1 Riposte; each incoming basic attack
+spends exactly 1 to Counter. Champion working name adopted:
 **Leonnatos of the Unbroken Line** (Hellenic). Fork law: ✓ — Pikewall ADDs anti-dive
 disruption (the ADR 0003 anti-assassin answer), Lancer DEEPENs line dps. **Second
 consumer of Taunt · first kit that needs Counter built.**
@@ -18,9 +20,10 @@ Fork question: **does the spear hold YOUR line (Pikewall) or break THEIRS (Lance
 
 - **C — recruit** *(reach fighter / melee dps)*. Starter: **Pike** (r2, moderate,
   hits over the front row — the defining stat: he stands BEHIND an ally and still
-  fights). Innate: **Riposte** — *he Counters the first attack made against him; the
-  charge refreshes each time he casts.* **Counter law (settled here): a Counter is an
-  instant free swing TOWARD the attacker — it strikes the attacker if within his
+  fights). Innate: **Riposte** — *combat start and each Signature cast grant 1
+  Riposte; each incoming basic attack spends exactly 1 to Counter.* **Counter law
+  (settled here): a Counter is an instant free swing TOWARD the attacker — it strikes
+  the attacker if within his
   reach, otherwise the first enemy within his reach on the line toward the attacker;
   a clear line means the riposte cuts air.** Signature: **Skewer** — *damage to his
   target and the hex directly behind it* (playtest watch: connect rate of the second
@@ -42,8 +45,9 @@ Fork question: **does the spear hold YOUR line (Pikewall) or break THEIRS (Lance
   sword knocked aside; under the directional law that can be a frontliner eating an
   archer's riposte)*.
 - **Pikewall S:** **The Unbroken Line** [MUSTER] — *allies PLACED adjacent to him gain
-  his Riposte for the fight (ADR 0014): the first attack against each of them is
-  answered by Phalanx (directional law, swung from HIS hex); recharges on his cast* | **Give No Ground** [STATUS] — *while
+  1 Riposte at combat start and whenever he casts (ADR 0014): each incoming basic
+  attack spends 1 and is answered by Phalanx (directional law, swung from HIS hex)* |
+  **Give No Ground** [STATUS] — *while
   at least one enemy is Taunted by him, he takes X% less damage (taunted-by-owner
   condition — 2nd vote w/ Bulwark)*.
 - **Lancer A:** **Overreach** [AUTO] — *his swings also hit the hex directly behind
@@ -80,7 +84,7 @@ no wall bulk).
 ## Sim gaps this dive adds
 **Counter effect** (v1 vocabulary since day 1, first kit that needs it: instant free
 swing, **directional line fallback** — attacker if in reach, else first enemy in reach
-on the line toward the attacker; charge semantics + refresh-on-cast) · Leap-landing
+on the line toward the attacker; stack semantics + one-stack spend) · Leap-landing
 reactive trigger (enemy Leap ends within R — Leap events exist, the listener is new) ·
 Taunt (2nd consumer — Bulwark's spec, still in backlog) · range-exact condition rider
 (Spearpoint) · Disarm-on-Counter rider (Disarm built ✓) · taunted-by-owner condition

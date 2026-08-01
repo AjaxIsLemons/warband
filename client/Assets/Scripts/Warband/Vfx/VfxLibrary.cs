@@ -43,7 +43,13 @@ public static class VfxLibrary
     private static readonly Color Sand = new Color(0.847f, 0.776f, 0.604f);      // #D8C69A
     private static readonly Color SandLit = new Color(1.000f, 0.906f, 0.659f);   // #FFE7A8
 
-    private static Dictionary<string, VfxDef> _recipes;
+    private const string RecipeOverrideResourcesPath = "VFX/Recipes";
+
+    private static Dictionary<string, VfxDef> _builtIns;
+    private static Dictionary<string, VfxDef> _assetOverrides;
+    private static Dictionary<string, VfxDef> _previewOverrides =
+        new Dictionary<string, VfxDef>();
+    private static List<string> _allIds;
     private static readonly HashSet<string> _warned = new HashSet<string>();
 
     /// <summary>The recipe for an id, or null — an unknown id logs ONCE and the caller falls back to
@@ -52,10 +58,106 @@ public static class VfxLibrary
     public static VfxDef Get(string id)
     {
         if (string.IsNullOrEmpty(id)) return null;
-        if (_recipes == null) _recipes = BuildRecipes();
-        if (_recipes.TryGetValue(id, out var def)) return def;
+        EnsureLoaded();
+        if (_previewOverrides.TryGetValue(id, out VfxDef preview)) return preview;
+        if (_assetOverrides.TryGetValue(id, out VfxDef authored)) return authored;
+        if (_builtIns.TryGetValue(id, out VfxDef def)) return def;
         if (_warned.Add(id)) Debug.LogWarning($"[Vfx] unknown recipe '{id}' — falling back to primitives");
         return null;
+    }
+
+    /// <summary>The immutable code-authored fallback, ignoring Lab drafts and asset overrides.</summary>
+    public static VfxDef GetBuiltIn(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        EnsureLoaded();
+        return _builtIns.TryGetValue(id, out VfxDef def) ? def : null;
+    }
+
+    /// <summary>Every usable id, including asset-only recipes, in stable ordinal order.</summary>
+    public static IReadOnlyList<string> AllIds
+    {
+        get
+        {
+            EnsureLoaded();
+            if (_allIds == null)
+            {
+                var ids = new HashSet<string>(_builtIns.Keys);
+                foreach (string id in _assetOverrides.Keys) ids.Add(id);
+                foreach (string id in _previewOverrides.Keys) ids.Add(id);
+                _allIds = new List<string>(ids);
+                _allIds.Sort(System.StringComparer.Ordinal);
+            }
+            return _allIds;
+        }
+    }
+
+    public static bool HasAssetOverride(string id)
+    {
+        EnsureLoaded();
+        return !string.IsNullOrEmpty(id) && _assetOverrides.ContainsKey(id);
+    }
+
+    /// <summary>
+    /// Install an unsaved Lab draft at the top of the resolution stack. This is process-local and
+    /// deliberately never touches an asset or tuning.json.
+    /// </summary>
+    public static void SetPreviewOverride(string id, VfxDef def)
+    {
+        if (string.IsNullOrWhiteSpace(id) || def == null) return;
+        _previewOverrides[id] = def;
+        _allIds = null;
+    }
+
+    public static void ClearPreviewOverride(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return;
+        if (_previewOverrides.Remove(id)) _allIds = null;
+    }
+
+    public static void ClearPreviewOverrides()
+    {
+        if (_previewOverrides.Count == 0) return;
+        _previewOverrides.Clear();
+        _allIds = null;
+    }
+
+    /// <summary>Re-read applied recipe assets after an editor Apply/import.</summary>
+    public static void ReloadAssetOverrides()
+    {
+        EnsureBuiltIns();
+        _assetOverrides = new Dictionary<string, VfxDef>();
+        VfxRecipeAsset[] assets =
+            Resources.LoadAll<VfxRecipeAsset>(RecipeOverrideResourcesPath);
+        System.Array.Sort(
+            assets,
+            (a, b) => System.StringComparer.Ordinal.Compare(
+                a != null ? a.name : "", b != null ? b.name : ""));
+        foreach (VfxRecipeAsset asset in assets)
+        {
+            if (asset == null || !asset.enabledOverride ||
+                string.IsNullOrWhiteSpace(asset.recipeId))
+                continue;
+            string id = asset.recipeId.Trim();
+            if (_assetOverrides.ContainsKey(id) && _warned.Add("override:" + id))
+                Debug.LogWarning(
+                    $"[Vfx] duplicate recipe override '{id}' — '{asset.name}' wins.");
+            VfxDef def = asset.Compile();
+            def.Id = id;
+            _assetOverrides[id] = def;
+        }
+        _allIds = null;
+    }
+
+    private static void EnsureBuiltIns()
+    {
+        if (_builtIns == null) _builtIns = BuildRecipes();
+    }
+
+    private static void EnsureLoaded()
+    {
+        EnsureBuiltIns();
+        if (_assetOverrides == null) ReloadAssetOverrides();
     }
 
     // ---- recipes -------------------------------------------------------------
@@ -686,6 +788,91 @@ public static class VfxLibrary
                 Offset = new Vector3(0f, 0.04f, 0f),
                 Radius = Curve(0f, 0.2f, 0.25f, 0.9f),
                 Alpha = Curve(0f, 0.8f, 0.35f, 0f),
+            }));
+
+        // Revision landings are deliberately T3: this is the run's single direct intervention in
+        // an autonomous battle. Sand is the temporal language; the second lane names what changed.
+        Add(Def("revision-land-future", 0.82f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.Ground,
+                Size = 4.2f, Tier = 3.2f, Tint = SandLit, Thickness = 0.11f, Softness = 0.18f,
+                Offset = new Vector3(0f, 0.07f, 0f),
+                Radius = Curve(0f, 0.04f, 0.20f, 0.85f, 0.82f, 1f),
+                Alpha = Curve(0f, 1f, 0.34f, 0.72f, 0.82f, 0f),
+            },
+            new QuadElement
+            {
+                Shader = ShaderGlow, Orientation = QuadOrientation.Billboard,
+                Size = 2.8f, Tier = 3.4f, Tint = new Color(0.30f, 0.72f, 1f), Falloff = 2.5f,
+                Offset = new Vector3(0f, 1.0f, 0f),
+                Scale = Curve(0f, 0.25f, 0.12f, 1.25f, 0.82f, 1.55f),
+                Alpha = Curve(0f, 1f, 0.18f, 0.86f, 0.82f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 30, Tier = 2.7f, Tint = new Color(0.34f, 0.78f, 1f),
+                Offset = new Vector3(0f, 0.22f, 0f),
+                LifeMin = 0.35f, LifeMax = 0.78f, SpeedMin = 1.4f, SpeedMax = 3.8f,
+                SizeMin = 0.05f, SizeMax = 0.13f, ShapeAngle = 18f, ShapeRadius = 0.7f,
+                ShapeRotation = Up, Gravity = -0.8f, Drag = 0.25f,
+            },
+            new LightElement
+            {
+                Range = 7f, Tier = 3f, Tint = new Color(0.34f, 0.72f, 1f),
+                Offset = new Vector3(0f, 1f, 0f),
+                Intensity = Curve(0f, 0f, 0.08f, 1f, 0.42f, 0.45f, 0.82f, 0f),
+            }));
+
+        Add(Def("revision-land-recall", 0.88f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.Ground,
+                Size = 4.4f, Tier = 3.2f, Tint = SandLit, Thickness = 0.12f, Softness = 0.16f,
+                Offset = new Vector3(0f, 0.07f, 0f),
+                Radius = Curve(0f, 1f, 0.16f, 0.62f, 0.88f, 0.12f),
+                Alpha = Curve(0f, 1f, 0.38f, 0.78f, 0.88f, 0f),
+            },
+            new QuadElement
+            {
+                Shader = ShaderSigil, Orientation = QuadOrientation.Ground,
+                Size = 2.8f, Tier = 2.8f, Tint = VioletHot,
+                Offset = new Vector3(0f, 0.075f, 0f),
+                Rotation = Curve(0f, 0.8f, 0.88f, 0.05f),
+                Scale = Curve(0f, 1.4f, 0.18f, 0.9f, 0.88f, 0.72f),
+                Alpha = Curve(0f, 0.9f, 0.58f, 0.72f, 0.88f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 26, Tier = 2.5f, Tint = VioletHot,
+                Offset = new Vector3(0f, 1.3f, 0f),
+                LifeMin = 0.34f, LifeMax = 0.82f, SpeedMin = 0.7f, SpeedMax = 2.4f,
+                SizeMin = 0.06f, SizeMax = 0.15f, ShapeAngle = 160f, ShapeRadius = 0.7f,
+                ShapeRotation = Up, Gravity = 0.8f, Drag = 0.35f,
+            },
+            new LightElement
+            {
+                Range = 7f, Tier = 2.8f, Tint = VioletHot,
+                Offset = new Vector3(0f, 1f, 0f),
+                Intensity = Curve(0f, 0f, 0.08f, 1f, 0.48f, 0.38f, 0.88f, 0f),
+            }));
+
+        Add(Def("revision-return", 0.52f,
+            new QuadElement
+            {
+                Shader = ShaderRing, Orientation = QuadOrientation.Ground,
+                Size = 2.6f, Tier = 2.2f, Tint = SandLit, Thickness = 0.10f, Softness = 0.2f,
+                Offset = new Vector3(0f, 0.07f, 0f),
+                Radius = Curve(0f, 0.05f, 0.18f, 0.92f),
+                Alpha = Curve(0f, 1f, 0.30f, 0.72f, 0.52f, 0f),
+            },
+            new ParticleElement
+            {
+                Burst = 14, Tier = 1.8f, Tint = VioletHot,
+                Offset = new Vector3(0f, 0.16f, 0f),
+                LifeMin = 0.24f, LifeMax = 0.48f, SpeedMin = 0.8f, SpeedMax = 2.0f,
+                SizeMin = 0.04f, SizeMax = 0.10f, ShapeAngle = 20f, ShapeRadius = 0.42f,
+                ShapeRotation = Up, Gravity = -0.45f,
             }));
 
         return d;

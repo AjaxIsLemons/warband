@@ -30,6 +30,11 @@ namespace Warband.Run
         Reward,
         Complete,
         Defeated,
+        /// <summary>
+        /// The authored run is won, but the player has not yet chosen whether to retire or carry
+        /// the same warband Beyond the Hour. This is saveable and non-terminal.
+        /// </summary>
+        VictoryChoice,
 
         // Compatibility values for older snapshots and the shell landing in parallel. New runs
         // never enter them; the client maps both to the unified Planning workspace while loading.
@@ -227,7 +232,7 @@ namespace Warband.Run
         /// Empty on runs created before this existed, which is treated as "unknown, refuse".
         /// </summary>
         public string ContentVersion = "";
-        public int Act = 1;                      // 1-based
+        public int Act = 1;                      // 1-based; 4+ are virtual endless acts
         public int NodeIndex;                    // 0..NodesPerAct-1; == NodesPerAct means act boss
         public RunPhase Phase = RunPhase.Planning;
         public int Gold;
@@ -250,14 +255,60 @@ namespace Warband.Run
         public int BossWins;                     // plain tally now — NOT a best-of-5 record
         public int BossLosses;
         public NodeKind[][] ActMaps = new NodeKind[0][];   // [act-1][nodeIndex], generated at start
+        public RevisionState Revision = new RevisionState();
 
-        /// <summary>ADR 0016: a completed run is a real PvE victory — every act's boss beaten.
-        /// (Was best-of-5 `BossWins >= 3` under the superseded ghost-boss design.)</summary>
-        public bool Victory => Phase == RunPhase.Complete;
+        /// <summary>
+        /// ADR 0030: the standard victory is banked the instant the Waning Crown falls. It remains
+        /// true through the continuation choice and an eventual endless defeat. `Complete` stays
+        /// accepted for saves written before the explicit banked-victory field existed.
+        /// </summary>
+        public bool VictoryBanked;
+        public bool InEndless;
+        public int EndlessCycles;                // completed three-fight-plus-Crown cycles
+        public int EndlessBeat;                  // combat wins in the current cycle, 0..3
+
+        public bool Victory => VictoryBanked || Phase == RunPhase.Complete;
+        public bool AwaitingEndlessChoice => Phase == RunPhase.VictoryChoice;
+        public bool EndlessDefeat => InEndless && Victory && Phase == RunPhase.Defeated;
 
         public bool Over => Phase == RunPhase.Complete || Phase == RunPhase.Defeated;
 
         public int Sand { get => Gold; set => Gold = value; }
+
+        /// <summary>PERMANENT inscriptions. Additions still land here; timed ones live in
+        /// <see cref="Timed"/> so this list keeps its exact save format and semantics.</summary>
         public List<string> Inscriptions => Banners;
+
+        /// <summary>Inscriptions with a combat countdown running. Separate from
+        /// <see cref="Banners"/> on purpose: a `List&lt;string&gt;` cannot carry a remaining count,
+        /// and keeping the permanent list untouched means every existing save still loads.</summary>
+        public List<TimedInscription> Timed = new List<TimedInscription>();
+
+        /// <summary>What actually rides into battle: permanent + every timed one still breathing.
+        /// Battle prep and the "do you already own this" checks both read THIS, never
+        /// <see cref="Banners"/> alone.</summary>
+        public IEnumerable<string> ActiveInscriptionIds
+        {
+            get
+            {
+                foreach (string id in Banners) yield return id;
+                foreach (var t in Timed) if (t.FightsRemaining > 0) yield return t.Id;
+            }
+        }
+
+        public bool HasInscription(string id) =>
+            Banners.Contains(id) || Timed.Exists(t => t.Id == id && t.FightsRemaining > 0);
+    }
+
+    /// <summary>One inscription counting down in COMBATS. `FightsRemaining` is the number the tray
+    /// shows the player — the remaining count, never the rule (the rule is already on the card).</summary>
+    public sealed class TimedInscription
+    {
+        public string Id = "";
+        public int FightsRemaining;
+
+        /// <summary>The combat index this was taken at, purely so telemetry can answer "did the
+        /// player take timed costs early or late?" without reconstructing it from the trail.</summary>
+        public int TakenAtCombat;
     }
 }

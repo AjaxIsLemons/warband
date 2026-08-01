@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>R1 — Undertow</title>
+<link rel="stylesheet" href="_rw.css">
+<style>
+  /* Every body drags a comet of where it just WAS. During a rewind the tail points the way the
+     unit is being pulled, so direction-of-time is legible from any single frame. */
+  .comet { position:absolute; transform-origin:0 50%; height:26px; border-radius:13px;
+    background:linear-gradient(90deg,
+      rgba(150,215,255,0) 0%, rgba(150,215,255,.30) 45%, rgba(190,235,255,.92) 100%);
+    filter:blur(1px); }
+  .comet.foe { background:linear-gradient(90deg,
+      rgba(255,150,135,0) 0%, rgba(255,150,135,.30) 45%, rgba(255,190,175,.92) 100%); }
+  .step { position:absolute; transform:translate(-50%,-50%); width:74px; height:36px;
+    border-radius:50%; border:2px dashed rgba(190,225,255,.55); }
+  .step.s2 { opacity:.6; } .step.s3 { opacity:.32; }
+
+  /* The single clearest signal that time runs backwards: a body coming BACK. */
+  .unkill { position:absolute; transform:translate(-50%,-50%); }
+  .unkill .ring1, .unkill .ring2 {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    border-radius:50%; border:5px solid rgba(255,255,255,.95); }
+  .unkill .ring1 { width:230px; height:230px; opacity:.35; }
+  .unkill .ring2 { width:140px; height:140px; opacity:.85; }
+  .unkill .lab { position:absolute; left:50%; top:-104px; transform:translateX(-50%);
+    font-size:26px; font-weight:800; letter-spacing:4px; color:#fff; white-space:nowrap;
+    text-shadow:0 0 26px rgba(255,255,255,.95), 0 3px 8px #000; }
+
+  /* Sand falls UP across the whole board while the Hour unwinds. */
+  .grain { position:absolute; width:4px; border-radius:2px;
+    background:linear-gradient(180deg, rgba(233,181,95,0), rgba(255,214,150,.95)); }
+</style>
+<body>
+<div class="board"></div><div class="vig"></div>
+<div class="chrome">
+
+  <!-- allies being hauled backwards -->
+  <div class="comet" style="left:780px; top:1020px; width:250px; transform:rotate(-26deg)"></div>
+  <div class="step s2" style="left:900px; top:970px"></div>
+  <div class="step s3" style="left:1010px; top:930px"></div>
+
+  <div class="comet" style="left:1490px; top:940px; width:210px; transform:rotate(-152deg)"></div>
+  <div class="step s2" style="left:1380px; top:900px"></div>
+
+  <!-- enemies too: everything on the board moves the same way -->
+  <div class="comet foe" style="left:1230px; top:640px; width:230px; transform:rotate(118deg)"></div>
+  <div class="step s2" style="left:1150px; top:750px"></div>
+  <div class="comet foe" style="left:1580px; top:340px; width:180px; transform:rotate(64deg)"></div>
+
+  <!-- the money shot: a unit un-dying as you reach past its death -->
+  <div class="unkill" style="left:1105px; top:500px">
+    <div class="ring1"></div><div class="ring2"></div>
+    <div class="lab">◄ BRAM IS BACK</div>
+  </div>
+
+  <div class="grain" style="left:420px;  top:760px;  height:120px"></div>
+  <div class="grain" style="left:640px;  top:520px;  height:86px; opacity:.7"></div>
+  <div class="grain" style="left:1720px; top:700px;  height:104px; opacity:.8"></div>
+  <div class="grain" style="left:1980px; top:480px;  height:78px; opacity:.6"></div>
+  <div class="grain" style="left:2180px; top:820px;  height:132px; opacity:.75"></div>
+  <div class="grain" style="left:300px;  top:400px;  height:92px; opacity:.55"></div>
+  <div class="grain" style="left:1420px; top:250px;  height:70px; opacity:.5"></div>
+
+  <div class="stone"><u>2s</u></div>
+  <div class="cap"><b>◄◄ UNWRITING</b><i>EVERY BODY IS BEING PULLED BACK</i></div>
+</div>
+</body>
+</html>

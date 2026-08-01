@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>R3 — The Fork</title>
+<link rel="stylesheet" href="_rw.css">
+<style>
+  /* The split beat. Playback halts one tick short of the branch, both futures are drawn for a held
+     moment, then the rejected one shatters and the new Hour runs. This is the beat Jake asked to
+     land: today the branch is struck and play resumes inside ~0.3s. */
+  .seam { position:absolute; left:50%; top:0; bottom:0; width:5px; margin-left:-2px;
+    background:linear-gradient(180deg,
+      rgba(255,240,210,0), rgba(255,240,210,.95) 22%, rgba(255,240,210,.95) 78%, rgba(255,240,210,0));
+    filter:drop-shadow(0 0 30px rgba(255,214,150,1)); }
+
+  .path { position:absolute; transform-origin:0 50%; height:7px; border-radius:4px; }
+  .path.dead { background:repeating-linear-gradient(90deg,
+      rgba(190,196,206,.55) 0 16px, rgba(190,196,206,0) 16px 34px); }
+  .path.live { background:linear-gradient(90deg, rgba(143,227,255,.35), rgba(143,227,255,.98));
+    filter:drop-shadow(0 0 18px rgba(90,200,255,.95)); }
+
+  .tag { position:absolute; transform:translate(-50%,-50%); white-space:nowrap;
+    padding:11px 24px; border-radius:999px; font-size:25px; font-weight:800; letter-spacing:4px; }
+  .tag.dead { background:rgba(22,26,32,.92); color:#AEB6C2;
+    border:3px solid rgba(150,158,172,.7); }
+  .tag.live { background:rgba(143,227,255,.96); color:#04202c;
+    box-shadow:0 0 44px rgba(90,200,255,.95); }
+
+  .shatter { position:absolute; transform:translate(-50%,-50%); }
+  .shatter i { position:absolute; display:block; width:5px; border-radius:3px;
+    background:rgba(200,208,220,.75); transform-origin:50% 0; font-style:normal; }
+
+  .bloom { position:absolute; transform:translate(-50%,-50%);
+    width:300px; height:300px; border-radius:50%;
+    border:6px solid rgba(255,244,214,.95);
+    box-shadow:0 0 90px rgba(255,214,150,.85), inset 0 0 70px rgba(255,214,150,.35); }
+  .bloom2 { position:absolute; transform:translate(-50%,-50%);
+    width:170px; height:170px; border-radius:50%; border:5px solid rgba(255,255,255,.95); }
+
+  .beat { position:absolute; left:50%; top:150px; transform:translateX(-50%); text-align:center; }
+  .beat b { display:block; font-size:66px; font-weight:800; letter-spacing:10px; color:#FFF3D6;
+    text-shadow:0 0 44px rgba(255,200,110,1), 0 4px 10px #000; }
+  .beat i { font-style:normal; font-size:26px; letter-spacing:7px; color:#D9BE8A; }
+</style>
+<body>
+<div class="board"></div><div class="vig"></div>
+<div class="chrome">
+
+  <div class="seam"></div>
+
+  <!-- the future that was witnessed, now being discarded -->
+  <div class="path dead" style="left:1280px; top:560px; width:430px; transform:rotate(28deg)"></div>
+  <div class="tag dead" style="left:1730px; top:790px">THE HOUR YOU WATCHED</div>
+  <div class="shatter" style="left:1560px; top:690px">
+    <i style="height:52px; transform:rotate(18deg)"></i>
+    <i style="height:40px; transform:rotate(62deg) translateX(22px)"></i>
+    <i style="height:64px; transform:rotate(118deg) translateX(-14px)"></i>
+    <i style="height:36px; transform:rotate(-42deg) translateX(30px)"></i>
+    <i style="height:48px; transform:rotate(158deg)"></i>
+  </div>
+
+  <!-- the Hour that is about to run -->
+  <div class="path live" style="left:1280px; top:560px; width:430px; transform:rotate(-30deg)"></div>
+  <div class="tag live" style="left:1740px; top:340px">THE HOUR THAT RUNS</div>
+
+  <div class="bloom" style="left:1280px; top:560px"></div>
+  <div class="bloom2" style="left:1280px; top:560px"></div>
+
+  <div class="beat"><b>THE HOUR SPLITS</b><i>HELD FOR A BEAT — THEN IT RUNS</i></div>
+
+  <div class="cap"><b>−2s</b><i>THE BRANCH TICK · PLAYBACK IS STOPPED HERE</i></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shared.css">
+<style>
+/* r3 — ONE UNIT CARD, three contexts.
+   Jake 2026-07-29: "why wouldn't we show the same cards here — it's basically the
+   unit card". Investigation says: InspectorPanel ALREADY is the shared component
+   (same class, same UXML, same section pipeline; Workbench and combat differ only
+   by DecisionDetailKind and which sections are Primary vs Deferred). So this is not
+   a merge — it is a restyle of one component plus two optional bands.
+
+   BANDS
+     1 IDENTITY   always   crest/portrait · eyebrow · name · subtitle
+     2 FACTS      always   one compact strip; live current/max in combat, static in the Hall
+     3 RULES      always   trigger → effect; Primary in full, Deferred as one-liners
+     4 STATE      combat   TARGETS + LIVE statuses
+     5 DECISION   Hall     price + comparison + action row
+   Width is the ONLY thing that changes between contexts: 440px in the dossier
+   column, 302px floating on the board. Same anatomy, same order, scaled portrait. */
+
+body { background: rgb(9, 13, 20); }
+.sheet { display: flex; gap: 0; padding: 60px 0 0 96px; align-items: flex-start; }
+.col { margin-right: 46px; }
+
+.ctx {
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 13px; letter-spacing: 2.2px; text-transform: uppercase;
+  color: rgb(150, 174, 202); margin-bottom: 4px;
+}
+.ctx-sub {
+  font-size: 11px; letter-spacing: .8px; color: rgb(104, 128, 158); margin-bottom: 11px;
+}
+
+.card { position: relative; padding: 0 0 11px; }
+.card--wide { width: 440px; }
+.card--narrow { width: 302px; }
+
+.card__head { display: flex; gap: 11px; align-items: center; padding: 12px 12px 11px 15px; }
+.card--wide .card__head { padding: 15px 15px 13px 18px; gap: 14px; }
+.card--narrow .bezel { width: 44px; height: 50px; }
+.card--wide .bezel { width: 88px; height: 99px; }
+.card--wide .unit-name { font-size: 31px; }
+.card--narrow .unit-name { font-size: 23px; }
+
+.price {
+  margin-left: auto; align-self: flex-start; display: flex; align-items: center; gap: 5px;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600; font-size: 20px;
+  color: var(--sand); border: 1px solid rgba(217, 164, 58, 0.45);
+  background: rgba(55, 40, 16, 0.55); padding: 3px 9px 2px;
+}
+.card__close {
+  margin-left: auto; align-self: flex-start;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600; font-size: 13px;
+  color: rgb(148, 170, 196); border: 1px solid rgba(110, 140, 174, 0.4); padding: 1px 6px 0;
+}
+
+.facts {
+  display: flex; align-items: baseline;
+  margin: 0 12px 0 15px; padding: 7px 0 8px;
+  border-top: 1px solid rgba(97, 125, 158, 0.26);
+  border-bottom: 1px solid rgba(97, 125, 158, 0.26);
+}
+.card--wide .facts { margin: 0 15px 0 18px; padding: 9px 0 10px; }
+.fact { flex: 1 1 0; min-width: 0; }
+.fact b {
+  display: block; font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 10px; letter-spacing: 1.3px; text-transform: uppercase; color: rgb(126, 146, 172);
+}
+.fact span {
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 19px; line-height: 1.1; color: var(--fc, var(--bone)); white-space: nowrap;
+}
+.card--wide .fact span { font-size: 23px; }
+.fact span small { font-size: 12px; color: rgba(198, 212, 230, 0.6); }
+.f-health { --fc: var(--health); } .f-power { --fc: var(--power); }
+.f-reach  { --fc: var(--reach); }  .f-cadence { --fc: var(--cadence); }
+.f-shield { --fc: var(--shield); } .f-mana { --fc: var(--mana); }
+
+.sec { padding: 10px 12px 0 15px; }
+.card--wide .sec { padding: 12px 15px 0 18px; }
+.sec .section-head { font-size: 11px; letter-spacing: 1.7px; }
+.sec .rule-name { font-size: 16px; margin-top: 3px; }
+.card--wide .sec .rule-name { font-size: 18px; }
+.sec .rule-text { font-size: 12.5px; line-height: 1.4; margin-top: 2px; }
+.card--wide .sec .rule-text { font-size: 13.5px; }
+
+.targets {
+  margin: 10px 12px 0 15px; padding: 6px 9px 7px;
+  background: rgba(23, 38, 55, 0.9); border-left: 2px solid var(--sand);
+}
+.targets b {
+  display: block; font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: rgb(174, 200, 228);
+}
+.targets span { font-size: 13px; color: rgb(228, 236, 246); }
+.targets span i { font-style: normal; color: var(--sand); font-weight: 600; }
+
+.live { margin: 11px 12px 0 15px; padding-top: 9px; border-top: 1px solid rgba(97, 125, 158, 0.26); }
+.live .eyebrow { font-size: 11px; margin-bottom: 6px; }
+
+.spec-line {
+  display: flex; align-items: baseline; gap: 7px;
+  padding: 5px 0 4px; font-size: 12px; color: rgb(146, 165, 189);
+  border-top: 1px solid rgba(97, 125, 158, 0.16);
+}
+.spec-line b {
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600; font-size: 13.5px;
+  letter-spacing: .4px; color: rgb(206, 219, 235);
+  border-bottom: 1px dashed rgba(150, 172, 198, 0.6);
+}
+
+.action {
+  margin: 13px 15px 2px 18px; padding: 11px 0 10px; text-align: center;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 16px; letter-spacing: 1.8px; text-transform: uppercase;
+  color: rgb(12, 18, 27); background: linear-gradient(180deg, rgb(233, 196, 116), rgb(198, 152, 62));
+  border: 1px solid rgba(255, 231, 176, 0.5);
+}
+
+/* band rail — annotation only, never shipped */
+.band {
+  position: absolute; left: -84px; width: 74px; text-align: right;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
+  color: rgba(217, 164, 58, 0.8);
+}
+.band::after {
+  content: ''; position: absolute; right: -10px; top: 5px; width: 6px; height: 1px;
+  background: rgba(217, 164, 58, 0.6);
+}
+</style></head>
+<body>
+<div class="sheet">
+
+  <!-- ============ HALL / WORKBENCH DOSSIER — wide, decision band ============ -->
+  <div class="col">
+    <div class="ctx">Hall &middot; Workbench dossier</div>
+    <div class="ctx-sub">440px column &middot; DecisionDetailKind.Recruit</div>
+    <div class="plate card card--wide">
+      <div class="spine spine--ally"></div>
+      <div class="band" style="top:16px">1 identity</div>
+      <div class="card__head">
+        <div class="bezel bezel--ally">
+          <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png">
+        </div>
+        <div style="min-width:0">
+          <div class="eyebrow">Recruit &middot; Reaction</div>
+          <div class="unit-name">Phalanx</div>
+          <div class="identity-line">Leonnatos of the Unbroken Line</div>
+        </div>
+        <div class="price">&#8987; 12</div>
+      </div>
+
+      <div class="band" style="top:139px">2 facts</div>
+      <div class="facts">
+        <div class="fact f-health"><b>HP</b><span>150</span></div>
+        <div class="fact f-power"><b>Power</b><span>9</span></div>
+        <div class="fact f-reach"><b>Reach</b><span>2</span></div>
+        <div class="fact f-cadence"><b>Cadence</b><span>1.1<small>s</small></span></div>
+      </div>
+
+      <div class="band" style="top:196px">3 rules</div>
+      <div class="sec">
+        <div class="section-head">Signature <span class="trig">35 mana</span></div>
+        <div class="rule-name">Skewer</div>
+        <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Basic attack</div>
+        <div class="rule-name">Pike</div>
+        <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Deferred</div>
+        <div class="spec-line"><b>Riposte</b><span>&mdash; passive, when hit</span></div>
+      </div>
+
+      <div class="band" style="top:474px">5 decision</div>
+      <div class="action">Recruit &middot; &#8987; 12</div>
+    </div>
+  </div>
+
+  <!-- ============ COMBAT — narrow, state band ============ -->
+  <div class="col">
+    <div class="ctx">Combat &middot; ally</div>
+    <div class="ctx-sub">302px floating &middot; DecisionDetailKind.Combatant</div>
+    <div class="plate card card--narrow">
+      <div class="spine spine--ally"></div>
+      <div class="card__head">
+        <div class="bezel bezel--ally">
+          <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png">
+        </div>
+        <div style="min-width:0">
+          <div class="eyebrow">Ally &middot; Reaction</div>
+          <div class="unit-name">Leonnatos</div>
+          <div class="identity-line" style="font-size:12px;margin-top:2px">Phalanx &middot; <b>Rank A</b></div>
+        </div>
+        <div class="card__close">&times;</div>
+      </div>
+
+      <div class="facts">
+        <div class="fact f-health"><b>HP</b><span>118<small>/150</small></span></div>
+        <div class="fact f-shield"><b>Shield</b><span>20</span></div>
+        <div class="fact f-mana"><b>Mana</b><span>28<small>/35</small></span></div>
+        <div class="fact f-power"><b>Power</b><span>9</span></div>
+      </div>
+
+      <div class="band" style="top:167px">4 state</div>
+      <div class="targets"><b>Targets</b><span><i>Nearest</i></span></div>
+
+      <div class="sec">
+        <div class="section-head">Signature <span class="trig">35 mana</span></div>
+        <div class="rule-name">Skewer</div>
+        <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Passive <span class="trig">when hit</span></div>
+        <div class="rule-name">Riposte</div>
+        <div class="rule-text">Spends a stored <span class="kw kw--offense">Riposte</span> to counterattack the attacker.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Basic attack</div>
+        <div class="rule-name">Pike</div>
+        <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Specs</div>
+        <div class="spec-line"><b>Pikewall</b></div>
+        <div class="spec-line"><b>Bracing Line</b></div>
+      </div>
+
+      <div class="live">
+        <div class="eyebrow">Live</div>
+        <div class="statuses">
+          <span class="pill p-ward">Fortified <em>3.0s</em></span>
+          <span class="pill p-control">Mustered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COMBAT / DEPLOY — enemy, role crest ============ -->
+  <div class="col">
+    <div class="ctx">Combat &amp; Deploy &middot; enemy</div>
+    <div class="ctx-sub">302px &middot; authored role crest, no portrait</div>
+    <div class="plate card card--narrow">
+      <div class="spine spine--enemy"></div>
+      <div class="card__head">
+        <div class="bezel bezel--enemy">
+          <div class="crest">
+            <svg viewBox="0 0 100 100" fill="none" stroke="rgb(214,132,104)" stroke-width="7" stroke-linecap="round">
+              <path d="M14 78 L62 30"/><path d="M8 86 L26 86"/>
+              <path d="M30 88 Q62 88 86 44" stroke-width="4.5" stroke-dasharray="7 9" opacity=".75"/>
+              <circle cx="88" cy="34" r="7" fill="rgb(214,132,104)" stroke="none"/>
+            </svg>
+          </div>
+        </div>
+        <div style="min-width:0">
+          <div class="eyebrow eyebrow--enemy">Artillery &middot; Enemy</div>
+          <div class="unit-name" style="font-size:21px">Sanddrift Gunner</div>
+          <div class="identity-line" style="font-size:12px;margin-top:2px">Row 3 &middot; Matchlock Musket</div>
+        </div>
+        <div class="card__close">&times;</div>
+      </div>
+
+      <div class="facts">
+        <div class="fact f-health"><b>HP</b><span>62<small>/85</small></span></div>
+        <div class="fact f-power"><b>Power</b><span>28</span></div>
+        <div class="fact f-reach"><b>Reach</b><span>5</span></div>
+        <div class="fact f-cadence"><b>Cadence</b><span>1.5<small>s</small></span></div>
+      </div>
+
+      <div class="targets"><b>Targets</b><span><i>Farthest</i>, held at <i>5 hexes</i></span></div>
+
+      <div class="sec">
+        <div class="section-head">How it fights</div>
+        <div class="rule-text" style="margin-top:4px">Shoots past your front line at whoever stands
+          <span class="kw kw--space">farthest</span> back, and gives ground to keep that
+          <span class="kw kw--space">reach</span>.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Basic attack</div>
+        <div class="rule-name">Matchlock Musket</div>
+        <div class="rule-text">28 <span class="kw kw--offense">damage</span> every 1.5<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 5.</div>
+      </div>
+      <div class="sec">
+        <div class="section-head">Signature</div>
+        <div class="rule-text" style="margin-top:4px; color:rgb(126,146,172)">None &mdash; it never casts.</div>
+      </div>
+
+      <div class="live">
+        <div class="eyebrow">Live</div>
+        <div class="statuses">
+          <span class="pill p-time">Slow <em>2.0s</em></span>
+          <span class="pill p-burn">Burn <em>14</em></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body></html>

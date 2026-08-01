@@ -1,0 +1,31 @@
+{
+    "asset": "dfcaa21be78cdcd418172eb48ed0fe91",
+    "fileName": "019fb45c-aed9-7412-8110-f4cc237dc383.png",
+    "prompt": "Looking steeply downward into a deep dark chasm beneath a floating slab of land. Far below: massive layered geological strata and drowned masonry, terraced rock shelves and broken stonework descending in receding tiers into total blackness. Extremely desaturated cold blue-grey palette, near-black deepening to slate. One faint warm amber rim light catches only the topmost ledges from behind and above. NO horizon line, NO sky, NO stars, NO clouds, NO landscape at eye level — the viewer looks DOWN into a shaft of darkness. Heavy atmospheric depth haze, low contrast, everything recedes. A quiet background plate that must never pull the eye. Painterly game concept art, muted, moody, uninhabited.",
+    "negativePrompt": "",
+    "model": "gemini-3.0-pro",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

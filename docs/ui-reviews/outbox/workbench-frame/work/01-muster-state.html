@@ -1,0 +1,424 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>workbench-frame · 01 muster state (structural prototype)</title>
+<style>
+  /* Base frame: verbatim from approved workbench-refactor/05-shopfront-obsidian */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    font-family: "Liberation Sans Narrow", "Arial Narrow", "DejaVu Sans", sans-serif;
+    background: #050508; color: #e9e9f2; position: relative;
+  }
+  .wash {
+    position: absolute; inset: 0;
+    background: radial-gradient(1100px 640px at 50% -8%,
+      #14141f 0%, #0a0a10 55%, #050508 100%);
+    border-left: 54px solid rgba(16,16,24,.6); border-right: 54px solid rgba(16,16,24,.6);
+  }
+  .safe { position: absolute; left: 22px; right: 22px; top: 14px; bottom: 200px; }
+
+  .header {
+    height: 46px; display: flex; align-items: center;
+    background: rgba(17,17,26,.82); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 0 12px 0 18px; gap: 18px;
+    box-shadow: 0 10px 34px rgba(0,0,0,.45);
+  }
+  .header .title { font-size: 20px; font-weight: 700; letter-spacing: 4px; color: #f4ecd8;
+                   text-shadow: 0 0 18px rgba(230,185,92,.35); }
+  .header .meta  { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; color: #8f8fa8; }
+  .header .grow { flex: 1; }
+
+  .track { display: flex; align-items: center; gap: 7px; margin-left: 6px; }
+  .tn { width: 21px; height: 21px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.16); background: rgba(26,26,40,.5);
+    color: #8f8fa8; font-size: 10.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .tn.current { border-color: #e6b95c; color: #f2cf74;
+    box-shadow: 0 0 12px rgba(230,185,92,.4); background: rgba(46,35,14,.7); }
+  .tn.ilude { font-size: 9px; }
+  .tn.boss { width: auto; padding: 0 9px; border-radius: 7px; letter-spacing: 1.2px;
+    font-size: 9.5px; }
+
+  /* BEGIN RUN, gated: grey until three are mustered (ignites gold at 3/3) */
+  .begin {
+    height: 36px; padding: 0 20px; display: flex; align-items: center; gap: 8px;
+    background: rgba(26,26,40,.7); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 999px; color: #6d6d8a;
+    font-size: 13px; font-weight: 700; letter-spacing: 1.6px;
+  }
+  .begin .count { color: #8f8fa8; font-size: 12px; }
+
+  .cols { display: flex; gap: 12px; height: 632px; margin-top: 8px; }
+
+  .market {
+    flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px;
+    background: rgba(14,14,22,.66); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+  .market-main { display: flex; gap: 8px; flex: 1; min-height: 0; }
+  .reroll-rail {
+    width: 52px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px;
+    background: rgba(22,22,34,.7); border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+  }
+  .reroll-rail .glyph { font-size: 22px; color: #b9b9d0; }
+  .reroll-rail .letters {
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #b9b9d0;
+    text-align: center; line-height: 15px;
+  }
+  .reroll-rail .cost { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #8f8fa8; }
+
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(2, 1fr); gap: 8px; }
+  .offer {
+    background: rgba(19,19,30,.72); border: 1px solid rgba(255,255,255,.08);
+    border-top: 2px solid var(--accent, #5b7ea9); border-radius: 12px;
+    display: flex; flex-direction: column; padding: 10px 12px 8px; position: relative;
+  }
+  .offer .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+                    color: var(--accent, #8f8fa8); }
+  .offer .name { font-size: 19px; font-weight: 700; color: #f2eee0; margin-top: 3px; }
+  .offer .art {
+    flex: 1; margin-top: 8px; border: 1px solid rgba(255,255,255,.06); border-radius: 8px;
+    background-color: rgba(8,8,14,.8); background-size: cover; background-position: center 20%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .offer .commerce { height: 32px; display: flex; align-items: center;
+                     justify-content: flex-end; gap: 6px;
+                     color: #f0c75e; font-size: 13px; font-weight: 700; }
+  .offer .tierstrip { display: flex; align-items: center; gap: 5px; margin-right: auto;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px; color: #8f8fa8; }
+  .offer .tierstrip .d { font-size: 12px; color: #3c3c52; }
+  /* inspected (drives the dossier) — same language as the shop */
+  .offer.inspected { outline: 2px solid rgba(230,185,92,.9); outline-offset: -1px; }
+  /* mustered (picked into a slot) — gold border + slot badge, no outline */
+  .offer.picked { border-color: rgba(230,185,92,.65);
+    box-shadow: 0 0 0 1px rgba(230,185,92,.55), 0 0 20px rgba(230,185,92,.18); }
+  .offer.picked .slotbadge {
+    position: absolute; top: 8px; right: 10px; width: 24px; height: 24px; border-radius: 50%;
+    background: #e6b95c; color: #221703; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 14px rgba(230,185,92,.4);
+  }
+  .offer.picked .commerce .mustered { color: #f2cf74; letter-spacing: 1px; font-size: 11.5px; }
+  /* the 6th cell: the offer is five — the spare cell carries the instruction */
+  .offer.ghost { border: 1px dashed rgba(255,255,255,.12); border-top-width: 1px;
+    background: rgba(14,14,22,.4); align-items: center; justify-content: center; gap: 8px; }
+  .offer.ghost .gi { font-size: 26px; color: #3c3c52; }
+  .offer.ghost .gt { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #6d6d8a;
+    text-align: center; line-height: 17px; }
+
+  .dossier {
+    width: 466px; display: flex; flex-direction: column;
+    background: rgba(15,15,24,.8); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+  .dossier .kind {
+    height: 30px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; background: rgba(24,24,38,.8);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #7fb0e8;
+  }
+  .dossier .kind .rank { color: #8f8fa8; }
+  .banner {
+    height: 132px; position: relative; background-size: cover; background-position: center 18%;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .banner .scrim { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(7,12,19,0) 30%, rgba(10,10,16,.94) 100%); }
+  .banner .id { position: absolute; left: 12px; bottom: 8px; }
+  .banner .name { font-size: 26px; font-weight: 700; color: #f2eee0; letter-spacing: 1px; }
+  .banner .sub { font-size: 12px; color: #a9a9c2; margin-top: 1px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 4px; }
+  .chip {
+    width: 104px; height: 42px; border-radius: 8px; padding: 4px 8px;
+    border: 1px solid; display: flex; flex-direction: column; justify-content: center;
+  }
+  .chip .l { font-size: 9px; font-weight: 700; letter-spacing: 1px; opacity: .85; }
+  .chip .v { font-size: 16px; font-weight: 700; color: #f2eee0; }
+  .c-hp   { background: rgba(90,28,30,.55);  border-color: #a04043; color: #e88d8f; }
+  .c-pow  { background: rgba(96,55,14,.55);  border-color: #b07430; color: #eda953; }
+  .c-rea  { background: rgba(18,48,88,.55);  border-color: #3c6ca8; color: #7fb0e8; }
+  .c-cad  { background: rgba(58,32,86,.55);  border-color: #7a4fb0; color: #b48ad6; }
+  .c-mana { background: rgba(10,64,66,.55);  border-color: #2f8d90; color: #5fc9cc; }
+  .c-crit { background: rgba(96,55,14,.55);  border-color: #b07430; color: #eda953; }
+  .sect { padding: 10px 12px 0; }
+  .sect .label { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+  .sect .label .mana { color: #5fc9cc; }
+  .sect .rule-name { font-size: 17px; font-weight: 700; color: #f2eee0; margin-top: 3px; }
+  .sect .rule { font-size: 13.5px; color: #a9a9c2; margin-top: 3px; line-height: 18px; }
+  .sect .rule em { font-style: normal; color: #eda953; font-weight: 700; }
+  .sect .rule b  { color: #7fb0e8; }
+  .deferred {
+    margin: 10px 12px 0; padding: 7px 10px; display: flex; align-items: center; gap: 8px;
+    background: rgba(26,26,40,.7); border-left: 3px solid #e6b95c; border-radius: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #cfe0f2;
+  }
+  .deferred .t { color: #8f8fa8; }
+  .path { margin: 10px 12px 0; border-top: 1px solid rgba(255,255,255,.07); padding-top: 8px; }
+  .path .label { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+  .prow { display: flex; gap: 9px; align-items: flex-start; padding: 5px 0 3px; }
+  .prow .pl { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    border: 1px solid rgba(230,185,92,.65); border-radius: 6px; color: #f2cf74;
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .prow.empty .pl { border: 1px dashed rgba(255,255,255,.16); color: #4a4a66; }
+  .prow .pn { font-size: 13.5px; font-weight: 700; color: #f2eee0; }
+  .prow .pr { font-size: 12px; color: #a9a9c2; margin-top: 1px; line-height: 15px; }
+  .prow.empty .pn { color: #6d6d8a; font-size: 11.5px; letter-spacing: 1.2px; margin-top: 3px; }
+  .dossier .grow { flex: 1; }
+  .actions { display: flex; gap: 8px; padding: 10px 12px;
+             border-top: 1px solid rgba(255,255,255,.07); }
+  .actions .btn {
+    flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 1px; color: #d5d5e8;
+    background: rgba(26,26,40,.6); text-align: center;
+  }
+  /* the muster action is THE button — gold, singular */
+  .actions .btn.primary {
+    background: rgba(46,35,14,.75); border-color: rgba(230,185,92,.6); color: #f2cf74;
+    font-size: 12.5px; letter-spacing: 1.6px;
+    box-shadow: 0 0 22px rgba(230,185,92,.18);
+  }
+
+  .rail {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 186px;
+    background: rgba(10,10,16,.94); border-top: 1px solid rgba(255,255,255,.07);
+    display: flex; align-items: center; padding: 0 10px; gap: 10px;
+  }
+  .rail .identity { width: 150px; padding-left: 8px; }
+  .rail .identity .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; color: #8f8fa8; }
+  .rail .identity .cap { font-size: 20px; font-weight: 700; color: #f2eee0; margin: 4px 0; }
+  .rail .identity .manage { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #e6b95c; }
+  .rail .slots { display: flex; gap: 8px; flex: 1; justify-content: center; }
+
+  .ucard {
+    width: 148px; height: 166px; background: rgba(19,19,30,.8);
+    border: 1px solid rgba(255,255,255,.09); border-radius: 12px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  .ucard .portrait { height: 78px; background-size: cover; background-position: center 15%;
+                     position: relative; }
+  .ucard .rankb {
+    position: absolute; top: 5px; left: 5px; width: 22px; height: 22px; border-radius: 50%;
+    background: #e6b95c; color: #221703; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ucard .uname {
+    height: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; color: #e8eef6;
+    background: rgba(26,26,40,.85);
+  }
+  .srow { display: flex; justify-content: center; gap: 6px; padding-top: 6px; }
+  .slot {
+    width: 30px; height: 26px; border: 1px solid rgba(255,255,255,.12); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; background: rgba(26,26,40,.6); position: relative;
+  }
+  .slot.filled { border-color: rgba(230,185,92,.65); color: #f2cf74;
+                 box-shadow: 0 0 12px rgba(230,185,92,.15); }
+  .slot.empty { color: #4a4a66; border-style: dashed; }
+  .slot .tier { position: absolute; right: 1px; bottom: 0; font-size: 8px; color: #8f8fa8; }
+  .slot.perk { font-size: 11px; font-weight: 700; }
+  .slot.perk.empty { color: #4a4a66; }
+
+  .ucard.lockedcard { opacity: .55; align-items: center; justify-content: center; gap: 6px; }
+  .ucard.lockedcard .num { width: 24px; height: 24px; border-radius: 50%; background: #e6b95c;
+    color: #221703; font-weight: 700; font-size: 13px; display: flex; align-items: center;
+    justify-content: center; }
+  .ucard.lockedcard .d { font-size: 20px; color: #4a4a66; }
+  .ucard.lockedcard .t { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #8f8fa8; }
+
+  /* the third seat: an open invitation, not a locked slot */
+  .ucard.awaiting { opacity: 1; border: 1px dashed rgba(230,185,92,.55);
+    background: rgba(30,26,16,.35); align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 0 18px rgba(230,185,92,.1); }
+  .ucard.awaiting .num { width: 24px; height: 24px; border-radius: 50%; background: #e6b95c;
+    color: #221703; font-weight: 700; font-size: 13px; display: flex; align-items: center;
+    justify-content: center; box-shadow: 0 0 14px rgba(230,185,92,.4); }
+  .ucard.awaiting .d { font-size: 20px; color: #8a7647; }
+  .ucard.awaiting .t { font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+    color: #c9a75e; text-align: center; line-height: 15px; }
+
+  .rail .reserve { display: flex; align-items: center; gap: 8px; }
+  .rail .reserve .rlabel { font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: #8f8fa8; text-align: center; line-height: 15px; }
+
+  .note { position: absolute; right: 30px; top: 1px; font-size: 9px; color: #3c3c52;
+          letter-spacing: 1px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wash"></div>
+<div class="safe">
+
+  <div class="header">
+    <div><span class="title">MUSTER YOUR WARBAND</span></div>
+    <div class="meta">BEFORE ACT 1</div>
+    <div class="track">
+      <span class="tn current">1</span>
+      <span class="tn ilude">◆</span>
+      <span class="tn">3</span>
+      <span class="tn">4</span>
+      <span class="tn">5</span>
+      <span class="tn boss">BOSS</span>
+    </div>
+    <div class="grow"></div>
+    <div class="begin">BEGIN RUN <span class="count">· 2 / 3 MUSTERED</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="market">
+      <div class="market-main">
+      <div class="reroll-rail">
+        <div class="glyph">↻</div>
+        <div class="letters">R<br>E<br>R<br>O<br>L<br>L</div>
+        <div class="cost">FREE</div>
+      </div>
+      <div class="grid">
+        <div class="offer picked" style="--accent:#b48ad6;">
+          <div class="eyebrow">DIVER · PRECISION</div>
+          <div class="name">Shade</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/shade.png');"></div>
+          <div class="commerce">
+            <div class="tierstrip"><span>RANK C</span>
+              <span class="d">◇</span><span class="d">◇</span><span class="d">◇</span></div>
+            <span class="mustered">✓ MUSTERED</span>
+          </div>
+          <div class="slotbadge">1</div>
+        </div>
+        <div class="offer picked" style="--accent:#cf5a52;">
+          <div class="eyebrow">BRUISER · TEMPO</div>
+          <div class="name">Berserker</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/berserker.png');"></div>
+          <div class="commerce">
+            <div class="tierstrip"><span>RANK C</span>
+              <span class="d">◇</span><span class="d">◇</span><span class="d">◇</span></div>
+            <span class="mustered">✓ MUSTERED</span>
+          </div>
+          <div class="slotbadge">2</div>
+        </div>
+        <div class="offer inspected" style="--accent:#4fa3d9;">
+          <div class="eyebrow">TANK · WARD</div>
+          <div class="name">Bulwark</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/bulwark.png');"></div>
+          <div class="commerce">
+            <div class="tierstrip"><span>RANK C</span>
+              <span class="d">◇</span><span class="d">◇</span><span class="d">◇</span></div>
+          </div>
+        </div>
+        <div class="offer" style="--accent:#57b06a;">
+          <div class="eyebrow">HEALER · MENDER</div>
+          <div class="name">Cleric</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/cleric.png');"></div>
+          <div class="commerce">
+            <div class="tierstrip"><span>RANK C</span>
+              <span class="d">◇</span><span class="d">◇</span><span class="d">◇</span></div>
+          </div>
+        </div>
+        <div class="offer" style="--accent:#eda953;">
+          <div class="eyebrow">SNIPER · POWER</div>
+          <div class="name">Sharpshot</div>
+          <div class="art" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/sharpshot.png');"></div>
+          <div class="commerce">
+            <div class="tierstrip"><span>RANK C</span>
+              <span class="d">◇</span><span class="d">◇</span><span class="d">◇</span></div>
+          </div>
+        </div>
+        <div class="offer ghost">
+          <div class="gi">✶</div>
+          <div class="gt">CHOOSE THREE CHAMPIONS<br>HOVER A STAT OR RULE<br>FOR EXACT MECHANICS</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="dossier">
+      <div class="kind"><span>CANDIDATE · TANK · WARD</span><span class="rank">RANK C</span></div>
+      <div class="banner" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/bulwark.png');">
+        <div class="scrim"></div>
+        <div class="id">
+          <div class="name">Bulwark</div>
+          <div class="sub">Basic attacks damage enemies</div>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip c-hp"><div class="l">HEALTH</div><div class="v">200</div></div>
+        <div class="chip c-pow"><div class="l">POWER</div><div class="v">5</div></div>
+        <div class="chip c-rea"><div class="l">REACH</div><div class="v">1</div></div>
+        <div class="chip c-cad"><div class="l">CADENCE</div><div class="v">1.4s</div></div>
+        <div class="chip c-mana"><div class="l">MANA / HIT</div><div class="v">16</div></div>
+        <div class="chip c-mana"><div class="l">MANA</div><div class="v">30</div></div>
+        <div class="chip c-crit"><div class="l">CRIT</div><div class="v">10%</div></div>
+      </div>
+      <div class="sect">
+        <div class="label">SIGNATURE · <span class="mana">◈ 30 MANA</span></div>
+        <div class="rule-name">Shield Slam</div>
+        <div class="rule">The nearest enemy takes 10 <em>damage</em> and is <em>Stunned</em> for 1.0s.</div>
+      </div>
+      <div class="sect">
+        <div class="label">BASIC ATTACK</div>
+        <div class="rule-name">Tower Shield</div>
+        <div class="rule">Deals 5 <em>damage</em> every 1.4s at <b>reach</b> 1. 10% critical chance.</div>
+      </div>
+      <div class="deferred"><span>⬡</span><span class="t">PASSIVE · COMBAT START</span><span>BASTION</span></div>
+      <div class="path">
+        <div class="label">PATH</div>
+        <div class="prow empty">
+          <div class="pl">B</div>
+          <div><div class="pn">AWAKENS AT RANK B · THE FORK</div></div>
+        </div>
+        <div class="prow empty">
+          <div class="pl">A</div>
+          <div><div class="pn">AWAKENS AT RANK A</div></div>
+        </div>
+        <div class="prow empty">
+          <div class="pl">S</div>
+          <div><div class="pn">AWAKENS AT RANK S</div></div>
+        </div>
+      </div>
+      <div class="grow"></div>
+      <div class="actions">
+        <div class="btn primary">MUSTER · SLOT 3</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rail">
+  <div class="identity">
+    <div class="eyebrow">WARBAND</div>
+    <div class="cap">MUSTER 2 / 3</div>
+    <div class="manage">PICK YOUR THREE</div>
+  </div>
+  <div class="slots">
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/shade.png');"><div class="rankb">C</div></div>
+      <div class="uname">SHADE</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard">
+      <div class="portrait" style="background-image:url('file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/berserker.png');"><div class="rankb">C</div></div>
+      <div class="uname">BERSERKER</div>
+      <div class="srow"><div class="slot filled">✦</div><div class="slot filled">⚔<span class="tier">W</span></div><div class="slot empty">◇</div></div>
+      <div class="srow"><div class="slot perk empty">B</div><div class="slot perk empty">A</div><div class="slot perk empty">S</div></div>
+    </div>
+    <div class="ucard awaiting"><div class="num">3</div><div class="d">◇</div><div class="t">CHOOSE YOUR<br>THIRD</div></div>
+    <div class="ucard lockedcard"><div class="num">4</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">5</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+    <div class="ucard lockedcard"><div class="num">6</div><div class="d">◇</div><div class="t">LOCKED</div></div>
+  </div>
+  <div class="reserve">
+    <div class="rlabel">RESERVE<br>0 / 2</div>
+    <div class="ucard lockedcard" style="opacity:.8;"><div class="num" style="background:#3c6ca8;color:#eaf2fc;">1</div><div class="d">+</div><div class="t">OPEN</div></div>
+    <div class="ucard lockedcard" style="opacity:.8;"><div class="num" style="background:#3c6ca8;color:#eaf2fc;">2</div><div class="d">+</div><div class="t">OPEN</div></div>
+  </div>
+</div>
+
+<div class="note">STRUCTURAL PROTOTYPE · MUSTER STATE · 1600×900</div>
+</body>
+</html>

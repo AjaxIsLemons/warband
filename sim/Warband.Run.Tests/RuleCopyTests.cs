@@ -74,11 +74,12 @@ namespace Warband.Run.Tests
         public void RuleCopyHandlesTheComposerSIdShapes()
         {
             Assert.Equal("Greataxe mastery", ContentLexicon.Rule("Greataxe/mastery").Name);
-            Assert.Equal("Berserker", ContentLexicon.Rule("berserker").Name);
+            Assert.Equal("Burning Hours", ContentLexicon.Rule("berserker").Name);
+            Assert.Equal("Frenzy", ContentLexicon.Rule("berserker/signature").Name);
             // A weapon or trinket name is already display text and is passed through untouched.
             Assert.Equal("Twin Daggers", ContentLexicon.Rule("Twin Daggers").Name);
             // The "#2" suffix names WHICH rule from a source that contributes several.
-            Assert.Equal("Berserker 2", ContentLexicon.Rule("berserker#2").Name);
+            Assert.Equal("Burning Hours 2", ContentLexicon.Rule("berserker#2").Name);
             // Never throws, never empty.
             Assert.False(string.IsNullOrEmpty(ContentLexicon.Rule("").Name));
             Assert.False(string.IsNullOrEmpty(ContentLexicon.Rule("nonsense.made.up").Name));

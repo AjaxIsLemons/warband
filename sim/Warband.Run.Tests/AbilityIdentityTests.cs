@@ -44,7 +44,7 @@ namespace Warband.Run.Tests
         [Fact]
         public void DisplayNameReadsTheContentLexicon()
         {
-            Assert.Equal("Pyromancer", AbilityIdentity.DisplayName("pyromancer"));
+            Assert.Equal("Fire Glyph", AbilityIdentity.DisplayName("pyromancer"));
             Assert.Equal(ContentLexicon.Node("pyromancer.inferno").Name,
                 AbilityIdentity.DisplayName("pyromancer.inferno"));
             Assert.Equal("mystery.ability", AbilityIdentity.DisplayName("mystery.ability"));

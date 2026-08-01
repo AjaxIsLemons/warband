@@ -101,6 +101,15 @@ public sealed class FieldView
     /// </summary>
     public float FillEmphasis = 1f;
 
+    /// <summary>
+    /// Optional identity channels for planning overlays. Combat fields leave these at their
+    /// defaults; overlapping muster footprints use concentric radii plus different arc gaps so
+    /// ownership does not depend on hue alone.
+    /// </summary>
+    public float RimRadiusScale = 1f;
+    public float? RimArcOverride;
+    public float RimRotationOffset;
+
     /// <summary><paramref name="startAge"/> is how long this field has ALREADY existed in FX
     /// seconds. Live playback passes ~0 (the field just appeared), but a frozen scrub builds every
     /// field the fold currently holds at once — without this, a capture at tick 60 would show a
@@ -314,13 +323,16 @@ public sealed class FieldView
             var c = color;
             c.a = fx.fieldEdgeAlpha * fade * rimBoost * Flicker(look, p.H) * Emphasis;
             p.Mpb.SetColor(ColorId, c);
-            p.Mpb.SetFloat(RadiusId, RimRadius);
+            p.Mpb.SetFloat(RadiusId, RimRadius * Mathf.Clamp(RimRadiusScale, 0.4f, 1f));
             p.Mpb.SetFloat(ThicknessId, look.Thickness);
             p.Mpb.SetFloat(SoftnessId, 0.12f);
             // The trace IS the arc filling in. Past the spawn it holds at the flavor's own arc, so
             // Debuff keeps a gap that its rotation turns into a walking dash.
-            p.Mpb.SetFloat(ArcFillId, Mathf.Min(edge, look.Arc));
-            p.Mpb.SetFloat(RotationId, spin);
+            float arc = RimArcOverride.HasValue
+                ? Mathf.Clamp01(RimArcOverride.Value)
+                : look.Arc;
+            p.Mpb.SetFloat(ArcFillId, Mathf.Min(edge, arc));
+            p.Mpb.SetFloat(RotationId, Mathf.Repeat(spin + RimRotationOffset, 1f));
             p.R.SetPropertyBlock(p.Mpb);
         }
 

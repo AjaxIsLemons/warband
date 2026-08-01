@@ -302,11 +302,61 @@
 }
 
 .market-offer-card__price {
-    margin-left: 8px;
+    margin-left: 0;
     color: var(--lh-sand);
     font-size: 18px;
     -unity-font-style: bold;
     white-space: nowrap;
+}
+
+.market-offer-card__price-button {
+    min-width: 70px;
+    min-height: 34px;
+    margin-left: 8px;
+    padding-left: 5px;
+    padding-right: 5px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.market-offer-card__buy-label {
+    margin-right: 5px;
+    color: rgb(7, 16, 25);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
+.market-offer-card--selected .market-offer-card__price-button {
+    background-color: rgb(104, 165, 231);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(184, 218, 255, 0.94);
+    border-right-color: rgba(184, 218, 255, 0.94);
+    border-top-color: rgba(184, 218, 255, 0.94);
+    border-bottom-color: rgba(184, 218, 255, 0.94);
+}
+
+.market-offer-card--selected .market-offer-card__price-button:hover:enabled,
+.market-offer-card--selected .market-offer-card__price-button:focus:enabled {
+    background-color: rgb(126, 184, 244);
+}
+
+.market-offer-card--selected .market-offer-card__price-button
+    .market-offer-card__price {
+    color: rgb(7, 16, 25);
 }
 
 .market-offer-card__selection {

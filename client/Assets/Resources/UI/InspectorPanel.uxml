@@ -21,6 +21,10 @@
             </ui:VisualElement>
             <ui:VisualElement name="detail" class="wb-inspector__detail">
                 <ui:VisualElement name="stats" class="wb-inspector__stats" />
+                <ui:VisualElement name="targeting" class="wb-targeting">
+                    <ui:Label text="TARGETS" class="wb-targeting__label" />
+                    <ui:Label name="targeting-value" class="wb-targeting__value" />
+                </ui:VisualElement>
                 <ui:VisualElement name="rank-up-body" class="wb-rank-up">
                     <ui:VisualElement name="rank-up-gains" class="wb-rank-up__gains" />
                     <ui:VisualElement class="wb-rank-up__tier-row">
@@ -37,6 +41,10 @@
                     <ui:VisualElement name="profile-column" class="wb-inspector__column wb-inspector__column--profile">
                         <ui:VisualElement name="sections" class="wb-inspector__sections" />
                         <ui:VisualElement name="deferred" class="wb-inspector__deferred" />
+                        <ui:VisualElement name="path" class="wb-path">
+                            <ui:Label text="SPECS" class="wb-path__label" />
+                            <ui:VisualElement name="path-rows" class="wb-path__rows" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="equipment-preview" class="wb-equipment-preview">
                         <ui:Label text="PREVIEW ON WARBAND" class="wb-inspector__section-label wb-equipment-preview__label" />

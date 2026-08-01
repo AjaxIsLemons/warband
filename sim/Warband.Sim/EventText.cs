@@ -39,6 +39,12 @@ namespace Warband.Sim
                         : $"Rule OFF: {Nm(e.Source)} rule #{e.Aux}";
                 case EventKind.RuleProgress:
                     return $"Count: rule #{e.Aux} at {e.Amount}/{e.Aux2}";
+                case EventKind.RevisionApplied:
+                    return $"REVISION {(RevisionEffectKind)e.Amount}: {Nm(e.Target)}";
+                case EventKind.UnitOmitted:
+                    return $"OMITTED until t{e.Amount}: {Nm(e.Target)}";
+                case EventKind.UnitReturned:
+                    return $"RETURNED: {Nm(e.Target)}";
 
                 case EventKind.MoveStart:
                     return $"Step: {Nm(e.Source)} → {Hex(e.Amount, e.Aux)} ({e.Aux2}t)";

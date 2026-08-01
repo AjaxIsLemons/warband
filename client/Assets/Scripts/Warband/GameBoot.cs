@@ -50,15 +50,13 @@ public static class GameBoot
 
     private static void Boot()
     {
-        var player = Object.FindFirstObjectByType<ReplayPlayer>();
-
         // The shell owns the game. It is spawned FIRST so that anything it needs to configure —
         // the board included — is configured before other systems observe it.
         Spawn<RunShell>("~RunShell");
 
-        // Dev cockpit and hover card come last: both read state the others own, and neither
-        // should ever be the reason a frame of gameplay behaves differently.
-        if (player != null) Spawn<Tooltip>("~Tooltip");
+        // The dev cockpit comes last: it reads state the others own, and it should never be the
+        // reason a frame of gameplay behaves differently. The hover card that used to spawn here
+        // was deleted 2026-07-29 — unit inspection is one pinned card, opened by click.
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         Spawn<DebugMenu>("~DebugMenu");
 #endif

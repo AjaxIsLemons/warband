@@ -1,0 +1,462 @@
+@font-face {
+  font-family: "Inter";
+  src: url("../../../../../client/Assets/Resources/UI/Fonts/Inter-Variable.ttf");
+}
+@font-face {
+  font-family: "Barlow";
+  src: url("../../../../../client/Assets/Resources/UI/Fonts/BarlowCondensed-SemiBold.ttf");
+  font-weight: 600;
+}
+
+:root {
+  --ink: rgb(7, 11, 18);
+  --plate: rgba(11, 17, 27, .985);
+  --panel: rgba(15, 24, 38, .94);
+  --line: rgba(87, 114, 147, .52);
+  --bone: rgb(242, 239, 231);
+  --copy: rgb(199, 210, 224);
+  --muted: rgb(157, 176, 199);
+  --health: rgb(244, 153, 155);
+  --shield: rgb(101, 218, 215);
+  --mana: rgb(91, 216, 213);
+  --power: rgb(244, 163, 94);
+  --cadence: rgb(202, 177, 245);
+  --reach: rgb(121, 191, 255);
+  --spec: rgb(242, 207, 116);
+}
+
+* { box-sizing: border-box; }
+html, body { width: 1600px; height: 900px; margin: 0; overflow: hidden; }
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--bone);
+  background: #111927 url("../../../../../client/McpCaptures/board-live-t46.png") center/cover no-repeat;
+}
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 9, 15, .34), transparent 18%, transparent 82%, rgba(5, 9, 15, .38));
+}
+
+.combat-chrome {
+  position: absolute;
+  z-index: 3;
+  left: 22px;
+  right: 22px;
+  top: 18px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border: 1px solid rgba(108, 135, 166, .42);
+  background: rgba(8, 12, 20, .88);
+}
+.combat-chrome b {
+  font: 600 25px "Barlow", sans-serif;
+  letter-spacing: 1.5px;
+}
+.combat-chrome span {
+  margin-left: 22px;
+  color: var(--muted);
+  font: 600 14px "Barlow", sans-serif;
+  letter-spacing: 1.3px;
+}
+.combat-chrome time {
+  margin-left: auto;
+  color: var(--mana);
+  font: 600 28px "Barlow", sans-serif;
+}
+
+.mode-note {
+  position: absolute;
+  z-index: 4;
+  right: 28px;
+  top: 86px;
+  padding: 6px 10px;
+  color: rgb(192, 209, 229);
+  background: rgba(9, 15, 24, .9);
+  border: 1px solid rgba(96, 126, 160, .5);
+  font: 600 12px "Barlow", sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.unit-ring {
+  position: absolute;
+  z-index: 3;
+  left: 490px;
+  top: 556px;
+  width: 70px;
+  height: 52px;
+  border: 3px solid rgba(104, 165, 231, .95);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(104, 165, 231, .45);
+}
+.tether {
+  position: absolute;
+  z-index: 3;
+  left: 400px;
+  top: 574px;
+  width: 98px;
+  height: 2px;
+  transform: rotate(7deg);
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(104,165,231,.92), rgba(104,165,231,.3));
+}
+
+.card {
+  position: absolute;
+  z-index: 5;
+  left: 20px;
+  top: 92px;
+  width: 388px;
+  max-height: 788px;
+  overflow: hidden;
+  background: var(--plate);
+  border: 1px solid rgba(113, 145, 181, .68);
+  border-left: 4px solid rgb(74, 139, 210);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .48);
+}
+.card.enemy { border-left-color: rgb(200, 91, 67); }
+
+.identity {
+  position: relative;
+  height: 82px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.identity img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+  filter: saturate(.9) brightness(.83);
+}
+.identity::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 11, 18, .12) 25%, rgba(7, 11, 18, .92) 77%),
+              linear-gradient(0deg, rgba(7, 11, 18, .88), transparent 72%);
+}
+.identity-copy {
+  position: absolute;
+  z-index: 2;
+  left: 16px;
+  bottom: 11px;
+}
+.identity-copy small {
+  display: block;
+  margin-bottom: 1px;
+  color: rgb(165, 191, 220);
+  font: 600 11px "Barlow", sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.identity-copy h1 {
+  margin: 0;
+  font: 600 27px/1 "Barlow", sans-serif;
+  letter-spacing: .4px;
+}
+.identity .rank {
+  position: absolute;
+  z-index: 2;
+  right: 45px;
+  bottom: 11px;
+  padding: 3px 8px;
+  color: rgb(219, 233, 246);
+  border: 1px solid rgb(127, 168, 206);
+  background: rgba(28, 42, 58, .96);
+  font: 600 14px "Barlow", sans-serif;
+}
+.close {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  top: 9px;
+  width: 26px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  color: rgb(177, 197, 220);
+  border: 1px solid rgba(115, 145, 180, .5);
+  background: rgba(7, 12, 20, .84);
+  font-size: 18px;
+}
+
+.core {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 7px 13px;
+  border-bottom: 1px solid var(--line);
+}
+.core-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  white-space: nowrap;
+}
+.core-stat i {
+  color: var(--health);
+  font-style: normal;
+  font-size: 18px;
+}
+.core-stat b {
+  color: var(--muted);
+  font: 600 12px "Barlow", sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.core-stat strong {
+  color: var(--health);
+  font: 600 24px "Barlow", sans-serif;
+}
+.core-stat strong small {
+  color: rgba(208, 219, 233, .58);
+  font-size: 13px;
+}
+.core-stat.shield i, .core-stat.shield strong { color: var(--shield); }
+.core-stat.mana i, .core-stat.mana strong { color: var(--mana); }
+
+.section {
+  margin: 5px 8px 0;
+  padding: 8px 10px;
+  background: var(--panel);
+  border-left: 2px solid rgba(105, 134, 169, .72);
+}
+.section.weapon { border-left: 3px solid var(--power); }
+.section.signature { border-left-color: var(--reach); }
+.section.passives { border-left-color: rgba(126, 151, 184, .82); }
+.section-head {
+  min-height: 23px;
+  display: flex;
+  align-items: center;
+  color: rgb(169, 185, 205);
+  font: 600 12px "Barlow", sans-serif;
+  letter-spacing: 1.35px;
+  text-transform: uppercase;
+}
+.section-head .weapon-name {
+  margin-left: auto;
+  color: var(--bone);
+  font-size: 16px;
+  letter-spacing: .5px;
+}
+.section-head .weapon-name i {
+  margin-right: 6px;
+  color: var(--power);
+  font-style: normal;
+}
+.mana-cost {
+  margin-left: 10px;
+  padding: 2px 7px;
+  color: var(--mana);
+  background: rgba(14, 67, 76, .55);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.weapon-facts {
+  height: 47px;
+  display: flex;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.fact {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-right: 1px solid rgba(87, 114, 147, .4);
+}
+.fact:last-child { border-right: 0; }
+.fact i { color: var(--power); font-style: normal; font-size: 16px; }
+.fact b { color: var(--power); font: 600 21px "Barlow", sans-serif; }
+.fact.cadence i, .fact.cadence b { color: var(--cadence); }
+.fact.reach i, .fact.reach b { color: var(--reach); }
+.fact.mana i, .fact.mana b { color: var(--mana); }
+.property {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+  padding: 5px 8px;
+  color: var(--copy);
+  background: rgba(7, 14, 24, .78);
+  border-bottom: 1px dashed rgba(118, 146, 179, .58);
+  font-size: 13px;
+}
+.property b {
+  flex-shrink: 0;
+  color: rgb(242, 189, 97);
+  font: 600 14px "Barlow", sans-serif;
+  letter-spacing: .7px;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 31px 1fr;
+  gap: 9px;
+}
+.rule-icon {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  color: rgb(214, 225, 240);
+  background: rgba(38, 66, 99, .8);
+  border-radius: 5px;
+  font-size: 15px;
+}
+.rule h2 {
+  margin: 0 0 2px;
+  color: var(--bone);
+  font: 600 17px/1.05 "Barlow", sans-serif;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.rule p {
+  margin: 0;
+  color: var(--copy);
+  font-size: 16px;
+  line-height: 1.28;
+}
+.keyword { color: var(--mana); border-bottom: 1px dashed currentColor; }
+.keyword.damage { color: var(--health); }
+
+.specs {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 9px 0;
+  padding: 6px 0 5px;
+  border-top: 1px solid var(--line);
+}
+.specs > b {
+  width: 48px;
+  flex-shrink: 0;
+  color: rgb(169, 185, 205);
+  font: 600 12px "Barlow", sans-serif;
+  letter-spacing: 1.3px;
+}
+.spec {
+  width: 42px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--spec);
+  background: rgba(49, 43, 29, .92);
+  border: 1px solid rgba(230, 185, 92, .72);
+  font-size: 19px;
+}
+
+.state {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 3px;
+  padding: 6px 10px 8px;
+  border-top: 1px solid var(--line);
+}
+.target {
+  color: rgb(218, 231, 245);
+  font: 600 13px "Barlow", sans-serif;
+  letter-spacing: .45px;
+}
+.target i { margin-right: 4px; color: var(--reach); font-style: normal; }
+.status {
+  margin-left: auto;
+  padding: 4px 7px;
+  color: rgb(123, 231, 220);
+  background: rgba(15, 64, 73, .64);
+  border: 1px solid rgba(91, 216, 213, .5);
+  font: 600 11px "Barlow", sans-serif;
+  letter-spacing: .7px;
+}
+
+/* Wide variant: the same component's wide geometry, not separate content. */
+.card.wide {
+  width: 526px;
+  height: 536px;
+  display: grid;
+  grid-template-columns: 145px 1fr;
+}
+.card.wide .identity {
+  height: 100%;
+  border-right: 1px solid var(--line);
+  border-bottom: 0;
+}
+.card.wide .identity img {
+  width: 100%;
+  height: 100%;
+  object-position: 52% center;
+}
+.card.wide .identity::after {
+  background: linear-gradient(0deg, rgba(7, 11, 18, .94), transparent 42%),
+              linear-gradient(90deg, transparent 50%, rgba(7, 11, 18, .25));
+}
+.card.wide .identity-copy { left: 12px; right: 8px; bottom: 20px; }
+.card.wide .identity-copy h1 { font-size: 25px; }
+.card.wide .identity .rank { left: 12px; right: auto; top: 12px; bottom: auto; }
+.wide-mechanics {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 3px;
+}
+.card.wide .core { min-height: 58px; }
+.card.wide .section { margin-left: 7px; margin-right: 7px; }
+.card.wide .state { margin-top: auto; }
+
+/* Enemy identity is an authored role plate, never a borrowed hero portrait. */
+.role-plate {
+  height: 92px;
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background:
+    radial-gradient(circle at 77% 50%, rgba(203, 92, 66, .22), transparent 28%),
+    linear-gradient(90deg, rgb(23, 29, 39), rgb(10, 15, 23));
+  border-bottom: 1px solid var(--line);
+}
+.crest {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin-right: 12px;
+  color: rgb(232, 135, 105);
+  border: 2px solid rgba(213, 105, 79, .72);
+  transform: rotate(45deg);
+  font-size: 27px;
+}
+.crest span { transform: rotate(-45deg); }
+.role-plate small {
+  display: block;
+  color: rgb(213, 143, 123);
+  font: 600 11px "Barlow", sans-serif;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+.role-plate h1 {
+  margin: 2px 0 0;
+  font: 600 27px/1 "Barlow", sans-serif;
+}
+.enemy .unit-ring { border-color: rgba(203, 92, 66, .95); }
+
+.omitted {
+  margin-left: auto;
+  color: rgb(121, 140, 165);
+  font: 600 11px "Barlow", sans-serif;
+  letter-spacing: 1px;
+}

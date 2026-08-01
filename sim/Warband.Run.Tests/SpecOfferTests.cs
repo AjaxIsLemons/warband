@@ -218,7 +218,15 @@ namespace Warband.Run.Tests
             // instead of a live radius, which rewrote Rally and four of his nodes.
             // Moved 2026-07-28 (ADR 0027): the board went 6→8 cols, dims joined the hash, and
             // every authored formation was remapped — one deliberate, save-invalidating move.
-            Assert.Equal("28b51d860a59bba0", new Catalog().ContentVersion);
+            // Moved 2026-07-30: Riposte became a true stack; each incoming basic attack spends
+            // exactly one authored CounterCharge instead of stripping the full pool.
+            // Moved again 2026-07-30 (ADR 0031): Gnawing Hour, Long Range and Long Procession
+            // gained authored bodies and formations so their disclosed problems affect placement.
+            // Moved again 2026-07-30 (item 15 step A): InscriptionDef grew Duration + Fights and
+            // both fold into the hash. Every authored inscription still resolves to Run/1, so the
+            // catalog is unchanged in behaviour — but the same id can now ride for a different
+            // number of combats, which is exactly the retune a fingerprint exists to catch.
+            Assert.Equal("e20bcb9c3fe1beab", new Catalog().ContentVersion);
         }
 
         [Fact]

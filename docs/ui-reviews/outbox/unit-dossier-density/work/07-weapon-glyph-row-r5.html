@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=2536,height=1310">
+<title>Unit dossier — Weapon glyph row r5</title>
+<style>
+@font-face{font-family:Inter;src:url("file:///home/jake/Work/warband/client/Assets/Resources/UI/Fonts/Inter-Variable.ttf")}
+@font-face{font-family:Barlow;src:url("file:///home/jake/Work/warband/client/Assets/Resources/UI/Fonts/BarlowCondensed-SemiBold.ttf")}
+*{box-sizing:border-box}
+html,body{margin:0;width:2536px;height:1310px;overflow:hidden;background:#070910;font-family:Inter,sans-serif;color:#e9ecf3}
+iframe{position:absolute;inset:0;width:2536px;height:1310px;border:0}
+.note{position:absolute;left:1806px;top:92px;width:365px;padding:4px 10px;background:#0b1019;border:1px solid #435774;color:#b6c7db;font:700 12px Inter;letter-spacing:.7px}
+.weapon{position:absolute;left:2035px;top:209px;width:458px;height:196px;padding:12px 13px;background:#101725;border:1px solid #3a4b61;border-left:3px solid #f29a54;border-radius:7px}
+.head{display:flex;align-items:center;justify-content:space-between}
+.label{color:#a9b9cd;font:700 13px Barlow;letter-spacing:1.4px;text-transform:uppercase}
+.name{display:flex;align-items:center;gap:9px;color:#f5f0e8;font:700 29px Barlow;line-height:1}
+.name .glyph{color:#f4a35e;font-size:22px}
+
+/* Four weapon facts become a single visual phrase. Full definitions live on hover/focus. */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);height:72px;margin-top:13px;border-top:1px solid #34455b;border-bottom:1px solid #34455b}
+.stat{min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:0;border:0;border-right:1px solid #34455b;background:transparent;color:#f4a35e;font:700 28px Barlow;cursor:help}
+.stat:last-child{border-right:0}
+.stat:hover,.stat:focus-visible{background:#19263a;outline:1px solid #6f94be;outline-offset:-1px}
+.stat .ico{font:700 20px Inter}
+.stat.interval{color:#f4a35e}.stat.range{color:#79bfff}.stat.mana{color:#70dedb}
+
+.property{height:45px;display:flex;align-items:center;gap:10px;margin-top:12px;padding:0 10px;background:#0b121d;border-radius:4px;cursor:help}
+.property b{color:#f2bd61;font:700 17px Barlow}
+.property .dot{color:#596c83}
+.property span{color:#d0d8e3;font-size:16px}
+.engaged{color:#8cc4fb;font-weight:700}
+</style>
+</head>
+<body>
+<iframe src="file:///home/jake/Work/warband/docs/ui-reviews/outbox/unit-dossier-density/work/06-dense-sheet-r4.html" title="R4 base"></iframe>
+<div class="note">R5 · COMPACT WEAPON GLYPH ROW</div>
+<article class="weapon">
+  <div class="head">
+    <span class="label">Weapon</span>
+    <span class="name"><span class="glyph">⚔</span>Pike</span>
+  </div>
+  <div class="stats">
+    <button class="stat damage" title="9 damage per basic attack" aria-label="9 damage per basic attack"><span class="ico">✦</span><span>9</span></button>
+    <button class="stat interval" title="Basic attack every 1.1 seconds" aria-label="Basic attack every 1.1 seconds"><span class="ico">↻</span><span>1.1s</span></button>
+    <button class="stat range" title="2-hex basic-attack range" aria-label="2-hex basic-attack range"><span class="ico">⬡</span><span>2</span></button>
+    <button class="stat mana" title="Gain 11 Mana per basic attack" aria-label="Gain 11 Mana per basic attack"><span class="ico">◇</span><span>+11</span></button>
+  </div>
+  <div class="property" title="Brace: deals 30% more basic-attack damage to enemies engaged with an ally">
+    <b>Brace</b><span class="dot">·</span><span>+30% damage vs <span class="engaged">engaged</span> enemies</span>
+  </div>
+</article>
+</body>
+</html>

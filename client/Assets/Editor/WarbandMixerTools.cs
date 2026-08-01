@@ -23,6 +23,7 @@ using UnityEngine.Audio;
 ///       │   ├── Impact
 ///       │   └── State
 ///       └── Decisive       ← sibling of Ducked, so death/crit ride OVER the duck untouched
+///       └── Revision       ← flagship intervention, never ducked by ordinary combat
 /// </code>
 ///
 /// Why `Ducked` exists as an intermediate bus: a mixer parameter can only be exposed ONCE, so
@@ -39,7 +40,7 @@ public static class WarbandMixerTools
     private const string Path = Dir + "/GameMixer.mixer";
 
     private static readonly string[] LeafGroups =
-        { "UI", "Cast", "Impact", "State", "Decisive" };
+        { "UI", "Cast", "Impact", "State", "Decisive", "Revision" };
 
     /// <summary>
     /// Self-heal on domain reload: if the mixer asset is absent, build it. Deferred through
@@ -58,8 +59,11 @@ public static class WarbandMixerTools
     {
         EditorApplication.delayCall += () =>
         {
-            if (AssetDatabase.LoadAssetAtPath<AudioMixer>(Path) != null) return;
-            Debug.Log("[GameMixer] No mixer asset found — creating it on load.");
+            var mixer = AssetDatabase.LoadAssetAtPath<AudioMixer>(Path);
+            if (mixer != null && mixer.FindMatchingGroups("Revision").Length > 0) return;
+            Debug.Log(mixer == null
+                ? "[GameMixer] No mixer asset found — creating it on load."
+                : "[GameMixer] Revision bus missing — updating mixer on load.");
             CreateGameMixer();
         };
     }
@@ -116,6 +120,7 @@ public static class WarbandMixerTools
         EnsureGroup(ctrlType, groupType, controller, ducked, "Impact", log);
         EnsureGroup(ctrlType, groupType, controller, ducked, "State", log);
         EnsureGroup(ctrlType, groupType, controller, board, "Decisive", log);
+        EnsureGroup(ctrlType, groupType, controller, board, "Revision", log);
 
         Expose(ctrlType, groupType, controller, master, "MasterVol", log);
         Expose(ctrlType, groupType, controller, ui, "UiVol", log);

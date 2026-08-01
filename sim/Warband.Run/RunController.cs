@@ -16,6 +16,9 @@ namespace Warband.Run
         public int GoldEarned => BaseIncome + KillPayout + WinBonus;
         public int SandEarned => GoldEarned;
         public BattleResult Battle = null!;      // full log — playback, folds, inspection
+        public bool Revised;
+        public int BranchTick = -1;
+        public int PresentTick = -1;
     }
 
     /// <summary>
@@ -36,6 +39,7 @@ namespace Warband.Run
         public RunState State { get; }
         private readonly IRunContent _content;
         private readonly RunConfig _cfg;
+        private PreparedFight? _pendingFight;
 
         /// <summary>
         /// Resume a saved run (roadmap item 7). Everything the machine needs is already in
@@ -77,7 +81,7 @@ namespace Warband.Run
                     foreach (string t in h.TrinketIds) Resolve(() => _content.Trinket(t), "trinket", t);
                     foreach (string n in h.SpecNodeIds) Resolve(() => _content.Node(n), "spec node", n);
                 }
-            foreach (string b in State.Inscriptions) Resolve(() => _content.Inscription(b), "inscription", b);
+            foreach (string b in State.ActiveInscriptionIds) Resolve(() => _content.Inscription(b), "inscription", b);
             foreach (string b in State.PendingBossRewards) Resolve(() => _content.Inscription(b), "inscription", b);
             foreach (var o in State.ShopOffers)
             {
@@ -106,11 +110,16 @@ namespace Warband.Run
                     "saved run was made under different content " +
                     $"(save {Describe(State.ContentVersion)}, this build {_content.ContentVersion}). " +
                     "Resuming it would fight a different army than it was saved against.");
-            if (State.Act > _cfg.Acts)
+            if (State.Act > _cfg.Acts && !(State.InEndless && State.Victory))
                 throw new RunSaveException($"save is at act {State.Act} but this build has {_cfg.Acts}");
             if (State.Field.Count > _cfg.MaxFieldSlots)
                 throw new RunSaveException(
                     $"save fields {State.Field.Count} heroes, past this build's cap of {_cfg.MaxFieldSlots}");
+            try { RevisionCatalog.Validate(State.Revision); }
+            catch (Exception ex)
+            {
+                throw new RunSaveException($"saved run has invalid Revision state ({ex.Message})");
+            }
         }
 
         private static string Describe(string version) =>
@@ -127,7 +136,8 @@ namespace Warband.Run
         }
 
         public RunController(ulong seed, IRunContent content, IEnumerable<HeroInstance> warband,
-                             RunConfig? config = null)
+                             RunConfig? config = null,
+                             string revisionId = RevisionCatalog.BorrowedFutureId)
         {
             _content = content;
             _cfg = config ?? new RunConfig();
@@ -140,6 +150,7 @@ namespace Warband.Run
                 FieldSlots = _cfg.StartingFieldSlots,
                 UnlockedFieldSlots = _cfg.StartingFieldSlots,
                 Phase = RunPhase.Planning,
+                Revision = new RevisionState { RevisionId = RevisionCatalog.Get(revisionId).Id },
             };
             State.Field.AddRange(warband);
             if (State.Field.Count < 1 || State.Field.Count > _cfg.StartingFieldSlots)
@@ -149,14 +160,19 @@ namespace Warband.Run
             GenerateShop();
         }
 
-        public bool AtBoss => State.NodeIndex == _cfg.NodesPerAct;
+        private int BossNodeIndex =>
+            State.InEndless ? _cfg.EndlessFightsPerCycle : _cfg.NodesPerAct;
+
+        public bool AtBoss => State.NodeIndex == BossNodeIndex;
 
         public NodeKind CurrentNodeKind
         {
             get
             {
                 Require(State.Phase == RunPhase.Planning, "no current beat outside Planning");
-                return AtBoss ? NodeKind.Boss : State.ActMaps[State.Act - 1][State.NodeIndex];
+                if (AtBoss) return NodeKind.Boss;
+                if (State.InEndless) return NodeKind.Fight;
+                return State.ActMaps[State.Act - 1][State.NodeIndex];
             }
         }
 
@@ -168,22 +184,19 @@ namespace Warband.Run
         /// </summary>
         public FightOutcome ResolveFight(FightTier tier, IReadOnlyList<Hex> placement)
         {
+            return CommitOriginal(PrepareFight(tier, placement));
+        }
+
+        public PreparedFight PrepareFight(FightTier tier, IReadOnlyList<Hex> placement)
+        {
             Require(State.Phase == RunPhase.Planning && !AtBoss, "not at a normal encounter");
             Require(CurrentNodeKind == NodeKind.Fight, "current node is not a fight");
-
-            var enemies = _content.Encounter(State.Act, State.NodeIndex, tier,
-                                             RngFor(SaltEncounter, State.Act, State.NodeIndex));
-            var outcome = RunBattle(placement, enemies);
-            if (!outcome.Won)
-            {
-                State.Phase = RunPhase.Defeated;
-                return outcome;
-            }
-
-            outcome.BaseIncome = _cfg.FightReward(State.Act, tier);
-            State.Gold += outcome.SandEarned;
-            AdvanceAfterBeat();
-            return outcome;
+            return PrepareBattle(
+                PreparedFightKind.Encounter,
+                tier,
+                placement,
+                _content.Encounter(State.Act, State.NodeIndex, tier,
+                    RngFor(SaltEncounter, State.Act, State.NodeIndex)));
         }
 
         /// <summary>
@@ -192,7 +205,26 @@ namespace Warband.Run
         /// </summary>
         public int ResolveEvent()
         {
+            if (State.Revision.UpgradeIds.Count < State.Act)
+                ChooseRevisionUpgrade(0);
             return ResolveInterlude(InterludePath.Treasury).Sand;
+        }
+
+        public IReadOnlyList<RevisionUpgradeDef> PreviewRevisionUpgrades()
+        {
+            Require(State.Phase == RunPhase.Planning && !AtBoss, "not at an Interlude");
+            Require(CurrentNodeKind == NodeKind.Event, "current beat is not an Interlude");
+            Require(State.Revision.UpgradeIds.Count == State.Act - 1,
+                "this Interlude's Revision upgrade is already resolved");
+            return RevisionCatalog.NextOptions(State.Revision);
+        }
+
+        public RevisionUpgradeDef ChooseRevisionUpgrade(int optionIndex)
+        {
+            var options = PreviewRevisionUpgrades();
+            var selected = At(options, optionIndex, "Revision upgrade");
+            State.Revision.UpgradeIds.Add(selected.Id);
+            return selected;
         }
 
         /// <summary>
@@ -216,7 +248,7 @@ namespace Warband.Run
 
             var hourstone = new List<RewardOffer>();
             foreach (var id in _content.InscriptionPool(State.Act))
-                if (!State.Inscriptions.Contains(id) && !_content.Inscription(id).Paradox)
+                if (!State.HasInscription(id) && !_content.Inscription(id).Paradox)
                     hourstone.Add(new RewardOffer
                     {
                         Path = InterludePath.Hourstone,
@@ -233,6 +265,8 @@ namespace Warband.Run
         /// </summary>
         public RewardOffer ResolveInterlude(InterludePath path, int optionIndex = 0)
         {
+            Require(State.Revision.UpgradeIds.Count >= State.Act,
+                "choose this Interlude's Revision upgrade first");
             var preview = PreviewInterlude();
             RewardOffer reward;
             switch (path)
@@ -275,28 +309,18 @@ namespace Warband.Run
         /// </summary>
         public FightOutcome ResolveBoss(IReadOnlyList<Hex> placement)
         {
+            return CommitOriginal(PrepareBoss(placement));
+        }
+
+        public PreparedFight PrepareBoss(IReadOnlyList<Hex> placement)
+        {
             Require(State.Phase == RunPhase.Planning && AtBoss, "not at the act boss");
-
-            var enemies = _content.Boss(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct));
-            var outcome = RunBattle(placement, enemies);
-            if (!outcome.Won) { State.BossLosses++; State.Phase = RunPhase.Defeated; return outcome; }
-            State.BossWins++;
-
-            if (State.Act == _cfg.Acts)
-            {
-                State.Phase = RunPhase.Complete;
-                return outcome;
-            }
-
-            outcome.BaseIncome = _cfg.BossReward(State.Act);
-            State.Gold += outcome.SandEarned;
-            State.PendingBossSand = outcome.SandEarned;
-            State.PendingBossRewards = PreviewBossRewardIds();
-            if (State.PendingBossRewards.Count == 0)
-                AdvanceToNextAct();
-            else
-                State.Phase = RunPhase.Reward;
-            return outcome;
+            return PrepareBattle(
+                PreparedFightKind.Boss,
+                FightTier.Stable,
+                placement,
+                _content.Boss(State.Act,
+                    RngFor(SaltEncounter, State.Act, BossNodeIndex)));
         }
 
         public IReadOnlyList<string> PreviewBossRewards()
@@ -316,6 +340,35 @@ namespace Warband.Run
         }
 
         /// <summary>
+        /// Close the authored run with its already-banked victory. Retirement does not award the
+        /// win; defeating the Waning Crown did that before this choice opened.
+        /// </summary>
+        public void RetireWithVictory()
+        {
+            Require(State.Phase == RunPhase.VictoryChoice && State.VictoryBanked,
+                "no banked victory is awaiting a retirement choice");
+            State.InEndless = false;
+            State.Phase = RunPhase.Complete;
+        }
+
+        /// <summary>
+        /// Carry the exact winning warband into virtual Act 4. Later cycles advance that virtual
+        /// act so the existing encounter and Crown curves own all pressure scaling.
+        /// </summary>
+        public void ContinueBeyondTheHour()
+        {
+            Require(State.Phase == RunPhase.VictoryChoice && State.VictoryBanked,
+                "no banked victory is awaiting continuation");
+            State.InEndless = true;
+            State.EndlessCycles = 0;
+            State.EndlessBeat = 0;
+            State.Act = _cfg.Acts + 1;
+            State.NodeIndex = 0;
+            State.Phase = RunPhase.Planning;
+            GenerateShop();
+        }
+
+        /// <summary>
         /// The enemies the current node WILL field, without resolving it. Every encounter is
         /// previewed before deployment (pve-encounters law), and the preview has to be the same
         /// comp the fight uses — which only this class can guarantee, because the rng derivation
@@ -327,7 +380,7 @@ namespace Warband.Run
             Require(State.Phase == RunPhase.Planning, "no encounter to preview outside Planning");
             Require(CurrentNodeKind != NodeKind.Event, "events field no enemies");
             return AtBoss
-                ? _content.Boss(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct))
+                ? _content.Boss(State.Act, RngFor(SaltEncounter, State.Act, BossNodeIndex))
                 : _content.Encounter(State.Act, State.NodeIndex, tier,
                                      RngFor(SaltEncounter, State.Act, State.NodeIndex));
         }
@@ -343,7 +396,7 @@ namespace Warband.Run
             Require(State.Phase == RunPhase.Planning, "no encounter to preview outside Planning");
             Require(CurrentNodeKind != NodeKind.Event, "events field no enemies");
             return AtBoss
-                ? _content.BossBrief(State.Act, RngFor(SaltEncounter, State.Act, _cfg.NodesPerAct))
+                ? _content.BossBrief(State.Act, RngFor(SaltEncounter, State.Act, BossNodeIndex))
                 : _content.EncounterBrief(State.Act, State.NodeIndex, tier,
                                           RngFor(SaltEncounter, State.Act, State.NodeIndex));
         }
@@ -881,7 +934,7 @@ namespace Warband.Run
             foreach (var id in _content.InscriptionPool(State.Act))
                 // Paradoxes never reach the Workshop or the Interlude: a rule-rewrite with a real
                 // drawback must arrive as a considered boss choice, not shop filler (ADR 0026).
-                if (!State.Inscriptions.Contains(id) && !_content.Inscription(id).Paradox)
+                if (!State.HasInscription(id) && !_content.Inscription(id).Paradox)
                     inscriptions.Add(id);
 
             int category = rng.Next(100);
@@ -1061,7 +1114,7 @@ namespace Warband.Run
         {
             var source = new List<string>();
             foreach (var id in _content.InscriptionPool(State.Act))
-                if (!State.Inscriptions.Contains(id))
+                if (!State.HasInscription(id))
                     source.Add(id);
             var rewards = new List<string>();
             DrawDistinct(source, rewards, _cfg.RewardChoices,
@@ -1075,64 +1128,287 @@ namespace Warband.Run
             Require(State.PendingSpec == null, "resolve the pending spec choice first");
         }
 
-        private FightOutcome RunBattle(IReadOnlyList<Hex> placement,
-                                       List<(UnitDef Def, Hex Pos)> enemies,
-                                       List<string>? enemyInscriptions = null)
+        private PreparedFight PrepareBattle(
+            PreparedFightKind kind,
+            FightTier tier,
+            IReadOnlyList<Hex> placement,
+            List<(UnitDef Def, Hex Pos)> enemies)
         {
+            Require(_pendingFight == null, "a fight is already awaiting commitment");
             ValidatePlacement(placement);
-            var teamTriggers = new List<(int Team, Trigger T)>();
-            // Blanket doubling (the old Bearer of the Mark) is gone — ADR 0026 replaced it with
-            // Living Inscription, an ordinary spec-node trigger that rides TriggerFired, so the
-            // run layer no longer special-cases any node here.
-            foreach (var id in State.Inscriptions)
-                foreach (var t in _content.Inscription(id).TeamTriggers)
-                    teamTriggers.Add((0, t));
-            if (enemyInscriptions != null)
-                foreach (var id in enemyInscriptions)
-                    foreach (var t in _content.Inscription(id).TeamTriggers)
-                        teamTriggers.Add((1, t));
-            var units = new List<UnitState>();
+            var prepared = new PreparedFight
+            {
+                Kind = kind,
+                Tier = tier,
+                Act = State.Act,
+                NodeIndex = State.NodeIndex,
+                Placement = placement.ToList(),
+                Enemies = enemies.ToList(),
+                BattleSeed = Mix(State.Seed, SaltBattle,
+                    (ulong)State.Act, (ulong)State.NodeIndex),
+            };
+            foreach (var id in State.ActiveInscriptionIds)
+                foreach (var trigger in _content.Inscription(id).TeamTriggers)
+                    prepared.TeamTriggers.Add((0, trigger));
             for (int i = 0; i < State.Field.Count; i++)
             {
                 var hero = State.Field[i];
-                var composed = Compose(hero);
-                units.Add(Loadout.Spawn(i, 0, composed, placement[i], hero.Earned));
+                prepared.Players.Add((
+                    Compose(hero).Def,
+                    placement[i],
+                    hero.Earned.Select(CloneStatus).ToList()));
+                prepared.HeroInstanceIds.Add(hero.InstanceId);
             }
-            for (int i = 0; i < enemies.Count; i++)
+            prepared.Original = SimulateBattle(prepared, null);
+            _pendingFight = prepared;
+            return prepared;
+        }
+
+        /// <summary>Commit the watched, unrevised future.</summary>
+        public FightOutcome CommitOriginal(PreparedFight prepared) =>
+            CommitPrepared(prepared, prepared.Original);
+
+        /// <summary>
+        /// Validate one watched split, derive future Mana from the authoritative original fold,
+        /// re-simulate, and commit the branch. A committed prepared fight cannot be used again.
+        /// </summary>
+        public FightOutcome CommitRevision(PreparedFight prepared, RevisionChoice choice)
+        {
+            ValidatePrepared(prepared);
+            if (choice == null) throw new ArgumentNullException(nameof(choice));
+            var revision = RevisionCatalog.Get(State.Revision.RevisionId);
+            var modifiers = RevisionCatalog.Modifiers(State.Revision);
+            int maxTicks = modifiers.HasFlag(RevisionModifier.LongMemory) ? 60 : 40;
+            int distance = choice.PresentTick - choice.BranchTick;
+            Require(choice.PresentTick >= 10 && choice.PresentTick <= prepared.Original.Battle.EndTick,
+                "Revision present is outside the watched battle");
+            Require(choice.BranchTick >= 0 && distance >= 10 && distance <= maxTicks
+                    && distance % 10 == 0,
+                $"Revision must rewind 1..{maxTicks / 10} whole battle-seconds");
+
+            var present = PlaybackState.From(
+                prepared.Original.Battle.InitialUnits,
+                prepared.Original.Battle.RuleIds);
+            present.AdvanceToTick(prepared.Original.Battle.Events, choice.PresentTick);
+            var branch = PlaybackState.From(
+                prepared.Original.Battle.InitialUnits,
+                prepared.Original.Battle.RuleIds);
+            branch.AdvanceToTick(prepared.Original.Battle.Events, choice.BranchTick - 1);
+
+            int targetLimit = revision.Effect == RevisionEffectKind.BorrowedFuture
+                && modifiers.HasFlag(RevisionModifier.Convergence) ? 2 : 1;
+            Require(choice.TargetIds.Count >= 1 && choice.TargetIds.Count <= targetLimit,
+                $"Revision accepts 1..{targetLimit} targets");
+            Require(choice.TargetIds.Distinct().Count() == choice.TargetIds.Count,
+                "Revision cannot target one unit twice");
+
+            var intervention = new TimelineIntervention
             {
-                var (def, pos) = enemies[i];
+                BranchTick = choice.BranchTick,
+                Kind = revision.Effect,
+                Modifiers = modifiers,
+            };
+            foreach (int id in choice.TargetIds)
+            {
+                var now = present.ById(id);
+                var then = branch.ById(id);
+                if (now == null || then == null || now.Dead || then.Dead)
+                    throw new InvalidOperationException(
+                        $"Revision target {id} is not alive in both moments");
+                int requiredTeam = revision.Effect == RevisionEffectKind.BorrowedFuture ? 0 : 1;
+                Require(now.Team == requiredTeam && then.Team == requiredTeam,
+                    $"Revision target {id} is on the wrong side");
+                if (revision.Effect == RevisionEffectKind.BorrowedFuture)
+                    Require(now.ManaMax > 0, $"Revision target {id} has no Mana");
+                intervention.Targets.Add(new RevisionTarget
+                {
+                    UnitId = id,
+                    PresentMana = now.Mana,
+                });
+            }
+
+            var revised = SimulateBattle(prepared, intervention);
+            revised.Revised = true;
+            revised.BranchTick = choice.BranchTick;
+            revised.PresentTick = choice.PresentTick;
+            return CommitPrepared(prepared, revised);
+        }
+
+        private FightOutcome SimulateBattle(
+            PreparedFight prepared,
+            TimelineIntervention? intervention)
+        {
+            var units = new List<UnitState>();
+            for (int i = 0; i < prepared.Players.Count; i++)
+            {
+                var player = prepared.Players[i];
+                units.Add(UnitStateWithEarned(i, player.Def, player.Pos, player.Earned));
+            }
+            for (int i = 0; i < prepared.Enemies.Count; i++)
+            {
+                var (def, pos) = prepared.Enemies[i];
                 if (!Battle.InBounds(pos) || pos.Row < Battle.BoardRows / 2)
-                    throw new InvalidOperationException("content placed an enemy outside the enemy half");
+                    throw new InvalidOperationException(
+                        "content placed an enemy outside the enemy half");
                 units.Add(UnitState.Spawn(EnemyIdBase + i, 1, def, pos));
             }
 
-            var result = new Battle(units, teamTriggers,
-                                    seed: Mix(State.Seed, SaltBattle,
-                                              (ulong)State.Act, (ulong)State.NodeIndex)).Run();
+            var result = new Battle(
+                units,
+                prepared.TeamTriggers.Select(x => (x.Team, x.Trigger)),
+                seed: prepared.BattleSeed,
+                intervention: intervention).Run();
+            bool won = result.Winner != Winner.Team1; // draws count as wins
+            int baseIncome = won
+                ? prepared.Kind == PreparedFightKind.Boss
+                    ? _cfg.BossReward(prepared.Act)
+                    : _cfg.FightReward(prepared.Act, prepared.Tier)
+                : 0;
+            return new FightOutcome
+            {
+                Won = won,
+                EnemiesKilled = result.Events.Count(
+                    e => e.Kind == EventKind.Death && e.Target >= EnemyIdBase),
+                EnemyCount = prepared.Enemies.Count,
+                BaseIncome = baseIncome,
+                Battle = result,
+            };
+        }
 
-            int killed = result.Events.Count(e => e.Kind == EventKind.Death && e.Target >= EnemyIdBase);
-            // Draws count as wins (Jake, 2026-07-22): your board wasn't beaten. Applies to
-            // both the boss record and the wager bonus.
-            bool won = result.Winner != Winner.Team1;
+        /// <summary>
+        /// Burn one combat off every timed inscription. Called from <see cref="CommitPrepared"/> and
+        /// NOWHERE else, which is the whole contract: this is the one funnel every encounter and
+        /// every boss passes through, and Interludes, shops and planning never reach it. A duration
+        /// that ticked on beats instead of combats would silently expire in the Hall.
+        ///
+        /// Ordering matters and is deliberate: battle prep already read the active set, so an
+        /// inscription taken for "this fight" APPLIES to that fight and is spent by it. Decrementing
+        /// before the fight would make `Fights = 1` mean nothing at all.
+        ///
+        /// Fires on losses too. Loss is terminal so it cannot be observed, but "the combat happened"
+        /// is the honest rule and it keeps the counter independent of the outcome.
+        /// </summary>
+        private void TickTimedInscriptions()
+        {
+            if (State.Timed.Count == 0) return;
+            foreach (var t in State.Timed)
+                if (t.FightsRemaining > 0) t.FightsRemaining--;
+            // Anything already granted survives expiry — only the ONGOING rule stops. Dropping the
+            // spent row is what removes its TeamTriggers from the next battle prep.
+            State.Timed.RemoveAll(t => t.FightsRemaining <= 0);
+        }
+
+        /// <summary>Take on a timed inscription. Re-taking one already running refreshes it to the
+        /// longer of the two remainders rather than stacking a duplicate — two rows with the same id
+        /// would double its triggers, which no authored Paradox expects.</summary>
+        public void AddTimedInscription(string id, int fights)
+        {
+            if (string.IsNullOrEmpty(id)) throw new ArgumentException("id required", nameof(id));
+            if (fights <= 0) throw new ArgumentOutOfRangeException(nameof(fights), "must be at least one combat");
+            Resolve(() => _content.Inscription(id), "inscription", id);
+            var live = State.Timed.Find(t => t.Id == id);
+            if (live != null)
+            {
+                live.FightsRemaining = Math.Max(live.FightsRemaining, fights);
+                return;
+            }
+            State.Timed.Add(new TimedInscription
+            {
+                Id = id,
+                FightsRemaining = fights,
+                TakenAtCombat = State.BossWins + (State.Act - 1) * _cfg.NodesPerAct + State.NodeIndex,
+            });
+        }
+
+        private FightOutcome CommitPrepared(PreparedFight prepared, FightOutcome outcome)
+        {
+            ValidatePrepared(prepared);
+            prepared.Committed = true;
+            _pendingFight = null;
+            TickTimedInscriptions();
 
             for (int i = 0; i < State.Field.Count; i++)
             {
                 var hero = State.Field[i];
                 if (hero.RunBonuses.Count > 0)
-                    hero.Earned.AddRange(ProgressionFold.Earned(result.Events, i, hero.RunBonuses));
+                    hero.Earned.AddRange(ProgressionFold.Earned(
+                        outcome.Battle.Events, i, hero.RunBonuses));
             }
 
-            return new FightOutcome
+            if (prepared.Kind == PreparedFightKind.Encounter)
             {
-                Won = won,
-                EnemiesKilled = killed,
-                EnemyCount = enemies.Count,
-                BaseIncome = 0,
-                KillPayout = 0,
-                WinBonus = 0,
-                Battle = result,
-            };
+                if (!outcome.Won)
+                {
+                    State.Phase = RunPhase.Defeated;
+                    return outcome;
+                }
+                State.Gold += outcome.SandEarned;
+                if (State.InEndless) State.EndlessBeat++;
+                AdvanceAfterBeat();
+                return outcome;
+            }
+
+            if (!outcome.Won)
+            {
+                State.BossLosses++;
+                State.Phase = RunPhase.Defeated;
+                return outcome;
+            }
+            State.BossWins++;
+            if (State.InEndless)
+            {
+                State.EndlessCycles++;
+                State.EndlessBeat = 0;
+                State.Act++;
+                State.NodeIndex = 0;
+                State.Phase = RunPhase.Planning;
+                GenerateShop();
+                return outcome;
+            }
+            if (State.Act == _cfg.Acts)
+            {
+                State.VictoryBanked = true;
+                State.Phase = RunPhase.VictoryChoice;
+                return outcome;
+            }
+            State.Gold += outcome.SandEarned;
+            State.PendingBossSand = outcome.SandEarned;
+            State.PendingBossRewards = PreviewBossRewardIds();
+            if (State.PendingBossRewards.Count == 0) AdvanceToNextAct();
+            else State.Phase = RunPhase.Reward;
+            return outcome;
         }
+
+        private void ValidatePrepared(PreparedFight prepared)
+        {
+            if (prepared == null || !ReferenceEquals(prepared, _pendingFight))
+                throw new InvalidOperationException("fight is not this run's pending battle");
+            Require(!prepared.Committed, "fight was already committed");
+            Require(State.Phase == RunPhase.Planning
+                    && State.Act == prepared.Act
+                    && State.NodeIndex == prepared.NodeIndex,
+                "run changed while a fight awaited commitment");
+            Require(State.Field.Select(h => h.InstanceId)
+                    .SequenceEqual(prepared.HeroInstanceIds),
+                "warband changed while a fight awaited commitment");
+        }
+
+        private static UnitState UnitStateWithEarned(
+            int id, UnitDef def, Hex pos, List<Status> earned)
+        {
+            var state = UnitState.Spawn(id, 0, def, pos);
+            foreach (var status in earned) state.Statuses.Add(CloneStatus(status));
+            return state;
+        }
+
+        private static Status CloneStatus(Status status) => new Status
+        {
+            Kind = status.Kind,
+            Mag = status.Mag,
+            TicksLeft = status.TicksLeft,
+            SwingsLeft = status.SwingsLeft,
+            SourceId = status.SourceId,
+        };
 
         private ComposedLoadout Compose(HeroInstance hero)
         {
@@ -1192,6 +1468,8 @@ namespace Warband.Run
             if (_cfg.NodesPerAct != 4 || _cfg.EventsPerAct != 1 ||
                 _cfg.InterludeNodeIndex < 0 || _cfg.InterludeNodeIndex >= _cfg.NodesPerAct)
                 throw new ArgumentException("an act must be Fight, Fight, Interlude, Fight, Boss");
+            if (_cfg.EndlessFightsPerCycle != 3)
+                throw new ArgumentException("an endless cycle must be three fights, then the Crown");
             if (_cfg.StartingFieldSlots + _cfg.Acts != _cfg.MaxFieldSlots)
                 throw new ArgumentException("one Interlude capacity unlock per act must reach the field cap");
             if (_cfg.SlotCosts.Length != _cfg.MaxFieldSlots - _cfg.StartingFieldSlots)

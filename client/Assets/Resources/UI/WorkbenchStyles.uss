@@ -1,6 +1,12 @@
-/* Workbench: one bounded out-of-combat instrument.
+/* Workbench: one bounded out-of-combat instrument — column layout, obsidian glass.
+   Approved: docs/ui-reviews/outbox/workbench-refactor (05-shopfront-obsidian + header
+   node-map condition). Regions: 46px header · body columns (market flex + dossier 30%) ·
+   floating armory rack · 186px shell rail below the safe frame.
    All dimensions are authored against the shell's 1600×900 reference resolution so the
-   1280×720 floor retains readable type without introducing a scroll region. */
+   1280×720 floor retains readable type without introducing a scroll region.
+   Engine deviations from the approved PNG (recorded in review.md): USS has no box-shadow
+   or gradients, so mockup glows become border/tint treatments and the banner scrim is a
+   solid translucent plate. */
 
 .workbench-screen {
     position: absolute;
@@ -11,8 +17,8 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    color: rgb(232, 238, 246);
-    background-color: rgba(5, 9, 15, 0.96);
+    color: rgb(233, 233, 242);
+    background-color: rgb(5, 5, 8);
 }
 
 .workbench-screen__wash {
@@ -21,189 +27,295 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(11, 19, 29, 0.88);
+    background-color: rgba(13, 13, 20, 0.92);
     border-left-width: 54px;
     border-right-width: 54px;
-    border-left-color: rgba(10, 28, 42, 0.58);
-    border-right-color: rgba(10, 28, 42, 0.58);
+    border-left-color: rgba(16, 16, 24, 0.6);
+    border-right-color: rgba(16, 16, 24, 0.6);
 }
 
 .workbench-safe {
     position: absolute;
     left: 22px;
     right: 22px;
-    top: 18px;
-    bottom: 146px;
+    top: 14px;
+    bottom: 200px;
     overflow: hidden;
 }
 
+/* ---------- header: one 46px row — title · act · node map · sand · commit ---------- */
 .workbench-header {
-    height: 88px;
-    min-height: 88px;
+    height: 46px;
+    min-height: 46px;
     flex-direction: row;
     align-items: center;
-    padding-left: 22px;
-    padding-right: 14px;
-    background-color: rgba(8, 14, 22, 0.985);
-    border-left-width: 4px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(217, 164, 58);
-    border-bottom-color: rgba(91, 126, 169, 0.72);
-}
-
-.workbench-header__identity {
-    width: 250px;
-    min-width: 250px;
-    justify-content: center;
-}
-
-.workbench-header__act,
-.workbench-section-heading__meta,
-.workbench-armory__page,
-.workbench-dossier__hint {
-    color: rgb(133, 158, 188);
-    font-size: 12px;
-    -unity-font-style: bold;
-    letter-spacing: 1.2px;
-}
-
-.workbench-header__title {
-    margin-top: 4px;
-    color: rgb(242, 238, 224);
-    font-size: 26px;
-    -unity-font-style: bold;
-    letter-spacing: 3px;
-}
-
-.workbench-header__beat {
-    min-width: 0;
-    flex-grow: 1;
-    justify-content: center;
-    padding-left: 24px;
-    padding-right: 30px;
-    border-left-width: 1px;
-    border-left-color: rgba(91, 126, 169, 0.42);
-}
-
-.workbench-header__beat-label {
-    color: rgb(223, 178, 75);
-    font-size: 15px;
-    -unity-font-style: bold;
-    letter-spacing: 1.4px;
-}
-
-.workbench-header__brief {
-    height: 48px;
-    min-height: 48px;
-    max-height: 48px;
-    flex-shrink: 0;
-    margin-top: 4px;
-    overflow: hidden;
-    color: rgb(166, 184, 207);
-    font-size: 14px;
-    white-space: normal;
-}
-
-.workbench-header__commands {
-    min-width: 420px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.workbench-header__hourstone {
-    min-width: 112px;
-    height: 54px;
-    margin-right: 12px;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(45, 34, 16, 0.88);
+    padding-left: 18px;
+    padding-right: 8px;
+    background-color: rgba(17, 17, 26, 0.85);
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(217, 164, 58, 0.62);
-    border-right-color: rgba(217, 164, 58, 0.62);
-    border-top-color: rgba(217, 164, 58, 0.62);
-    border-bottom-color: rgba(217, 164, 58, 0.62);
+    border-left-color: rgba(255, 255, 255, 0.07);
+    border-right-color: rgba(255, 255, 255, 0.07);
+    border-top-color: rgba(255, 255, 255, 0.07);
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.workbench-header__title {
+    color: rgb(244, 236, 216);
+    font-size: 20px;
+    -unity-font-style: bold;
+    letter-spacing: 4px;
+}
+
+.workbench-header__act {
+    margin-left: 18px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1.4px;
+}
+
+.workbench-header__grow {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+/* The node map (approval condition): the act's beat track as pips. */
+.workbench-track {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 16px;
+    flex-shrink: 0;
+}
+
+.wb-track-node {
+    width: 22px;
+    height: 22px;
+    margin-right: 7px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(143, 143, 168);
+    font-size: 10px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    background-color: rgba(26, 26, 40, 0.5);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.16);
+    border-right-color: rgba(255, 255, 255, 0.16);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-bottom-color: rgba(255, 255, 255, 0.16);
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+}
+
+.wb-track-node--past {
+    color: rgb(201, 167, 94);
+    background-color: rgba(230, 185, 92, 0.16);
+    border-left-color: rgba(230, 185, 92, 0.4);
+    border-right-color: rgba(230, 185, 92, 0.4);
+    border-top-color: rgba(230, 185, 92, 0.4);
+    border-bottom-color: rgba(230, 185, 92, 0.4);
+}
+
+.wb-track-node--current {
+    color: rgb(242, 207, 116);
+    background-color: rgba(46, 35, 14, 0.7);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(230, 185, 92);
+    border-right-color: rgb(230, 185, 92);
+    border-top-color: rgb(230, 185, 92);
+    border-bottom-color: rgb(230, 185, 92);
+}
+
+.wb-track-node--boss {
+    width: auto;
+    padding-left: 9px;
+    padding-right: 9px;
+    letter-spacing: 1.2px;
+    font-size: 9px;
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
 }
 
+.workbench-header__hourstone {
+    min-width: 96px;
+    height: 36px;
+    margin-right: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(46, 35, 14, 0.65);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.5);
+    border-right-color: rgba(230, 185, 92, 0.5);
+    border-top-color: rgba(230, 185, 92, 0.5);
+    border-bottom-color: rgba(230, 185, 92, 0.5);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
 .workbench-header__currency .currency-amount__icon {
-    width: 27px;
-    height: 27px;
+    width: 22px;
+    height: 22px;
 }
 
 .workbench-header__currency .currency-amount__value {
-    font-size: 25px;
+    font-size: 20px;
 }
 
 .workbench-header__continue {
-    width: 252px;
-    height: 54px;
-    font-size: 15px;
+    width: 232px;
+    height: 36px;
+    font-size: 14px;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+/* ---------- body: market column + dossier column ---------- */
+.workbench-body {
+    min-height: 0;
+    flex-grow: 1;
+    margin-top: 10px;
+    flex-direction: row;
+    overflow: hidden;
 }
 
 .workbench-market {
-    height: 244px;
-    min-height: 244px;
-    margin-top: 10px;
-    padding-left: 14px;
-    padding-right: 14px;
-    padding-top: 9px;
-    padding-bottom: 8px;
-    background-color: rgba(8, 14, 22, 0.96);
+    min-width: 0;
+    flex-grow: 1;
+    flex-direction: row;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    overflow: hidden;
+    background-color: rgba(14, 14, 22, 0.66);
+    border-left-width: 1px;
+    border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-top-color: rgba(91, 126, 169, 0.58);
-    border-bottom-color: rgba(91, 126, 169, 0.58);
+    border-left-color: rgba(255, 255, 255, 0.07);
+    border-right-color: rgba(255, 255, 255, 0.07);
+    border-top-color: rgba(255, 255, 255, 0.07);
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
 }
 
-.workbench-section-heading {
-    height: 44px;
-    min-height: 44px;
-    flex-direction: row;
+/* The reroll spends horizontal space, never vertical: a 52px rail on the market's edge. */
+.workbench-reroll-rail {
+    width: 52px;
+    min-width: 52px;
+    margin-right: 8px;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    background-color: rgba(22, 22, 34, 0.7);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.09);
+    border-right-color: rgba(255, 255, 255, 0.09);
+    border-top-color: rgba(255, 255, 255, 0.09);
+    border-bottom-color: rgba(255, 255, 255, 0.09);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
-.workbench-section-heading__title,
-.workbench-section-heading__meta {
-    margin-top: 2px;
-    font-size: 10px;
+.workbench-reroll-rail:hover:enabled,
+.workbench-reroll-rail:focus:enabled {
+    background-color: rgba(34, 34, 52, 0.9);
+    border-left-color: rgba(230, 185, 92, 0.55);
+    border-right-color: rgba(230, 185, 92, 0.55);
+    border-top-color: rgba(230, 185, 92, 0.55);
+    border-bottom-color: rgba(230, 185, 92, 0.55);
 }
 
-.workbench-market__reroll {
-    width: 176px;
-    height: 38px;
+.workbench-reroll-rail__glyph {
+    color: rgb(185, 185, 208);
+    font-size: 20px;
 }
 
+.workbench-reroll-rail__letters {
+    margin-top: 8px;
+    color: rgb(185, 185, 208);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-reroll-rail__cost {
+    margin-top: 8px;
+    align-items: center;
+}
+
+.workbench-reroll-rail__cost .currency-amount__icon {
+    width: 15px;
+    height: 15px;
+}
+
+.workbench-reroll-rail__cost .currency-amount__value {
+    font-size: 13px;
+}
+
+/* 3×2 offer grid via wrap — USS has no grid layout. Percent sizing keeps every breakpoint
+   honest: three across, two down, whatever the column's actual size. */
 .workbench-market__grid {
     min-width: 0;
     flex-grow: 1;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: center;
+    align-content: flex-start;
+    justify-content: flex-start;
     overflow: hidden;
 }
 
 .market-offer-card.decision-card--stock.market-offer-card--workbench {
-    width: 226px;
-    min-width: 226px;
-    height: 190px;
-    min-height: 190px;
-    margin-left: 7px;
-    margin-right: 7px;
-    margin-bottom: 0;
+    width: 32%;
+    min-width: 0;
+    height: 49%;
+    min-height: 0;
+    margin-left: 0.6%;
+    margin-right: 0.6%;
+    margin-bottom: 1%;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .market-offer-card.decision-card--stock.market-offer-card--workbench
     .market-offer-card__identity {
-    height: 146px;
-    min-height: 146px;
+    min-height: 0;
+    flex-grow: 1;
     padding-top: 6px;
 }
 
@@ -211,72 +323,85 @@
     .market-offer-card__title {
     height: 26px;
     min-height: 26px;
-    font-size: 17px;
+    font-size: 18px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+/* The art is the reclaimed space: it flexes to fill whatever the card's height affords. */
 .market-offer-card.decision-card--stock.market-offer-card--workbench
     .market-offer-card__art {
-    height: 96px;
+    height: auto;
     min-height: 96px;
-    flex-shrink: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .market-offer-card.decision-card--stock.market-offer-card--workbench
     .market-offer-card__commerce {
-    height: 44px;
-    min-height: 44px;
+    height: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
 }
 
-/* The body stacks the dossier over the Armory drawer band; the Market above never yields
-   (Design/workbench-dossier.md). */
-.workbench-body {
-    min-height: 0;
-    flex-grow: 1;
-    margin-top: 10px;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.workbench-dossier {
-    position: relative;
+/* Unit offers disclose tier + path on the card: RANK C ◇◇◇ / C → B ◆◇◇ (the same diamond
+   language as the rail cards; later-run pre-specced recruits arrive with filled marks). */
+.market-tier-strip {
     min-width: 0;
     flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
     overflow: hidden;
-    background-color: rgba(7, 12, 19, 0.985);
+}
+
+.market-tier-strip__label {
+    margin-right: 6px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.market-tier-strip__pip {
+    margin-right: 3px;
+    color: rgb(60, 60, 82);
+    font-size: 12px;
+}
+
+.market-tier-strip__pip--filled {
+    color: rgb(242, 207, 116);
+}
+
+.market-tier-strip__pip--pending {
+    color: rgb(230, 185, 92);
+}
+
+/* ---------- dossier column: 30%, full body height ---------- */
+.workbench-dossier {
+    position: relative;
+    width: 30%;
+    min-width: 300px;
+    margin-left: 10px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: rgba(15, 15, 24, 0.8);
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(74, 99, 129, 0.72);
-    border-right-color: rgba(74, 99, 129, 0.72);
-    border-top-color: rgba(74, 99, 129, 0.72);
-    border-bottom-color: rgba(74, 99, 129, 0.72);
-}
-
-.workbench-dossier__heading {
-    height: 38px;
-    min-height: 38px;
-    padding-left: 14px;
-    padding-right: 14px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    background-color: rgba(15, 25, 38, 0.92);
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(74, 99, 129, 0.55);
-}
-
-.workbench-dossier__label {
-    color: rgb(194, 207, 224);
-    font-size: 11px;
-    -unity-font-style: bold;
-    letter-spacing: 1.6px;
-}
-
-.workbench-dossier__hint {
-    font-size: 9px;
+    border-left-color: rgba(255, 255, 255, 0.08);
+    border-right-color: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.08);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
 }
 
 .workbench-dossier__slot {
@@ -285,13 +410,14 @@
     overflow: hidden;
 }
 
+/* ---------- the dossier's permanent narrow vertical form ---------- */
 .wb-inspector--workbench {
     width: 100%;
     height: 100%;
     min-height: 0;
-    padding-left: 14px;
-    padding-right: 14px;
-    padding-top: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 10px;
     padding-bottom: 10px;
     overflow: hidden;
     background-color: rgba(0, 0, 0, 0);
@@ -301,107 +427,95 @@
     border-bottom-width: 0;
 }
 
-/* Identity column left, detail column right (Design/workbench-dossier.md). The base
-   (fight-card) inspector keeps its stacked layout — only --workbench goes two-column. */
 .wb-inspector--workbench .wb-inspector__content {
     min-height: 0;
     flex-grow: 1;
-    flex-direction: row;
+    flex-direction: column;
     overflow: hidden;
 }
 
+/* Identity banner: full-width portrait, then name/subtitle/cost. */
 .wb-inspector--workbench .wb-inspector__overview {
-    width: 256px;
-    min-width: 256px;
+    width: 100%;
+    min-width: 0;
+    flex-shrink: 0;
+    margin-right: 0;
     flex-direction: column;
-    margin-right: 18px;
     overflow: hidden;
 }
 
 .wb-inspector--workbench .wb-inspector__portrait {
     width: 100%;
-    height: 118px;
-    min-height: 118px;
-    flex-shrink: 0;
+    height: 88px;
+    /* Rule text never squashes (workbench-frame): when a dossier carries PATH rows AND
+       rule sections, the banner yields height first — identity survives at 56px. */
+    min-height: 56px;
+    flex-shrink: 1;
     margin-right: 0;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
-/* The Hall's detail profile centers the summary vertically; in a stacked identity column
-   centered overflow spills BOTH ways — the title climbed into the portrait and the stats
-   fell past the clip (rounds 1-5's ghost). Top-anchor it. */
 .wb-inspector--workbench .wb-inspector__summary {
     min-height: 0;
-    flex-grow: 1;
+    flex-shrink: 0;
     justify-content: flex-start;
 }
 
 .wb-inspector--workbench .wb-inspector__heading {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     flex-shrink: 0;
-}
-
-/* Sections take their natural height — a row of sections must never stretch-crush a
-   sibling's rule copy (the weapon dossier's 6px copy in round 3). Width keeps its shrink:
-   only the vertical children pin (round 4 taught the difference). */
-.wb-inspector--workbench .wb-inspector__sections {
-    align-items: flex-start;
-}
-
-.wb-inspector--workbench .wb-inspector__line-copy {
-    flex-shrink: 0;
-    min-height: 20px;
 }
 
 .wb-inspector--workbench .wb-inspector__identity {
-    flex-shrink: 0;
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .wb-inspector--workbench .wb-inspector__economy {
-    margin-top: 4px;
-    margin-bottom: 6px;
-    /* The hub's 206px floor overflows the 196-256px identity column and clips the
-       price's last digit at 1024x768. Cost is never allowed to be obscured (law 8). */
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 8px;
     min-width: 0;
+    flex-shrink: 0;
 }
 
 .wb-inspector--workbench .wb-inspector__title {
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .wb-inspector--workbench .wb-inspector__subtitle {
-    min-height: 32px;
-    max-height: 64px;
+    min-height: 0;
+    max-height: 44px;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: var(--ui-type-meta);
     white-space: normal;
     overflow: hidden;
 }
 
-/* The stat rail leads the detail column — numbers beside the rules they parametrize, where
-   the identity column never had the height for them (round 7's finding). */
+/* Stat chips wrap under the identity. */
 .wb-inspector--workbench .wb-inspector__stats {
-    min-height: 58px;
+    min-height: 0;
     flex-shrink: 0;
     flex-direction: row;
     flex-wrap: wrap;
-    margin-bottom: 6px;
+    margin-top: 6px;
+    margin-bottom: 4px;
     overflow: hidden;
 }
 
-/* While the Armory drawer is open the dossier shows the projected unit: identity shrinks to
-   name + subtitle (the portrait is the selected footer card, one glance below; the stat
-   chips are cleared model-side — deltas carry the numbers). */
-.workbench--armory-open .wb-inspector--workbench .wb-inspector__portrait {
-    display: none;
-}
-
 .wb-inspector--workbench .wb-inspector-stat {
-    min-width: 108px;
-    height: 52px;
-    margin-right: 5px;
-    margin-bottom: 5px;
+    width: 24%;
+    min-width: 0;
+    height: 40px;
+    margin-right: 0.9%;
+    margin-bottom: 4px;
 }
 
 .wb-inspector--workbench .wb-inspector__detail {
@@ -411,17 +525,72 @@
     overflow: hidden;
 }
 
+/* One column now: sections stack; the equip preview stacks under the rules. */
 .wb-inspector--workbench .wb-inspector__decision-body {
     min-height: 0;
     flex-grow: 1;
-    flex-direction: row;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .wb-inspector--workbench .wb-inspector__column {
+    width: 100%;
     min-width: 0;
-    flex-grow: 1;
+    flex-shrink: 0;
     overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__sections {
+    align-items: stretch;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.wb-inspector--workbench .wb-inspector__section {
+    min-height: 0;
+    flex-shrink: 0;
+    margin-bottom: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    overflow: hidden;
+}
+
+.wb-inspector--workbench .wb-inspector__section-label {
+    font-size: var(--ui-type-meta);
+    letter-spacing: 0.9px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-heading {
+    min-height: 20px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context {
+    min-height: 20px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context-glyph {
+    width: 15px;
+    height: 15px;
+}
+
+.wb-inspector--workbench .wb-inspector__section-context-value {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench .wb-inspector__line-copy {
+    min-height: 18px;
+    max-height: 72px;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-size: var(--ui-type-body);
+}
+
+.wb-inspector--workbench .wb-inspector__line-title {
+    min-height: 22px;
+    flex-shrink: 0;
+    font-size: 16px;
 }
 
 /* Deferred sections: one compact line each — name always visible, full rule on hover. */
@@ -433,37 +602,41 @@
 .wb-deferred-row {
     flex-direction: row;
     align-items: center;
-    min-height: 34px;
-    margin-bottom: 4px;
+    min-height: 26px;
+    margin-bottom: 3px;
     padding-left: 10px;
     padding-right: 10px;
     padding-top: 4px;
     padding-bottom: 4px;
-    background-color: rgba(12, 20, 31, 0.85);
+    background-color: rgba(26, 26, 40, 0.7);
     border-left-width: 2px;
-    border-left-color: rgba(91, 126, 169, 0.65);
+    border-left-color: rgba(230, 185, 92, 0.6);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 .wb-deferred-row:hover,
 .wb-deferred-row:focus {
-    background-color: rgba(24, 41, 59, 1);
-    border-left-color: rgb(104, 165, 231);
+    background-color: rgba(38, 38, 58, 0.95);
+    border-left-color: rgb(230, 185, 92);
 }
 
 .wb-deferred-row__icon {
-    width: 24px;
+    width: 22px;
     flex-shrink: 0;
-    color: rgb(219, 178, 84);
-    font-size: 14px;
+    color: rgb(230, 185, 92);
+    font-size: 13px;
     -unity-text-align: middle-center;
 }
 
 .wb-deferred-row__label {
     flex-shrink: 0;
-    margin-left: 6px;
-    margin-right: 12px;
-    color: rgb(133, 158, 188);
-    font-size: 10px;
+    margin-left: 5px;
+    margin-right: 10px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
@@ -471,7 +644,7 @@
 .wb-deferred-row__name {
     min-width: 0;
     flex-grow: 1;
-    color: rgb(230, 236, 243);
+    color: rgb(233, 236, 243);
     font-size: 13px;
     -unity-font-style: bold;
     white-space: nowrap;
@@ -480,52 +653,110 @@
 
 .wb-deferred-row__hint {
     flex-shrink: 0;
-    margin-left: 12px;
-    color: rgb(94, 118, 148);
+    margin-left: 10px;
+    color: rgb(109, 109, 138);
     font-size: 9px;
     letter-spacing: 1px;
 }
 
-.wb-inspector--workbench .wb-inspector__section {
-    min-height: 64px;
-    margin-bottom: 6px;
-    padding-left: 11px;
-    padding-right: 11px;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    overflow: hidden;
+/* ---------- PATH: the champion's tier-up picks (B/A/S), mirrors the rail cards ---------- */
+.wb-path {
+    flex-shrink: 0;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.07);
 }
 
-.wb-inspector--workbench .wb-inspector__section-label {
+.wb-path__label {
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.wb-path-row {
+    flex-direction: row;
+    align-items: flex-start;
+    padding-top: 5px;
+    padding-bottom: 3px;
+}
+
+.wb-path-row__tile {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    margin-right: 9px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: rgb(242, 207, 116);
     font-size: 11px;
-    letter-spacing: 0.9px;
+    -unity-font-style: bold;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.65);
+    border-right-color: rgba(230, 185, 92, 0.65);
+    border-top-color: rgba(230, 185, 92, 0.65);
+    border-bottom-color: rgba(230, 185, 92, 0.65);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
-.wb-inspector--workbench .wb-inspector__line-copy {
-    max-height: 76px;
-    overflow: hidden;
+.wb-path-row--empty .wb-path-row__tile {
+    color: rgb(74, 74, 102);
+    border-left-color: rgba(255, 255, 255, 0.16);
+    border-right-color: rgba(255, 255, 255, 0.16);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-bottom-color: rgba(255, 255, 255, 0.16);
+}
+
+.wb-path-row__body {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.wb-path-row__name {
+    color: rgb(242, 238, 224);
     font-size: 13px;
+    -unity-font-style: bold;
 }
 
-.wb-inspector--workbench .wb-inspector__line-title {
-    font-size: 15px;
+.wb-path-row--empty .wb-path-row__name {
+    color: rgb(109, 109, 138);
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    margin-top: 2px;
 }
 
-/* Rank Up shares the identity column; its detail column is the typed one-page body:
-   guaranteed gains as before → after rows, the B/A/S ladder, then the two paths as
-   first-sentence previews (full rule on hover). */
+.wb-path-row__rule {
+    color: rgb(169, 169, 194);
+    font-size: var(--ui-type-meta);
+    white-space: normal;
+    overflow: hidden;
+    max-height: 30px;
+}
+
+/* ---------- rank-up one-page body in the narrow column ---------- */
 .wb-inspector--workbench.wb-inspector--rankup .wb-rank-up__gains {
     flex-direction: row;
     flex-wrap: wrap;
     flex-shrink: 0;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .wb-rank-up__gains .wb-comparison {
-    min-height: 32px;
-    margin-right: 12px;
-    margin-bottom: 4px;
+    height: 26px;
+    min-height: 26px;
+    margin-right: 10px;
+    margin-bottom: 2px;
     padding-left: 32px;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 .wb-rank-up__gains .wb-comparison__icon {
@@ -535,7 +766,6 @@
     height: 15px;
 }
 
-/* Typed Rank Up golden slice: one decision, one page. */
 .wb-rank-up {
     display: none;
     min-height: 0;
@@ -544,19 +774,19 @@
 }
 
 .wb-rank-up__tier-row {
-    height: 44px;
-    min-height: 44px;
-    flex-direction: row;
-    align-items: stretch;
+    flex-shrink: 0;
+    flex-direction: column;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-top-color: rgba(74, 99, 129, 0.55);
-    border-bottom-color: rgba(74, 99, 129, 0.55);
+    border-top-color: rgba(255, 255, 255, 0.07);
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    padding-top: 2px;
+    padding-bottom: 3px;
 }
 
 .wb-rank-up__label {
-    width: 160px;
-    min-width: 160px;
+    width: auto;
+    min-width: 0;
     padding-left: 2px;
     color: rgb(104, 165, 231);
     font-size: var(--ui-type-meta);
@@ -567,31 +797,36 @@
 
 .wb-rank-up__ladder {
     min-width: 0;
-    flex-grow: 1;
-    flex-direction: row;
-    align-items: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-top: 4px;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 .wb-rank-tier {
     position: relative;
-    height: 38px;
+    height: 22px;
+    min-height: 22px;
     min-width: 0;
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-left: 5px;
-    padding-left: 54px;
-    padding-right: 8px;
+    margin-bottom: 2px;
+    padding-left: 50px;
+    padding-right: 6px;
     justify-content: center;
     overflow: hidden;
-    background-color: rgba(17, 28, 42, 0.98);
+    background-color: rgba(24, 24, 38, 0.9);
     border-left-width: 2px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(91, 126, 169, 0.72);
-    border-right-color: rgba(74, 99, 129, 0.62);
-    border-top-color: rgba(74, 99, 129, 0.62);
-    border-bottom-color: rgba(74, 99, 129, 0.62);
+    border-left-color: rgba(255, 255, 255, 0.14);
+    border-right-color: rgba(255, 255, 255, 0.09);
+    border-top-color: rgba(255, 255, 255, 0.09);
+    border-bottom-color: rgba(255, 255, 255, 0.09);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     transition-property: translate, background-color, border-left-color;
     transition-duration: 90ms;
 }
@@ -599,44 +834,66 @@
 .wb-rank-tier:hover,
 .wb-rank-tier:focus {
     translate: 0 -2px;
-    background-color: rgba(27, 43, 63, 1);
-    border-left-color: rgb(104, 165, 231);
+    background-color: rgba(38, 38, 58, 1);
+    border-left-color: rgb(230, 185, 92);
 }
 
 .wb-rank-tier__rank {
     position: absolute;
-    left: 8px;
-    top: 5px;
+    left: 7px;
+    top: 2px;
     width: 22px;
-    color: rgb(217, 164, 58);
-    font-size: 17px;
+    color: rgb(230, 185, 92);
+    font-size: 12px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
 }
 
 .wb-rank-tier__icon {
     position: absolute;
-    left: 31px;
-    top: 7px;
+    left: 29px;
+    top: 3px;
     width: 18px;
-    color: rgb(217, 164, 58);
-    font-size: 13px;
+    color: rgb(230, 185, 92);
+    font-size: 12px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
 }
 
+.wb-rank-tier__name,
+.wb-rank-option__change,
+.wb-rank-option__name,
+.wb-rank-option__rule,
+.wb-path-row__name,
+.wb-path-row__rule,
+.wb-deferred-row__name,
+.wb-deferred-row__label,
+.wb-inspector--workbench .wb-comparison__label,
+.wb-inspector--workbench .wb-comparison__before,
+.wb-inspector--workbench .wb-comparison__arrow,
+.wb-inspector--workbench .wb-comparison__after,
+.wb-inspector--workbench .wb-comparison__direction,
+.wb-inspector--workbench .wb-inspector__section-label,
+.wb-inspector--workbench .wb-inspector__line-title,
+.wb-inspector--workbench .wb-inspector__line-copy {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 .wb-rank-tier__name {
-    max-height: 36px;
     color: rgb(226, 233, 242);
-    font-size: 13px;
+    font-size: 12px;
     -unity-font-style: bold;
-    white-space: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .wb-rank-tier--pending {
-    background-color: rgba(35, 31, 23, 0.98);
-    border-left-color: rgb(217, 164, 58);
+    background-color: rgba(46, 35, 14, 0.9);
+    border-left-color: rgb(230, 185, 92);
 }
 
 .wb-rank-tier--locked {
@@ -644,8 +901,9 @@
 }
 
 .wb-rank-up__choice-heading {
-    height: 20px;
-    min-height: 20px;
+    height: 16px;
+    min-height: 16px;
+    margin-top: 2px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -658,37 +916,42 @@
 }
 
 .wb-rank-up__hint {
-    color: rgb(137, 157, 183);
-    font-size: var(--ui-type-meta);
+    display: none;
 }
 
+/* Options stack vertically — two side-by-side previews cannot breathe in a 30% column. */
 .wb-rank-up__options {
     min-height: 0;
     flex-grow: 1;
-    flex-direction: row;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .wb-rank-option {
     min-width: 0;
+    min-height: 56px;
     flex-grow: 1;
     flex-basis: 0;
-    margin-left: 4px;
-    margin-right: 4px;
-    padding-left: 14px;
-    padding-right: 14px;
-    padding-top: 10px;
-    padding-bottom: 8px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 2px;
     overflow: hidden;
-    background-color: rgba(18, 31, 47, 0.98);
+    background-color: rgba(19, 19, 30, 0.85);
     border-left-width: 3px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
     border-left-color: rgb(104, 165, 231);
-    border-right-color: rgba(74, 99, 129, 0.66);
-    border-top-color: rgba(74, 99, 129, 0.66);
-    border-bottom-color: rgba(74, 99, 129, 0.66);
+    border-right-color: rgba(255, 255, 255, 0.09);
+    border-top-color: rgba(255, 255, 255, 0.09);
+    border-bottom-color: rgba(255, 255, 255, 0.09);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
     transition-property: translate, background-color, border-left-color;
     transition-duration: 90ms;
 }
@@ -696,12 +959,12 @@
 .wb-rank-option:hover,
 .wb-rank-option:focus {
     translate: 0 -2px;
-    background-color: rgba(26, 43, 63, 1);
-    border-left-color: rgb(217, 164, 58);
+    background-color: rgba(30, 30, 47, 1);
+    border-left-color: rgb(230, 185, 92);
 }
 
 .wb-rank-option__change {
-    min-height: 18px;
+    min-height: 12px;
     color: rgb(156, 178, 205);
     font-size: var(--ui-type-meta);
     -unity-font-style: bold;
@@ -709,17 +972,18 @@
 }
 
 .wb-rank-option__name {
-    min-height: 26px;
-    margin-top: 2px;
+    min-height: 18px;
+    margin-top: 0;
     color: rgb(239, 243, 248);
-    font-size: 19px;
+    font-size: 15px;
     -unity-font-style: bold;
 }
 
 .wb-rank-option__rule {
     min-height: 0;
     flex-grow: 1;
-    margin-top: 5px;
+    flex-shrink: 1;
+    margin-top: 2px;
     color: rgb(205, 216, 230);
     font-size: var(--ui-type-body);
     white-space: normal;
@@ -731,11 +995,15 @@
     transition-duration: 0ms;
 }
 
-/* Equipment projections can carry three or four stat rows. Keep the comparison rhythm dense
-   enough that the final row remains above the fixed action tray at the live 2558×1313 viewport. */
+/* ---------- equip preview stacks under the rules in the narrow column ---------- */
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__line-copy {
+    max-height: 44px;
+}
+
 .wb-inspector--workbench.wb-inspector--equipment-preview .wb-comparison,
 .wb-inspector--workbench.wb-inspector--weapon .wb-comparison {
-    min-height: 29px;
+    height: 26px;
+    min-height: 24px;
     margin-top: 2px;
     padding-left: 34px;
 }
@@ -748,57 +1016,40 @@
     height: 15px;
 }
 
-/* Item dossiers carry glyph art rather than a portrait: a shorter art box gives the
-   comparison column the height instead. */
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait,
-.wb-inspector--workbench.wb-inspector--trinket .wb-inspector__portrait,
 .wb-inspector--workbench.wb-inspector--inscription .wb-inspector__portrait,
 .wb-inspector--workbench.wb-inspector--capacity .wb-inspector__portrait {
-    height: 96px;
-    min-height: 96px;
+    height: 76px;
+    min-height: 76px;
 }
 
-/* The equip preview is the weapon/trinket dossier's PRIMARY content: a fixed right column
-   beside the rule column, never a squeezed afterthought. */
-.wb-inspector--workbench .wb-equipment-preview {
-    width: 46%;
-    min-width: 0;
-    flex-shrink: 0;
-    margin-left: 12px;
-    overflow: hidden;
+.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--trinket .wb-inspector__portrait,
+.wb-inspector--workbench.wb-inspector--rankup .wb-inspector__portrait {
+    height: 64px;
+    min-height: 64px;
 }
 
-/* Drawer open: the preview is the only detail content and owns the full width, with its
-   chrome compacted to fit the shortened body. */
-.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview {
-    width: 100%;
-    margin-left: 0;
-}
-
-.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview__title {
-    min-height: 22px;
-    margin-top: 0;
-    padding-top: 3px;
-}
-
-.workbench--armory-open .wb-inspector--workbench .wb-rule-delta {
-    min-height: 32px;
-    padding-top: 3px;
-}
-
-.workbench--armory-open .wb-inspector--workbench .wb-equipment-preview__label {
+/* The preview title names both items — the extra label was pure height. */
+.wb-inspector--workbench .wb-equipment-preview__label {
     display: none;
 }
 
-.workbench--armory-open .wb-deferred-row {
-    min-height: 28px;
-    margin-bottom: 3px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+.wb-inspector--workbench .wb-equipment-preview {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    flex-shrink: 1;
+    margin-left: 0;
+    margin-top: 4px;
+    overflow: hidden;
 }
 
-/* Every comparison cell clips instead of spilling into its neighbour (the "PO4WER → 19"
-   overlap from the armory-full capture). */
+.wb-inspector--workbench .wb-equipment-preview__title {
+    min-height: 20px;
+    margin-top: 0;
+    padding-top: 2px;
+}
+
 .wb-inspector--workbench .wb-comparison__label,
 .wb-inspector--workbench .wb-comparison__before,
 .wb-inspector--workbench .wb-comparison__after {
@@ -810,17 +1061,16 @@
     overflow: hidden;
 }
 
-/* The 4:3 floor has no height for the recipients row — and with the drawer open the unit
-   rail below IS the recipient picker. The chosen recipient stays named in the subtitle. */
+/* The rail below IS the recipient picker during equip; the chosen recipient stays named
+   in the subtitle. The row only earns its height on roomy viewports. */
 .layout--narrow .wb-equipment-preview__recipients,
-.layout--compact .wb-equipment-preview__recipients,
-.workbench--armory-open .wb-equipment-preview__recipients {
+.layout--compact .wb-equipment-preview__recipients {
     display: none;
 }
 
 .wb-inspector--workbench .wb-inspector__tags {
-    min-height: 30px;
-    max-height: 42px;
+    min-height: 28px;
+    max-height: 40px;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
@@ -829,36 +1079,36 @@
 }
 
 .wb-traits-label {
-    min-height: 28px;
+    min-height: 26px;
     margin-right: 8px;
-    padding-top: 7px;
+    padding-top: 6px;
     color: rgb(138, 158, 184);
-    font-size: 11px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
 
 .wb-trait-chip {
     position: relative;
-    min-width: 132px;
-    min-height: 28px;
+    min-width: 120px;
+    min-height: 26px;
     margin-right: 6px;
     margin-bottom: 4px;
-    padding-left: 31px;
-    padding-right: 9px;
+    padding-left: 29px;
+    padding-right: 8px;
     flex-direction: row;
     align-items: center;
-    background-color: rgba(28, 38, 53, 0.96);
+    background-color: rgba(38, 38, 58, 0.9);
     border-left-width: 1px;
     border-right-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(217, 164, 58, 0.56);
-    border-right-color: rgba(217, 164, 58, 0.56);
-    border-bottom-color: rgba(217, 164, 58, 0.56);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-left-color: rgba(230, 185, 92, 0.5);
+    border-right-color: rgba(230, 185, 92, 0.5);
+    border-bottom-color: rgba(230, 185, 92, 0.5);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
     transition-property: translate, background-color;
     transition-duration: 90ms;
 }
@@ -866,24 +1116,24 @@
 .wb-trait-chip:hover,
 .wb-trait-chip:focus {
     translate: 0 -2px;
-    background-color: rgba(45, 55, 72, 1);
+    background-color: rgba(52, 52, 76, 1);
 }
 
 .wb-trait-chip__icon {
     position: absolute;
-    left: 8px;
-    top: 4px;
+    left: 7px;
+    top: 3px;
     width: 20px;
     height: 20px;
-    color: rgb(217, 164, 58);
-    font-size: 13px;
+    color: rgb(230, 185, 92);
+    font-size: 12px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
 }
 
 .wb-trait-chip__rank {
     margin-right: 6px;
-    color: rgb(217, 164, 58);
+    color: rgb(230, 185, 92);
     font-size: 11px;
     -unity-font-style: bold;
 }
@@ -913,7 +1163,7 @@
     padding-left: 4px;
     padding-right: 4px;
     border-top-width: 1px;
-    border-top-color: rgba(217, 164, 58, 0.56);
+    border-top-color: rgba(230, 185, 92, 0.5);
 }
 
 .wb-trait-chip--inline .wb-trait-chip__rank {
@@ -925,151 +1175,202 @@
     font-size: 13px;
 }
 
+/* Actions pin to the column's foot; three compact pills fit the 30% width. */
 .wb-inspector--workbench .wb-inspector__actions {
-    height: 48px;
-    min-height: 48px;
+    height: 44px;
+    min-height: 44px;
     flex-direction: row;
     align-items: stretch;
     justify-content: flex-end;
 }
 
 .wb-inspector--workbench .wb-inspector__actions .btn {
-    min-width: 164px;
-    height: 42px;
-    margin-left: 7px;
+    min-width: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 38px;
+    margin-left: 6px;
+    font-size: var(--ui-type-meta);
+    border-top-left-radius: 19px;
+    border-top-right-radius: 19px;
+    border-bottom-left-radius: 19px;
+    border-bottom-right-radius: 19px;
 }
 
-/* Open drawer state: one horizontal band of item tiles above the unit rail. The rail and the
-   Market both stay fully visible — select an item here, then a socket below. The handle is
-   the warband bar's ARMORY chip; closed, the drawer has no footprint here at all. */
-.workbench-armory {
-    height: 184px;
-    min-height: 184px;
-    flex-shrink: 0;
-    margin-top: 8px;
-    padding-left: 14px;
-    padding-right: 14px;
-    padding-top: 8px;
+/* ---------- the armory rack: floats over the dossier's edge, grows from the chip ---------- */
+.workbench-rack {
+    position: absolute;
+    right: 22px;
+    bottom: 196px;
+    width: 244px;
+    max-height: 552px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 12px;
     padding-bottom: 10px;
     overflow: hidden;
-    background-color: rgba(8, 15, 23, 0.99);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 2px;
-    border-bottom-width: 1px;
-    border-top-color: rgb(104, 165, 231);
-    border-left-color: rgba(74, 99, 129, 0.72);
-    border-right-color: rgba(74, 99, 129, 0.72);
-    border-bottom-color: rgba(74, 99, 129, 0.72);
-}
-
-.workbench-armory__heading {
-    height: 40px;
-    min-height: 40px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.workbench-armory__heading-copy {
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.workbench-armory__heading-copy .workbench-section-heading__meta {
-    margin-left: 14px;
-    margin-top: 0;
-}
-
-.workbench-armory__heading-actions {
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.workbench-armory__page {
-    min-width: 48px;
-    -unity-text-align: middle-center;
-}
-
-.workbench-page-button {
-    width: 38px;
-    height: 34px;
-    margin-left: 3px;
-    margin-right: 3px;
-    color: rgb(185, 205, 230);
-    font-size: 21px;
-    background-color: rgba(21, 35, 52, 0.96);
+    background-color: rgba(17, 17, 27, 0.97);
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(91, 126, 169, 0.7);
-    border-right-color: rgba(91, 126, 169, 0.7);
-    border-top-color: rgba(91, 126, 169, 0.7);
-    border-bottom-color: rgba(91, 126, 169, 0.7);
+    border-left-color: rgba(230, 185, 92, 0.4);
+    border-right-color: rgba(230, 185, 92, 0.4);
+    border-top-color: rgba(230, 185, 92, 0.4);
+    border-bottom-color: rgba(230, 185, 92, 0.4);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
 }
 
-.workbench-armory__close {
-    width: 138px;
-    height: 34px;
-    margin-left: 9px;
-    font-size: 9px;
+.workbench-rack--drop-target {
+    background-color: rgba(23, 55, 57, 0.99);
+    border-left-color: rgb(88, 211, 177);
+    border-right-color: rgb(88, 211, 177);
+    border-top-color: rgb(88, 211, 177);
+    border-bottom-color: rgb(88, 211, 177);
 }
 
-.workbench-armory__grid {
-    min-height: 0;
-    flex-grow: 1;
+.workbench-rack__head {
     flex-direction: row;
-    justify-content: flex-start;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.workbench-rack__title {
+    color: rgb(242, 207, 116);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.workbench-rack__meta {
+    margin-left: 8px;
+    min-width: 0;
+    flex-grow: 1;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.workbench-rack__close {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    color: rgb(213, 213, 232);
+    font-size: 12px;
+    background-color: rgba(26, 26, 40, 0.6);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.16);
+    border-right-color: rgba(255, 255, 255, 0.16);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-bottom-color: rgba(255, 255, 255, 0.16);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.workbench-rack__grid {
+    min-height: 0;
+    flex-shrink: 1;
+    flex-direction: column;
+    margin-top: 8px;
     overflow: hidden;
 }
 
+/* Rack tile: one horizontal row per item. */
 .workbench-item {
     position: relative;
-    width: 16%;
-    min-width: 0;
-    flex-shrink: 1;
-    margin-right: 8px;
-    padding-left: 58px;
-    padding-right: 10px;
-    padding-top: 10px;
-    padding-bottom: 8px;
+    width: 100%;
+    min-height: 48px;
+    margin-bottom: 8px;
+    padding-left: 52px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 5px;
     overflow: hidden;
-    background-color: rgba(14, 24, 36, 0.98);
-    border-left-width: 2px;
+    justify-content: center;
+    background-color: rgba(26, 26, 40, 0.7);
+    border-left-width: 1px;
     border-right-width: 1px;
-    border-top-width: 2px;
+    border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(76, 102, 134, 0.88);
-    border-right-color: rgba(76, 102, 134, 0.7);
-    border-top-color: rgba(76, 102, 134, 0.76);
-    border-bottom-color: rgba(76, 102, 134, 0.7);
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
-    border-bottom-left-radius: 7px;
-    border-bottom-right-radius: 7px;
+    border-left-color: rgba(255, 255, 255, 0.1);
+    border-right-color: rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .workbench-item:hover,
 .workbench-item:focus,
 .workbench-item--selected {
-    background-color: rgba(24, 41, 59, 1);
-    border-left-color: rgb(104, 165, 231);
-    border-right-color: rgb(104, 165, 231);
-    border-top-color: rgb(104, 165, 231);
-    border-bottom-color: rgb(104, 165, 231);
+    background-color: rgba(40, 40, 62, 0.95);
+    border-left-color: rgb(230, 185, 92);
+    border-right-color: rgb(230, 185, 92);
+    border-top-color: rgb(230, 185, 92);
+    border-bottom-color: rgb(230, 185, 92);
 }
 
 .workbench-item--selected {
-    border-left-width: 5px;
+    border-left-width: 3px;
+}
+
+.workbench-item--drag-source {
+    opacity: 0.42;
+    border-left-color: rgb(88, 211, 177);
+    border-right-color: rgb(88, 211, 177);
+    border-top-color: rgb(88, 211, 177);
+    border-bottom-color: rgb(88, 211, 177);
+}
+
+.workbench-equipment-drag-ghost {
+    position: absolute;
+    width: 190px;
+    min-height: 52px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 10px;
+    padding-right: 12px;
+    background-color: rgba(7, 12, 19, 0.98);
+    border-left-width: 3px;
+    border-left-color: rgb(88, 211, 177);
+}
+
+.workbench-equipment-drag-ghost__icon {
+    width: 32px;
+    color: rgb(239, 227, 194);
+    font-size: 22px;
+}
+
+.workbench-equipment-drag-ghost__name {
+    min-width: 0;
+    flex-grow: 1;
+    color: rgb(234, 239, 247);
+    font-size: 12px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .workbench-item__classification {
     height: 18px;
-    color: rgb(135, 159, 190);
-    font-size: 9px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 0.8px;
     white-space: nowrap;
@@ -1079,40 +1380,42 @@
 .workbench-item__icon {
     position: absolute;
     left: 8px;
-    top: 32px;
-    width: 42px;
-    height: 42px;
+    top: 8px;
+    width: 32px;
+    height: 32px;
     color: rgb(219, 178, 84);
-    font-size: 26px;
+    font-size: 22px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
-    background-color: rgba(6, 11, 18, 0.9);
+    background-color: rgba(9, 9, 16, 0.9);
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(217, 164, 58, 0.58);
-    border-right-color: rgba(217, 164, 58, 0.58);
-    border-top-color: rgba(217, 164, 58, 0.58);
-    border-bottom-color: rgba(217, 164, 58, 0.58);
+    border-left-color: rgba(230, 185, 92, 0.5);
+    border-right-color: rgba(230, 185, 92, 0.5);
+    border-top-color: rgba(230, 185, 92, 0.5);
+    border-bottom-color: rgba(230, 185, 92, 0.5);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .workbench-item__title {
-    min-height: 48px;
+    min-height: 20px;
     flex-shrink: 0;
     color: rgb(238, 242, 247);
-    font-size: 16px;
+    font-size: 14px;
     -unity-font-style: bold;
-    white-space: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
+/* Facts stay in the tile tooltip on the rack's narrow tiles. */
 .workbench-item__facts {
-    min-height: 0;
-    flex-grow: 1;
-    flex-direction: row;
-    align-items: flex-end;
-    overflow: hidden;
+    display: none;
 }
 
 .workbench-item-fact {
@@ -1122,73 +1425,87 @@
 }
 
 .workbench-item-fact__label {
-    font-size: 8px;
+    font-size: var(--ui-type-meta);
 }
 
 .workbench-item-fact__value {
-    font-size: 13px;
+    font-size: var(--ui-type-body);
 }
 
-/* Lives inside the drawer heading now: one quiet line between the title and the pager. */
-.workbench-armory__instruction {
-    min-width: 0;
-    flex-shrink: 1;
-    margin-left: 18px;
-    margin-right: 18px;
-    color: rgb(129, 153, 184);
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    -unity-text-align: middle-center;
-}
-
-.workbench-armory__empty {
-    min-height: 0;
-    flex-grow: 1;
+.workbench-rack__empty {
+    min-height: 96px;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
 }
 
-.workbench-armory__empty-mark {
+.workbench-rack__empty-mark {
     color: rgb(104, 165, 231);
-    font-size: 42px;
+    font-size: 30px;
 }
 
-.workbench-armory__empty-title {
-    margin-top: 8px;
+.workbench-rack__empty-title {
+    margin-top: 6px;
     color: rgb(221, 229, 239);
-    font-size: 18px;
+    font-size: 15px;
     -unity-font-style: bold;
 }
 
-.workbench-armory__empty-copy {
-    margin-top: 4px;
-    color: rgb(133, 158, 188);
-    font-size: 11px;
-}
-
-.workbench-feedback {
-    position: absolute;
-    left: 26px;
-    right: 26px;
-    bottom: 10px;
-    height: 34px;
-    padding-top: 8px;
-    color: rgb(129, 221, 177);
-    font-size: 11px;
-    -unity-font-style: bold;
-    letter-spacing: 0.6px;
-    background-color: rgba(13, 40, 32, 0.96);
+.workbench-rack__empty-copy {
+    margin-top: 3px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    white-space: normal;
     -unity-text-align: middle-center;
 }
 
-.workbench-feedback--error {
-    color: rgb(235, 144, 136);
-    background-color: rgba(53, 24, 26, 0.96);
+.workbench-rack__foot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-/* Shared semantic runtime tooltip. The service changes only semantic classes and content. */
+.workbench-rack__page {
+    min-width: 48px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-page-button {
+    width: 38px;
+    height: 30px;
+    margin-left: 3px;
+    margin-right: 3px;
+    color: rgb(185, 205, 230);
+    font-size: 18px;
+    background-color: rgba(26, 26, 40, 0.8);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.14);
+    border-right-color: rgba(255, 255, 255, 0.14);
+    border-top-color: rgba(255, 255, 255, 0.14);
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.workbench-rack__hint {
+    margin-top: 6px;
+    color: rgb(143, 143, 168);
+    font-size: var(--ui-type-meta);
+    -unity-text-align: middle-center;
+    flex-shrink: 0;
+}
+
+/* Shared semantic runtime tooltip. The service changes only semantic classes and content.
+   (Deliberately untouched by the obsidian pass — the tooltip is a cross-screen instrument.) */
 .runtime-tooltip {
     position: absolute;
     width: 360px;
@@ -1257,7 +1574,7 @@
 
 .runtime-tooltip__eyebrow {
     color: rgb(139, 164, 194);
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1.3px;
 }
@@ -1265,7 +1582,7 @@
 .runtime-tooltip__title {
     margin-top: 2px;
     color: rgb(241, 244, 248);
-    font-size: 20px;
+    font-size: 24px;
     -unity-font-style: bold;
     white-space: normal;
 }
@@ -1276,7 +1593,7 @@
     padding-left: 9px;
     padding-top: 5px;
     color: rgb(174, 200, 228);
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1px;
     background-color: rgba(23, 38, 55, 0.94);
@@ -1287,7 +1604,7 @@
 .runtime-tooltip__body {
     margin-top: 9px;
     color: rgb(196, 208, 224);
-    font-size: 12px;
+    font-size: var(--ui-type-body);
     white-space: normal;
 }
 
@@ -1300,24 +1617,24 @@
 .runtime-tooltip-fact {
     width: 112px;
     min-width: 112px;
-    height: 50px;
+    height: 54px;
     margin-right: 5px;
     margin-bottom: 5px;
 }
 
 .runtime-tooltip-fact__label {
-    font-size: 8px;
+    font-size: var(--ui-type-meta);
 }
 
 .runtime-tooltip-fact__value {
-    font-size: 14px;
+    font-size: var(--ui-type-body);
 }
 
 .runtime-tooltip__context {
     margin-top: 9px;
     padding-top: 7px;
     color: rgb(157, 181, 211);
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 0.8px;
     border-top-width: 1px;
@@ -1327,7 +1644,7 @@
 .runtime-tooltip__footer {
     margin-top: 7px;
     color: rgb(118, 143, 174);
-    font-size: 9px;
+    font-size: var(--ui-type-meta);
     letter-spacing: 0.4px;
 }
 
@@ -1345,7 +1662,7 @@
     bottom: 0;
     align-items: center;
     justify-content: center;
-    background-color: rgba(3, 6, 11, 0.88);
+    background-color: rgba(3, 4, 8, 0.9);
 }
 
 .workbench-choice {
@@ -1356,19 +1673,23 @@
     padding-right: 34px;
     padding-top: 28px;
     padding-bottom: 30px;
-    background-color: rgba(9, 16, 25, 0.998);
+    background-color: rgba(14, 14, 22, 0.995);
     border-left-width: 3px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgb(217, 164, 58);
-    border-right-color: rgba(102, 132, 168, 0.8);
-    border-top-color: rgba(102, 132, 168, 0.8);
-    border-bottom-color: rgba(102, 132, 168, 0.8);
+    border-left-color: rgb(230, 185, 92);
+    border-right-color: rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
 .workbench-choice__eyebrow {
-    color: rgb(217, 164, 58);
+    color: rgb(230, 185, 92);
     font-size: 12px;
     -unity-font-style: bold;
     letter-spacing: 2px;
@@ -1408,29 +1729,33 @@
     padding-top: 18px;
     padding-bottom: 18px;
     align-items: flex-start;
-    background-color: rgba(18, 30, 45, 0.98);
+    background-color: rgba(22, 22, 34, 0.95);
     border-left-width: 2px;
     border-right-width: 1px;
     border-top-width: 2px;
     border-bottom-width: 1px;
-    border-left-color: rgba(83, 112, 148, 0.8);
-    border-right-color: rgba(83, 112, 148, 0.8);
-    border-top-color: rgba(83, 112, 148, 0.8);
-    border-bottom-color: rgba(83, 112, 148, 0.8);
+    border-left-color: rgba(255, 255, 255, 0.14);
+    border-right-color: rgba(255, 255, 255, 0.14);
+    border-top-color: rgba(255, 255, 255, 0.14);
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .workbench-choice-card:hover,
 .workbench-choice-card:focus {
-    background-color: rgba(29, 49, 70, 1);
-    border-left-color: rgb(104, 165, 231);
-    border-right-color: rgb(104, 165, 231);
-    border-top-color: rgb(104, 165, 231);
-    border-bottom-color: rgb(104, 165, 231);
+    background-color: rgba(34, 34, 52, 1);
+    border-left-color: rgb(230, 185, 92);
+    border-right-color: rgb(230, 185, 92);
+    border-top-color: rgb(230, 185, 92);
+    border-bottom-color: rgb(230, 185, 92);
 }
 
 .workbench-choice-card__eyebrow {
-    color: rgb(217, 164, 58);
-    font-size: 10px;
+    color: rgb(230, 185, 92);
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
@@ -1445,7 +1770,7 @@
 .workbench-choice-card__copy {
     margin-top: 12px;
     color: rgb(180, 197, 218);
-    font-size: 12px;
+    font-size: var(--ui-type-body);
     white-space: normal;
 }
 
@@ -1456,33 +1781,164 @@
     padding-left: 9px;
     padding-top: 7px;
     color: rgb(139, 211, 177);
-    font-size: 10px;
+    font-size: var(--ui-type-meta);
     -unity-font-style: bold;
     background-color: rgba(16, 45, 36, 0.9);
 }
 
-/* Eight fixed addresses fit in one permanent row. The rail spends enough height for portraits,
-   class, and two sockets, but never competes with the dossier for a fifth of the viewport. */
+.workbench-choice-scrim--endless {
+    background-color: rgba(3, 4, 8, 0.78);
+    justify-content: flex-start;
+    padding-top: 108px;
+}
+
+.workbench-choice-scrim--endless .workbench-choice {
+    width: 1260px;
+    min-height: 604px;
+    max-height: 604px;
+    border-left-width: 1px;
+    border-left-color: rgb(92, 102, 120);
+    border-right-color: rgb(92, 102, 120);
+    border-top-color: rgb(92, 102, 120);
+    border-bottom-color: rgb(92, 102, 120);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.workbench-choice-scrim--endless .workbench-choice__eyebrow {
+    align-self: center;
+    color: rgb(240, 182, 46);
+    letter-spacing: 2.4px;
+}
+
+.workbench-choice-scrim--endless .workbench-choice__title {
+    align-self: center;
+    margin-top: 10px;
+}
+
+.workbench-choice-scrim--endless .workbench-choice__copy {
+    max-width: 830px;
+    align-self: center;
+    margin-top: 13px;
+    font-size: 16px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.workbench-choice-scrim--endless .workbench-choice__options {
+    margin-top: 27px;
+}
+
+.workbench-choice-scrim--endless .workbench-choice-card {
+    /* The choice row owns the available height. A 390px minimum pushed the action footer a few
+       pixels through the row's overflow clip at both review targets, making the button look cut
+       off even though its label remained readable. Stretch inside the row and preserve the
+       authored 20px bottom inset instead. */
+    min-height: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 22px;
+    padding-bottom: 20px;
+    border-top-width: 3px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.workbench-choice-scrim--endless .workbench-choice-card--sand {
+    border-top-color: rgb(221, 168, 44);
+}
+
+.workbench-choice-scrim--endless .workbench-choice-card--tempo {
+    background-color: rgb(13, 30, 42);
+    border-top-color: rgb(79, 168, 221);
+}
+
+.workbench-choice-card__facts {
+    width: 100%;
+    margin-top: 22px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.workbench-choice-card__fact {
+    margin-left: 4px;
+    margin-right: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    color: rgb(170, 182, 200);
+    background-color: rgb(11, 16, 25);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(52, 65, 86);
+    border-right-color: rgb(52, 65, 86);
+    border-top-color: rgb(52, 65, 86);
+    border-bottom-color: rgb(52, 65, 86);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
+.workbench-choice-card__action {
+    width: 100%;
+    min-height: 46px;
+    margin-top: auto;
+    padding-top: 14px;
+    color: rgb(220, 229, 239);
+    background-color: rgb(42, 33, 16);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(158, 122, 39);
+    border-right-color: rgb(158, 122, 39);
+    border-top-color: rgb(158, 122, 39);
+    border-bottom-color: rgb(158, 122, 39);
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+}
+
+.workbench-choice-card--tempo .workbench-choice-card__action {
+    color: white;
+    background-color: rgb(35, 95, 158);
+    border-left-color: rgb(99, 174, 224);
+    border-right-color: rgb(99, 174, 224);
+    border-top-color: rgb(99, 174, 224);
+    border-bottom-color: rgb(99, 174, 224);
+}
+
+/* ---------- the editable rail: 186px progression cards (base styles in WarbandBarStyles;
+   the kit/path slot rows are sized there — this block owns the workbench-mode geometry) --- */
 .warband-bar--editable {
-    height: 146px;
-    min-height: 146px;
+    height: 186px;
+    min-height: 186px;
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 8px;
     padding-bottom: 8px;
-    background-color: rgba(4, 8, 13, 0.998);
-    border-top-width: 3px;
+    background-color: rgba(10, 10, 16, 0.94);
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.07);
 }
 
 .warband-bar--editable .warband-bar__identity,
 .warband-bar--editable .warband-bar__armory {
-    width: 120px;
-    min-width: 120px;
-    height: 126px;
+    width: 124px;
+    min-width: 124px;
+    height: 166px;
 }
 
 .warband-bar--editable .warband-bar__scroll {
-    height: 130px;
+    height: 170px;
     flex-grow: 1;
     overflow: hidden;
 }
@@ -1490,7 +1946,7 @@
 .warband-bar--editable .warband-bar__strip,
 .warband-bar--editable .warband-bar__slots,
 .warband-bar--editable .warband-bar__reserve {
-    height: 126px;
+    height: 166px;
 }
 
 .warband-bar--editable .warband-bar__strip {
@@ -1499,31 +1955,38 @@
 }
 
 .warband-bar--editable .warband-hero {
-    width: 100px;
-    min-width: 100px;
-    height: 118px;
+    width: 140px;
+    min-width: 140px;
+    height: 166px;
     margin-left: 3px;
     margin-right: 3px;
 }
 
 .warband-bar--editable .warband-hero--locked,
 .warband-bar--editable .warband-hero--empty {
-    width: 76px;
-    min-width: 76px;
+    width: 84px;
+    min-width: 84px;
 }
 
 .warband-bar--editable .warband-hero__portrait {
-    bottom: 44px;
+    bottom: 88px;
 }
 
 .warband-bar--editable .warband-hero__class {
-    bottom: 39px;
-    height: 19px;
-    font-size: 10px;
+    bottom: 66px;
+    height: 20px;
+    font-size: var(--ui-type-meta);
 }
 
 .warband-bar--editable .warband-hero__gear {
-    height: 38px;
+    height: 30px;
+    bottom: 34px;
+}
+
+/* The path row replaces the floating spec badges on the editable rail — same facts, fixed
+   B/A/S addresses. */
+.warband-bar--editable .warband-hero__specs {
+    display: none;
 }
 
 .warband-bar--editable .warband-bar__reserve {
@@ -1549,123 +2012,6 @@
     display: none;
 }
 
-/* Readability floor for the Workbench slice. These are semantic roles, not per-screen guesses:
-   display 28+, title 20+, body 16+, metadata 13+. Geometry yields before text. */
-.workbench-header__title {
-    font-size: 30px;
-}
-
-.workbench-header__act,
-.workbench-section-heading__meta,
-.workbench-armory__page,
-.workbench-dossier__hint {
-    font-size: var(--ui-type-meta);
-}
-
-.workbench-header__beat-label,
-.workbench-header__continue,
-.workbench-section-heading__title {
-    font-size: 16px;
-}
-
-.workbench-header__brief {
-    font-size: var(--ui-type-body);
-}
-
-.workbench-dossier__label,
-.workbench-armory__close,
-.workbench-armory__instruction,
-.workbench-feedback {
-    font-size: var(--ui-type-meta);
-}
-
-.wb-inspector--workbench .wb-inspector__subtitle,
-.wb-inspector--workbench .wb-inspector__section-label {
-    font-size: var(--ui-type-meta);
-}
-
-.wb-inspector--workbench .wb-inspector__section-heading {
-    min-height: 22px;
-}
-
-.wb-inspector--workbench .wb-inspector__section-context {
-    min-height: 22px;
-}
-
-.wb-inspector--workbench .wb-inspector__section-context-glyph {
-    width: 16px;
-    height: 16px;
-}
-
-.wb-inspector--workbench .wb-inspector__section-context-value {
-    font-size: var(--ui-type-meta);
-}
-
-/* Natural height: a one-line rule must not reserve four lines — the old 64px floor was the
-   hidden height hog that crushed hero-with-equipment states once the stat rail moved in. */
-.wb-inspector--workbench .wb-inspector__line-copy {
-    min-height: 20px;
-    max-height: 90px;
-    font-size: var(--ui-type-body);
-}
-
-/* flex-shrink 0: a squeezed section must clip its copy, never silently squash its title
-   (the CombatRecap flex-shrink lesson). */
-.wb-inspector--workbench .wb-inspector__line-title {
-    min-height: 22px;
-    flex-shrink: 0;
-    font-size: 17px;
-}
-
-
-.wb-inspector--workbench .wb-inspector__actions .btn {
-    font-size: var(--ui-type-body);
-}
-
-.workbench-item__classification,
-.workbench-item-fact__label {
-    font-size: var(--ui-type-meta);
-}
-
-.workbench-item__title {
-    font-size: 17px;
-}
-
-.workbench-item-fact__value,
-.workbench-armory__empty-copy {
-    font-size: var(--ui-type-body);
-}
-
-.runtime-tooltip__eyebrow,
-.runtime-tooltip__domain,
-.runtime-tooltip-fact__label,
-.runtime-tooltip__context,
-.runtime-tooltip__footer {
-    font-size: var(--ui-type-meta);
-}
-
-.runtime-tooltip__title {
-    font-size: 24px;
-}
-
-.runtime-tooltip__body,
-.runtime-tooltip-fact__value {
-    font-size: var(--ui-type-body);
-}
-
-.runtime-tooltip-fact {
-    height: 54px;
-}
-
-.workbench-choice-card__eyebrow,
-.workbench-choice-card__delta {
-    font-size: var(--ui-type-meta);
-}
-
-.workbench-choice-card__copy {
-    font-size: var(--ui-type-body);
-}
-
 .warband-bar--editable .warband-bar__eyebrow,
 .warband-bar--editable .warband-bar__section,
 .warband-bar--editable .warband-bar__manage,
@@ -1673,344 +2019,2114 @@
     font-size: var(--ui-type-meta);
 }
 
-.warband-bar--editable .warband-hero__class {
-    height: 22px;
-    bottom: 39px;
-    font-size: var(--ui-type-meta);
-}
-
 .warband-bar--editable .warband-gear__tier {
     font-size: 11px;
 }
 
-/* Compact desktop composition trades ornament and art height before rule text. */
+/* ---------- readability floor (semantic roles, not per-screen guesses) ---------- */
+.workbench-header__continue {
+    font-size: 15px;
+}
+
+.wb-inspector--workbench .wb-inspector__subtitle,
+.wb-inspector--workbench .wb-inspector__section-label {
+    font-size: var(--ui-type-meta);
+}
+
+.wb-inspector--workbench .wb-inspector__line-copy {
+    font-size: var(--ui-type-body);
+}
+
+.wb-inspector--workbench .wb-inspector__actions .btn {
+    font-size: var(--ui-type-meta);
+}
+
+.workbench-item__title {
+    font-size: 15px;
+}
+
+/* ---------- responsive: the percent grid carries most of it; these are the trims ---------- */
 .layout--compact .workbench-safe {
     left: 14px;
     right: 14px;
-    top: 12px;
-}
-
-.layout--compact .workbench-header__identity {
-    width: 210px;
-    min-width: 210px;
-}
-
-.layout--compact .workbench-header__commands {
-    min-width: 360px;
+    top: 10px;
+    bottom: 186px;
 }
 
 .layout--compact .workbench-header__continue {
-    width: 220px;
+    width: 200px;
 }
 
-/* Ultrawide viewports have ample horizontal room but less logical height after panel scaling.
-   The market yields display art before the dossier or permanent warband rail yields information. */
-.layout--compact .workbench-market {
-    height: 218px;
-    min-height: 218px;
-    padding-top: 7px;
-    padding-bottom: 6px;
+.layout--compact .workbench-track {
+    margin-left: 8px;
 }
 
-.layout--compact .workbench-section-heading {
-    height: 36px;
-    min-height: 36px;
+.layout--compact .workbench-dossier {
+    width: 32%;
 }
 
-.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench {
-    height: 166px;
-    min-height: 166px;
+.layout--compact .warband-bar--editable {
+    height: 172px;
+    min-height: 172px;
 }
 
-.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
-    .market-offer-card__identity {
-    height: 122px;
-    min-height: 122px;
-    padding-top: 4px;
+.layout--compact .warband-bar--editable .warband-hero {
+    width: 136px;
+    min-width: 136px;
+    height: 154px;
 }
 
-.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
-    .market-offer-card__title {
-    height: 22px;
-    min-height: 22px;
+.layout--compact .warband-bar--editable .warband-bar__identity,
+.layout--compact .warband-bar--editable .warband-bar__armory {
+    height: 154px;
 }
 
-.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
-    .market-offer-card__art {
-    height: 72px;
-    min-height: 72px;
-    flex-shrink: 0;
+.layout--compact .warband-bar--editable .warband-bar__strip,
+.layout--compact .warband-bar--editable .warband-bar__slots,
+.layout--compact .warband-bar--editable .warband-bar__reserve {
+    height: 154px;
 }
 
-.layout--compact .market-offer-card.decision-card--stock.market-offer-card--workbench
-    .market-offer-card__commerce {
-    height: 44px;
-    min-height: 44px;
+.layout--compact .warband-bar--editable .warband-hero__portrait {
+    bottom: 82px;
 }
 
-.layout--compact .workbench-dossier__heading {
-    height: 34px;
-    min-height: 34px;
+.layout--compact .warband-bar--editable .warband-hero__class {
+    bottom: 60px;
 }
 
-.layout--compact .workbench-armory {
-    height: 180px;
-    min-height: 180px;
+.layout--compact .workbench-rack {
+    bottom: 182px;
+    max-height: 480px;
+}
+
+/* 4:3: the dossier keeps its floor width; the market grid drops to two across. */
+.layout--narrow .workbench-dossier {
+    width: 34%;
+    min-width: 280px;
 }
 
 .layout--narrow .market-offer-card.decision-card--stock.market-offer-card--workbench {
-    width: 18%;
-    min-width: 0;
-    margin-left: 1%;
-    margin-right: 1%;
+    width: 48.5%;
+    height: 32.3%;
 }
 
-.layout--narrow .workbench-armory {
-    height: 176px;
-    min-height: 176px;
-}
-
-.layout--narrow .workbench-armory__instruction {
+.layout--narrow .workbench-track {
     display: none;
 }
 
+.layout--narrow .workbench-safe {
+    bottom: 160px;
+}
+
+.layout--narrow .workbench-rack {
+    bottom: 156px;
+    max-height: 460px;
+}
+
+.layout--narrow .workbench-header__continue {
+    width: 190px;
+    font-size: 12px;
+}
+
 .layout--narrow .workbench-item {
-    padding-left: 12px;
+    padding-left: 10px;
 }
 
 .layout--narrow .workbench-item__icon {
     display: none;
 }
 
-.layout--phone .warband-bar--editable {
+.layout--narrow .wb-path-row__rule {
+    display: none;
+}
+
+.layout--narrow .wb-inspector--workbench .wb-inspector__portrait {
+    height: 52px;
+    min-height: 52px;
+}
+
+.layout--narrow .wb-path-row {
+    padding-top: 3px;
+    padding-bottom: 2px;
+}
+
+.layout--narrow .wb-deferred-row {
+    min-height: 24px;
+    margin-bottom: 2px;
+}
+
+.layout--narrow .wb-inspector--workbench .wb-inspector__section {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.layout--narrow .wb-inspector--workbench.wb-inspector--weapon .wb-inspector__line-copy {
+    max-height: 62px;
+}
+
+/* 130% copy stress at 4:3 wants five lines; the freed banner height covers it. */
+.layout--narrow .wb-inspector--workbench.wb-inspector--recruit .wb-inspector__line-copy,
+.layout--narrow .wb-inspector--workbench.wb-inspector--champion .wb-inspector__line-copy {
+    max-height: 84px;
+}
+
+.layout--narrow .wb-inspector--workbench .wb-inspector-stat {
+    height: 36px;
+}
+
+.layout--narrow .wb-inspector--workbench .wb-inspector__subtitle {
+    max-height: 30px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.layout--narrow .warband-bar--editable {
     height: 146px;
     min-height: 146px;
 }
 
-.layout--compact .workbench-item {
-    padding-left: 50px;
-}
-
-.layout--compact .workbench-item__icon {
-    left: 6px;
-    top: 30px;
-    width: 36px;
-    height: 36px;
-    font-size: 22px;
-}
-
-/* Compact viewports: shorter identity column so the detail column keeps its height. */
-.layout--compact .wb-inspector--workbench .wb-inspector__overview {
-    width: 220px;
-    min-width: 220px;
-}
-
-.layout--compact .wb-inspector--workbench .wb-inspector__portrait {
-    height: 118px;
-    min-height: 118px;
-}
-
-.wb-inspector--workbench.wb-inspector--champion .wb-inspector__column--profile {
-    width: 100%;
-}
-
-.wb-inspector--workbench.wb-inspector--champion
-    .wb-inspector__column--profile .wb-inspector__sections {
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    padding-top: 0;
-    padding-bottom: 0;
-    flex-direction: row;
-}
-
-.wb-inspector--workbench.wb-inspector--champion
-    .wb-inspector__column--profile .wb-inspector__section {
-    min-width: 0;
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 0;
-    padding-top: 3px;
-    padding-bottom: 4px;
-}
-
-.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__column--profile,
-.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__column--secondary {
-    width: 50%;
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--recruit
-    .wb-inspector__column--profile .wb-inspector__sections {
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    padding-top: 0;
-    padding-bottom: 0;
-    flex-direction: row;
-}
-
-.wb-inspector--workbench.wb-inspector--recruit
-    .wb-inspector__column--profile .wb-inspector__section {
-    width: 50%;
-    min-width: 0;
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--recruit
-    .wb-inspector__column--secondary .wb-inspector__sections,
-.wb-inspector--workbench.wb-inspector--recruit
-    .wb-inspector__column--secondary .wb-inspector__section {
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    margin-bottom: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--weapon
-    .wb-inspector__column--profile .wb-inspector__sections,
-.wb-inspector--workbench.wb-inspector--trinket
-    .wb-inspector__column--profile .wb-inspector__sections,
-.wb-inspector--workbench.wb-inspector--inscription
-    .wb-inspector__column--profile .wb-inspector__sections {
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    padding-top: 0;
-    padding-bottom: 0;
-    flex-direction: row;
-}
-
-.wb-inspector--workbench.wb-inspector--weapon
-    .wb-inspector__column--profile .wb-inspector__section,
-.wb-inspector--workbench.wb-inspector--trinket
-    .wb-inspector__column--profile .wb-inspector__section,
-.wb-inspector--workbench.wb-inspector--inscription
-    .wb-inspector__column--profile .wb-inspector__section {
-    min-width: 0;
-    height: auto;
-    min-height: 0;
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 0;
-}
-
-.wb-inspector--workbench.wb-inspector--champion .wb-inspector__line-copy,
-.wb-inspector--workbench.wb-inspector--recruit .wb-inspector__line-copy,
-.wb-inspector--workbench.wb-inspector--weapon .wb-inspector__line-copy,
-.wb-inspector--workbench.wb-inspector--trinket .wb-inspector__line-copy,
-.wb-inspector--workbench.wb-inspector--inscription .wb-inspector__line-copy {
-    width: 100%;
-    min-width: 0;
-}
-
-/* A champion dossier already gives each rule its own equal-height column. Let the semantic copy
-   hug its wrapped text instead of reserving the global 64px prose floor; that artificial floor
-   can extend an otherwise visible two-line rule behind the pinned action tray at 720p. */
-.wb-inspector--workbench.wb-inspector--champion .wb-inspector__line-copy {
-    min-height: 0;
-    max-height: none;
-}
-
-.wb-inspector--workbench.wb-inspector--inscription .wb-inspector__line-copy {
-    min-height: 0;
-    max-height: none;
-}
-
-/* Equipment projection is a deliberate BUILD composition: the left column names the active
-   attack/signature/passive, while the right column owns recipient legality and exact item deltas.
-   Full rule bodies remain available from the unit/keyword tooltips instead of being silently
-   cropped beneath the comparison table. */
-.wb-inspector--workbench.wb-inspector--equipment-preview
-    .wb-inspector__line-copy {
-    display: none;
-}
-
-.wb-inspector--workbench.wb-inspector--equipment-preview
-    .wb-inspector__column--profile .wb-inspector__sections {
-    flex-direction: column;
-}
-
-.wb-inspector--workbench.wb-inspector--equipment-preview
-    .wb-inspector__column--profile .wb-inspector__section {
-    width: auto;
-    flex-basis: 0;
-    margin-left: 0;
-    margin-right: 5px;
-    margin-bottom: 4px;
-}
-
-.wb-inspector--workbench.wb-inspector--equipment-preview
-    .wb-equipment-preview__rule-deltas {
-    display: none;
-}
-
-/* 4:3 is the horizontal squeeze case under the height-locked panel profile. Preserve every
-   address and every authored item name by yielding a few pixels of rail/card ornament. */
 .layout--narrow .warband-bar--editable .warband-hero {
-    width: 98px;
-    min-width: 98px;
+    width: 96px;
+    min-width: 96px;
+    height: 118px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
-.layout--narrow .workbench-item {
-    width: 100%;
-    height: 15.3%;
-    margin-bottom: 1.3%;
-    padding-left: 60px;
-    padding-right: 8px;
-    padding-top: 7px;
-    padding-bottom: 5px;
+.layout--narrow .warband-bar--editable .warband-hero--locked,
+.layout--narrow .warband-bar--editable .warband-hero--empty {
+    width: 70px;
+    min-width: 70px;
 }
 
-.layout--narrow .workbench-item__icon {
-    left: 10px;
-    top: 13px;
-    width: 38px;
+.layout--narrow .warband-bar--editable .warband-bar__identity,
+.layout--narrow .warband-bar--editable .warband-bar__armory {
+    height: 126px;
+}
+
+.layout--narrow .warband-bar--editable .warband-bar__scroll {
+    height: 130px;
+}
+
+.layout--narrow .warband-bar--editable .warband-bar__strip,
+.layout--narrow .warband-bar--editable .warband-bar__slots,
+.layout--narrow .warband-bar--editable .warband-bar__reserve {
+    height: 126px;
+}
+
+.layout--narrow .warband-bar--editable .warband-hero__portrait {
+    bottom: 44px;
+}
+
+.layout--narrow .warband-bar--editable .warband-hero__class {
+    bottom: 39px;
+    height: 19px;
+}
+
+.layout--narrow .warband-bar--editable .warband-hero__gear {
+    bottom: -1px;
     height: 38px;
+}
+
+.layout--narrow .warband-bar--editable .warband-hero__path {
+    display: none;
+}
+
+.layout--narrow .warband-bar--editable .warband-gear--signature {
+    display: none;
+}
+
+.layout--narrow .warband-bar--editable .warband-hero__specs {
+    display: flex;
+}
+
+.layout--phone .warband-bar--editable {
+    height: 172px;
+    min-height: 172px;
+}
+
+/* ============================================================================
+   Muster state (workbench-frame): the workbench IS the muster screen.
+   ============================================================================ */
+
+.workbench-reroll-rail__free {
+    margin-top: 8px;
+    color: rgb(143, 143, 168);
+    font-size: 10px;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    display: none;
+}
+
+/* The spare sixth cell carries the instruction — same footprint as an offer card. */
+.workbench-muster-ghost {
+    width: 32%;
+    height: 49%;
+    margin-left: 0.6%;
+    margin-right: 0.6%;
+    margin-bottom: 1%;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.1);
+    border-right-color: rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(14, 14, 22, 0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+.workbench-muster-ghost__mark {
+    font-size: 26px;
+    color: rgb(60, 60, 82);
+}
+
+.workbench-muster-ghost__copy {
+    margin-top: 8px;
+    color: rgb(109, 109, 138);
+    font-size: 11px;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+/* Picked candidates: gold border, slot badge, MUSTERED mark in the commerce row. */
+.market-offer-card--mustered {
+    border-left-color: rgba(230, 185, 92, 0.65);
+    border-right-color: rgba(230, 185, 92, 0.65);
+    border-bottom-color: rgba(230, 185, 92, 0.65);
+}
+
+.market-offer-card__mustered {
+    color: rgb(242, 207, 116);
+    font-size: 11.5px;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+    display: none;
+}
+
+.market-offer-card__slot-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: rgb(230, 185, 92);
+    color: rgb(34, 23, 3);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    display: none;
+}
+
+/* ============================================================================
+   Rank-up modal (workbench-frame): the payoff moment. The scrim fades, the hero
+   card lands with an overshoot, options slide in, the awaiting slot breathes.
+   ============================================================================ */
+
+.workbench-rankup-scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(3, 4, 8, 0.88);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.22s;
+    transition-timing-function: ease-out;
+    display: none;
+}
+
+.workbench-rankup-scrim--live {
+    opacity: 1;
+}
+
+.workbench-rankup {
+    max-width: 1180px;
+    align-items: center;
+}
+
+.workbench-rankup__eyebrow {
+    color: rgb(230, 185, 92);
+    font-size: 13px;
+    letter-spacing: 5px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup__title {
+    margin-top: 6px;
+    color: rgb(244, 236, 216);
+    font-size: 30px;
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup__bump {
+    margin-top: 8px;
+    color: rgb(169, 169, 194);
+    font-size: 14px;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup__row {
+    margin-top: 22px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.workbench-rankup__hint {
+    margin-top: 20px;
+    color: rgb(143, 143, 168);
+    font-size: 12px;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+}
+
+/* --- the hero's progression card, center-stage --- */
+
+.workbench-rankup-card {
+    width: 214px;
+    margin-left: 11px;
+    margin-right: 11px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.55);
+    border-right-color: rgba(230, 185, 92, 0.55);
+    border-top-color: rgba(230, 185, 92, 0.55);
+    border-bottom-color: rgba(230, 185, 92, 0.55);
+    background-color: rgba(19, 19, 30, 0.98);
+    overflow: hidden;
+    transition-property: scale, translate, opacity;
+    transition-duration: 0.24s;
+    transition-timing-function: ease-out;
+}
+
+.workbench-rankup-card--pre {
+    scale: 0.62;
+    translate: 0 30px;
+    opacity: 0;
+}
+
+.workbench-rankup-card--pop {
+    scale: 1.05;
+}
+
+.workbench-rankup-card__portrait {
+    height: 128px;
+    background-color: rgba(8, 8, 14, 0.8);
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.workbench-rankup-card__fallback {
+    flex-grow: 1;
+    color: rgb(143, 143, 168);
+    font-size: 40px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-card__ranks {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.workbench-rankup-card__rank-from {
+    width: 24px;
+    height: 24px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.2);
+    border-right-color: rgba(255, 255, 255, 0.2);
+    border-top-color: rgba(255, 255, 255, 0.2);
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(26, 26, 40, 0.85);
+    color: rgb(143, 143, 168);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-card__rank-arrow {
+    margin-left: 5px;
+    margin-right: 5px;
+    color: rgb(230, 185, 92);
+    font-size: 13px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup-card__rank-to {
+    width: 28px;
+    height: 28px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    background-color: rgb(230, 185, 92);
+    color: rgb(34, 23, 3);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-card__name {
+    height: 26px;
+    background-color: rgba(26, 26, 40, 0.9);
+    color: rgb(242, 238, 224);
+    font-size: 13.5px;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-card__row {
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.workbench-rankup-card__foot {
+    padding-top: 10px;
+    padding-bottom: 12px;
+    color: rgb(143, 143, 168);
+    font-size: 10px;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+/* --- card slots (gear row + path row) --- */
+
+.workbench-rankup-slot {
+    width: 38px;
+    height: 33px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.12);
+    border-right-color: rgba(255, 255, 255, 0.12);
+    border-top-color: rgba(255, 255, 255, 0.12);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(26, 26, 40, 0.6);
+    align-items: center;
+    justify-content: center;
+    transition-property: border-color, background-color;
+    transition-duration: 0.6s;
+    transition-timing-function: ease-in-out;
+}
+
+.workbench-rankup-slot__glyph {
+    color: rgb(74, 74, 102);
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup-slot--filled {
+    border-left-color: rgba(230, 185, 92, 0.65);
+    border-right-color: rgba(230, 185, 92, 0.65);
+    border-top-color: rgba(230, 185, 92, 0.65);
+    border-bottom-color: rgba(230, 185, 92, 0.65);
+}
+
+.workbench-rankup-slot--filled .workbench-rankup-slot__glyph {
+    color: rgb(242, 207, 116);
+}
+
+.workbench-rankup-slot--await {
+    border-left-color: rgba(230, 185, 92, 0.85);
+    border-right-color: rgba(230, 185, 92, 0.85);
+    border-top-color: rgba(230, 185, 92, 0.85);
+    border-bottom-color: rgba(230, 185, 92, 0.85);
+    background-color: rgba(46, 35, 14, 0.45);
+}
+
+.workbench-rankup-slot--await .workbench-rankup-slot__glyph {
+    color: rgb(201, 167, 94);
+}
+
+.workbench-rankup-slot--pulse {
+    border-left-color: rgba(242, 207, 116, 1);
+    border-right-color: rgba(242, 207, 116, 1);
+    border-top-color: rgba(242, 207, 116, 1);
+    border-bottom-color: rgba(242, 207, 116, 1);
+    background-color: rgba(74, 56, 22, 0.7);
+}
+
+.workbench-rankup-slot__tag {
+    position: absolute;
+    right: 2px;
+    bottom: 1px;
+    color: rgb(143, 143, 168);
+    font-size: 9px;
+    -unity-font-style: bold;
+}
+
+/* --- option panels --- */
+
+.workbench-rankup-option {
+    width: 336px;
+    margin-left: 11px;
+    margin-right: 11px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 18px;
+    padding-bottom: 16px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.1);
+    border-right-color: rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(17, 17, 27, 0.96);
+    align-items: stretch;
+    transition-property: translate, opacity, border-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+.workbench-rankup-option:hover {
+    border-left-color: rgba(230, 185, 92, 0.75);
+    border-right-color: rgba(230, 185, 92, 0.75);
+    border-top-color: rgba(230, 185, 92, 0.75);
+    border-bottom-color: rgba(230, 185, 92, 0.75);
+}
+
+.workbench-rankup-option--from-left {
+    translate: -46px 0;
+    opacity: 0;
+}
+
+.workbench-rankup-option--from-right {
+    translate: 46px 0;
+    opacity: 0;
+}
+
+.workbench-rankup-option--in {
+    translate: 0 0;
+    opacity: 1;
+}
+
+.workbench-rankup-option__head {
+    flex-direction: row;
+    align-items: center;
+}
+
+.workbench-rankup-option__icon {
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.55);
+    border-right-color: rgba(230, 185, 92, 0.55);
+    border-top-color: rgba(230, 185, 92, 0.55);
+    border-bottom-color: rgba(230, 185, 92, 0.55);
+    background-color: rgba(46, 35, 14, 0.5);
+    color: rgb(242, 207, 116);
+    font-size: 22px;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-option__kind {
+    color: rgb(143, 143, 168);
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup-option__name {
+    margin-top: 2px;
+    color: rgb(242, 238, 224);
+    font-size: 21px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup-option__rule {
+    margin-top: 12px;
+    flex-grow: 1;
+    color: rgb(169, 169, 194);
+    font-size: 14.5px;
+    white-space: normal;
+}
+
+.workbench-rankup-option__delta {
+    margin-top: 4px;
+    color: rgb(127, 176, 232);
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.workbench-rankup-option__bind {
+    height: 42px;
+    margin-top: 16px;
+    border-top-left-radius: 21px;
+    border-top-right-radius: 21px;
+    border-bottom-left-radius: 21px;
+    border-bottom-right-radius: 21px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.16);
+    border-right-color: rgba(255, 255, 255, 0.16);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-bottom-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(26, 26, 40, 0.6);
+    color: rgb(213, 213, 232);
+    font-size: 12.5px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.workbench-rankup-option:hover .workbench-rankup-option__bind {
+    background-color: rgba(46, 35, 14, 0.8);
+    border-left-color: rgba(230, 185, 92, 0.65);
+    border-right-color: rgba(230, 185, 92, 0.65);
+    border-top-color: rgba(230, 185, 92, 0.65);
+    border-bottom-color: rgba(230, 185, 92, 0.65);
+    color: rgb(242, 207, 116);
+}
+
+/* Reduced motion: one short fade, nothing moves, nothing pulses. */
+.motion--reduced .workbench-rankup-scrim,
+.motion--reduced .workbench-rankup-card,
+.motion--reduced .workbench-rankup-option,
+.motion--reduced .workbench-rankup-slot {
+    transition-duration: 0.12s;
+}
+
+.motion--reduced .workbench-rankup-option--from-left,
+.motion--reduced .workbench-rankup-option--from-right {
+    translate: 0 0;
+    opacity: 1;
+}
+
+/* Narrow (4:3) trims: the ghost follows the 2-up grid; the modal slims to fit. */
+.layout--narrow .workbench-muster-ghost {
+    width: 48.5%;
+    height: 32.3%;
+}
+
+.layout--narrow .workbench-rankup-option {
+    width: 296px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.layout--narrow .workbench-rankup-card {
+    width: 192px;
+}
+
+.layout--narrow .workbench-rankup__title {
     font-size: 26px;
 }
 
-.layout--narrow .workbench-item__classification {
-    height: 18px;
+.layout--narrow .workbench--muster .workbench-header__title {
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+/* Muster/recruit dossier (workbench-frame): identity + rules + the PATH promise must ALL
+   fit — a compact fixed profile, not a flex negotiation. The portrait gives height first;
+   PATH rows tighten; nothing is allowed to slide under the actions row (contract-backed). */
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__portrait {
+    height: 50px;
+    min-height: 50px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__stats {
+    margin-bottom: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__section {
+    height: auto;
+    flex-shrink: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+    overflow: visible;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__decision-body,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__column--profile,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__sections,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-body,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-copy {
+    height: auto;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-body {
+    width: 0;
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__section-heading,
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-title-row {
     min-height: 18px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-title {
+    min-height: 18px;
+    font-size: 14px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit .wb-path {
+    margin-top: 4px;
+    padding-top: 2px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit .wb-path-row {
+    min-height: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path-row__tile {
+    width: 17px;
+    height: 17px;
+    margin-top: 1px;
+    margin-right: 7px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path-row__name {
+    margin-top: 0;
+    font-size: 10px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path-row__rule {
+    display: none;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path__teaser {
+    display: flex;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path__rows {
+    flex-direction: row;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit .wb-path-row {
+    width: 33.33%;
+    min-width: 0;
+    min-height: 22px;
+    padding-right: 4px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-path-row__name {
+    white-space: normal;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-inspector__line-copy {
+    max-height: 42px;
+}
+
+.workbench--muster .wb-inspector--workbench.wb-inspector--recruit
+    .wb-deferred-row {
+    margin-top: 4px;
+    margin-bottom: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+/* At 4:3 the dossier is narrower, so both authored rules wrap to three lines. Preserve
+   the full copy, then lay the dormant B/A/S promises across one compact row. */
+.layout--narrow .workbench--muster
+    .wb-inspector--workbench.wb-inspector--recruit .wb-inspector__line-copy {
+    max-height: 64px;
+}
+
+.layout--short .workbench--muster
+    .wb-inspector--workbench.wb-inspector--recruit .wb-path-row {
+    min-height: 22px;
+}
+
+/* ---------- TARGETS: the one behavioural fact the board cannot show -------------------
+   Space blue, not sand. Targeting is spatial (nearest / farthest / hexes), and sand is
+   reserved for Hourstone cost — see the rank badge note below. */
+.wb-targeting {
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 8px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 6px;
+    padding-bottom: 7px;
+    background-color: rgba(20, 34, 52, 0.9);
+    border-left-width: 2px;
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-targeting__label {
+    flex-shrink: 0;
+    margin-right: 10px;
+    color: rgb(150, 178, 210);
+    font-size: var(--ui-type-meta);
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.wb-targeting__value {
+    color: rgb(228, 236, 246);
+    font-size: var(--ui-type-body);
+    white-space: normal;
+}
+
+/* ---------- RANK BADGE: escalation by tier (approved r4-rank-ladder) ------------------
+   Four channels: plate colour, gem count, then — S ONLY — an inverted gold chip and a
+   gold title. C is deliberately undecorated; if every tier is decorated, none of them
+   reads as an escalation.
+
+   NOTE ON SAND: gold here is the RANK's gold, and it is the only non-currency use of the
+   hue in the shell. It is legible because it never sits next to a price — the price chip
+   lives in the economy row on the opposite side of the header. */
+.wb-rank-badge {
+    position: absolute;
+    right: 11px;
+    top: 11px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 3px;
+    padding-bottom: 2px;
+    border-width: 1px;
+}
+
+.wb-rank-badge__letter {
+    font-size: 15px;
+    -unity-font-style: bold;
+    letter-spacing: 1.6px;
+}
+
+.wb-rank-badge__gems {
+    margin-left: 5px;
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+
+.wb-rank-badge--c {
+    background-color: rgba(26, 36, 50, 0.9);
+    border-color: rgb(64, 83, 107);
+}
+.wb-rank-badge--c .wb-rank-badge__letter,
+.wb-rank-badge--c .wb-rank-badge__gems { color: rgb(140, 154, 175); }
+
+.wb-rank-badge--b {
+    background-color: rgba(42, 32, 24, 0.92);
+    border-color: rgb(138, 106, 60);
+}
+.wb-rank-badge--b .wb-rank-badge__letter,
+.wb-rank-badge--b .wb-rank-badge__gems { color: rgb(200, 154, 94); }
+
+.wb-rank-badge--a {
+    background-color: rgba(28, 42, 58, 0.95);
+    border-color: rgb(127, 168, 206);
+}
+.wb-rank-badge--a .wb-rank-badge__letter,
+.wb-rank-badge--a .wb-rank-badge__gems { color: rgb(207, 224, 242); }
+
+/* S: inverted — the only dark-on-light chip in the game, so it cannot be mistaken for a tier. */
+.wb-rank-badge--s {
+    background-color: rgb(228, 186, 104);
+    border-color: rgb(255, 231, 176);
+}
+.wb-rank-badge--s .wb-rank-badge__letter,
+.wb-rank-badge--s .wb-rank-badge__gems { color: rgb(14, 20, 30); }
+
+/* S's second exclusive channel: the name itself goes gold. */
+.wb-inspector--rank-s .wb-inspector__title { color: rgb(248, 226, 172); }
+
+/* ---------- DOSSIER SPACE PASS (Jake, 2026-07-29) --------------------------------------
+   Three complaints, one cause: the identity block, the stat tiles and the portrait were all
+   competing in the same vertical flow, and the portrait was the only element with
+   `flex-shrink: 1` — so it lost every argument and collapsed to a sliver while a 100px dead
+   band sat under the rules.
+
+   Fix: the identity CAPTIONS the portrait instead of stacking under it (reclaims the whole
+   block from the flow), the portrait gets the reclaimed height, and the stat tiles lose their
+   chrome to become a compact fact strip. Overrides only — the hub and combat variants keep
+   their own anatomy. */
+
+.wb-inspector--workbench .wb-inspector__overview {
+    position: relative;
+    /* MUST stay flex-shrink: 0. The identity band below is absolutely positioned, so this
+       element has no intrinsic content height beyond the portrait — letting it shrink collapses
+       the banner to nothing and stacks the name on top of itself (observed 2026-07-29).
+       Pressure is absorbed by the portrait's own min-height and the layout--short overrides. */
     flex-shrink: 0;
 }
 
-.layout--narrow .workbench-item__title {
+/* Nearly double. It still yields under real pressure (1280x720 with a full ladder), but it is
+   no longer the first and only thing that gives. */
+.wb-inspector--workbench .wb-inspector__portrait {
+    height: 168px;
+    min-height: 76px;
+}
+
+/* The identity band: out of the flow, captioning the art. This is the ~90px the rules and
+   SPECS were being squeezed out of. */
+.wb-inspector--workbench .wb-inspector__summary {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: rgba(7, 11, 17, 0.82);
+    border-left-width: 3px;
+    border-left-color: rgba(104, 165, 231, 0.85);
+}
+
+.wb-inspector--workbench .wb-inspector__title {
+    font-size: 26px;
+}
+
+/* One line. It is a scent line, not a paragraph — and the rank badge plus the eyebrow now say
+   most of what the old three-clause subtitle was spelling out. */
+.wb-inspector--workbench .wb-inspector__subtitle {
+    max-height: none;
+    font-size: var(--ui-type-meta);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The eyebrow sits ABOVE the identity band now, not at the portrait's floor. */
+.wb-inspector--workbench .wb-inspector__eyebrow {
+    bottom: auto;
+    top: 10px;
+    left: 12px;
+}
+
+/* Facts, not tiles: the chrome was costing more than the numbers. */
+.wb-inspector--workbench .wb-inspector__stats {
+    flex-wrap: nowrap;
+    margin-top: 2px;
+    margin-bottom: 8px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgba(97, 125, 158, 0.26);
+    border-bottom-color: rgba(97, 125, 158, 0.26);
+}
+
+.wb-inspector--workbench .wb-inspector-stat {
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: auto;
+    min-height: 0;
+    margin-right: 4px;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 2px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.wb-inspector--workbench .wb-inspector-stat__label { font-size: var(--ui-type-meta); }
+.wb-inspector--workbench .wb-inspector-stat__value { font-size: 20px; }
+
+/* SPECS must never be the thing that disappears — it is the whole point of the ladder. */
+.wb-inspector--workbench .wb-path {
+    flex-shrink: 0;
+}
+
+/* Short viewports (panel height < 820: 1280x720, 1024x768) cannot afford the tall banner AND a
+   full B/A/S ladder above the action row. The art yields there — SPECS does not, because the
+   ladder is the thing the dossier exists to show. At >= 820 the generous layout above stands. */
+.layout--short .wb-inspector--workbench .wb-inspector__portrait {
+    height: 88px;
+    min-height: 56px;
+}
+
+.layout--short .wb-inspector--workbench .wb-inspector__title { font-size: 21px; }
+
+.layout--short .wb-inspector--workbench .wb-inspector__summary {
+    bottom: 6px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.layout--short .wb-inspector--workbench .wb-inspector__stats {
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.layout--short .wb-inspector--workbench .wb-inspector-stat__value { font-size: 17px; }
+
+.layout--short .wb-inspector--workbench .wb-inspector__section {
+    margin-bottom: 7px;
+}
+
+.layout--short .wb-inspector--workbench .wb-path {
+    margin-top: 3px;
+    padding-top: 5px;
+}
+
+.layout--short .wb-inspector--workbench .wb-path-row {
+    padding-top: 2px;
+    padding-bottom: 1px;
+}
+
+/* ---------- APPROVED UNIT SHEET R5 ------------------------------------------------------
+   Recruit and owned-Champion dossiers share this anatomy. The identity column spends the
+   panel's height on character art; the mechanics column is a dense five-region sheet:
+   Health / Weapon / Signature / Passives / Specs. The class is data-driven: only inspectors
+   carrying a UnitSheetModel receive it, across Workbench, deployment, and combat. */
+
+.wb-inspector--unit-sheet {
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__content {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__overview {
+    width: 28%;
+    height: 100%;
+    min-width: 132px;
+    min-height: 0;
+    margin-right: 10px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__portrait {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__summary {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding-left: 11px;
+    padding-right: 11px;
+    padding-top: 9px;
+    padding-bottom: 10px;
+    background-color: rgba(7, 11, 17, 0.88);
+    border-left-width: 0;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__heading {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__identity {
+    width: 100%;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__title {
+    font-size: 25px;
+    white-space: normal;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__subtitle,
+.wb-inspector--unit-sheet .wb-inspector__economy {
+    display: none;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__eyebrow {
+    left: 9px;
+    top: 9px;
+    bottom: auto;
+    max-width: 84%;
+    font-size: 10px;
+    white-space: normal;
+}
+
+.wb-inspector--unit-sheet .wb-rank-badge {
+    right: 9px;
+    top: auto;
+    bottom: 58px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__detail {
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+/* Health is the only core chassis fact in the current content model. */
+.wb-inspector--unit-sheet .wb-inspector__stats {
     min-height: 48px;
+    margin-top: 0;
+    margin-bottom: 7px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 4px;
+    padding-bottom: 5px;
+    align-items: center;
+    border-top-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(97, 125, 158, 0.42);
+}
+
+.wb-inspector--unit-sheet .wb-inspector-stat {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+    flex-grow: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+.wb-inspector--unit-sheet .wb-inspector-stat__icon {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 27px;
+    height: 27px;
+    margin-right: 9px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector-stat__label {
+    margin-right: 11px;
+    color: rgb(176, 190, 208);
+    font-size: 14px;
+    letter-spacing: 1.2px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector-stat__value {
+    margin-top: 0;
+    color: rgb(244, 153, 155);
+    font-size: 27px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__decision-body,
+.wb-inspector--unit-sheet .wb-inspector__column--profile {
+    min-height: 0;
+    flex-grow: 1;
+    overflow: visible;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__sections {
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: visible;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__section {
+    height: auto;
+    flex-shrink: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgba(14, 22, 34, 0.82);
+    border-top-width: 0;
+    border-left-width: 2px;
+    border-left-color: rgba(93, 120, 153, 0.56);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    overflow: visible;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__section-heading {
+    min-height: 20px;
+    margin-bottom: 2px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__section-label,
+.wb-inspector--unit-sheet .wb-path__label {
+    color: rgb(169, 185, 205);
+    font-size: 13px;
+    letter-spacing: 1.4px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__line {
+    min-width: 0;
+    height: auto;
+    flex-shrink: 0;
+    align-items: flex-start;
+    overflow: visible;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__line-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 9px;
+    padding-top: 6px;
     flex-shrink: 0;
     font-size: 15px;
 }
 
-.layout--narrow .workbench-item__facts {
+.wb-inspector--unit-sheet .wb-inspector__line-body {
+    width: 0;
+    min-width: 0;
+    height: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: visible;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__line-title {
+    min-height: 20px;
+    color: rgb(242, 239, 231);
+    font-size: 17px;
+}
+
+.wb-inspector--unit-sheet .wb-inspector__line-copy {
+    width: auto;
+    height: auto;
+    min-height: 21px;
+    max-height: none;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: rgb(195, 205, 218);
+    font-size: 16px;
+    white-space: normal;
+    overflow: visible;
+}
+
+/* Weapon owns the full attack profile. The persistent row is glyph + value only; typed
+   definitions remain attached to each focusable fact. */
+.wb-inspector--unit-sheet .wb-unit-weapon {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 9px;
+    border-left-width: 3px;
+    border-left-color: rgb(231, 142, 76);
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__heading {
+    min-height: 28px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__identity {
+    width: 0;
+    min-width: 0;
+    margin-left: 10px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__icon {
+    margin-right: 7px;
+    color: rgb(244, 163, 94);
+    font-size: 18px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__name {
+    width: 0;
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    color: rgb(245, 240, 232);
+    font-size: 16px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__facts {
+    min-height: 52px;
+    margin-top: 6px;
+    flex-direction: row;
+    align-items: stretch;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgba(76, 101, 130, 0.64);
+    border-bottom-color: rgba(76, 101, 130, 0.64);
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon__facts--wrap {
+    flex-wrap: wrap;
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat {
+    width: 25%;
+    min-width: 48px;
+    min-height: 50px;
+    margin-right: 0;
+    margin-bottom: 0;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 1px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-color: rgba(76, 101, 130, 0.5);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat:hover,
+.wb-inspector--unit-sheet .wb-weapon-stat:focus {
+    background-color: rgba(31, 52, 77, 0.88);
+    border-bottom-width: 2px;
+    border-bottom-color: rgb(111, 148, 190);
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat__icon {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 19px;
+    height: 19px;
+    margin-right: 7px;
+    flex-shrink: 0;
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat__label {
     display: none;
 }
 
-/* Narrow (4:3) viewports: a slimmer identity column keeps the detail column readable. */
-.layout--narrow .wb-inspector--workbench .wb-inspector__overview {
-    width: 196px;
-    min-width: 196px;
-    margin-right: 12px;
+.wb-inspector--unit-sheet .wb-weapon-stat__value {
+    margin-top: 0;
+    color: rgb(242, 184, 112);
+    font-size: 22px;
+    -unity-font-style: bold;
+    white-space: nowrap;
 }
 
-.layout--narrow .wb-inspector--workbench .wb-inspector__portrait {
-    height: 108px;
-    min-height: 108px;
+.wb-inspector--unit-sheet .wb-weapon-stat.decision-fact--reach .wb-weapon-stat__value {
+    color: rgb(121, 191, 255);
 }
 
-.layout--narrow .wb-inspector--workbench .wb-equipment-preview {
-    width: 52%;
+.wb-inspector--unit-sheet .wb-weapon-stat.decision-fact--cadence .wb-weapon-stat__value {
+    color: rgb(202, 177, 245);
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat.decision-fact--mana .wb-weapon-stat__value {
+    color: rgb(112, 222, 219);
+}
+
+.wb-inspector--unit-sheet .wb-weapon-stat.decision-fact--precision .wb-weapon-stat__value {
+    color: rgb(241, 164, 228);
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property {
+    min-height: 34px;
+    margin-top: 5px;
+    padding-left: 9px;
+    padding-right: 9px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(7, 14, 24, 0.76);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(78, 102, 130, 0.42);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property:hover,
+.wb-inspector--unit-sheet .wb-unit-weapon-property:focus {
+    background-color: rgba(29, 48, 71, 0.94);
+    border-bottom-color: rgb(111, 148, 190);
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property__name {
+    flex-shrink: 0;
+    color: rgb(242, 189, 97);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property__separator {
+    margin-left: 7px;
+    margin-right: 7px;
+    flex-shrink: 0;
+    color: rgb(89, 108, 131);
+    font-size: 15px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property__summary {
+    width: 0;
+    min-width: 0;
+    flex-grow: 1;
+    color: rgb(208, 216, 227);
+    font-size: 13px;
+    white-space: normal;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property__inactive {
+    margin-left: 7px;
+    flex-shrink: 0;
+    color: rgb(224, 132, 134);
+    font-size: 10px;
+    -unity-font-style: bold;
+    letter-spacing: 0.8px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-weapon-property--inactive {
+    opacity: 0.68;
+}
+
+.wb-inspector--unit-sheet .wb-unit-signature {
+    border-left-color: rgb(104, 165, 231);
+}
+
+.wb-inspector--unit-sheet .wb-unit-signature .wb-inspector__section-context {
+    min-height: 24px;
+    margin-left: 9px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-signature .wb-inspector__section-context-glyph {
+    width: 17px;
+    height: 17px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-signature .wb-inspector__section-context-value {
+    font-size: 13px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-passives {
+    border-left-color: rgba(126, 151, 184, 0.72);
+}
+
+.wb-inspector--unit-sheet .wb-unit-passives .wb-inspector__line {
+    margin-bottom: 5px;
+}
+
+/* Specs are three fixed addresses. A selected icon replaces its letter; empty slots are inert. */
+.wb-inspector--unit-sheet .wb-path--unit-slots {
+    margin-top: 1px;
+    padding-top: 5px;
+    flex-direction: row;
+    align-items: center;
+    border-top-color: rgba(97, 125, 158, 0.42);
+}
+
+.wb-inspector--unit-sheet .wb-path--unit-slots .wb-path__label {
+    width: 52px;
+    margin-right: 7px;
+    flex-shrink: 0;
+}
+
+.wb-inspector--unit-sheet .wb-path--unit-slots .wb-path__rows {
+    min-width: 0;
+    min-height: 40px;
+    margin-top: 0;
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.wb-inspector--unit-sheet .wb-unit-spec {
+    width: 32%;
+    min-height: 40px;
+    margin-right: 1%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(11, 18, 29, 0.74);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(89, 108, 131, 0.5);
+    border-right-color: rgba(89, 108, 131, 0.5);
+    border-top-color: rgba(89, 108, 131, 0.5);
+    border-bottom-color: rgba(89, 108, 131, 0.5);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.wb-inspector--unit-sheet .wb-unit-spec__value {
+    color: rgb(105, 121, 143);
+    font-size: 17px;
+    -unity-font-style: bold;
+}
+
+.wb-inspector--unit-sheet .wb-unit-spec--selected {
+    background-color: rgba(35, 39, 36, 0.92);
+    border-left-color: rgba(230, 185, 92, 0.72);
+    border-right-color: rgba(230, 185, 92, 0.72);
+    border-top-color: rgba(230, 185, 92, 0.72);
+    border-bottom-color: rgba(230, 185, 92, 0.72);
+}
+
+.wb-inspector--unit-sheet .wb-unit-spec--selected:hover,
+.wb-inspector--unit-sheet .wb-unit-spec--selected:focus {
+    background-color: rgba(58, 51, 36, 0.98);
+    border-left-color: rgb(242, 207, 116);
+    border-right-color: rgb(242, 207, 116);
+    border-top-color: rgb(242, 207, 116);
+    border-bottom-color: rgb(242, 207, 116);
+}
+
+.wb-inspector--unit-sheet .wb-unit-spec--selected .wb-unit-spec__value {
+    color: rgb(242, 207, 116);
+    font-size: 22px;
+}
+
+/* Below the wide dossier threshold, portrait becomes a banner while the five regions and
+   their reading order remain unchanged. The art yields before type or Specs. */
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__content {
+    flex-direction: column;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__overview {
+    width: 100%;
+    height: 118px;
+    min-width: 0;
+    min-height: 78px;
+    margin-right: 0;
+    margin-bottom: 7px;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__portrait {
+    height: 100%;
+    min-height: 78px;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-rank-badge {
+    bottom: 9px;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__summary {
+    right: auto;
+    width: 58%;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__detail {
+    width: 100%;
+    height: auto;
+}
+
+.layout--narrow .wb-inspector--unit-sheet .wb-inspector__line-copy {
+    max-height: none;
+}
+
+/* At the compact desktop width the dossier itself is only about 470px: that is not enough for
+   two honest internal columns. Use the same banner treatment before text is forced narrow. */
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__content {
+    flex-direction: column;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__overview {
+    width: 100%;
+    height: 104px;
+    min-width: 0;
+    min-height: 76px;
+    margin-right: 0;
+    margin-bottom: 6px;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__portrait {
+    height: 100%;
+    min-height: 76px;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-rank-badge {
+    bottom: 9px;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__summary {
+    right: auto;
+    width: 58%;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__detail {
+    width: 100%;
+    height: auto;
+}
+
+.layout--compact .wb-inspector--unit-sheet .wb-inspector__line-copy {
+    max-height: none;
+}
+
+/* Component-width fallback. The global environment classifies the whole 1600px screen as wide,
+   while its right dossier resolves to ~460 panel points. This sheet therefore owns one local
+   geometry class: under 490 points the portrait becomes a compact banner. The supplied large
+   target resolves just above that threshold and retains the approved vertical portrait. */
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__content {
+    flex-direction: column;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__overview {
+    width: 100%;
+    height: 60px;
+    min-width: 0;
+    min-height: 52px;
+    margin-right: 0;
+    margin-bottom: 5px;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__portrait {
+    height: 100%;
+    min-height: 52px;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-rank-badge {
+    bottom: 9px;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__summary {
+    right: auto;
+    width: 58%;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__detail {
+    width: 100%;
+    height: auto;
+}
+
+.wb-inspector--unit-sheet.wb-inspector--unit-sheet-narrow .wb-inspector__line-copy {
+    max-height: none;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__overview {
+    height: 50px;
+    min-height: 46px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__portrait {
+    height: 100%;
+    min-height: 46px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__title {
+    font-size: 21px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__stats {
+    min-height: 46px;
+    margin-bottom: 4px;
+    padding-top: 2px;
+    padding-bottom: 4px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__section {
+    margin-bottom: 3px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-unit-weapon__facts {
+    min-height: 48px;
+    margin-top: 5px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-weapon-stat {
+    min-height: 46px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-unit-weapon-property {
+    min-height: 34px;
+    margin-top: 5px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-inspector__line-copy {
+    font-size: 16px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-path--unit-slots .wb-path__rows {
+    min-height: 42px;
+}
+
+.layout--short .wb-inspector--unit-sheet .wb-unit-spec {
+    min-height: 38px;
+}
+
+.motion--reduced .wb-inspector--unit-sheet .wb-weapon-stat,
+.motion--reduced .wb-inspector--unit-sheet .wb-unit-weapon-property,
+.motion--reduced .wb-inspector--unit-sheet .wb-unit-spec {
+    transition-duration: 0s;
+}
+
+/* ---------- COMPACT LIVE UNIT SHEET ---------------------------------------------------
+   Same renderer and anatomy as Workbench; combat only changes geometry and adds the live-state
+   footer. The banner is locked when the card opens, so a walking unit never causes reflow. */
+.wb-inspector--combat.wb-inspector--unit-sheet {
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__overview {
+    width: 100%;
+    height: 66px;
+    min-width: 0;
+    min-height: 66px;
+    margin-right: 0;
+    margin-bottom: 5px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__portrait {
+    width: 100%;
+    height: 66px;
+    min-height: 66px;
+    margin-right: 0;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__summary {
+    position: absolute;
+    left: 0;
+    right: auto;
+    top: auto;
+    bottom: 0;
+    width: 62%;
+    min-width: 0;
+    padding-left: 11px;
+    padding-right: 11px;
+    padding-top: 7px;
+    padding-bottom: 8px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__eyebrow {
+    position: absolute;
+    left: 9px;
+    top: 5px;
+    bottom: auto;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 10px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__title {
+    font-size: 23px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__subtitle {
+    display: none;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__detail {
+    width: 100%;
+    height: auto;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__stats {
+    min-height: 45px;
+    margin-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat {
+    min-width: 0;
+    width: auto;
+    margin-right: 9px;
+    flex-grow: 0;
+    flex-shrink: 1;
+    justify-content: center;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat.mechanic--durability {
+    flex-grow: 1;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat.mechanic--protection .wb-inspector-stat__label,
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat.mechanic--mana .wb-inspector-stat__label {
+    display: none;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat__icon {
+    width: 22px;
+    height: 22px;
+    margin-right: 6px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat__label {
+    margin-right: 7px;
+    font-size: 11px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat__value {
+    font-size: 21px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat.mechanic--protection .wb-inspector-stat__value {
+    color: rgb(91, 190, 203);
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector-stat.mechanic--mana .wb-inspector-stat__value {
+    color: rgb(83, 211, 213);
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__section {
+    margin-bottom: 4px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__section-heading {
+    min-height: 18px;
+    margin-bottom: 0;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__line-title-row {
+    min-height: 20px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-weapon {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-weapon__facts {
+    min-height: 44px;
+    margin-top: 4px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-weapon-stat {
+    min-height: 42px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-weapon__facts--wrap .wb-weapon-stat {
+    min-width: 25%;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-weapon-stat__value {
+    font-size: 19px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-weapon-property {
+    min-height: 30px;
+    margin-top: 4px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__line-icon {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+    padding-top: 5px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__line-title {
+    min-height: 18px;
+    font-size: 16px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__line-copy {
+    min-height: 19px;
+    margin-top: 1px;
+    font-size: 16px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-path--unit-slots {
+    min-height: 38px;
+    margin-top: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 4px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-path--unit-slots .wb-path__rows {
+    min-height: 34px;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-spec {
+    width: 38px;
+    min-height: 34px;
+    margin-right: 5px;
+    flex-grow: 0;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-inspector__tags {
+    min-height: 34px;
+    margin-top: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    background-color: rgba(7, 14, 24, 0.76);
+    border-top-width: 1px;
+    border-top-color: rgba(97, 125, 158, 0.42);
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-state__targeting {
+    margin-right: 9px;
+    color: rgb(181, 196, 215);
+    font-size: 12px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-status {
+    min-height: 23px;
+    margin-right: 5px;
+    margin-bottom: 2px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: rgb(242, 189, 97);
+    background-color: rgba(67, 49, 23, 0.82);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.54);
+    border-right-color: rgba(230, 185, 92, 0.54);
+    border-top-color: rgba(230, 185, 92, 0.54);
+    border-bottom-color: rgba(230, 185, 92, 0.54);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    font-size: 11px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-status:hover,
+.wb-inspector--combat.wb-inspector--unit-sheet .wb-unit-status:focus {
+    color: rgb(255, 221, 144);
+    background-color: rgba(88, 65, 30, 0.96);
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet-enemy .wb-inspector__portrait {
+    background-color: rgb(31, 18, 19);
+}
+
+.wb-inspector--combat.wb-inspector--unit-sheet-enemy .wb-inspector__portrait-fallback {
+    color: rgb(224, 118, 91);
+    font-size: 27px;
 }

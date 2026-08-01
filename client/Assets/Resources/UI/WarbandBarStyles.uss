@@ -215,6 +215,16 @@
     border-bottom-color: rgb(104, 165, 231);
 }
 
+.warband-hero--gear-drop-target {
+    opacity: 1;
+    translate: 0 -5px;
+    background-color: rgba(25, 73, 72, 1);
+    border-left-color: rgb(88, 211, 177);
+    border-right-color: rgb(88, 211, 177);
+    border-top-color: rgb(88, 211, 177);
+    border-bottom-color: rgb(88, 211, 177);
+}
+
 .warband-hero__portrait {
     position: absolute;
     left: 3px;
@@ -364,6 +374,75 @@
     -unity-text-align: middle-center;
 }
 
+/* Kit-row signature slot (workbench-refactor): disclosure only, so it exists only where the
+   card has room — the editable rail. Never a drop target. */
+.warband-gear--signature {
+    display: none;
+    color: rgb(242, 207, 116);
+    border-left-color: rgba(230, 185, 92, 0.6);
+    border-right-color: rgba(230, 185, 92, 0.6);
+    border-top-color: rgba(230, 185, 92, 0.6);
+    border-bottom-color: rgba(230, 185, 92, 0.6);
+}
+
+.warband-bar--editable .warband-gear--signature {
+    display: flex;
+}
+
+/* Path row: three fixed B/A/S slots under the kit row — editable rail only. */
+.warband-hero__path {
+    display: none;
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    bottom: 2px;
+    height: 28px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.warband-bar--editable .warband-hero__path {
+    display: flex;
+}
+
+.warband-path-slot {
+    width: 34px;
+    min-width: 34px;
+    height: 26px;
+    margin-left: 3px;
+    margin-right: 3px;
+    color: rgb(242, 207, 116);
+    background-color: rgba(8, 13, 20, 1);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(230, 185, 92, 0.65);
+    border-right-color: rgba(230, 185, 92, 0.65);
+    border-top-color: rgba(230, 185, 92, 0.65);
+    border-bottom-color: rgba(230, 185, 92, 0.65);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.warband-path-slot--empty {
+    color: rgb(74, 88, 110);
+    border-left-color: rgba(98, 123, 156, 0.55);
+    border-right-color: rgba(98, 123, 156, 0.55);
+    border-top-color: rgba(98, 123, 156, 0.55);
+    border-bottom-color: rgba(98, 123, 156, 0.55);
+}
+
+.warband-path-slot:hover,
+.warband-path-slot:focus {
+    background-color: rgba(38, 58, 80, 1);
+}
+
 .warband-gear__tier {
     position: absolute;
     right: 1px;
@@ -482,10 +561,6 @@
     bottom: 10px;
     padding-bottom: 122px;
     background-color: rgb(2, 5, 9);
-}
-
-.shell-has-warband-bar .shell-screen .feedback-label {
-    bottom: 150px;
 }
 
 .layout--compact .warband-bar__identity {
@@ -801,4 +876,41 @@
 
 .layout--phone .warband-bar--compact .warband-hero__gear {
     left: 73px;
+}
+
+/* Muster (workbench-frame): the next seat is an invitation, not a locked slot. */
+.warband-hero--awaiting {
+    width: 68px;
+    min-width: 68px;
+    opacity: 1;
+    border-left-color: rgba(230, 185, 92, 0.55);
+    border-right-color: rgba(230, 185, 92, 0.55);
+    border-top-color: rgba(230, 185, 92, 0.55);
+    border-bottom-color: rgba(230, 185, 92, 0.55);
+    background-color: rgba(30, 26, 16, 0.35);
+}
+
+.warband-hero--awaiting .warband-hero__fallback {
+    color: rgb(138, 118, 71);
+}
+
+.warband-hero--awaiting .warband-hero__class {
+    color: rgb(201, 167, 94);
+}
+
+.warband-hero--awaiting .warband-hero__rank {
+    background-color: rgb(230, 185, 92);
+    color: rgb(34, 23, 3);
+}
+
+/* The rank-up modal owns the stage (workbench-frame): the rail lives outside the
+ * workbench scrim, so it dims itself while the choice is pending. */
+.warband-bar {
+    transition-property: opacity;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+.warband-bar--dimmed {
+    opacity: 0.18;
 }

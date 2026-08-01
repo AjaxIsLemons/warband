@@ -50,7 +50,9 @@ namespace Warband.Sim
         public int Attack;
         public int AttackInterval;
         public int MoveInterval;
+        public int ManaPerSwing;
         public int CritChance;
+        public int CleavePct;
         public bool HealAutos;      // censer law: this unit's swings HEAL allies, not damage enemies
         /// <summary>The targeting rule — "acquires NEAREST/FARTHEST/LOWEST", and the standoff it
         /// keeps while its target is inside weapon reach. pve-encounters.md requires targeting to be
@@ -91,7 +93,8 @@ namespace Warband.Sim
                 Pos = u.Pos, Dead = u.Dead,
                 StepTo = u.StepTo, StepStart = u.StepStart, StepEnd = u.StepEnd,
                 Range = u.Def.Range, Attack = u.Def.Attack, AttackInterval = u.Def.AttackInterval,
-                MoveInterval = u.Def.MoveInterval, CritChance = u.Def.CritChance,
+                MoveInterval = u.Def.MoveInterval, ManaPerSwing = u.Def.ManaPerSwing,
+                CritChance = u.Def.CritChance, CleavePct = u.Def.CleavePct,
                 HealAutos = u.Def.HealAutos,
                 TargetPref = u.Def.TargetPref, Standoff = u.Def.Standoff,
                 TriggerRuleBase = u.TriggerBase, TriggerRuleCount = u.Def.Triggers.Count,
@@ -119,7 +122,8 @@ namespace Warband.Sim
             Statuses = new List<(StatusKind, int, int)>(Statuses),
             ActiveRules = new List<int>(ActiveRules),
             Range = Range, Attack = Attack, AttackInterval = AttackInterval,
-            MoveInterval = MoveInterval, CritChance = CritChance, HealAutos = HealAutos,
+            MoveInterval = MoveInterval, ManaPerSwing = ManaPerSwing,
+            CritChance = CritChance, CleavePct = CleavePct, HealAutos = HealAutos,
             TargetPref = TargetPref, Standoff = Standoff,
             TriggerRuleBase = TriggerRuleBase, TriggerRuleCount = TriggerRuleCount,
             StatRuleBase = StatRuleBase, StatRuleCount = StatRuleCount,
@@ -333,7 +337,8 @@ namespace Warband.Sim
                 // the guardrail prove MoveStart is emitted and folded correctly, not just Move.
                 Mix(u.StepTo.Q); Mix(u.StepTo.R); Mix(u.StepStart); Mix(u.StepEnd);
                 Mix(u.Range); Mix(u.Attack); Mix(u.AttackInterval); Mix(u.MoveInterval);
-                Mix(u.CritChance); Mix(u.HealAutos ? 1 : 0);
+                Mix(u.ManaPerSwing); Mix(u.CritChance); Mix(u.CleavePct);
+                Mix(u.HealAutos ? 1 : 0);
                 // The targeting rule and the rule span are SHOWN (the in-fight inspector reads
                 // both), so they are hashed for the same reason the stat block is: it makes the
                 // replay round-trip check the proof that the wire actually carries them.

@@ -93,7 +93,22 @@
         "riser_phalanx":    { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
         "riser_pyromancer": { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
         "riser_shade":      { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
-        "riser_sharpshot":  { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 }
+        "riser_sharpshot":  { "maxAudibleMs": 1100, "variants": 0, "maxOnsetMs": 4, "targetPeakDb": -7.0, "highPassHz": 90 , "releaseMs": 160 },
+
+        "revision_split":         { "maxAudibleMs": 900,  "variants": 0, "maxOnsetMs": 2, "targetPeakDb": -3.0, "highPassHz": 55,  "releaseMs": 150,
+                                    "_doc": "First-open glass rupture + low bell. Revision bus." },
+        "revision_hold":          { "maxAudibleMs": 950,  "variants": 0, "maxOnsetMs": 2, "targetPeakDb": -12.0, "minCrestDb": 4.0, "highPassHz": 55,
+                                    "_doc": "Seamless-ish sand/glass held-Hour bed." },
+        "revision_final_hold":    { "maxAudibleMs": 950,  "variants": 0, "maxOnsetMs": 2, "targetPeakDb": -10.0, "minCrestDb": 4.0, "highPassHz": 50,
+                                    "_doc": "Lower, tenser held bed at the defeat intercept." },
+        "revision_reopen":        { "maxAudibleMs": 180,  "variants": 0, "targetPeakDb": -7.0, "highPassHz": 140 },
+        "revision_scrub":         { "maxAudibleMs": 90,   "variants": 0, "targetPeakDb": -11.0, "highPassHz": 260 },
+        "revision_tear":          { "maxAudibleMs": 420,  "variants": 0, "targetPeakDb": -4.0, "highPassHz": 75, "releaseMs": 90 },
+        "revision_rewind_bed":    { "maxAudibleMs": 800,  "variants": 0, "targetPeakDb": -10.0, "minCrestDb": 4.0, "highPassHz": 60 },
+        "revision_rewind_riser":  { "maxAudibleMs": 1850, "variants": 0, "targetPeakDb": -4.0, "highPassHz": 55, "releaseMs": 180 },
+        "revision_land_borrowed": { "maxAudibleMs": 900,  "variants": 0, "targetPeakDb": -3.0, "highPassHz": 65, "releaseMs": 140 },
+        "revision_land_recall":   { "maxAudibleMs": 900,  "variants": 0, "targetPeakDb": -3.0, "highPassHz": 55, "releaseMs": 140 },
+        "revision_return":        { "maxAudibleMs": 520,  "variants": 0, "targetPeakDb": -6.0, "highPassHz": 90, "releaseMs": 90 }
       },
       "_retired": {
         "hit_melee": "generic fallback — kept in tuning.json until the D3 rows are repointed",

@@ -24,7 +24,6 @@
                 class="body-copy enemy-note" />
         </ui:VisualElement>
 
-        <ui:Label name="feedback-label" class="feedback-label" />
 
         <ui:VisualElement name="muster-drawer" class="muster-drawer">
             <ui:Button name="drawer-toggle" class="drawer-toggle">

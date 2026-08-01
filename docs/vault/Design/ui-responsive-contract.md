@@ -240,6 +240,16 @@ which is the most-styled breakpoint in the codebase (218 rules) and therefore th
 `1600×900`, `ScaleWithScreenSize`, height-locked (`match = 1`) profile. A horizontal decision band
 never becomes taller than its viewport. Debug documents may keep constant-pixel profiles.
 
+**Desktop display-setting direction (2026-07-29).** Default a PC build to borderless fullscreen
+at the desktop's native resolution, consistent with current
+[Microsoft GDK PC guidance](https://learn.microsoft.com/en-us/gaming/gdk/docs/gdk-dev/pc-dev/overviews/window-display-modes-and-tcui).
+A Display page may expose Borderless and Windowed modes when that player setting is implemented.
+Borderless stays native; Windowed may offer validated common window sizes, while a future
+platform-specific Exclusive mode must use
+[Unity's monitor-supported resolutions](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Screen-resolutions.html).
+Performance render scale is a separate setting. The current Options panel does not yet provide
+these controls. None of them changes the `1600×900` logical authoring contract.
+
 **F2. `UiEnvironment` is the sole root classifier.** It reads the panel's resolved size and emits
 independent axes:
 
@@ -263,14 +273,16 @@ for the first playable and receives a blocking rotate-device guard rather than a
 tokens as well. Migration is incremental: an active selector is not considered migrated until its
 final cascade rule consumes the semantic token.
 
-**F5. transient presentation state is scoped.** `UiNoticeStore` owns Menu, Muster, Hall, and
-Deployment notices. Route exit clears the owning scope, so a combat result or placement error
-cannot leak over the next Market decision. Notices are non-picking presentation layers.
+**F5. There are no transient text notifications.** The client has no toast, receipt bar, or
+route-scoped notice store. Transactions are acknowledged at the changed object through
+authoritative state plus local motion/audio/haptics. Required instructions and blocking errors
+belong inside the surface that owns the decision; they never appear as a persistent overlay.
 
 ### Standing rules
 
-1. **Body text is at least 16 logical px; metadata is at least 13.** Important body copy must also
-   pass a rendered-device floor at the 720p target.
+1. **Body text is at least 16 logical px; metadata is at least 13.** Important body copy must pass
+   the rendered-device floor at the current 1080p smoke; the 720p floor is checked when broader
+   responsive support is in scope.
 2. **No runtime page scroller.** Use hierarchy first, a details/traits disclosure page second,
    bounded pagination for collections third, and ellipsis only for genuinely secondary one-line
    metadata. The permanent rail is a fixed-address row, not a horizontal scroller.
@@ -279,8 +291,8 @@ cannot leak over the next Market decision. Notices are non-picking presentation 
 4. **Absolute positioning is reserved for overlays, popovers, badges, and decoration.** Primary
    structure stays in flex layout.
 5. **Every flex child containing text gets `min-width: 0`.**
-6. **Primary actions and notices never occlude each other.** Feedback uses
-   `PickingMode.Ignore`; permanent-rail clearance is asserted.
+6. **Transient text never overlays primary actions.** There is no notification layer to reserve
+   or assert around the permanent rail.
 7. **A stylesheet owns its class prefix.** New collisions across loaded sheets are not accepted.
 
 ### Verification gate
@@ -289,7 +301,18 @@ cannot leak over the next Market decision. Notices are non-picking presentation 
 behaviour; it binds presentation-only models to the real retained views, measures resolved
 geometry, and captures pixels without focusing the Windows Game View.
 
-The full matrix covers:
+**Current acceptance tier (2026-07-29):**
+
+- Primary visual acceptance is QHD `2560×1440` at 16:9. With the shipping profile this is the
+  `1600×900` logical layout at `1.6` output scale.
+- `1920×1080` is the ordinary containment, legibility, and interaction smoke.
+- The broader matrix is a required gate only for shared shell, classifier, breakpoint, safe-area,
+  or target-specific responsive work. It remains useful diagnostic evidence but does not block
+  ordinary screen polish.
+- 4:3, ultrawide, forced-phone, and portrait layouts do not receive bespoke work or block today's
+  ordinary UI acceptance unless the brief names them.
+
+The available full matrix covers:
 
 - 1024×768, 1280×720, the 1600×900 authoring viewport, and 3440×1440 ultrawide;
 - Workbench recruit/rank-up/equipment/tooltip/rail states;
@@ -297,9 +320,10 @@ The full matrix covers:
 - expanded-copy stress;
 - forced-phone landscape and the 390×844 portrait rotation guard.
 
-`UiLayoutContract` is the automated gate: resolved bounds, no overlap, no `ScrollView`, wrapped
-text fit, logical and rendered type floors, minimum hit size, and non-blocking notices. Pixel
-captures remain human evidence, not a substitute for those assertions.
+`UiLayoutContract` is the automated structural gate: resolved bounds, no overlap, no
+`ScrollView`, wrapped text fit, logical and rendered type floors, minimum hit size, and
+non-blocking notices. Matched pixel captures are the visual acceptance evidence; neither form of
+evidence substitutes for the other.
 
 **Implementation verification (2026-07-27):** all 57 full-matrix cases pass in Play Mode; the
 reviewable report and exact-target captures are under `client/TempCaptures/ui-qa/20260727-160020/`.

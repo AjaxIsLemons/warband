@@ -44,9 +44,16 @@ namespace Warband.Run
         public int[] ReforgeCosts = { 4, 8 };
         public int RewardChoices = 3;
 
-        public int FightReward(int act, FightTier tier) => FightRewardsByAct[act - 1][(int)tier];
-        public int BossReward(int act) => BossSandByAct[act - 1];
+        /// <summary>
+        /// ADR 0030: endless reuses Act 3's economy instead of inventing a fourth reward table.
+        /// Content difficulty may keep reading the virtual act; only the economy clamps.
+        /// </summary>
+        public int FightReward(int act, FightTier tier) =>
+            FightRewardsByAct[System.Math.Min(System.Math.Max(act, 1), Acts) - 1][(int)tier];
+        public int BossReward(int act) =>
+            BossSandByAct[System.Math.Min(System.Math.Max(act, 1), Acts) - 1];
         public int SlotCost(int slotsBought) => SlotCosts[slotsBought];
+        public int EndlessFightsPerCycle => NodesPerAct - 1;
 
         // Compatibility shims for the shell/tests landing in parallel with this economy pass.
         // New code uses Sand/Inscription/FightReward terminology.

@@ -41,6 +41,8 @@ namespace Warband.Run.Tests
             Assert.Equal("0000000000000049-3dba1167", e.GetProperty("run").GetString());
             Assert.Equal("0000000000000049", e.GetProperty("seed").GetString());
             Assert.Equal("3dba11673c26e858", e.GetProperty("content").GetString());
+            Assert.Equal(RevisionCatalog.BorrowedFutureId,
+                e.GetProperty("revision").GetString());
             Assert.Equal("2026-07-28T12:00:00Z", e.GetProperty("utc").GetString());
             Assert.Equal(run.State.Field.Count, e.GetProperty("party").GetArrayLength());
             Assert.False(string.IsNullOrEmpty(
@@ -102,6 +104,23 @@ namespace Warband.Run.Tests
         }
 
         [Fact]
+        public void PhaseLineCarriesCoarseBoundaryWithoutClickDetail()
+        {
+            var run = NewRun();
+            var log = new RunTelemetry(run.State);
+
+            JsonElement phase = Parse(log.PhaseLine(run.State, Utc, "planning"));
+
+            Assert.Equal("phase", phase.GetProperty("t").GetString());
+            Assert.Equal("planning", phase.GetProperty("phase").GetString());
+            Assert.Equal(run.State.Act, phase.GetProperty("act").GetInt32());
+            Assert.Equal(run.State.NodeIndex, phase.GetProperty("node").GetInt32());
+            Assert.Equal(run.State.Sand, phase.GetProperty("sand").GetInt32());
+            Assert.False(phase.TryGetProperty("screen", out _));
+            Assert.False(phase.TryGetProperty("action", out _));
+        }
+
+        [Fact]
         public void HostileStringsSurviveEscaping()
         {
             var run = NewRun();
@@ -128,6 +147,63 @@ namespace Warband.Run.Tests
             var after = new RunTelemetry(resumed).RunId;
 
             Assert.Equal(before, after);
+        }
+
+        [Fact]
+        public void EndlessChoiceCycleAndDefeatCarryTheBankedScore()
+        {
+            var run = NewRun();
+            var log = new RunTelemetry(run.State);
+            run.State.VictoryBanked = true;
+            run.State.InEndless = true;
+            run.State.Act = 5;
+            run.State.EndlessCycles = 1;
+            run.State.EndlessBeat = 2;
+
+            JsonElement choice = Parse(log.EndlessChoiceLine(run.State, Utc, true));
+            Assert.Equal("endlessChoice", choice.GetProperty("t").GetString());
+            Assert.Equal("continue", choice.GetProperty("choice").GetString());
+            Assert.True(choice.GetProperty("victoryBanked").GetBoolean());
+            Assert.True(choice.GetProperty("endless").GetBoolean());
+            Assert.Equal(1, choice.GetProperty("endlessCycles").GetInt32());
+            Assert.Equal(2, choice.GetProperty("endlessBeat").GetInt32());
+
+            JsonElement cycle = Parse(log.EndlessCycleLine(run.State, Utc));
+            Assert.Equal("endlessCycle", cycle.GetProperty("t").GetString());
+            Assert.Equal(1, cycle.GetProperty("cycles").GetInt32());
+
+            run.State.Phase = RunPhase.Defeated;
+            JsonElement end = Parse(log.EndLine(run.State, Utc));
+            Assert.Equal("endlessDefeat", end.GetProperty("t").GetString());
+        }
+
+        [Fact]
+        public void RevisionLinesCarryEvolutionAnchorTargetsAndOutcomeFlip()
+        {
+            var run = NewRun();
+            var log = new RunTelemetry(run.State);
+            RevisionUpgradeDef upgrade = RevisionCatalog.NextOptions(run.State.Revision)[1];
+            JsonElement evolved = Parse(log.RevisionUpgradeLine(run.State, Utc, upgrade));
+            Assert.Equal("revisionUpgrade", evolved.GetProperty("t").GetString());
+            Assert.Equal(upgrade.Id, evolved.GetProperty("id").GetString());
+            Assert.Equal(1, evolved.GetProperty("tier").GetInt32());
+
+            var choice = new RevisionChoice
+            {
+                PresentTick = 47,
+                BranchTick = 27,
+                TargetIds = { 0, 2 },
+            };
+            JsonElement split = Parse(log.RevisionLine(
+                run.State, Utc, true, choice,
+                new FightOutcome { Won = false },
+                new FightOutcome { Won = true, Revised = true }));
+            Assert.Equal("revision", split.GetProperty("t").GetString());
+            Assert.True(split.GetProperty("finalChance").GetBoolean());
+            Assert.Equal(47, split.GetProperty("presentTick").GetInt32());
+            Assert.Equal(27, split.GetProperty("branchTick").GetInt32());
+            Assert.True(split.GetProperty("flipped").GetBoolean());
+            Assert.Equal(2, split.GetProperty("targets").GetArrayLength());
         }
     }
 }

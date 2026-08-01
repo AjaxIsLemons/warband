@@ -1,0 +1,20 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:2560px; height:1440px; overflow:hidden; }
+body { background:#0b1018; font-family:"DejaVu Sans", system-ui, sans-serif; position:relative; }
+.board { position:absolute; inset:0; background:url(board.png) center/cover no-repeat;
+  filter:saturate(.36) brightness(.86); }
+.vig { position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0) 32%, rgba(2,5,10,.86) 100%); }
+.chrome { position:absolute; inset:0; }
+.cap { position:absolute; left:50%; bottom:54px; transform:translateX(-50%); text-align:center;
+  white-space:nowrap; }
+.cap b { display:block; font-size:40px; font-weight:800; letter-spacing:9px; color:#FFE9BC;
+  text-shadow:0 0 32px rgba(255,190,90,.9), 0 3px 8px #000; }
+.cap i { font-style:normal; font-size:22px; letter-spacing:5px; font-weight:700; color:#C6A876; }
+.stone { position:absolute; left:50%; bottom:-150px; margin-left:-194px; width:388px; height:388px;
+  border-radius:50%; background:rgba(6,11,18,.94);
+  border:5px solid rgba(150,120,70,.6); border-top-color:rgba(233,181,95,.85);
+  box-shadow:0 0 70px rgba(255,180,70,.32); }
+.stone u { position:absolute; left:0; right:0; top:74px; text-align:center; text-decoration:none;
+  font-size:78px; font-weight:800; color:#FFE9BC; letter-spacing:-4px;
+  text-shadow:0 0 34px rgba(255,190,90,.9); }

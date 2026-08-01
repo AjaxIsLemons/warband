@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: 2560px; height: 1440px; margin: 0; overflow: hidden; background: #07080d; }
+  body { font-family: "Arial Narrow", "Roboto Condensed", sans-serif; color: #edf2f8; }
+  .logical {
+    width: 1600px; height: 900px; transform: scale(1.6); transform-origin: top left;
+    position: relative; overflow: hidden;
+    background: #090b12 url("../../workbench-refactor/implementation/impl-1600x900-workbench-market-recruit.png") center/1600px 900px no-repeat;
+  }
+  .veil { position: absolute; inset: 0; background: rgba(3, 5, 10, .82); }
+  .rift {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(118deg, transparent 0 53%, rgba(61,159,213,.08) 53.2% 53.7%, transparent 54%),
+      radial-gradient(circle at 72% 44%, rgba(40, 132, 180, .2), transparent 40%);
+  }
+  .scrim {
+    position: absolute; left: 160px; top: 118px; width: 1280px; height: 594px;
+    background: rgba(9, 13, 21, .985); border: 1px solid #5b6576;
+    box-shadow: 0 20px 72px rgba(0,0,0,.8);
+    display: grid; grid-template-columns: 410px 1fr;
+  }
+  .receipt {
+    padding: 30px 30px 26px; border-right: 1px solid #3a4556; background: #0d121c;
+  }
+  .eyebrow { color: #dca832; font-size: 12px; font-weight: 900; letter-spacing: 2px; }
+  .receipt h1 { margin: 15px 0 8px; font-size: 34px; line-height: 1; }
+  .receipt p { margin: 0; color: #aeb8c8; font-size: 16px; line-height: 1.42; }
+  .stamp {
+    margin: 30px auto 24px; width: 154px; height: 154px; border: 2px solid #bd8d28; border-radius: 50%;
+    display: grid; place-items: center; color: #e6b039; font-size: 58px;
+    box-shadow: 0 0 34px rgba(220, 163, 36, .13), inset 0 0 26px rgba(220,163,36,.07);
+  }
+  .ledger { border-top: 1px solid #343d4d; margin-top: 18px; }
+  .row { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #252e3b; font-size: 13px; }
+  .row span:first-child { color: #78869b; letter-spacing: 1px; }
+  .row span:last-child { color: #e4e9f1; font-weight: 800; }
+  .retire {
+    margin-top: 18px; height: 43px; border: 1px solid #77601f; background: #211a0c; color: #e1bd55;
+    display: grid; place-items: center; font-size: 13px; font-weight: 900; letter-spacing: .8px;
+  }
+  .forward { position: relative; padding: 34px 38px 28px; overflow: hidden; }
+  .forward::before {
+    content: ""; position: absolute; right: -80px; top: -100px; width: 430px; height: 430px;
+    border: 1px solid rgba(82,173,218,.14); transform: rotate(45deg);
+    box-shadow: 0 0 70px rgba(54,161,213,.08);
+  }
+  .forward .eyebrow { color: #74c8ee; }
+  .forward h2 { margin: 13px 0 10px; font-size: 36px; line-height: 1; position: relative; }
+  .forward p { margin: 0; width: 720px; color: #bac6d6; font-size: 17px; line-height: 1.45; position: relative; }
+  .cycle {
+    margin-top: 32px; height: 190px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; position: relative;
+  }
+  .beat {
+    border: 1px solid #3e5065; background: #0c141f; padding: 15px 13px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .beat strong { color: #eef3fa; font-size: 16px; }
+  .beat small { color: #7f90a7; font-size: 11px; letter-spacing: 1px; }
+  .beat .glyph { align-self: center; color: #5eacd6; font-size: 38px; }
+  .beat.crown { border-color: #916d27; }
+  .beat.crown .glyph { color: #e2ac36; }
+  .facts { display: flex; gap: 10px; margin-top: 21px; position: relative; }
+  .fact { padding: 8px 12px; border: 1px solid #344559; color: #aab8c9; background: #0b111a; font-size: 12px; font-weight: 700; letter-spacing: .7px; }
+  .continue {
+    position: absolute; left: 38px; right: 38px; bottom: 27px; height: 49px;
+    display: grid; place-items: center; background: #2668a8; border: 1px solid #74bce7; color: #fff;
+    font-size: 15px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 0 24px rgba(51,146,205,.16);
+  }
+  .note { position: absolute; right: 13px; bottom: 9px; color: #68758a; font-size: 10px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div class="logical">
+  <div class="veil"></div><div class="rift"></div>
+  <section class="scrim">
+    <aside class="receipt">
+      <div class="eyebrow">STANDARD RUN COMPLETE</div>
+      <h1>Victory banked</h1>
+      <p>The Waning Crown has fallen. Whatever happens beyond this point, the expedition is won.</p>
+      <div class="stamp">⌛</div>
+      <div class="ledger">
+        <div class="row"><span>ACTS</span><span>3 / 3</span></div>
+        <div class="row"><span>BOSSES</span><span>3</span></div>
+        <div class="row"><span>WARBAND</span><span>6 FIELD</span></div>
+      </div>
+      <div class="retire">RETIRE WITH VICTORY</div>
+    </aside>
+    <main class="forward">
+      <div class="eyebrow">BEYOND THE HOUR · OPTIONAL</div>
+      <h2>How far can this engine go?</h2>
+      <p>Carry the same warband into escalating cycles. Three fights lead back to the Crown; each completed cycle pushes the Hour deeper.</p>
+      <div class="cycle">
+        <div class="beat"><small>BEAT I</small><span class="glyph">◇</span><strong>ACT 3 POOL</strong></div>
+        <div class="beat"><small>BEAT II</small><span class="glyph">◇</span><strong>ACT 3 POOL</strong></div>
+        <div class="beat"><small>BEAT III</small><span class="glyph">◇</span><strong>ACT 3 POOL</strong></div>
+        <div class="beat crown"><small>THE CROWN</small><span class="glyph">◆</span><strong>+25% / CYCLE</strong></div>
+      </div>
+      <div class="facts"><span class="fact">VICTORY CANNOT BE LOST</span><span class="fact">WORKBENCH STAYS OPEN</span><span class="fact">SCORE: CYCLES + BEATS</span></div>
+      <div class="continue">CONTINUE BEYOND THE HOUR</div>
+      <div class="note">STRUCTURAL PROTOTYPE · ACTUAL WORKBENCH BACKDROP</div>
+    </main>
+  </section>
+</div>
+</body>
+</html>

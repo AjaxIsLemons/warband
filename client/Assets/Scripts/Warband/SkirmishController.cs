@@ -16,7 +16,7 @@ using Warband.Sim;
 public sealed class SkirmishController : MonoBehaviour
 {
     private const float BoardDragThreshold = 7f;
-    private const float UnitPickRadius = 68f;
+    private const float UnitPickPadding = 12f;
 
     // Startup order is owned by GameBoot — see that class before adding one back here.
 
@@ -29,8 +29,6 @@ public sealed class SkirmishController : MonoBehaviour
     private SkirmishScreen _screen;
     private PanelSettings _panelSettings;
     private string _selectedHeroId = "";
-    private string _feedback = "";
-    private bool _feedbackIsError;
     private bool _drawerOpen = true;
     private bool _initialized;
     private bool _subscribed;
@@ -39,6 +37,8 @@ public sealed class SkirmishController : MonoBehaviour
     private Vector2 _boardStart;
     private string _boardSourceHeroId = "";
     private bool _boardDragging;
+    private Hex _boardHoverHex;
+    private bool _boardHoverValid;
 
     private void Start()
     {
@@ -81,6 +81,7 @@ public sealed class SkirmishController : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelBoardDrag(restoreFormation: true);
         UnsubscribePlayback();
     }
 
@@ -129,15 +130,14 @@ public sealed class SkirmishController : MonoBehaviour
             OnRosterDrop,
             OnBoardPointerDown,
             OnBoardPointerMove,
-            OnBoardPointerUp);
+            OnBoardPointerUp,
+            OnBoardPointerCancel);
     }
 
     private void EnterPlanning()
     {
         _flow = SkirmishScreenState.Planning;
         _result = null;
-        _feedback = "";
-        _feedbackIsError = false;
         _drawerOpen = true;
         ShowCurrentFormation();
         RefreshUI();
@@ -148,8 +148,7 @@ public sealed class SkirmishController : MonoBehaviour
         var commit = _session.Commit();
         if (!commit.Succeeded)
         {
-            _feedback = commit.Message;
-            _feedbackIsError = true;
+            Debug.LogWarning($"[Skirmish] Commit refused: {commit.Message}");
             foreach (var issue in commit.Validation.Issues)
                 if (issue.Severity == PlanningIssueSeverity.Error &&
                     _session.Current.FindHero(issue.SubjectId) != null)
@@ -164,8 +163,6 @@ public sealed class SkirmishController : MonoBehaviour
         }
 
         _flow = SkirmishScreenState.Playing;
-        _feedback = "";
-        _feedbackIsError = false;
         _result = new Battle(BuildUnits(commit.Draft), seed: 20260724).Run();
         RefreshUI();
         _player.PlayBattle(_result);
@@ -194,7 +191,6 @@ public sealed class SkirmishController : MonoBehaviour
 
         _selectedHeroId = heroId;
         _drawerOpen = true;
-        ClearFeedback();
         ShowPlanningSelection();
         RefreshUI();
     }
@@ -218,16 +214,12 @@ public sealed class SkirmishController : MonoBehaviour
     private void Undo()
     {
         if (_flow != SkirmishScreenState.Planning || !_session.Undo()) return;
-        _feedback = "Undid the last Planning change.";
-        _feedbackIsError = false;
         RefreshUI();
     }
 
     private void Redo()
     {
         if (_flow != SkirmishScreenState.Planning || !_session.Redo()) return;
-        _feedback = "Redid the Planning change.";
-        _feedbackIsError = false;
         RefreshUI();
     }
 
@@ -325,7 +317,10 @@ public sealed class SkirmishController : MonoBehaviour
             return;
 
         Vector2 panel = new Vector2(evt.position.x, evt.position.y);
-        var picked = _player.PickUnit(PanelToScreen(panel), UnitPickRadius);
+        var picked = _player.PickUnit(
+            PanelToScreen(panel),
+            UnitPickPadding,
+            FieldUnitIds());
         var selected = SelectedHero();
         if (picked != null && picked.Team == 0)
         {
@@ -336,7 +331,6 @@ public sealed class SkirmishController : MonoBehaviour
             {
                 _boardSourceHeroId = pickedHeroId;
                 _selectedHeroId = pickedHeroId;
-                ClearFeedback();
                 ShowPlanningSelection();
                 RefreshUI();
             }
@@ -350,6 +344,7 @@ public sealed class SkirmishController : MonoBehaviour
         _boardPointerId = evt.pointerId;
         _boardStart = panel;
         _boardDragging = false;
+        _boardHoverValid = false;
         if (evt.currentTarget is VisualElement surface)
             surface.CapturePointer(evt.pointerId);
         evt.StopPropagation();
@@ -363,7 +358,35 @@ public sealed class SkirmishController : MonoBehaviour
             _boardDragging = true;
 
         if (_boardDragging)
-            _screen.SetExternalDragGhost(HeroName(_boardSourceHeroId), panel, true);
+        {
+            Vector2 screenPosition = PanelToScreen(panel);
+            PlanningHeroState source = _session.Current.FindHero(_boardSourceHeroId);
+            bool direct = source != null && source.Zone == PlanningZone.Field;
+            if (direct)
+                _player.MovePlanningUnit(
+                    UnitIdFromHeroId(source.Id), screenPosition, out _);
+            _screen.SetExternalDragGhost(
+                HeroName(_boardSourceHeroId), panel, !direct);
+
+            bool hasHover = TryResolveBoardHex(
+                _boardSourceHeroId, screenPosition, out _boardHoverHex);
+            _boardHoverValid = hasHover &&
+                (new SkirmishPlanningRules()).IsLegalPosition(_boardHoverHex);
+            if (hasHover)
+            {
+                PlanningHeroState occupant = FieldHeroAt(_boardHoverHex);
+                _player.SetPlanningDropTarget(
+                    _boardHoverHex,
+                    legal: _boardHoverValid,
+                    swap: _boardHoverValid &&
+                        occupant != null &&
+                        occupant.Id != _boardSourceHeroId);
+            }
+            else
+            {
+                _player.ClearPlanningDragFeedback();
+            }
+        }
         evt.StopPropagation();
     }
 
@@ -377,11 +400,46 @@ public sealed class SkirmishController : MonoBehaviour
 
         _screen.SetExternalDragGhost("", Vector2.zero, false);
         string sourceId = _boardSourceHeroId;
+        bool dragged = _boardDragging;
+        bool validDrop = _boardHoverValid;
+        Hex dropHex = _boardHoverHex;
         _boardPointerId = -1;
         _boardSourceHeroId = "";
         _boardDragging = false;
-        HandleBoardDrop(sourceId, PanelToScreen(panel));
+        _boardHoverValid = false;
+        _player.ClearPlanningDragFeedback();
+        if (dragged)
+        {
+            if (validDrop) HandleBoardDropAtHex(sourceId, dropHex);
+            else
+            {
+                ShowCurrentFormation();
+                Fail("Choose one of the three blue deployment rows.");
+            }
+        }
+        else HandleBoardDrop(sourceId, PanelToScreen(panel));
         evt.StopPropagation();
+    }
+
+    private void OnBoardPointerCancel(PointerCancelEvent evt)
+    {
+        if (evt.pointerId != _boardPointerId) return;
+        CancelBoardDrag(restoreFormation: true);
+        evt.StopPropagation();
+    }
+
+    private void CancelBoardDrag(bool restoreFormation)
+    {
+        bool movedFieldUnit = _boardDragging &&
+            _session?.Current.FindHero(_boardSourceHeroId)?.Zone == PlanningZone.Field;
+        _screen?.SetExternalDragGhost("", Vector2.zero, false);
+        _player?.ClearPlanningDragFeedback();
+        _boardPointerId = -1;
+        _boardSourceHeroId = "";
+        _boardDragging = false;
+        _boardHoverValid = false;
+        if (restoreFormation && movedFieldUnit)
+            ShowCurrentFormation();
     }
 
     private void HandleBoardDrop(string sourceHeroId, Vector2 screenPosition)
@@ -390,44 +448,93 @@ public sealed class SkirmishController : MonoBehaviour
         if (source == null) return;
         _selectedHeroId = source.Id;
 
-        var picked = _player.PickUnit(screenPosition, UnitPickRadius);
-        if (picked != null && picked.Team == 0)
+        if (TryResolveBoardHex(sourceHeroId, screenPosition, out Hex hex))
         {
-            var target = _session.Current.FindHero(HeroIdFromUnitId(picked.Id));
-            if (target != null && target.Id != source.Id)
-            {
-                if (source.Zone == PlanningZone.Bench)
-                    Execute(new SwapFieldBenchPlanningAction(target.Id, source.Id));
-                else
-                    Execute(new MovePlanningHeroAction(source.Id, target.Position));
-                return;
-            }
-            if (target != null)
-            {
-                ShowPlanningSelection();
-                RefreshUI();
-                return;
-            }
+            HandleBoardDropAtHex(sourceHeroId, hex);
+            return;
         }
 
-        if (!_player.TryScreenToHex(screenPosition, out var hex) ||
-            !(new SkirmishPlanningRules()).IsLegalPosition(hex))
+        Fail("Choose one of the three blue deployment rows.");
+    }
+
+    private void HandleBoardDropAtHex(string sourceHeroId, Hex hex)
+    {
+        PlanningHeroState source = _session.Current.FindHero(sourceHeroId);
+        if (source == null) return;
+        _selectedHeroId = source.Id;
+        if (!(new SkirmishPlanningRules()).IsLegalPosition(hex))
         {
+            ShowCurrentFormation();
             Fail("Choose one of the three blue deployment rows.");
             return;
         }
 
+        PlanningHeroState target = FieldHeroAt(hex);
+        if (target != null)
+        {
+            if (target.Id == source.Id)
+            {
+                ShowCurrentFormation();
+                ShowPlanningSelection();
+                RefreshUI();
+                return;
+            }
+            if (source.Zone == PlanningZone.Bench)
+                Execute(new SwapFieldBenchPlanningAction(target.Id, source.Id));
+            else
+                Execute(new MovePlanningHeroAction(source.Id, target.Position));
+            return;
+        }
         if (source.Zone == PlanningZone.Field)
             Execute(new MovePlanningHeroAction(source.Id, hex));
         else
             Execute(new MovePlanningHeroToFieldAction(source.Id, hex));
     }
 
+    private bool TryResolveBoardHex(
+        string sourceHeroId,
+        Vector2 screenPosition,
+        out Hex hex)
+    {
+        PlaybackUnit picked = _player.PickUnit(
+            screenPosition,
+            UnitPickPadding,
+            FieldUnitIds(sourceHeroId));
+        if (picked != null)
+        {
+            PlanningHeroState target =
+                _session.Current.FindHero(HeroIdFromUnitId(picked.Id));
+            if (target != null && target.Zone == PlanningZone.Field)
+            {
+                hex = target.Position;
+                return true;
+            }
+        }
+        return _player.TryScreenToHex(screenPosition, out hex);
+    }
+
+    private List<int> FieldUnitIds(string exceptHeroId = "")
+    {
+        var ids = new List<int>();
+        foreach (PlanningHeroState hero in _session.Current.Heroes)
+            if (hero.Zone == PlanningZone.Field && hero.Id != exceptHeroId)
+                ids.Add(UnitIdFromHeroId(hero.Id));
+        return ids;
+    }
+
+    private PlanningHeroState FieldHeroAt(Hex hex)
+    {
+        foreach (PlanningHeroState hero in _session.Current.Heroes)
+            if (hero.Zone == PlanningZone.Field && hero.Position.Equals(hex))
+                return hero;
+        return null;
+    }
+
     private PlanningActionResult Execute(IPlanningAction action)
     {
         var result = _session.Execute(action);
-        _feedback = result.Message;
-        _feedbackIsError = !result.Succeeded;
+        if (!result.Succeeded)
+            Debug.LogWarning($"[Skirmish] Planning action refused: {result.Message}");
         RefreshUI();
         return result;
     }
@@ -494,8 +601,6 @@ public sealed class SkirmishController : MonoBehaviour
             EncounterName = _encounter.Name,
             Pressure = _encounter.Pressure,
             Rule = $"{_encounter.RuleName}  •  {_encounter.RuleText}",
-            Feedback = _feedback,
-            FeedbackIsError = _feedbackIsError,
         };
 
         switch (_flow)
@@ -503,7 +608,7 @@ public sealed class SkirmishController : MonoBehaviour
             case SkirmishScreenState.Planning:
                 model.Step = "PLANNING";
                 model.Instruction =
-                    "Select, drag, equip, and rearrange freely. Begin Fight is the only commitment.";
+                    "Click a champion to inspect · drag directly to a highlighted hex · Begin Fight commits.";
                 model.PrimaryText = "BEGIN FIGHT";
                 model.PrimaryEnabled = true;
                 model.DrawerOpen = _drawerOpen;
@@ -723,17 +828,9 @@ public sealed class SkirmishController : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    private void ClearFeedback()
-    {
-        _feedback = "";
-        _feedbackIsError = false;
-    }
-
     private void Fail(string message)
     {
-        _feedback = message;
-        _feedbackIsError = true;
-        RefreshUI();
+        Debug.LogWarning($"[Skirmish] Planning action refused: {message}");
     }
 
     private static bool IsMastered(ChassisDef chassis, WeaponDef weapon) =>

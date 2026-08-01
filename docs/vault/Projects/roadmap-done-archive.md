@@ -6,6 +6,116 @@ The board had re-grown to 1145 lines with 558 of them here, which is how a board
 `roadmap.md` keeps a one-line dated entry per item and links here. Nothing was deleted.
 Blow-by-blow build logs also live in `Daily/<date>.md`.
 
+- **2026-07-30 — ITEM 32, ENCOUNTER DIFFERENTIATION + DIFFICULTY CURVE.** Jake chose the
+  competence-ladder direction in ADR 0031: keep the old greedy full-run bot as a no-response
+  diagnostic, add a responsive floor that deterministically answers the disclosed encounter with
+  ADVANCE / TURTLE / SPLIT / RIGHT STACK, then retain the four purpose-built answer axes as the
+  authoring ceiling. The committed baseline records all three rungs. Mapping every encounter to
+  `DEFAULT` drove adapted placements to zero and made the responsive outcomes exactly match the
+  no-response line, the required negative control.
+
+  The control axis no longer smuggles the `CHASSIS-DEAD` Banneret into a boss verdict: act 1 now
+  fields Warden + Pikewall + Warden, a legal duplicate and an actual Stun/Silence/Taunt line. The
+  Last Oath returned from two passing axes to three without any boss edit.
+
+  The three targeted node encounters changed through existing roles, body count, and geometry
+  only. Gnawing Hour now stages seven act-1 Hourlings as two edge wedges (3 answers, max spread
+  100). Long Range stages one warded and one ordinary Colossus as two lanes in front of three
+  farthest-targeting Gunners (3 answers, max spread 100). Long Procession stages eight act-3
+  Hourlings as two wings around its Scribe (4 answers, max spread 17). Their player-facing text is
+  derived from and tested against the actual composition. Ninth Bell, The Drop, Slagworks, Ashfall
+  Battery, and Waning Crown retained their protected multi-answer / formation-sensitive reads.
+
+  The no-response line now completes 0/12 and the responsive line 1/12 with 42 real adaptations.
+  This is reported rather than tuned: default-policy Collapsing fight win also moved 73% → 55%, and
+  human telemetry still owns difficulty. The one new `health.never-swung-pct=0.31` signal was
+  traced to a front Procession Hourling dying to the reach party before its first swing in four
+  seeds, while frozen time improved 5.00% → 4.32%.
+
+  Verification: 559/559 headless tests; mutating Gnawing's act-1 count from seven to six made the
+  new composition/disclosure gate fail 7-vs-6 before restoration; 143-metric baseline reproduced
+  byte-for-byte (`97418fd…786d5`); 17/17 scenario replays round-tripped; client compile passed;
+  Unity build preflight read content fingerprint `c96ee6049f21d723`; actual 1600×900 Unity renders
+  show the two Gnawing wedges, Long Range's two walls/three guns, and the Procession wings/Scribe;
+  final console 0 warnings / 0 errors.
+
+- **2026-07-30 — ITEM 13, BEYOND THE HOUR.** Defeating the final Waning Crown now banks the
+  authored victory before presenting an explicit Workbench fork: RETIRE WITH VICTORY or CONTINUE
+  BEYOND THE HOUR. Continuing preserves the exact warband and enters virtual Act 4+. Each endless
+  cycle is exactly three fights drawn from the Act 3 pool followed by the Waning Crown, with no
+  Interlude. Fight economy remains clamped to Act 3 while the existing virtual-act node curve and
+  +25% Crown curve apply pressure. Score is completed cycles plus combat beats in the current
+  cycle; banked victory, continuation, cycle, beat, and score persist and telemeter. Endless defeat
+  cannot erase the standard victory. No endless-only currency, reward pool, leaderboard, or
+  metagame was added.
+
+  Verification: 556/556 headless tests; save/resume, continue, retire, defeat-preserves-victory,
+  and telemetry seams green; changing the cycle law to four fights correctly failed all five
+  focused endless tests. The Unity runtime resumed a saved `VictoryChoice`, continued into Act 4,
+  retired with banked victory, and projected both live Workbench actions. Client compile and final
+  Unity console were clean. Jake approved the equal two-card `01-banked-victory` direction. R1 was
+  rejected because a stale 390px card minimum escaped the roughly 365px clipped choice row and cut
+  off the action footers. R2 sizes cards to the row, restores the full border and 20px bottom inset
+  at QHD and 1080p, and adds a geometry gate whose matched QHD negative control fails on the old
+  value and returns green when restored. Jake accepted the R2 actual-Unity result without
+  conditions. ADR: `Decisions/0030-beyond-the-hour.md`; evidence:
+  `docs/ui-reviews/outbox/beyond-the-hour/`.
+
+- **2026-07-28 late — ITEM 35 STAGE 1, THE SHARD FRAME (shipped; item stays on the board for
+  Stage 2).** `ShardEnvironment.cs` builds the fractured-cliff skirt + void gradient dome + far-side
+  debris + Tower-from-the-deep silhouette + fill/Sand-rim light rig under `~generated`, with beveled
+  tiles carrying seeded value jitter. All of it lives in a new `EnvironmentTune` block, so F1 sliders
+  and `tuning.json` hot reload came free; `enabled:false` restores the exact legacy board (that
+  kill-switch is untested in capture). Verified: headless client compile PASS, contact sheet
+  byte-identical ×2, console 0/0, and four probe rounds which fixed the rim trim line, the Sand wash
+  on far tiles, near-quadrant debris, and Tower clipping. Unseen in motion → `play-pass.md`.
+
+  **The geometry law this pass established (the reusable finding):** at pitch 42 / fov 34 the visible
+  backdrop band is **25°–59° BELOW horizontal**. Backdrop art therefore lives in the void *beneath*
+  the shard and a horizon is never visible — art authored on a horizon line is wasted.
+
+  **Standing guards for any environment work:** the environment stays desaturated (VFX owns
+  saturation) · the playfield stays flat (picking plane at y=0) · no `_Time` and no unseeded
+  randomness, because the byte-identical contact-sheet gate is the commit gate.
+
+  Pre-Stage-1 state, for the record: the fight world was `ReplayPlayer.BuildBoard()` — a Plane plus
+  64 flat hex fans in a solid-color void, no props, light rig, backdrop, or textures. The direction
+  chosen was a tabletop diorama: the last shard of a dying era scried through the Hourstone, a thick
+  slab with a fracture rim floating in the Hall's obsidian void, 3-point light rig, Tower-constant on
+  the backdrop. Staging: Stage 1 timeless frame (procedural, no new assets) → Stage 2 rim dressing +
+  one generated backdrop → Stage 3 per-act era dressing (deferred to the content pass; acts = eras
+  per ADR 0010.4).
+
+- **2026-07-29 — ITEM 30, COMBAT PAYOFF SLICE.** Closed the real-camera presentation slice
+  without adding a sim verb or buying/generating assets. Existing KayKit controllers carry
+  event-driven Attack/Cast/Hit/Death crossfades; `FeedbackDirector` fits `ActionSpeed` to the
+  authored beat, rations camera punch/shake, sequences contacts, holds meaningful crit/death
+  frames, and slows the fight-ending wipe. Authored enemy roles keep their procedural role bodies
+  and clocks instead of borrowing hero silhouettes. The shipped board SFX set passes its latency,
+  duration, level, and cross-reference contract; measured worst bus pressure remains below every
+  pool cap (Decisive 0.2/4, Cast 1.7/4, Impact 0.9/6, State 1.5/3).
+
+  The three folded legibility debts are closed. Conditional stat rules now use the replay fold's
+  authoritative `ActiveRules` list to draw a persistent gold `◆ LIVE` / `◆ LIVE ×N` plate on the
+  owning body; it is state, not a transient TriggerFired flash, and scrubs/live play agree without
+  re-evaluating predicates. Overlapping muster footprints repeat a stable per-owner identity
+  through four redundant channels: palette, concentric rim radius, arc gap/phase, and a matching
+  source ring under the owner. The 8-wide killfeed is right-anchored just inside the board and grows
+  inward. Capture measurement found a second defect: the bold font was 0.287 world-units high while
+  baselines advanced only 0.160, a 44% overlap on simultaneous deaths. `feedLineSpacing = 17`
+  supplies 0.340 baseline distance (18% leading); the longest swarm lines stay in frame and separate.
+
+  Verification: headless client compile 0 errors; 533/533 sim/run tests; shipped SFX lint 0
+  violations; all 14 replay fixtures measured under the voice budget; Unity import and console
+  0 warnings / 0 errors. Reviewed frozen payoff beats for `skirmish`, `boss-waning-crown`,
+  `enc-the-drop`, `glyphwar`, and `hourstone`, plus selected/quiet overlapping-muster fixtures.
+  A normal Play Mode replay was armed and paused on contact; the live graph showed event-driven
+  `Walk → Cast` with its fitted action speed. The same contact was captured and state-inspected at
+  2.5/5/10 ticks per second (0.5×/1×/2×); the action transition remained present and readable.
+  Editor returned to clean `Boot.unity`. Captures: `client/McpCaptures/item30/` and
+  `client/TempCaptures/muster-rings-*.png`. Subjective mix/impact taste remains a play-pass note,
+  not a reason to leave a completed build on the actionable board.
+
 - **2026-07-26 — CANDIDATE CONTENT + FIRST THIRD PATH (Sharpshot Spotter), authored but
   UNREACHABLE.** Jake: *"start building that content... doesn't have to be active in the game yet."*
   That threading is what makes it legal — the first-playable cap governs what a run can *offer*, so

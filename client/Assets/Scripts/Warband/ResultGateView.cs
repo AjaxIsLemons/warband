@@ -128,8 +128,7 @@ internal sealed class ResultGateView
         _enterCleanup.ExecuteLater(delay);
         _continue.Focus();
         UiPolishSignals.Emit(UiPolishSignals.Cue.Result, targetId: "result-panel",
-            tone: model.Victory ? UiFeedbackTone.Major : UiFeedbackTone.Negative,
-            receipt: model.Summary);
+            tone: model.Victory ? UiFeedbackTone.Major : UiFeedbackTone.Negative);
     }
 
     public void Hide()

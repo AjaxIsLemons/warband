@@ -6,6 +6,8 @@ using UnityEngine.UIElements;
 /// <summary>Reusable progressive-disclosure panel for whichever card currently owns focus.</summary>
 internal sealed class InspectorPanel
 {
+    private const float UnitSheetColumnMinimum = 490f;
+
     private static readonly DecisionDetailKind[] DetailKinds =
     {
         DecisionDetailKind.Champion,
@@ -41,6 +43,13 @@ internal sealed class InspectorPanel
     private readonly VisualElement _decisionBody;
     private readonly VisualElement _sections;
     private readonly VisualElement _deferred;
+    private readonly VisualElement _targeting;
+    private readonly Label _targetingValue;
+    private readonly VisualElement _rankBadge;
+    private readonly Label _rankLetter;
+    private readonly Label _rankGems;
+    private readonly VisualElement _path;
+    private readonly VisualElement _pathRows;
     private readonly VisualElement _equipmentPreview;
     private readonly VisualElement _recipients;
     private readonly Label _comparisonTitle;
@@ -72,6 +81,18 @@ internal sealed class InspectorPanel
         _empty = Required<Label>(Root, "empty");
         _content = Required<VisualElement>(Root, "content");
         _portrait = Required<VisualElement>(Root, "portrait");
+        // The rank badge is code-built and parented to the portrait so it overlays the banner's
+        // top-right corner in the Hall and rides the identity block everywhere else.
+        _rankBadge = new VisualElement { name = "rank-badge" };
+        _rankBadge.AddToClassList("wb-rank-badge");
+        _rankBadge.pickingMode = PickingMode.Ignore;
+        _rankLetter = new Label { pickingMode = PickingMode.Ignore };
+        _rankLetter.AddToClassList("wb-rank-badge__letter");
+        _rankGems = new Label { pickingMode = PickingMode.Ignore };
+        _rankGems.AddToClassList("wb-rank-badge__gems");
+        _rankBadge.Add(_rankLetter);
+        _rankBadge.Add(_rankGems);
+        _portrait.Add(_rankBadge);
         _portraitFallback = Required<Label>(Root, "portrait-fallback");
         _eyebrow = Required<Label>(Root, "eyebrow");
         _title = Required<Label>(Root, "title");
@@ -88,6 +109,10 @@ internal sealed class InspectorPanel
         _decisionBody = Required<VisualElement>(Root, "decision-body");
         _sections = Required<VisualElement>(Root, "sections");
         _deferred = Required<VisualElement>(Root, "deferred");
+        _targeting = Required<VisualElement>(Root, "targeting");
+        _targetingValue = Required<Label>(Root, "targeting-value");
+        _path = Required<VisualElement>(Root, "path");
+        _pathRows = Required<VisualElement>(Root, "path-rows");
         _equipmentPreview = Required<VisualElement>(Root, "equipment-preview");
         _recipients = Required<VisualElement>(Root, "recipients");
         _comparisonTitle = Required<Label>(Root, "comparison-title");
@@ -95,16 +120,29 @@ internal sealed class InspectorPanel
         _ruleDeltas = Required<VisualElement>(Root, "rule-deltas");
         _tags = Required<VisualElement>(Root, "tags");
         _actions = Required<VisualElement>(Root, "actions");
+        Root.RegisterCallback<GeometryChangedEvent>(
+            evt => UpdateUnitSheetGeometry(evt.newRect.width));
     }
 
     public void Bind(InspectorModel model)
     {
+        if (model.Empty && !string.IsNullOrWhiteSpace(model.EmptyHint))
+            _empty.text = model.EmptyHint;
         SetDisplayed(_empty, model.Empty);
         SetDisplayed(_content, !model.Empty);
         SetDisplayed(_actions, !model.Empty);
         foreach (DecisionDetailKind kind in DetailKinds)
             Root.EnableInClassList("wb-inspector--" +
                 kind.ToString().ToLowerInvariant(), !model.Empty && model.Kind == kind);
+        bool unitSheet = IsUnitSheet(model);
+        Root.EnableInClassList("wb-inspector--unit-sheet", unitSheet);
+        Root.EnableInClassList(
+            "wb-inspector--unit-sheet-combat",
+            unitSheet && model.UnitSheet.Combat);
+        Root.EnableInClassList(
+            "wb-inspector--unit-sheet-enemy",
+            unitSheet && model.UnitSheet.Enemy);
+        UpdateUnitSheetGeometry(Root.resolvedStyle.width);
         Root.EnableInClassList(
             "wb-inspector--equipment-preview",
             !model.Empty && model.EquipmentPreview != null);
@@ -114,6 +152,9 @@ internal sealed class InspectorPanel
             // Clear stale commits before returning so an empty dossier can never retain BUY/EQUIP.
             _actions.Clear();
             SetDisplayed(_rankUpBody, false);
+            SetDisplayed(_path, false);
+            SetDisplayed(_targeting, false);
+            SetDisplayed(_rankBadge, false);
             return;
         }
 
@@ -124,7 +165,7 @@ internal sealed class InspectorPanel
         _currencyPrice.Bind(model.CurrencyCost,
             model.CurrencyBalance < 0 || model.CurrencyBalance >= model.CurrencyCost);
         _portraitFallback.text = model.PortraitFallback;
-        WarbandCard.SetAccent(Root, model.Accent);
+        DecisionCardPresentation.ApplyAccent(Root, model.Accent);
 
         var texture = string.IsNullOrEmpty(model.PortraitResource)
             ? null
@@ -135,17 +176,30 @@ internal sealed class InspectorPanel
         SetDisplayed(_portraitFallback, texture == null);
         SetDisplayed(_price, model.CurrencyCost < 0 && !string.IsNullOrEmpty(model.Price));
         SetDisplayed(_currencyPrice, model.CurrencyCost >= 0);
-        SetDisplayed(_economy, model.CurrencyCost >= 0 || !string.IsNullOrEmpty(model.Price));
+        // The selected offer and pinned action dock already carry cost. Keeping a third copy
+        // inside the narrow identity caption steals the champion's name and caused mid-word
+        // wrapping in the approved vertical portrait treatment.
+        SetDisplayed(_economy,
+            !unitSheet &&
+            (model.CurrencyCost >= 0 || !string.IsNullOrEmpty(model.Price)));
+        if (unitSheet) SetDisplayed(_targeting, false);
+        else BindTargeting(model);
+        BindRank(model);
         BindSections(model);
         BindEquipmentPreview(model.EquipmentPreview);
         BindRankUp(model);
+        BindPath(model);
 
         bool typedRankUp = model.RankUpDetail != null;
         _stats.Clear();
         // Rank-up shows its gains as before → after rows inside the rank-up body; repeating
         // them as +N chips here would encode one fact in two channels (workbench-dossier.md).
         if (!typedRankUp)
-            foreach (var stat in model.Stats)
+        {
+            IReadOnlyList<StatChipModel> coreFacts = unitSheet
+                ? model.UnitSheet.CoreFacts
+                : model.Stats;
+            foreach (var stat in coreFacts)
             {
                 var chip = new MechanicStatTile(
                     "wb-inspector-stat", "wb-inspector-stat");
@@ -153,9 +207,40 @@ internal sealed class InspectorPanel
                 _tooltips?.Attach(chip, () => StatTooltip(stat, model.Title));
                 _stats.Add(chip);
             }
+        }
         SetDisplayed(_stats, _stats.childCount > 0);
 
         _tags.Clear();
+        if (unitSheet && model.UnitSheet.Combat)
+        {
+            if (!string.IsNullOrWhiteSpace(model.UnitSheet.Targeting))
+            {
+                var targeting = new Label("◎ " + model.UnitSheet.Targeting);
+                targeting.AddToClassList("wb-unit-state__targeting");
+                _tags.Add(targeting);
+            }
+            foreach (UnitStatusModel status in model.UnitSheet.Statuses)
+            {
+                var label = new Label(status.Label);
+                label.AddToClassList("wb-unit-status");
+                if (!string.IsNullOrWhiteSpace(status.Tone))
+                    label.AddToClassList("wb-unit-status--" + status.Tone);
+                label.focusable = true;
+                label.tabIndex = 0;
+                label.RegisterCallback<PointerUpEvent>(_ => label.Focus());
+                if (_tooltips == null) label.tooltip = status.Tooltip;
+                else _tooltips.Attach(label, () => new RuntimeTooltipModel
+                {
+                    Kind = RuntimeTooltipKind.General,
+                    Family = MechanicFamily.Neutral,
+                    Eyebrow = "LIVE STATUS",
+                    Title = status.Label,
+                    Domain = model.Title,
+                    Body = status.Tooltip,
+                });
+                _tags.Add(label);
+            }
+        }
         foreach (var tag in model.Tags)
         {
             var label = new Label(tag);
@@ -200,6 +285,21 @@ internal sealed class InspectorPanel
         }
     }
 
+    private static bool IsUnitSheet(InspectorModel model) =>
+        model != null &&
+        model.EquipmentPreview == null &&
+        model.UnitSheet != null;
+
+    private void UpdateUnitSheetGeometry(float width)
+    {
+        bool narrow = Root.ClassListContains("wb-inspector--unit-sheet") &&
+                      !float.IsNaN(width) &&
+                      !float.IsInfinity(width) &&
+                      width > 0f &&
+                      width < UnitSheetColumnMinimum;
+        Root.EnableInClassList("wb-inspector--unit-sheet-narrow", narrow);
+    }
+
     private static RuntimeTooltipModel StatTooltip(StatChipModel stat, string context)
     {
         MechanicFamily family = MechanicPresentation.Family(stat?.Id ??
@@ -218,6 +318,41 @@ internal sealed class InspectorPanel
         };
     }
 
+    /// <summary>The targeting rule — the one behavioural fact a spectator cannot infer from the
+    /// board. Static content (a shop offer) has no targeting, so the row simply does not exist
+    /// there; this is the state band from the approved spec.</summary>
+    private void BindTargeting(InspectorModel model)
+    {
+        bool shown = !string.IsNullOrWhiteSpace(model.Targeting);
+        SetDisplayed(_targeting, shown);
+        if (shown) MechanicPresentation.BindInline(_targetingValue, model.Targeting);
+    }
+
+    /// <summary>
+    /// Rank escalation (approved r4-rank-ladder). Four channels, and S alone gets the last two:
+    /// plate colour, gem count, then — S only — a gold name and a sheen. C is deliberately
+    /// undecorated; if every tier is decorated then none of them reads as an escalation.
+    /// </summary>
+    private void BindRank(InspectorModel model)
+    {
+        string rank = (model.Rank ?? "").Trim().ToUpperInvariant();
+        bool shown = rank is "C" or "B" or "A" or "S";
+        SetDisplayed(_rankBadge, shown);
+        foreach (string tier in RankTiers)
+        {
+            _rankBadge.EnableInClassList("wb-rank-badge--" + tier.ToLowerInvariant(),
+                shown && rank == tier);
+            Root.EnableInClassList("wb-inspector--rank-" + tier.ToLowerInvariant(),
+                shown && rank == tier);
+        }
+        if (!shown) return;
+        _rankLetter.text = rank;
+        _rankGems.text = rank switch { "B" => "\u25C6", "A" => "\u25C6\u25C6", "S" => "\u25C6\u25C6\u25C6", _ => "" };
+        SetDisplayed(_rankGems, rank != "C");
+    }
+
+    private static readonly string[] RankTiers = { "C", "B", "A", "S" };
+
     private void BindSections(InspectorModel model)
     {
         _sections.Clear();
@@ -225,6 +360,11 @@ internal sealed class InspectorPanel
         var sections = model.Sections.Count > 0
             ? model.Sections
             : LegacySections(model);
+        if (IsUnitSheet(model))
+        {
+            BindUnitSheetSections(model);
+            return;
+        }
         // During an equip projection the preview owns the whole detail column — the unit's
         // rules stay one click away on its own dossier, so even deferred rows yield.
         bool equipProjection = model.EquipmentPreview != null;
@@ -270,6 +410,164 @@ internal sealed class InspectorPanel
         // blank flex share.
         SetDisplayed(_sections.parent,
             _sections.childCount > 0 || _deferred.childCount > 0);
+    }
+
+    /// <summary>
+    /// Approved shared unit sheet. The adapter owns ordering and omission; this renderer only
+    /// iterates the supplied collections, so additional Weapon facts/properties and Passives
+    /// require no layout branch.
+    /// </summary>
+    private void BindUnitSheetSections(InspectorModel model)
+    {
+        UnitSheetModel sheet = model.UnitSheet;
+        bool hasWeapon =
+            !string.IsNullOrWhiteSpace(sheet.WeaponName) ||
+            sheet.WeaponFacts.Count > 0 ||
+            sheet.WeaponProperties.Count > 0;
+        if (hasWeapon) _sections.Add(UnitWeaponSection(model, sheet));
+        if (sheet.Signature != null)
+            _sections.Add(UnitRuleSection(
+                sheet.Signature, "SIGNATURE", "wb-unit-signature", model));
+        if (sheet.Passives.Count > 0)
+            _sections.Add(UnitPassivesSection(
+                sheet.Passives, sheet.PassivesLabel, model));
+
+        SetDisplayed(_deferred, false);
+        SetDisplayed(_sections.parent, _sections.childCount > 0);
+    }
+
+    private VisualElement UnitWeaponSection(
+        InspectorModel model, UnitSheetModel sheet)
+    {
+        var root = new VisualElement();
+        root.AddToClassList("wb-inspector__section");
+        root.AddToClassList("wb-unit-weapon");
+
+        var heading = new VisualElement();
+        heading.AddToClassList("wb-unit-weapon__heading");
+        var label = new Label("WEAPON");
+        label.AddToClassList("wb-inspector__section-label");
+        var identity = new VisualElement();
+        identity.AddToClassList("wb-unit-weapon__identity");
+        var icon = new Label(string.IsNullOrWhiteSpace(sheet.WeaponIcon)
+            ? "⚔"
+            : sheet.WeaponIcon);
+        icon.AddToClassList("wb-unit-weapon__icon");
+        var name = new Label(sheet.WeaponName);
+        name.AddToClassList("wb-unit-weapon__name");
+        identity.Add(icon);
+        identity.Add(name);
+        heading.Add(label);
+        heading.Add(identity);
+        root.Add(heading);
+
+        var facts = new VisualElement();
+        facts.AddToClassList("wb-unit-weapon__facts");
+        facts.EnableInClassList(
+            "wb-unit-weapon__facts--wrap", sheet.WeaponFacts.Count > 4);
+        foreach (StatChipModel source in sheet.WeaponFacts)
+        {
+            if (source == null) continue;
+            StatChipModel display = WeaponDisplayFact(source);
+            var tile = new MechanicStatTile("wb-weapon-stat", "wb-weapon-stat");
+            tile.Bind(display);
+            tile.userData = source;
+            tile.focusable = true;
+            tile.tabIndex = 0;
+            tile.RegisterCallback<PointerUpEvent>(_ => tile.Focus());
+            _tooltips?.Attach(tile, () => StatTooltip(source, sheet.WeaponName));
+            facts.Add(tile);
+        }
+        if (facts.childCount > 0) root.Add(facts);
+
+        foreach (RuleDeltaModel property in sheet.WeaponProperties)
+            if (property != null)
+                root.Add(UnitWeaponProperty(property, sheet.WeaponName));
+        return root;
+    }
+
+    private static StatChipModel WeaponDisplayFact(StatChipModel source)
+    {
+        string value = source.Value ?? "";
+        if (source.Id == PresentationFactId.ManaPerSwing &&
+            value.Length > 0 && value[0] != '+' && value[0] != '−' && value[0] != '-')
+            value = "+" + value;
+        return new StatChipModel(
+            source.Label, value, source.Tone, source.Id, source.Tooltip, source.Priority)
+        {
+            AdvancedTooltip = source.AdvancedTooltip,
+        };
+    }
+
+    private VisualElement UnitWeaponProperty(RuleDeltaModel property, string weaponName)
+    {
+        var row = new VisualElement();
+        row.AddToClassList("wb-unit-weapon-property");
+        row.EnableInClassList("wb-unit-weapon-property--inactive", !property.Applies);
+        row.userData = property;
+        row.focusable = true;
+        row.tabIndex = 0;
+        row.RegisterCallback<PointerUpEvent>(_ => row.Focus());
+
+        var name = new Label(string.IsNullOrWhiteSpace(property.DisplayName)
+            ? property.RuleName
+            : property.DisplayName);
+        name.AddToClassList("wb-unit-weapon-property__name");
+        var separator = new Label("·");
+        separator.AddToClassList("wb-unit-weapon-property__separator");
+        var summary = new Label();
+        summary.AddToClassList("wb-unit-weapon-property__summary");
+        MechanicPresentation.BindInline(summary, property.ShortSummary);
+        row.Add(name);
+        row.Add(separator);
+        row.Add(summary);
+        if (!property.Applies)
+        {
+            var inactive = new Label("INACTIVE");
+            inactive.AddToClassList("wb-unit-weapon-property__inactive");
+            row.Add(inactive);
+        }
+
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(property.RuleName),
+            Eyebrow = property.Applies ? "WEAPON PROPERTY" : "WEAPON PROPERTY · INACTIVE",
+            Title = property.RuleName,
+            Domain = weaponName,
+            Body = property.FullDescription,
+        };
+        if (_tooltips == null) row.tooltip = property.FullDescription;
+        else _tooltips.Attach(row, Tooltip);
+        return row;
+    }
+
+    private VisualElement UnitRuleSection(
+        InspectorSectionModel section, string label, string className, InspectorModel model)
+    {
+        var root = new VisualElement();
+        root.AddToClassList("wb-inspector__section");
+        root.AddToClassList(className);
+        root.Add(SectionHeading(section, label));
+        root.Add(RuleLine(
+            section, null, model.KeywordNotes, model.Title,
+            label == "SIGNATURE" ? "✦" : "◆", forceTitle: true));
+        return root;
+    }
+
+    private VisualElement UnitPassivesSection(
+        IReadOnlyList<InspectorSectionModel> passives, string label, InspectorModel model)
+    {
+        var root = new VisualElement();
+        root.AddToClassList("wb-inspector__section");
+        root.AddToClassList("wb-unit-passives");
+        root.Add(SectionHeading(
+            passives[0],
+            string.IsNullOrWhiteSpace(label) ? "PASSIVES" : label));
+        foreach (InspectorSectionModel passive in passives)
+            root.Add(RuleLine(
+                passive, null, model.KeywordNotes, model.Title, "◆", forceTitle: true));
+        return root;
     }
 
     /// <summary>
@@ -329,6 +627,150 @@ internal sealed class InspectorPanel
         foreach (ChoicePreviewModel choice in section.Choices)
             lines.Add($"{choice.Name} — {choice.Rule}");
         return string.Join("\n\n", lines);
+    }
+
+    /// <summary>
+    /// PATH: the champion's whole B/A/S ladder — chosen picks with their authored one-liner,
+    /// unmade picks as a visible promise ("AWAKENS AT RANK X"). Mirrors the rail card's
+    /// diamond row; the rank-up page keeps its own SELECTED TIERS ladder instead.
+    /// </summary>
+    private void BindPath(InspectorModel model)
+    {
+        _pathRows.Clear();
+        bool compactUnitSlots = IsUnitSheet(model);
+        IReadOnlyList<RankTierSlotModel> tiers = compactUnitSlots
+            ? model.UnitSheet.Specs
+            : model.PathTiers;
+        bool shown = model.RankUpDetail == null && model.EquipmentPreview == null &&
+                     tiers.Count > 0;
+        _path.EnableInClassList("wb-path--unit-slots", compactUnitSlots);
+        SetDisplayed(_path, shown);
+        if (!shown) return;
+        if (compactUnitSlots)
+        {
+            foreach (RankTierSlotModel tier in tiers)
+                _pathRows.Add(UnitSpecSlot(tier, model.Title));
+            return;
+        }
+
+        // A normal Market recruit with NOTHING taken yet uses the one-line spec teaser from
+        // the workbench-dossier contract. Muster is the deliberate exception: item 34 makes
+        // the untouched B/A/S ladder part of the opening roster promise, so its three dormant
+        // rows remain visible while the player chooses their first three cards.
+        bool anyTaken = false;
+        foreach (RankTierSlotModel tier in tiers)
+            if (tier.State == RankTierSlotState.Selected) { anyTaken = true; break; }
+        bool musterCandidate =
+            model.Key.StartsWith("muster:", StringComparison.Ordinal);
+        if (!anyTaken && !musterCandidate)
+        {
+            var teaser = new Label(TeaserText(model.PathTiers));
+            teaser.AddToClassList("wb-path-row__rule");
+            teaser.AddToClassList("wb-path__teaser");
+            teaser.style.whiteSpace = WhiteSpace.Normal;
+            _pathRows.Add(teaser);
+            return;
+        }
+
+        foreach (RankTierSlotModel tier in tiers)
+        {
+            bool filled = tier.State == RankTierSlotState.Selected;
+            var row = new VisualElement();
+            row.AddToClassList("wb-path-row");
+            row.EnableInClassList("wb-path-row--empty", !filled);
+            if (filled && !string.IsNullOrWhiteSpace(tier.Accent))
+                row.AddToClassList("accent--" + tier.Accent);
+            row.focusable = true;
+            row.tabIndex = 0;
+
+            var tile = new Label(filled ? tier.Icon : tier.Rank);
+            tile.AddToClassList("wb-path-row__tile");
+            var body = new VisualElement();
+            body.AddToClassList("wb-path-row__body");
+            string dormantName = musterCandidate
+                ? tier.Rank == "B"
+                    ? "AWAKENS · THE FORK"
+                    : $"AWAKENS AT {tier.Rank}"
+                : tier.Name;
+            var name = new Label(filled
+                ? $"{tier.Rank} · {tier.Name}"
+                : dormantName);
+            name.AddToClassList("wb-path-row__name");
+            body.Add(name);
+            if (filled && !string.IsNullOrWhiteSpace(tier.Summary))
+            {
+                var rule = new Label();
+                rule.AddToClassList("wb-path-row__rule");
+                MechanicPresentation.BindInline(rule, tier.Summary);
+                body.Add(rule);
+            }
+            row.Add(tile);
+            row.Add(body);
+
+            RankTierSlotModel captured = tier;
+            RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+            {
+                Kind = RuntimeTooltipKind.General,
+                Family = MechanicPresentation.Family(captured.Name),
+                Eyebrow = filled
+                    ? $"RANK {captured.Rank} SELECTED"
+                    : $"RANK {captured.Rank} AWAITING",
+                Title = filled ? captured.Name : $"Rank {captured.Rank} specialization",
+                Domain = "PATH",
+                Body = captured.Rule,
+                Context = model.Title,
+            };
+            if (_tooltips == null) row.tooltip = tier.Rule;
+            else _tooltips.Attach(row, Tooltip);
+            _pathRows.Add(row);
+        }
+    }
+
+    private VisualElement UnitSpecSlot(RankTierSlotModel tier, string context)
+    {
+        bool selected = tier.State == RankTierSlotState.Selected;
+        var slot = new VisualElement();
+        slot.AddToClassList("wb-unit-spec");
+        slot.EnableInClassList("wb-unit-spec--selected", selected);
+        slot.userData = tier;
+        slot.focusable = selected;
+        slot.tabIndex = selected ? 0 : -1;
+        slot.pickingMode = selected ? PickingMode.Position : PickingMode.Ignore;
+        var value = new Label(selected &&
+                              !string.IsNullOrWhiteSpace(tier.Icon)
+            ? tier.Icon
+            : tier.Rank);
+        value.AddToClassList("wb-unit-spec__value");
+        slot.Add(value);
+        if (!selected) return slot;
+
+        slot.RegisterCallback<PointerUpEvent>(_ => slot.Focus());
+        RuntimeTooltipModel Tooltip() => new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(tier.Name),
+            Eyebrow = string.IsNullOrWhiteSpace(tier.Rank)
+                ? "SELECTED SPEC"
+                : $"RANK {tier.Rank} SELECTED",
+            Title = tier.Name,
+            Domain = "SPECIALIZATION",
+            Body = tier.Rule,
+            Context = context,
+        };
+        if (_tooltips == null) slot.tooltip = tier.Rule;
+        else _tooltips.Attach(slot, Tooltip);
+        return slot;
+    }
+
+    /// <summary>"Specializes at B · A · S." — the ranks this chassis forks at, in one line.</summary>
+    private static string TeaserText(List<RankTierSlotModel> tiers)
+    {
+        var ranks = new List<string>();
+        foreach (RankTierSlotModel tier in tiers)
+            if (!string.IsNullOrWhiteSpace(tier.Rank)) ranks.Add(tier.Rank);
+        return ranks.Count == 0
+            ? "Specializations unlock as this champion ranks up."
+            : "Specializes at " + string.Join(" · ", ranks) + ".";
     }
 
     private void BindRankUp(InspectorModel model)
@@ -395,9 +837,38 @@ internal sealed class InspectorPanel
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public bool EditorShowFirstWeaponFactTooltip()
+    {
+        VisualElement tile = Root.Q<VisualElement>(className: "wb-weapon-stat");
+        if (tile?.userData is not StatChipModel stat) return false;
+        _tooltips?.EditorShow(tile, StatTooltip(stat, _title.text));
+        return _tooltips != null;
+    }
+
+    public bool EditorShowWeaponPropertyTooltip()
+    {
+        VisualElement row =
+            Root.Q<VisualElement>(className: "wb-unit-weapon-property");
+        if (row?.userData is not RuleDeltaModel property) return false;
+        _tooltips?.EditorShow(row, new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(property.RuleName),
+            Eyebrow = property.Applies
+                ? "WEAPON PROPERTY"
+                : "WEAPON PROPERTY · INACTIVE",
+            Title = property.RuleName,
+            Domain = "WEAPON",
+            Body = property.FullDescription,
+            Context = _title.text,
+        });
+        return _tooltips != null;
+    }
+
     public bool EditorShowFirstRankTierTooltip()
     {
         VisualElement slot =
+            Root.Q<VisualElement>(className: "wb-unit-spec--selected") ??
             Root.Q<VisualElement>(className: "wb-rank-tier--selected") ??
             Root.Q<VisualElement>(className: "wb-rank-tier--pending");
         if (slot?.userData is not RankTierSlotModel model) return false;
@@ -497,11 +968,14 @@ internal sealed class InspectorPanel
         return chip;
     }
 
-    private static VisualElement SectionHeading(InspectorSectionModel section)
+    private static VisualElement SectionHeading(
+        InspectorSectionModel section, string labelOverride = null)
     {
         var heading = new VisualElement();
         heading.AddToClassList("wb-inspector__section-heading");
-        var label = new Label(section.Label);
+        var label = new Label(string.IsNullOrWhiteSpace(labelOverride)
+            ? section.Label
+            : labelOverride);
         label.AddToClassList("wb-inspector__section-label");
         heading.Add(label);
         if (section.LabelGlyph == UiGlyphId.Unknown ||
@@ -608,12 +1082,21 @@ internal sealed class InspectorPanel
         InspectorSectionModel section,
         IReadOnlyList<WarbandSpecBadgeModel> traits,
         IReadOnlyList<string> keywordNotes,
-        string context)
+        string context,
+        string fallbackIcon = "",
+        bool forceTitle = false)
     {
         var line = new VisualElement();
         line.AddToClassList("wb-inspector__line");
-        var icon = new Label(section.Icon);
+        var icon = new Label(string.IsNullOrWhiteSpace(section.Icon)
+            ? fallbackIcon
+            : section.Icon);
         icon.AddToClassList("wb-inspector__line-icon");
+        string sectionLabel = (section.Label ?? "").ToUpperInvariant();
+        if (sectionLabel.Contains("SIGNATURE"))
+            icon.AddToClassList("wb-inspector__line-icon--ability");
+        else if (sectionLabel.Contains("PASSIVE"))
+            icon.AddToClassList("wb-inspector__line-icon--passive");
         var copy = new VisualElement();
         copy.AddToClassList("wb-inspector__line-body");
         var titleRow = new VisualElement();
@@ -637,7 +1120,7 @@ internal sealed class InspectorPanel
                 }
         bool titleLivesInSentence =
             semantic.Find(section.Name) != null;
-        if (!hasContextTraits && !titleLivesInSentence) titleRow.Add(title);
+        if (forceTitle || !hasContextTraits && !titleLivesInSentence) titleRow.Add(title);
         if (titleRow.childCount > 0) copy.Add(titleRow);
         copy.Add(summary);
         line.Add(icon);
@@ -725,7 +1208,8 @@ internal sealed class InspectorPanel
     private static List<InspectorSectionModel> LegacySections(InspectorModel model)
     {
         var result = new List<InspectorSectionModel>();
-        void Add(string label, string icon, string name, string summary)
+        void Add(string label, string icon, string name, string summary,
+                 InspectorSectionRole role = InspectorSectionRole.Primary)
         {
             if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(summary)) return;
             result.Add(new InspectorSectionModel
@@ -734,9 +1218,10 @@ internal sealed class InspectorPanel
                 Icon = icon,
                 Name = name,
                 Summary = summary,
+                Role = role,
             });
         }
-        Add("BASIC ATTACK", model.WeaponIcon, model.WeaponName, model.WeaponSummary);
+        Add("WEAPON", model.WeaponIcon, model.WeaponName, model.WeaponSummary);
         if (!string.IsNullOrEmpty(model.AbilityName) ||
             !string.IsNullOrEmpty(model.AbilitySummary))
             result.Add(new InspectorSectionModel
@@ -752,8 +1237,11 @@ internal sealed class InspectorPanel
                     ? model.AbilityManaCost.ToString()
                     : "",
             });
+        // Deferred, matching BuildInspectorSections' Champion/Recruit roles. Three full rule
+        // sections do not fit the dossier column at any shipped viewport — this fallback was
+        // emitting all three as Primary, which is what pushed the third behind the action row.
         Add(PassiveSectionLabel(model.PassiveTrigger), model.PassiveIcon,
-            model.PassiveName, model.PassiveSummary);
+            model.PassiveName, model.PassiveSummary, InspectorSectionRole.Deferred);
         if (model.Comparisons.Count > 0)
             result.Add(new InspectorSectionModel
             {

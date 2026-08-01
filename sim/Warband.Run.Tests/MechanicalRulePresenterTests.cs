@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using Warband.Content;
 using Warband.Run;
 using Warband.Sim;
@@ -57,6 +58,84 @@ namespace Warband.Run.Tests
                 "After this champion casts their signature: " +
                 "Gain Sure Strike for the next basic attack.",
                 copy);
+        }
+
+        [Fact]
+        public void GreataxeMasteryNamesTheExactOverkillDestination()
+        {
+            Assert.Equal(
+                "On kill: Deal excess damage to the enemy nearest the corpse.",
+                MechanicalRulePresenter.WeaponMastery(Weapons.All["greataxe"]).Full);
+        }
+
+        [Fact]
+        public void GreataxeMasteryCopyTracksItsAuthoredPercentage()
+        {
+            Trigger source = Weapons.All["greataxe"].MasteryTriggers.Single();
+            var changed = new Trigger { On = source.On };
+            changed.When.AddRange(source.When);
+            EffectDef effect = source.Do.Single().Clone();
+            effect.PctOfEventAmount = 60;
+            changed.Do.Add(effect);
+            var weapon = new WeaponDef { Name = "Test Greataxe" };
+            weapon.MasteryTriggers.Add(changed);
+
+            Assert.Equal(
+                "On kill: Deal 60% of excess damage to the enemy nearest the corpse.",
+                MechanicalRulePresenter.WeaponMastery(weapon).Full);
+        }
+
+        [Fact]
+        public void PikeMasteryStatesTheTotalAttackBonus()
+        {
+            Assert.Equal(
+                "Basic attacks deal +30% damage to enemies adjacent to an ally.",
+                MechanicalRulePresenter.WeaponMastery(Weapons.All["pike"]).Full);
+        }
+
+        [Fact]
+        public void PhalanxRiposteIsOneRuleInsteadOfThreeEngineTriggers()
+        {
+            UnitDef phalanx = Loadout.Compose(Kits.Chassis["phalanx"]).Def;
+
+            Assert.Equal(
+                "Combat start or Signature cast: Gain 1 Riposte.",
+                PlayerRuleProjection.Champion(phalanx).PassiveText);
+            Assert.Equal(
+                "Combat start or Signature cast: Allies within 1 hex gain 1 Riposte.",
+                MechanicalRulePresenter.Node(
+                    Kits.Nodes["phalanx.pikewall.unbrokenline"]).Full);
+            Assert.Contains(
+                "RIPOSTE · Spend 1 to Counter an incoming basic attack.",
+                PlayerRuleProjection.Keywords(phalanx));
+        }
+
+        [Fact]
+        public void RiposteCopyTracksTheAuthoredSpendCount()
+        {
+            var changed = Kits.Chassis["phalanx"].Passives.Select(source =>
+            {
+                var trigger = new Trigger
+                {
+                    On = source.On,
+                    EveryN = source.EveryN,
+                    OncePerRoot = source.OncePerRoot,
+                    RuleId = source.RuleId,
+                };
+                trigger.When.AddRange(source.When);
+                trigger.Do.AddRange(source.Do.Select(effect => effect.Clone()));
+                return trigger;
+            }).ToList();
+            changed.Single(trigger => trigger.On == EventKind.Attack)
+                .Do.Single(effect => effect.Kind == EffectKind.RemoveStatus)
+                .Amount = 2;
+
+            string copy = MechanicalRulePresenter.Passives(changed);
+
+            Assert.NotEqual(
+                "Combat start or Signature cast: Gain 1 Riposte.",
+                copy);
+            Assert.Contains("Spend 2 Riposte", copy);
         }
 
         [Fact]
@@ -118,7 +197,7 @@ namespace Warband.Run.Tests
 
             Assert.Contains("After this champion deals basic-attack damage", copy);
             Assert.Contains("this champion has Frenzy", copy);
-            Assert.Contains("60% of the triggering damage", copy);
+            Assert.Contains("60% of that damage", copy);
             Assert.DoesNotContain("source is the owner", copy);
             Assert.DoesNotContain("cause is Attack", copy);
         }
@@ -156,7 +235,7 @@ namespace Warband.Run.Tests
 
             string copy = MechanicalRulePresenter.Node(node).Full;
 
-            Assert.Contains("field centered on the current target for 6s; each second:", copy);
+            Assert.Contains("field centered on the target for 6s; each second:", copy);
             Assert.Contains("Apply Burn 2 to every enemy in the field", copy);
             Assert.DoesNotContain("Apply Burn 2 to this champion", copy);
             Assert.DoesNotContain(". centered on", copy);
@@ -196,5 +275,75 @@ namespace Warband.Run.Tests
             Assert.NotEmpty(output);
             Assert.All(output, text => Assert.EndsWith(".", text));
         }
+
+        [Fact]
+        public void EveryPlayerFacingRulePassesTheConciseLanguageAudit()
+        {
+            var failures = new List<string>();
+            foreach (var pair in Kits.Chassis)
+            {
+                ChampionRuleProjection champion = PlayerRuleProjection.Champion(
+                    Loadout.Compose(pair.Value).Def);
+                failures.AddRange(Audit(
+                    $"champion/{pair.Key}/signature", champion.SignatureText, 160));
+                failures.AddRange(Audit(
+                    $"champion/{pair.Key}/passive", champion.PassiveText, 160));
+            }
+            foreach (var pair in Weapons.All)
+                failures.AddRange(Audit(
+                    $"weapon/{pair.Key}",
+                    MechanicalRulePresenter.WeaponMastery(pair.Value).Full, 140));
+            foreach (var pair in Catalog.Trinkets)
+                failures.AddRange(Audit(
+                    $"trinket/{pair.Key}",
+                    MechanicalRulePresenter.Trinket(pair.Value).Full, 180));
+            foreach (var pair in Catalog.Inscriptions)
+                failures.AddRange(Audit(
+                    $"inscription/{pair.Key}",
+                    MechanicalRulePresenter.Inscription(pair.Value).Full, 180));
+            foreach (var pair in Kits.Nodes)
+                failures.AddRange(Audit(
+                    $"node/{pair.Key}",
+                    MechanicalRulePresenter.Node(pair.Value).Full, 240));
+
+            Assert.True(
+                failures.Count == 0,
+                "Player rule copy audit failed:\n" + string.Join("\n", failures));
+        }
+
+        [Fact]
+        public void RuleCopyAuditRejectsEngineLanguageAndOversizeCopy()
+        {
+            string bad = "Deal 100% of the recorded overkill to the nearest enemy, " +
+                         "measured from the triggering target, excluding the anchor unit.";
+
+            List<string> failures = Audit("negative-control", bad, 40);
+
+            Assert.Contains(failures, failure => failure.Contains("recorded overkill"));
+            Assert.Contains(failures, failure => failure.Contains("triggering target"));
+            Assert.Contains(failures, failure => failure.Contains("anchor unit"));
+            Assert.Contains(failures, failure => failure.Contains("120 > 40"));
+        }
+
+        private static List<string> Audit(string id, string text, int maxLength)
+        {
+            var failures = new List<string>();
+            foreach (string banned in new[]
+                     {
+                         "recorded overkill",
+                         "triggering amount",
+                         "triggering target",
+                         "triggering source",
+                         "anchor unit",
+                         "99 hex",
+                         "Deepen the inherited",
+                     })
+                if (text.IndexOf(banned, StringComparison.OrdinalIgnoreCase) >= 0)
+                    failures.Add($"{id}: contains '{banned}' · {text}");
+            if (text.Length > maxLength)
+                failures.Add($"{id}: {text.Length} > {maxLength} · {text}");
+            return failures;
+        }
+
     }
 }

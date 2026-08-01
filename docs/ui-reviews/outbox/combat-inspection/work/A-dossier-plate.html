@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shared.css">
+<style>
+/* A — DOSSIER PLATE. Placement is unchanged from today (hover near the cursor,
+   full record opens centred). Only the MATERIAL and the information budget change:
+   both surfaces are rebuilt in the Workbench dossier language, and the full record
+   drops from a full-screen scrim modal to a 740px slab. */
+
+.hover-card {
+  position: absolute;
+  left: 322px; top: 176px;
+  width: 372px;
+  padding: 14px 15px 12px 17px;
+}
+.hover-head { display: flex; gap: 12px; align-items: flex-start; }
+.hover-head .bezel { width: 62px; height: 70px; }
+.hover-card .stats { margin-top: 12px; }
+.hover-card .rule-row { margin-top: 9px; }
+.hover-card .statuses { margin-top: 9px; }
+.hover-card .footer-cue {
+  margin-top: 11px; padding-top: 9px;
+  border-top: 1px solid rgba(97, 125, 158, 0.28);
+}
+
+.record {
+  position: absolute;
+  right: 46px; bottom: 54px;
+  width: 740px;
+  display: flex;
+}
+.record__ident {
+  flex: 0 0 212px;
+  padding: 16px 14px 14px 18px;
+  border-right: 1px solid rgba(97, 125, 158, 0.28);
+  background: linear-gradient(180deg, rgba(28, 42, 61, 0.55) 0%, rgba(10, 16, 24, 0) 70%);
+}
+.record__ident .bezel { width: 112px; height: 126px; margin-bottom: 12px; }
+.record__detail { flex: 1 1 auto; padding: 15px 18px 14px; min-width: 0; }
+/* Stat rail runs across the detail column so the record stays SHORT — the
+   identity column is portrait + name only. */
+.record__detail .stats { margin-bottom: 14px; }
+.record__block { margin-bottom: 13px; }
+.record__block:last-of-type { margin-bottom: 10px; }
+.record__close {
+  position: absolute; right: 14px; bottom: 12px;
+  font-family: 'BarlowCondensed', sans-serif; font-weight: 600;
+  font-size: 12px; letter-spacing: 1.6px; color: rgb(150, 172, 198);
+  border: 1px solid rgba(110, 140, 174, 0.45); padding: 4px 9px 3px;
+}
+</style></head>
+<body>
+<div class="board"></div>
+
+<!-- ================= HOVER : the identity card ================= -->
+<div class="plate hover-card">
+  <div class="spine spine--enemy"></div>
+  <div class="hover-head">
+    <div class="bezel bezel--enemy">
+      <div class="crest">
+        <!-- ARTILLERY crest: emplaced barrel on an arc of fall -->
+        <svg viewBox="0 0 100 100" fill="none" stroke="rgb(214,132,104)" stroke-width="6" stroke-linecap="round">
+          <path d="M14 78 L62 30"/><path d="M8 86 L26 86"/>
+          <path d="M30 88 Q62 88 86 44" stroke-width="4" stroke-dasharray="7 9" opacity=".75"/>
+          <circle cx="88" cy="34" r="7" fill="rgb(214,132,104)" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div style="min-width:0">
+      <div class="eyebrow eyebrow--enemy">Artillery &middot; Enemy</div>
+      <div class="unit-name">Sanddrift Gunner</div>
+      <div class="identity-line">Matchlock Musket</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat s-health"><div class="stat__label">Health</div><div class="stat__value">62<small>/85</small></div></div>
+    <div class="stat s-power"><div class="stat__label">Power</div><div class="stat__value">28</div></div>
+    <div class="stat s-reach"><div class="stat__label">Reach</div><div class="stat__value">5</div></div>
+    <div class="stat s-cadence"><div class="stat__label">Cadence</div><div class="stat__value">1.5<small>s</small></div></div>
+  </div>
+
+  <div class="rule-row">
+    <span class="rule-row__key">Targets</span>
+    <span class="rule-row__val"><b>Farthest</b>, held at <b>5 hexes</b></span>
+  </div>
+
+  <div class="statuses">
+    <span class="pill p-time">Slow <em>2.0s</em></span>
+    <span class="pill p-burn">Burn <em>14</em></span>
+  </div>
+
+  <div class="footer-cue"><span class="kbd">Click</span> full record</div>
+</div>
+<div class="state-tag" style="left:322px; top:150px;">Hover &middot; identity card</div>
+
+<!-- ================= CLICK : the full record ================= -->
+<div class="plate record">
+  <div class="spine spine--ally"></div>
+  <div class="record__close">Close &times;</div>
+
+  <div class="record__ident">
+    <div class="bezel bezel--ally">
+      <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png">
+    </div>
+    <div class="eyebrow">Ally &middot; Reaction</div>
+    <div class="unit-name">Leonnatos</div>
+    <div class="identity-line">Phalanx &middot; <b>Rank A</b> &middot; Pike</div>
+    <div class="rule-row" style="margin-top:12px; display:block;">
+      <div class="rule-row__key" style="margin-bottom:2px;">Targets</div>
+      <div class="rule-row__val"><b>Nearest</b></div>
+    </div>
+  </div>
+
+  <div class="record__detail">
+    <div class="stats">
+      <div class="stat s-health"><div class="stat__label">Health</div><div class="stat__value">118<small>/150</small></div></div>
+      <div class="stat s-shield"><div class="stat__label">Shield</div><div class="stat__value">20</div></div>
+      <div class="stat s-mana"><div class="stat__label">Mana</div><div class="stat__value">28<small>/35</small></div></div>
+      <div class="stat s-power"><div class="stat__label">Power</div><div class="stat__value">9</div></div>
+    </div>
+    <div class="record__block">
+      <div class="section-head">Signature <span class="trig">at 35 mana</span></div>
+      <div class="rule-name">Skewer</div>
+      <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+    </div>
+
+    <div class="record__block">
+      <div class="section-head">Passive <span class="trig">when hit</span></div>
+      <div class="rule-name">Riposte</div>
+      <div class="rule-text">Spends a stored <span class="kw kw--offense">Riposte</span> to counterattack the attacker.</div>
+    </div>
+
+    <div class="record__block">
+      <div class="section-head">Basic attack</div>
+      <div class="rule-name">Pike</div>
+      <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+    </div>
+
+    <div class="deferred"><b>Pikewall</b><span>&mdash; spec</span><span class="hint">Hover</span></div>
+    <div class="deferred"><b>Bracing Line</b><span>&mdash; spec</span><span class="hint">Hover</span></div>
+  </div>
+</div>
+<div class="state-tag" style="right:46px; bottom:512px;">Click &middot; full record &mdash; fight keeps running behind it</div>
+
+</body></html>

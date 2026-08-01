@@ -10,7 +10,7 @@ using UnityEngine.Audio;
 /// real voices Unity culls by AUDIBILITY, so the loudest noise wins rather than the most important
 /// event.
 /// </summary>
-internal enum SfxBus { Ui, Decisive, Cast, Impact, State }
+internal enum SfxBus { Ui, Revision, Decisive, Cast, Impact, State }
 
 /// <summary>
 /// Pooled, bus-routed, priority-limited one-shot player — the single substrate under both audio
@@ -32,9 +32,9 @@ internal enum SfxBus { Ui, Decisive, Cast, Impact, State }
 /// </summary>
 internal static class SfxPlayer
 {
-    // 21 is the sum of the per-bus caps below; the spare 3 absorb a burst arriving in one frame
+    // 25 is the sum of the per-bus caps below; the spare 3 absorb a burst arriving in one frame
     // before the sweep reclaims finished voices.
-    private const int MaxVoices = 24;
+    private const int MaxVoices = 28;
 
     // Same-id coalescing: five simultaneous sword hits should be ONE LOUDER sword, not five voices.
     // At 5 tps a tick is 200 ms, so this window collapses a whole tick's worth of identical impacts.
@@ -56,6 +56,7 @@ internal static class SfxPlayer
     private static Voice[] _voices;
     private static bool _poolReady;
     private static Transform _root;
+    private static AudioSource _revisionLoop;
     private static readonly Dictionary<string, AudioClip[]> _cache =
         new Dictionary<string, AudioClip[]>(StringComparer.Ordinal);
     private static readonly HashSet<string> _missingWarned = new HashSet<string>(StringComparer.Ordinal);
@@ -84,6 +85,7 @@ internal static class SfxPlayer
     // board because it is direct feedback to something the player just did.
     private static int Priority(SfxBus b) => b switch
     {
+        SfxBus.Revision => 5,
         SfxBus.Decisive => 4,
         SfxBus.Ui => 3,
         SfxBus.Cast => 2,
@@ -96,6 +98,7 @@ internal static class SfxPlayer
     // tie-breaker for the shared pool.
     private static int Cap(SfxBus b) => b switch
     {
+        SfxBus.Revision => 4,
         SfxBus.Decisive => 4,
         SfxBus.Ui => 4,
         SfxBus.Cast => 4,
@@ -106,6 +109,7 @@ internal static class SfxPlayer
     private static string GroupName(SfxBus b) => b switch
     {
         SfxBus.Ui => "UI",
+        SfxBus.Revision => "Revision",
         SfxBus.Decisive => "Decisive",
         SfxBus.Cast => "Cast",
         SfxBus.Impact => "Impact",
@@ -190,6 +194,66 @@ internal static class SfxPlayer
         v.StartTime = Time.unscaledTime;
         v.Active = true;
         src.Play();
+    }
+
+    /// <summary>
+    /// The rupture owns the mix for less than a second. Stop ordinary board chatter so the fracture
+    /// reads as a true vacuum; UI and Revision voices survive because they are direct feedback.
+    /// </summary>
+    internal static void StopBoardVoices()
+    {
+        if (_voices == null) return;
+        for (int i = 0; i < _voices.Length; i++)
+        {
+            Voice v = _voices[i];
+            if (!v.Active || v.Bus == SfxBus.Ui || v.Bus == SfxBus.Revision) continue;
+            v.Src.Stop();
+            v.Active = false;
+            v.Id = null;
+        }
+    }
+
+    /// <summary>One dedicated temporal bed, outside the voice pool and always on Revision.</summary>
+    internal static void StartRevisionLoop(string id, float volume = 0.72f)
+    {
+        if (string.IsNullOrEmpty(id) || Application.isBatchMode) return;
+        AudioClip[] variants = Load(id, SfxBus.Revision);
+        if (variants == null || variants.Length == 0) return;
+        if (_revisionLoop == null)
+        {
+            var go = new GameObject("RevisionLoop");
+            go.transform.SetParent(Root(), false);
+            _revisionLoop = go.AddComponent<AudioSource>();
+            _revisionLoop.playOnAwake = false;
+            _revisionLoop.loop = true;
+            _revisionLoop.spatialBlend = 0f;
+            _revisionLoop.dopplerLevel = 0f;
+        }
+        _revisionLoop.Stop();
+        _revisionLoop.clip = variants[0];
+        _revisionLoop.outputAudioMixerGroup = GroupFor(SfxBus.Revision);
+        _revisionLoop.pitch = 1f;
+        _revisionLoop.volume = Mathf.Clamp01(volume * Volume);
+        _revisionLoop.Play();
+    }
+
+    internal static void StopRevisionLoop()
+    {
+        if (_revisionLoop == null) return;
+        _revisionLoop.Stop();
+        _revisionLoop.clip = null;
+    }
+
+    /// <summary>
+    /// Shape the dedicated temporal bed on the same unscaled clock as the visual fault. This is a
+    /// direct source envelope rather than a new mixer snapshot: only the active Revision loop
+    /// moves, and a missing/disabled loop remains a silent no-op.
+    /// </summary>
+    internal static void ShapeRevisionLoop(float volume, float pitch)
+    {
+        if (_revisionLoop == null || !_revisionLoop.isPlaying) return;
+        _revisionLoop.volume = Mathf.Clamp01(volume * Volume);
+        _revisionLoop.pitch = Mathf.Clamp(pitch, 0.5f, 2f);
     }
 
     private static Voice Acquire(string id, SfxBus bus)

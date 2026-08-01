@@ -39,13 +39,11 @@ internal readonly struct UiFeedbackEvent
     public readonly string GroupId;
     public readonly int Amount;
     public readonly UiFeedbackTone Tone;
-    public readonly string Receipt;
     public readonly UiTransactionKind Transaction;
 
     public UiFeedbackEvent(UiPolishSignals.Cue cue, string sourceId, string targetId,
                            string resourceId, string groupId, int amount,
-                           UiFeedbackTone tone, string receipt,
-                           UiTransactionKind transaction)
+                           UiFeedbackTone tone, UiTransactionKind transaction)
     {
         Cue = cue;
         SourceId = sourceId ?? "";
@@ -54,7 +52,6 @@ internal readonly struct UiFeedbackEvent
         GroupId = groupId ?? "";
         Amount = amount;
         Tone = tone;
-        Receipt = receipt ?? "";
         Transaction = transaction;
     }
 }
@@ -97,10 +94,9 @@ internal static class UiPolishSignals
     public static void Emit(Cue cue, string sourceId = "", string targetId = "",
                             string resourceId = "", string groupId = "",
                             int amount = 0, UiFeedbackTone tone = UiFeedbackTone.Neutral,
-                            string receipt = "",
                             UiTransactionKind transaction = UiTransactionKind.None) =>
         Emitted?.Invoke(new UiFeedbackEvent(cue, sourceId, targetId, resourceId, groupId,
-            amount, tone, receipt, transaction));
+            amount, tone, transaction));
 
     public static void Preview(Cue cue) => PreviewRequested?.Invoke(cue);
     public static void Preview(UiTransactionKind transaction) =>

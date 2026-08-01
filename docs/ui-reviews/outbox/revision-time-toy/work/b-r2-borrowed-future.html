@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>B r2 — Borrowed Future</title>
+<link rel="stylesheet" href="_dial.css">
+<style>
+  /* ---- the ability, shown: the champion's LATER self pours Mana back into it ---- */
+  .future { position:absolute; transform:translate(-50%,-50%);
+    width:132px; height:172px; border-radius:66px/86px;
+    background:linear-gradient(180deg, rgba(150,215,255,.30), rgba(90,180,255,.05));
+    border:3px dashed rgba(170,225,255,.65); }
+  .future span { position:absolute; left:50%; bottom:-38px; transform:translateX(-50%);
+    font-size:19px; font-weight:800; letter-spacing:3px; color:#AFDDFF;
+    white-space:nowrap; text-shadow:0 2px 6px #000; opacity:.9; }
+  .stream { position:absolute; transform-origin:0 50%; height:10px; border-radius:5px;
+    background:repeating-linear-gradient(90deg,
+      rgba(120,215,255,.95) 0 16px, rgba(120,215,255,0) 16px 34px);
+    filter:drop-shadow(0 0 12px rgba(90,200,255,.95)); }
+
+  /* the payoff, over the champion's head and nowhere else */
+  .orb { position:absolute; transform:translate(-50%,-50%);
+    width:150px; height:150px; border-radius:50%;
+    background:conic-gradient(#5FD0FF 0 100%, rgba(255,255,255,.10) 0);
+    border:5px solid rgba(205,242,255,.95);
+    box-shadow:0 0 50px rgba(70,190,255,.95), inset 0 0 30px rgba(0,40,80,.6);
+    display:grid; place-items:center; }
+  .orb i { font-style:normal; font-size:44px; font-weight:800; color:#EAF8FF;
+    text-shadow:0 3px 5px #000; }
+  /* Mana caps, so the remainder becomes Shield — drawn as a crescent that overflows the orb */
+  .shield { position:absolute; transform:translate(-50%,-50%);
+    width:196px; height:196px; border-radius:50%;
+    border:9px solid rgba(240,246,252,.95); border-bottom-color:transparent;
+    border-left-color:transparent; transform:translate(-50%,-50%) rotate(34deg);
+    filter:drop-shadow(0 0 20px rgba(255,255,255,.75)); }
+  .shieldnum { position:absolute; transform:translate(-50%,-50%);
+    font-size:34px; font-weight:800; color:#F4F9FF; text-shadow:0 0 18px rgba(255,255,255,.9), 0 3px 5px #000; }
+
+  .carry { position:absolute; transform:translate(-50%,-100%); text-align:center; }
+  .carry b { display:block; font-size:104px; font-weight:800; letter-spacing:-4px; color:#8FE3FF;
+    line-height:.86; text-shadow:0 0 34px rgba(60,180,255,1), 0 6px 0 rgba(4,10,20,.9); }
+  .carry span { display:block; font-size:23px; font-weight:800; letter-spacing:4px;
+    color:#CDEBFF; margin-top:8px; text-shadow:0 2px 6px #000; }
+</style>
+<body>
+<div class="vig"></div>
+<div class="chrome">
+
+  <!-- eligible, unchosen: a quiet ring, no label -->
+  <div class="ring ally" style="left:58.6%; top:59.5%"></div>
+  <div class="ring ally" style="left:43.2%; top:33.5%"></div>
+
+  <!-- the chosen champion: the ability draws itself -->
+  <div class="future" style="left:23.0%; top:47.0%"><span>ITS LATER SELF</span></div>
+  <div class="stream" style="left:600px; top:700px; width:210px; transform:rotate(38deg)"></div>
+  <div class="ring ally pick" style="left:30.0%; top:63.5%"></div>
+
+  <div class="shield"    style="left:30.0%; top:47.5%"></div>
+  <div class="shieldnum" style="left:36.6%; top:41.0%">+8</div>
+  <div class="orb"       style="left:30.0%; top:47.5%"><i>40</i></div>
+  <div class="carry"     style="left:30.0%; top:41.0%"><b>+33</b><span>INTO THE PAST</span></div>
+
+  <div class="dial">
+    <div class="fill"></div>
+    <div class="notch"    style="left:113px; top:156px"><b>6s</b></div>
+    <div class="notch"    style="left:170px; top:103px"><b>5s</b></div>
+    <div class="notch"    style="left:241px; top:70px"><b>4s</b></div>
+    <div class="notch"    style="left:319px; top:60px"><b>3s</b></div>
+    <div class="notch on" style="left:396px; top:75px"><b>2s</b></div>
+    <div class="notch"    style="left:464px; top:113px"><b>1s</b></div>
+    <div class="knob"     style="left:396px; top:75px"></div>
+    <div class="read">
+      <div class="num">2<u>s</u></div>
+      <div class="sub">ROLLED BACK</div>
+    </div>
+  </div>
+
+  <div class="hint">TURN THE HOURSTONE &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT THE HOUR</div>
+
+</div>
+</body>
+</html>

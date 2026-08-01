@@ -85,6 +85,31 @@ transitions (the `InscriptionRailView` idiom), `DrawerExpand`/`DrawerCollapse` c
   this doc specified — the strip was overbuild). The chip's third line is state-driven:
   `DROP TO UNEQUIP` while gear is armed/dragged, else `OPEN DRAWER ▴` / `CLOSE DRAWER ▾`.
 
+## Unit-sheet amendment (2026-07-29, approved R5)
+
+Recruit and owned-Champion inspection now share a dedicated five-region unit sheet. This
+supersedes the Recruit/Champion rows above and laws 2, 3, and 6 only for those two kinds; item,
+Rank Up, Inscription, Capacity, equipment-preview, and combat formats are unchanged.
+
+1. **Health** is the current non-Weapon chassis block. There is no generic baseline subtitle or
+   derived Signature clock.
+2. **Weapon** owns its name, Power/Healing, attack interval, Range, Mana per completed hit,
+   Crit/Cleave when present, and variable properties. Universal facts use one typed glyph/value
+   row; a property keeps its concise effect visible and discloses the exact active/inactive rule
+   on hover, keyboard focus, or tap focus.
+3. **Signature** owns its name, Mana cost, icon, and complete rule. Weapon Mana generation never
+   appears here.
+4. **Passives** use one plural header, then name + self-contained rule per Passive. Trigger
+   meaning lives in the sentence; there is no trigger-taxonomy header.
+5. **Specs** are three fixed B/A/S addresses. Empty slots show only the letter. A selected icon
+   replaces its letter and discloses the chosen Spec rule on hover/focus/tap.
+
+At wide dossier widths, portrait identity and mechanics are side by side. Narrow layouts collapse
+the portrait to a banner without changing the five-region order or hiding information. The exact
+implementation contract and approved pixels live in
+`docs/ui-reviews/outbox/unit-dossier-density/implementation/spec.md` and
+`07-weapon-glyph-row-r5.png`.
+
 ## Explicitly not tonight
 - No sim/content changes; no CardModel restructure (per-kind profile table over the existing
   bag); no MusterCard/draft-screen changes; no deletion of the dead ManagementView/ShopView/

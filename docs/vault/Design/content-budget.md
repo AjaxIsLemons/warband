@@ -6,7 +6,8 @@ updates when content lands (`make baseline` + `make content-version`).
 Current 8 heroes × 2 paths · 11 weapons + **5 trinkets** · **24 Inscriptions, delivered through the
 ADR 0017 proof waves** · **ONE THREE-ACT RUN, one boss per act** (a tiny reusable enemy-role grammar,
 several encounters, three act bosses, one event) · shops + placement · crude post-win endless seam
-that may reuse and scale the slice · programmer art, no sound.
+that may reuse and scale the slice · **2 Revision lineages × 3 authored two-way evolution tiers**
+(ADR 0028; no random pool or metagame) · programmer art, no sound.
 
 **Measured against the cap, 2026-07-27 evening** (`make baseline`, fingerprint `b8640a3ea7cd360b` —
 moved by ADR 0026: hash schema + twelve Inscriptions + Living Inscription, saves invalidated once):

@@ -14,22 +14,21 @@ namespace Warband.Content
         public string HeroId { get; }
         public string ChampionName { get; }
         public string Role { get; }
-        public string PassiveName { get; }
-        public string PassiveText { get; }
-        public string SignatureName { get; }
-        public string SignatureText { get; }
+        public string PassiveName => ContentLexicon.Innate(HeroId).Name;
+        public string PassiveText => Rules.PassiveText;
+        public string SignatureName => Rules.SignatureName;
+        public string SignatureText => Rules.SignatureText;
         public Hex DefaultPosition { get; }
         public bool StartsInReserve { get; }
         public IReadOnlyList<string> WeaponIds { get; }
+        private ChampionRuleProjection Rules =>
+            PlayerRuleProjection.Champion(
+                Loadout.Compose(Kits.Chassis[HeroId]).Def);
 
         public SkirmishHeroDef(
             string heroId,
             string championName,
             string role,
-            string passiveName,
-            string passiveText,
-            string signatureName,
-            string signatureText,
             Hex defaultPosition,
             bool startsInReserve,
             params string[] weaponIds)
@@ -37,10 +36,6 @@ namespace Warband.Content
             HeroId = heroId;
             ChampionName = championName;
             Role = role;
-            PassiveName = passiveName;
-            PassiveText = passiveText;
-            SignatureName = signatureName;
-            SignatureText = signatureText;
             DefaultPosition = defaultPosition;
             StartsInReserve = startsInReserve;
             WeaponIds = weaponIds;
@@ -53,13 +48,15 @@ namespace Warband.Content
     /// </summary>
     public sealed class WeaponMasteryCopy
     {
+        public string WeaponId { get; }
         public string Name { get; }
-        public string Text { get; }
+        public string Text =>
+            MechanicalRulePresenter.WeaponMastery(Weapons.All[WeaponId]).Full;
 
-        public WeaponMasteryCopy(string name, string text)
+        public WeaponMasteryCopy(string weaponId, string name)
         {
+            WeaponId = weaponId;
             Name = name;
-            Text = text;
         }
     }
 
@@ -80,10 +77,6 @@ namespace Warband.Content
                     "bulwark",
                     "Brakka, Shieldmaid of the Bronze Hour",
                     "Frontline control",
-                    "Bastion",
-                    "Starts combat with 30 Shield.",
-                    "Shield Slam",
-                    "Deals 10 damage to the nearest enemy and Stuns it for 1.0s.",
                     Hex.FromRowCol(2, 3),
                     false,
                     "towershield", "mace", "censer"),
@@ -92,10 +85,6 @@ namespace Warband.Content
                     "pyromancer",
                     "Ilion-7, Cinder of a Dead Star",
                     "Burn and field pressure",
-                    "Firebrand",
-                    "Damaging auto attacks apply 1 Burn.",
-                    "Fire Glyph",
-                    "Ignites the target hex and its neighbors for 8.0s; enemies inside build Burn.",
                     Hex.FromRowCol(0, 2),
                     false,
                     "staff", "censer", "towershield"),
@@ -104,10 +93,6 @@ namespace Warband.Content
                     "sharpshot",
                     "Calamity Vance, the Last Deadeye",
                     "Long-range damage",
-                    "Full Draw",
-                    "Gains +2 Attack per hex to the current target.",
-                    "Piercing Bolt",
-                    "Deals 14 damage through the current target and every enemy behind it.",
                     Hex.FromRowCol(0, 5),
                     false,
                     "bow", "musket", "daggers"),
@@ -116,10 +101,6 @@ namespace Warband.Content
                     "cleric",
                     "Sister Maren of the Waning Bell",
                     "Sustain and formation support",
-                    "Mercy Aura",
-                    "Nearby allies start combat with Regen.",
-                    "Sanctified Pyre",
-                    "Damages nearby enemies and heals nearby allies.",
                     Hex.FromRowCol(1, 4),
                     true,
                     "censer", "staff", "mace"),
@@ -129,27 +110,27 @@ namespace Warband.Content
             new Dictionary<string, WeaponMasteryCopy>
             {
                 ["daggers"] = new WeaponMasteryCopy(
-                    "Keen Pair", "Starts combat with +15% Crit Chance."),
+                    "daggers", "Keen Pair"),
                 ["sabre"] = new WeaponMasteryCopy(
-                    "Aftercast Edge", "The first auto after each cast is a guaranteed crit."),
+                    "sabre", "Aftercast Edge"),
                 ["mace"] = new WeaponMasteryCopy(
-                    "Tempered Rhythm", "Damaging autos gain the normal attack Mana a second time."),
+                    "mace", "Tempered Rhythm"),
                 ["greataxe"] = new WeaponMasteryCopy(
-                    "Carry the Blow", "Overkill damages the next enemy nearest the corpse."),
+                    "greataxe", "Carry the Blow"),
                 ["towershield"] = new WeaponMasteryCopy(
-                    "Hold Fast", "Damaging autos grant 3 Shield."),
+                    "towershield", "Hold Fast"),
                 ["pike"] = new WeaponMasteryCopy(
-                    "Brace", "Deals +30% auto damage to enemies engaged with an ally."),
+                    "pike", "Brace"),
                 ["censer"] = new WeaponMasteryCopy(
-                    "Sanctuary Smoke", "Overhealing becomes Shield."),
+                    "censer", "Sanctuary Smoke"),
                 ["staff"] = new WeaponMasteryCopy(
-                    "Afterburn", "Casting grants +30% Attack Speed for 2.0s."),
+                    "staff", "Afterburn"),
                 ["bow"] = new WeaponMasteryCopy(
-                    "Long Sight", "Adds +1 attack range."),
+                    "bow", "Long Sight"),
                 ["musket"] = new WeaponMasteryCopy(
-                    "Opening Volley", "The first auto of combat deals double damage."),
+                    "musket", "Opening Volley"),
                 ["standard"] = new WeaponMasteryCopy(
-                    "Company Muster", "Adjacent allies start with +10% Attack Speed."),
+                    "standard", "Company Muster"),
             };
 
         /// <summary>

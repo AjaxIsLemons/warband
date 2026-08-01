@@ -1,0 +1,216 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>03 hour ledger</title>
+<style>
+  :root{
+    --ink:#070B11; --obsidian:#0D141E; --slate:#162131; --slate2:#1A2739;
+    --iron:#40536B; --iron-dim:rgba(64,83,107,.55); --ash:#8C9AAF; --bone:#ECE8DF;
+    --sand:#D9A43A; --blue:#68A5E7; --verdant:#65C99A; --blood:#B44C43;
+    --mana:#45C8C0; --haste:#B39DF3; --dmg:#E0755A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-variant-emoji:text;width:2554px;height:1303px;overflow:hidden;background:var(--ink);
+    font-family:'Adwaita Sans','Segoe UI','DejaVu Sans',sans-serif;color:var(--bone)}
+  .kw-mana{color:var(--mana);font-weight:600}.kw-shield{color:var(--blue);font-weight:600}
+  .kw-haste{color:var(--haste);font-weight:600}.kw-dmg{color:var(--dmg);font-weight:600}
+  .kw-heal{color:var(--verdant);font-weight:600}.kw-reach{color:var(--blue);font-weight:600}
+
+  .top{height:96px;border-bottom:1px solid var(--iron-dim);display:flex;align-items:center;
+    padding:0 40px;gap:60px}
+  .top .act{font-size:13px;letter-spacing:2px;color:var(--ash)}
+  .top .name{font-size:30px;font-weight:800;letter-spacing:4px}
+  .top .beat{color:var(--sand);font-size:13px;letter-spacing:2px}
+  .top .brief{color:var(--ash);font-size:15px;margin-top:6px}
+  .top .sand-pill{margin-left:auto;border:1px solid var(--sand);color:var(--sand);
+    padding:10px 22px;font-size:22px;font-weight:700}
+  .top .seal{background:var(--sand);color:#171004;padding:16px 30px;font-size:15px;
+    letter-spacing:2.5px;font-weight:900}
+
+  .main{position:absolute;top:96px;bottom:172px;left:0;right:0;display:flex;
+    padding:24px 40px;gap:26px}
+
+  /* offer rail */
+  .rail{flex:0 0 640px;border:1px solid var(--iron-dim);background:var(--obsidian);
+    display:flex;flex-direction:column;padding:20px 20px 14px;overflow:hidden}
+  .rail-h{margin-bottom:14px}
+  .rail-h .eyebrow{color:var(--sand);font-size:12px;font-weight:700;letter-spacing:2.5px}
+  .rail-h h1{font-size:22px;font-weight:800;margin-top:5px}
+  .rail-h .sub{color:var(--ash);font-size:12px;margin-top:5px}
+  .grp{margin-top:12px}
+  .grp-h{display:flex;gap:10px;align-items:center;color:var(--ash);font-size:11px;
+    font-weight:800;letter-spacing:2px;padding-bottom:7px;border-bottom:1px solid var(--iron-dim)}
+  .grp-h .g{width:22px;height:22px;border:1px solid var(--iron);display:flex;align-items:center;
+    justify-content:center;font-size:11px;color:var(--bone)}
+  .grp-h .m{margin-left:auto;font-weight:600;color:var(--iron);letter-spacing:1px}
+  .row{display:flex;gap:12px;align-items:center;padding:10px 10px;border:1px solid transparent;
+    border-left:2px solid transparent}
+  .row:hover{background:var(--slate)}
+  .row.selected{background:var(--slate2);border-color:var(--blue);border-left:3px solid var(--blue)}
+  .r-icon{width:36px;height:36px;border:1px solid var(--iron);background:var(--obsidian);
+    display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+  .r-title{font-size:15.5px;font-weight:800}
+  .r-class{color:var(--ash);font-size:10px;font-weight:700;letter-spacing:1.2px;margin-top:2px}
+  .r-right{margin-left:auto;text-align:right;color:var(--ash);font-size:11px;font-weight:700}
+  .r-right b{color:var(--bone)}
+  .r-right .sand{color:var(--sand);font-size:15px;font-weight:900}
+
+  /* dossier */
+  .dossier{flex:1;border:1px solid var(--iron-dim);background:rgba(13,20,30,.7);
+    display:flex;padding:30px 34px;gap:34px}
+  .d-portrait{flex:0 0 340px;display:flex;flex-direction:column;gap:16px}
+  .d-art{height:340px;border:1px solid var(--iron);background:var(--obsidian);
+    display:flex;align-items:center;justify-content:center;font-size:110px;color:var(--iron)}
+  .d-tags{display:flex;flex-direction:column;gap:8px}
+  .d-tag{border:1px solid var(--iron-dim);color:var(--ash);font-size:10px;font-weight:700;
+    letter-spacing:1.4px;padding:8px 10px;text-align:center}
+  .d-body{flex:1;min-width:0}
+  .d-eyebrow{color:var(--sand);font-size:12px;font-weight:700;letter-spacing:2.5px}
+  .d-title{font-size:38px;font-weight:900;margin-top:8px}
+  .d-sub{color:var(--ash);font-size:14px;margin-top:6px}
+  .d-block{border-left:2px solid var(--iron);padding:10px 0 10px 16px;margin-top:22px}
+  .d-trigger{color:var(--ash);font-size:10.5px;font-weight:700;letter-spacing:1.6px}
+  .d-name{font-size:14px;font-weight:800;letter-spacing:1px;margin-top:3px}
+  .d-text{color:#B4C5DA;font-size:15px;line-height:1.55;margin-top:6px;max-width:760px}
+  .d-chips{display:flex;gap:10px;margin-top:26px}
+  .d-chip{border:1px solid var(--iron-dim);background:var(--obsidian);padding:10px 16px;
+    font-size:12px;font-weight:700;color:var(--ash)}
+  .d-chip b{color:var(--bone);margin-left:8px;font-size:14px}
+  .d-note{margin-top:26px;color:var(--ash);font-size:12.5px;border-top:1px solid var(--iron-dim);
+    padding-top:14px;max-width:760px}
+  .d-note b{color:var(--verdant)}
+
+  /* warband band */
+  .band{position:absolute;left:0;right:0;bottom:0;height:172px;border-top:1px solid var(--iron-dim);
+    background:var(--obsidian);display:flex;align-items:center;padding:0 24px;gap:14px}
+  .band .blk{color:var(--ash);font-size:12px;font-weight:800;letter-spacing:1.5px;
+    line-height:1.6;margin-right:10px}
+  .band .blk b{color:var(--bone);font-size:15px}
+  .hero{width:104px;height:128px;border:1px solid var(--iron);background:var(--slate);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    padding-bottom:8px;gap:6px;position:relative}
+  .hero .p{position:absolute;top:8px;left:8px;width:20px;height:20px;background:var(--sand);
+    color:#171004;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;
+    border-radius:50%}
+  .hero .face{font-size:34px;color:var(--iron);margin-bottom:auto;margin-top:26px}
+  .hero .n{font-size:10px;font-weight:800;letter-spacing:1px}
+  .hero.locked{opacity:.45;justify-content:center}
+  .hero.locked .n{color:var(--ash)}
+  .band .right{margin-left:auto;text-align:right;color:var(--ash);font-size:12px;
+    font-weight:800;letter-spacing:1.5px;line-height:1.7}
+  .band .right b{color:var(--bone);font-size:15px}
+</style></head>
+<body>
+
+<div class="top">
+  <div><div class="act">ACT 1 / 3</div><div class="name">WORKBENCH</div></div>
+  <div><div class="beat">BEAT 3 / 5 · INTERLUDE</div>
+    <div class="brief">No battle here. Choose certainty, equipment, or a run-wide rule.</div></div>
+  <div class="sand-pill">⌛︎ 16</div>
+  <div class="seal">SEAL THE HOUR →</div>
+</div>
+
+<div class="main">
+
+  <div class="rail">
+    <div class="rail-h">
+      <div class="eyebrow">INTERLUDE</div>
+      <h1>Choose what this quiet Hour leaves behind</h1>
+      <div class="sub">7 offers · every reward shown in full · select for the complete dossier</div>
+    </div>
+
+    <div class="grp">
+      <div class="grp-h"><div class="g">◇</div>TREASURY<span class="m">CERTAINTY</span></div>
+      <div class="row">
+        <div class="r-icon">◇</div>
+        <div><div class="r-title">Certain Reserve</div>
+          <div class="r-class">FIXED · NO FURTHER CHOICE</div></div>
+        <div class="r-right"><span class="sand">+5 ⌛︎</span></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div class="grp-h"><div class="g">⚔︎</div>ARMORY<span class="m">ONE WORN PIECE</span></div>
+      <div class="row selected">
+        <div class="r-icon">⚔︎</div>
+        <div><div class="r-title">Officer's Sabre</div><div class="r-class">WORN · SABRE</div></div>
+        <div class="r-right">POWER <b>7</b> · REACH <b>1</b></div>
+      </div>
+      <div class="row">
+        <div class="r-icon">✚︎</div>
+        <div><div class="r-title">Censer</div><div class="r-class">WORN · CENSER</div></div>
+        <div class="r-right">MEND <b>7</b> · REACH <b>3</b></div>
+      </div>
+      <div class="row">
+        <div class="r-icon">◈</div>
+        <div><div class="r-title">Deepwell Reliquary</div><div class="r-class">TRINKET</div></div>
+        <div class="r-right">MANA <b>+15</b> · POWER <b>+3</b></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div class="grp-h"><div class="g">⌛︎</div>HOURSTONE<span class="m">ONE RUN-WIDE LAW</span></div>
+      <div class="row">
+        <div class="r-icon">⌛︎</div>
+        <div><div class="r-title">Bronze Testament</div><div class="r-class">RUN-WIDE RULE</div></div>
+        <div class="r-right">OPENER</div>
+      </div>
+      <div class="row">
+        <div class="r-icon">⌛︎</div>
+        <div><div class="r-title">The Wound Clock</div><div class="r-class">RUN-WIDE RULE</div></div>
+        <div class="r-right">ON ALLY HIT</div>
+      </div>
+      <div class="row">
+        <div class="r-icon">⌛︎</div>
+        <div><div class="r-title">The Third Chime</div><div class="r-class">RUN-WIDE RULE</div></div>
+        <div class="r-right">EVERY 3RD CAST</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dossier">
+    <div class="d-portrait">
+      <div class="d-art">⚔︎</div>
+      <div class="d-tags">
+        <div class="d-tag">WORN → HONED → RELIC</div>
+        <div class="d-tag">ONE WEAPON PER CHAMPION</div>
+      </div>
+    </div>
+    <div class="d-body">
+      <div class="d-eyebrow">ARMORY · WORN · SABRE</div>
+      <div class="d-title">Officer's Sabre</div>
+      <div class="d-sub">Taking this seals the Hour — the Sabre arrives in your Armory as Worn gear.</div>
+      <div class="d-block">
+        <div class="d-trigger">BASIC ATTACK · ALWAYS</div>
+        <div class="d-name">BASIC ATTACK</div>
+        <div class="d-text">Deals 7 every 0.7s at <span class="kw-reach">reach</span> 1.
+          Gains 7 <span class="kw-mana">Mana</span> per completed swing.</div>
+      </div>
+      <div class="d-block">
+        <div class="d-trigger">MASTERY · SPECIALISTS</div>
+        <div class="d-name">SABRE MASTERY</div>
+        <div class="d-text">The first auto after each cast is a guaranteed crit.</div>
+      </div>
+      <div class="d-chips">
+        <div class="d-chip">POWER<b>7</b></div>
+        <div class="d-chip">CADENCE<b>0.7s</b></div>
+        <div class="d-chip">REACH<b>1</b></div>
+      </div>
+      <div class="d-note">Every offered reward is shown before you choose. The choice also
+        unlocks the next field capacity — <b>FIELD 4</b> opens when the Hour is sealed.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="band">
+  <div class="blk">WARBAND<br><b>FIELD 3 / 3</b></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">PHALANX</div></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">SHADE</div></div>
+  <div class="hero"><div class="p">C</div><div class="face">☺︎</div><div class="n">BANNERET</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="hero locked"><div class="n">LOCKED</div></div>
+  <div class="blk" style="margin-left:14px">RESERVE<br><b>0 / 2</b></div>
+  <div class="right">ARMORY · <b>0 STORED</b><br>OPEN DRAWER ▲</div>
+</div>
+
+</body></html>

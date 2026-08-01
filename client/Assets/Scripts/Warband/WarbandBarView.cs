@@ -10,21 +10,6 @@ using UnityEngine.UIElements;
 /// </summary>
 internal sealed class WarbandBarView : IDisposable
 {
-    private sealed class GearTarget
-    {
-        public long HeroId;
-        public int Kind;
-        public bool Armory;
-    }
-
-    private sealed class RosterTarget
-    {
-        public long HeroId;
-        public bool Reserve;
-        public int SlotIndex;
-        public bool Locked;
-    }
-
     private sealed class HeroTile
     {
         public readonly VisualElement Root = new VisualElement();
@@ -33,13 +18,17 @@ internal sealed class WarbandBarView : IDisposable
         public readonly Label Rank = new Label();
         public readonly Label ClassName = new Label();
         public readonly VisualElement Specs = new VisualElement();
+        public readonly VisualElement Signature = new VisualElement();
+        public readonly Label SignatureIcon = new Label();
         public readonly VisualElement Weapon = new VisualElement();
         public readonly Label WeaponIcon = new Label();
         public readonly Label WeaponTier = new Label();
         public readonly VisualElement Trinket = new VisualElement();
         public readonly Label TrinketIcon = new Label();
+        public readonly VisualElement Path = new VisualElement();
         public WarbandHeroModel Model = new WarbandHeroModel();
         public string SpecSignature = "";
+        public string PathSignature = "";
         public bool SuppressClick;
 
         public HeroTile()
@@ -62,6 +51,14 @@ internal sealed class WarbandBarView : IDisposable
 
             var gear = new VisualElement();
             gear.AddToClassList("warband-hero__gear");
+            // Kit row (workbench-refactor): SIGNATURE · WEAPON · TRINKET. The signature is
+            // disclosure only — visible in editable mode, never a drag or drop target.
+            Signature.AddToClassList("warband-gear");
+            Signature.AddToClassList("warband-gear--signature");
+            Signature.focusable = true;
+            Signature.tabIndex = 0;
+            SignatureIcon.AddToClassList("warband-gear__icon");
+            Signature.Add(SignatureIcon);
             Weapon.AddToClassList("warband-gear");
             Weapon.AddToClassList("warband-gear--weapon");
             Weapon.focusable = true;
@@ -76,9 +73,14 @@ internal sealed class WarbandBarView : IDisposable
             Trinket.tabIndex = 0;
             TrinketIcon.AddToClassList("warband-gear__icon");
             Trinket.Add(TrinketIcon);
+            gear.Add(Signature);
             gear.Add(Weapon);
             gear.Add(Trinket);
             Root.Add(gear);
+
+            // Path row: the B/A/S promise — filled with spec icons as ranks are taken.
+            Path.AddToClassList("warband-hero__path");
+            Root.Add(Path);
         }
     }
 
@@ -171,7 +173,7 @@ internal sealed class WarbandBarView : IDisposable
 
         _armory = new Button(UseArmory);
         _armory.AddToClassList("warband-bar__armory");
-        _armory.userData = new GearTarget { Armory = true };
+        _armory.userData = new WarbandEquipmentDropTarget { Armory = true };
         var armoryTitle = new Label("ARMORY");
         armoryTitle.AddToClassList("warband-bar__section");
         _armoryCount = new Label();
@@ -220,11 +222,15 @@ internal sealed class WarbandBarView : IDisposable
         }
         if (!_model.CanEdit) CancelKeyboardMove();
 
-        _root.EnableInClassList("warband-bar--editable", _model.CanEdit);
+        // Muster shows the full progression-card look (the promise starts at second zero)
+        // without being editable — the visual class is broader than the interaction gate.
+        bool progressionCards = _model.CanEdit || _model.MusterMode;
+        _root.EnableInClassList("warband-bar--editable", progressionCards);
+        _root.EnableInClassList("warband-bar--dimmed", _model.Dimmed);
         _root.EnableInClassList("warband-bar--compact", _model.Compact);
         _root.EnableInClassList("warband-bar--deployment",
             _model.Mode == WarbandBarMode.DeploymentSelect);
-        _root.EnableInClassList("warband-bar--readonly", !_model.CanEdit);
+        _root.EnableInClassList("warband-bar--readonly", !progressionCards);
         if (_model.Compact)
         {
             _root.Insert(0, _scroll);
@@ -235,12 +241,17 @@ internal sealed class WarbandBarView : IDisposable
             _root.Insert(0, _manage);
             _root.Insert(1, _scroll);
         }
-        _capacity.text = $"FIELD  {_model.FieldCount} / {_model.FieldCapacity}";
+        _root.EnableInClassList("warband-bar--muster", _model.MusterMode);
+        _capacity.text = _model.MusterMode
+            ? $"MUSTER  {_model.FieldCount} / {_model.FieldCapacity}"
+            : $"FIELD  {_model.FieldCount} / {_model.FieldCapacity}";
         // Two deliberate lines: the narrow divider column otherwise wraps mid-word
         // ("RESERV / E 2/2") at small viewports.
         _reserveCount.text = $"RESERVE\n{_model.ReserveCount} / {_model.ReserveCapacity}";
         _armoryCount.text = _model.StoredItems == 1 ? "1 STORED" : $"{_model.StoredItems} STORED";
-        _manageLabel.text = _model.CanManage ? "MANAGE WARBAND" : "WAR BAND";
+        _manageLabel.text = _model.MusterMode
+            ? "PICK YOUR THREE"
+            : _model.CanManage ? "MANAGE WARBAND" : "WAR BAND";
         _manage.SetEnabled(_model.CanManage);
 
         string signature = LayoutSignature(_model);
@@ -255,7 +266,10 @@ internal sealed class WarbandBarView : IDisposable
         foreach (WarbandHeroModel hero in _model.Field) UpdateTile(hero);
         foreach (WarbandHeroModel hero in _model.Reserve) UpdateTile(hero);
         SetDisplayed(_reserveGroup, !_model.Compact && _model.Reserve.Count > 0);
-        SetDisplayed(_armory, !_model.Compact || HasSelectedEquipment());
+        // Muster (workbench-frame): nothing exists to store — the Armory chip is absent,
+        // not merely disabled.
+        SetDisplayed(_armory,
+            !_model.MusterMode && (!_model.Compact || HasSelectedEquipment()));
         _armory.SetEnabled(_model.CanManage || HasSelectedEquipment());
         _armory.EnableInClassList("warband-bar__armory--drop-target",
             _model.CanEdit && HasSelectedEquipment());
@@ -282,6 +296,12 @@ internal sealed class WarbandBarView : IDisposable
             UiLayoutContract.RequireInside(report, _armory, _root, "armory command", 4f);
         UiLayoutContract.RequireClassInside(
             report, _root, "warband-hero", _scroll, tolerance: 5f);
+        // Progression cards (workbench-refactor): the kit and path rows must stay inside
+        // their card — a clipped B/A/S slot silently breaks the rank-up promise.
+        UiLayoutContract.RequireClassInside(
+            report, _root, "warband-path-slot", _scroll, tolerance: 5f);
+        UiLayoutContract.RequireClassInside(
+            report, _root, "warband-gear", _scroll, tolerance: 5f);
         UiLayoutContract.RequireNoScrollView(report, _root, "Permanent warband rail");
         UiLayoutContract.RequireMinimumFont(report, _root, "warband-hero__class", 13f);
         UiLayoutContract.RequireMinimumFont(report, _root, "warband-bar__manage", 13f);
@@ -316,9 +336,9 @@ internal sealed class WarbandBarView : IDisposable
     private void AddTile(WarbandHeroModel model, VisualElement parent)
     {
         var tile = new HeroTile { Model = model };
-        tile.Root.userData = new RosterTarget
+        tile.Root.userData = new WarbandRosterDropTarget
         {
-            HeroId = model.HeroInstanceId,
+            HeroInstanceId = model.HeroInstanceId,
             Reserve = model.Reserve,
             SlotIndex = model.SlotIndex,
             Locked = model.Locked,
@@ -366,15 +386,24 @@ internal sealed class WarbandBarView : IDisposable
         AttachTooltip(tile.Root, () => HeroTooltip(tile.Model, _model.CanEdit));
         ConfigureGear(tile, tile.Weapon, 0);
         ConfigureGear(tile, tile.Trinket, 1);
+        AttachTooltip(tile.Signature, () => SignatureTooltip(tile.Model));
         if (model.HeroInstanceId <= 0)
         {
-            tile.Root.EnableInClassList("warband-hero--empty", model.Empty);
+            // The awaiting seat is an invitation, not a locked slot (workbench-frame):
+            // the next muster pick lands here.
+            tile.Root.EnableInClassList("warband-hero--awaiting", model.Awaiting);
+            tile.Root.EnableInClassList("warband-hero--empty",
+                model.Empty && !model.Awaiting);
             tile.Root.EnableInClassList("warband-hero--locked", model.Locked);
-            tile.Fallback.text = model.Locked ? "◇" : "+";
-            tile.ClassName.text = model.Locked ? "LOCKED" : "OPEN";
+            tile.Fallback.text = model.Awaiting ? "◇" : model.Locked ? "◇" : "+";
+            tile.ClassName.text = model.Awaiting
+                ? model.AwaitingLabel
+                : model.Locked ? "LOCKED" : "OPEN";
             tile.Rank.text = (model.SlotIndex + 1).ToString();
+            SetDisplayed(tile.Signature, false);
             SetDisplayed(tile.Weapon, false);
             SetDisplayed(tile.Trinket, false);
+            SetDisplayed(tile.Path, false);
         }
         parent.Add(tile.Root);
         if (model.HeroInstanceId > 0) _tiles[model.HeroInstanceId] = tile;
@@ -433,7 +462,7 @@ internal sealed class WarbandBarView : IDisposable
 
         bool moved = _dragging;
         long source = _dragHeroId;
-        RosterTarget target = moved ? PickRosterTarget(position) : null;
+        WarbandRosterDropTarget target = moved ? PickRosterTarget(position) : null;
         if (moved) SuppressNextClick(tile);
         CancelDrag();
         if (moved && IsLegalRosterTarget(target, source))
@@ -460,7 +489,9 @@ internal sealed class WarbandBarView : IDisposable
 
     private void ActivateRosterKeyboardTarget(HeroTile tile)
     {
-        if (!_model.CanEdit || !(tile.Root.userData is RosterTarget target)) return;
+        if (!_model.CanEdit ||
+            !(tile.Root.userData is WarbandRosterDropTarget target))
+            return;
         if (_keyboardMoveHeroId <= 0)
         {
             if (tile.Model.HeroInstanceId <= 0 || tile.Model.Locked) return;
@@ -475,7 +506,7 @@ internal sealed class WarbandBarView : IDisposable
         }
 
         long source = _keyboardMoveHeroId;
-        if (target.HeroId == source)
+        if (target.HeroInstanceId == source)
         {
             CancelKeyboardMove();
             return;
@@ -487,15 +518,16 @@ internal sealed class WarbandBarView : IDisposable
 
     private void ConfigureGear(HeroTile tile, VisualElement element, int kind)
     {
-        element.userData = new GearTarget
+        element.userData = new WarbandEquipmentDropTarget
         {
-            HeroId = tile.Model.HeroInstanceId,
+            HeroInstanceId = tile.Model.HeroInstanceId,
             Kind = kind,
         };
         _gearTargets.Add(element);
         element.RegisterCallback<PointerDownEvent>(evt => BeginGearDrag(evt, tile, element, kind));
         element.RegisterCallback<PointerMoveEvent>(evt => MoveGearDrag(evt, element));
         element.RegisterCallback<PointerUpEvent>(evt => EndGearDrag(evt, tile, element, kind));
+        element.RegisterCallback<PointerCancelEvent>(evt => CancelGearDrag(evt, element));
         element.RegisterCallback<KeyDownEvent>(evt =>
         {
             if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.Space) return;
@@ -510,9 +542,9 @@ internal sealed class WarbandBarView : IDisposable
         if (model.HeroInstanceId <= 0) return;
         if (!_tiles.TryGetValue(model.HeroInstanceId, out HeroTile tile)) return;
         tile.Model = model;
-        tile.Root.userData = new RosterTarget
+        tile.Root.userData = new WarbandRosterDropTarget
         {
-            HeroId = model.HeroInstanceId,
+            HeroInstanceId = model.HeroInstanceId,
             Reserve = model.Reserve,
             SlotIndex = model.SlotIndex,
             Locked = model.Locked,
@@ -556,11 +588,23 @@ internal sealed class WarbandBarView : IDisposable
             }
             tile.SpecSignature = specSignature;
         }
+        UpdatePath(tile, model, specSignature);
+        tile.SignatureIcon.text = string.IsNullOrEmpty(model.SignatureIcon)
+            ? "✦"
+            : model.SignatureIcon;
 
         UpdateGear(tile.Weapon, tile.WeaponIcon, tile.WeaponTier, model.Weapon);
         UpdateGear(tile.Trinket, tile.TrinketIcon, null, model.Trinket);
-        tile.Weapon.userData = new GearTarget { HeroId = model.HeroInstanceId, Kind = 0 };
-        tile.Trinket.userData = new GearTarget { HeroId = model.HeroInstanceId, Kind = 1 };
+        tile.Weapon.userData = new WarbandEquipmentDropTarget
+        {
+            HeroInstanceId = model.HeroInstanceId,
+            Kind = 0,
+        };
+        tile.Trinket.userData = new WarbandEquipmentDropTarget
+        {
+            HeroInstanceId = model.HeroInstanceId,
+            Kind = 1,
+        };
         if (model.Weapon.Selected)
         {
             _selectedSourceHeroId = model.HeroInstanceId;
@@ -571,6 +615,80 @@ internal sealed class WarbandBarView : IDisposable
             _selectedSourceHeroId = model.HeroInstanceId;
             _selectedKind = 1;
         }
+    }
+
+    private static readonly string[] PathRanks = { "B", "A", "S" };
+
+    /// <summary>The card's path row: three fixed B/A/S slots. Chosen picks show their spec
+    /// icon; unmade picks stay as ghosted letters — the visible promise that ranks fill.</summary>
+    private void UpdatePath(HeroTile tile, WarbandHeroModel model, string specSignature)
+    {
+        string signature = model.Rank + "|" + specSignature;
+        if (string.Equals(tile.PathSignature, signature, StringComparison.Ordinal)) return;
+        tile.PathSignature = signature;
+        tile.Path.Clear();
+        foreach (string rank in PathRanks)
+        {
+            WarbandSpecBadgeModel chosen = null;
+            foreach (WarbandSpecBadgeModel spec in model.Specs)
+                if (string.Equals(spec.Rank, rank, StringComparison.Ordinal))
+                {
+                    chosen = spec;
+                    break;
+                }
+            var slot = new Label(chosen?.Icon ?? rank);
+            slot.AddToClassList("warband-path-slot");
+            slot.AddToClassList(chosen != null
+                ? "warband-path-slot--filled"
+                : "warband-path-slot--empty");
+            if (chosen != null && !string.IsNullOrWhiteSpace(chosen.Accent))
+                slot.AddToClassList("accent--" + chosen.Accent);
+            slot.focusable = true;
+            slot.tabIndex = 0;
+            string rankCopy = rank;
+            WarbandSpecBadgeModel captured = chosen;
+            AttachTooltip(slot, () => captured != null
+                ? new RuntimeTooltipModel
+                {
+                    Kind = RuntimeTooltipKind.General,
+                    Family = MechanicPresentation.Family(captured.Name),
+                    Eyebrow = $"RANK {captured.Rank} SPECIALIZATION",
+                    Title = captured.Name,
+                    Domain = "PATH",
+                    Body = captured.Rule,
+                    Context = tile.Model.ClassName,
+                }
+                : new RuntimeTooltipModel
+                {
+                    Kind = RuntimeTooltipKind.General,
+                    Family = MechanicFamily.Neutral,
+                    Eyebrow = $"RANK {rankCopy} AWAITING",
+                    Title = $"Awakens at Rank {rankCopy}",
+                    Domain = "PATH",
+                    Body = $"A 1-of-2 specialization is offered when this champion " +
+                           $"reaches Rank {rankCopy}.",
+                    Context = tile.Model.ClassName,
+                });
+            tile.Path.Add(slot);
+        }
+    }
+
+    private static RuntimeTooltipModel SignatureTooltip(WarbandHeroModel hero)
+    {
+        return new RuntimeTooltipModel
+        {
+            Kind = RuntimeTooltipKind.General,
+            Family = MechanicPresentation.Family(hero.SignatureName),
+            Eyebrow = hero.SignatureMana >= 0
+                ? $"SIGNATURE · {hero.SignatureMana} MANA"
+                : "SIGNATURE",
+            Title = string.IsNullOrEmpty(hero.SignatureName)
+                ? "Signature"
+                : hero.SignatureName,
+            Domain = "ACTIVE ABILITY",
+            Body = hero.SignatureRule,
+            Context = hero.ClassName,
+        };
     }
 
     private static void UpdateGear(VisualElement root, Label icon, Label tier,
@@ -633,20 +751,31 @@ internal sealed class WarbandBarView : IDisposable
 
         if (_dragging)
         {
-            GearTarget target = PickTarget(position);
+            WarbandEquipmentDropTarget target = PickTarget(position);
             long source = _dragHeroId;
             int sourceKind = _dragKind;
             CancelDrag();
             if (target?.Armory == true)
                 _actions.UnequipWarbandEquipment?.Invoke(source, sourceKind);
-            else if (target != null && target.Kind == sourceKind && target.HeroId != source)
-                _actions.TransferWarbandEquipment?.Invoke(source, sourceKind, target.HeroId);
+            else if (target != null && target.Kind == sourceKind &&
+                     target.HeroInstanceId != source)
+                _actions.TransferWarbandEquipment?.Invoke(
+                    source, sourceKind, target.HeroInstanceId);
         }
         else
         {
             CancelDrag();
             ActivateGear(tile, kind);
         }
+        evt.StopPropagation();
+    }
+
+    private void CancelGearDrag(PointerCancelEvent evt, VisualElement element)
+    {
+        if (_dragRoster || evt.pointerId != _dragPointerId ||
+            !ReferenceEquals(element, _dragSource))
+            return;
+        CancelDrag();
         evt.StopPropagation();
     }
 
@@ -680,41 +809,70 @@ internal sealed class WarbandBarView : IDisposable
         }
     }
 
-    private GearTarget PickTarget(Vector2 panelPosition)
+    private WarbandEquipmentDropTarget PickTarget(Vector2 panelPosition)
     {
         VisualElement picked = _shellRoot.panel?.Pick(panelPosition);
         while (picked != null)
         {
-            if (picked.userData is GearTarget target) return target;
+            if (picked.userData is WarbandEquipmentDropTarget target &&
+                (target.Armory || target.Kind == _dragKind))
+                return target;
+            if (picked.userData is WarbandRosterDropTarget roster &&
+                roster.HeroInstanceId > 0 && !roster.Locked)
+                return new WarbandEquipmentDropTarget
+                {
+                    HeroInstanceId = roster.HeroInstanceId,
+                    Kind = _dragKind,
+                };
             picked = picked.parent;
         }
         return null;
     }
 
-    private RosterTarget PickRosterTarget(Vector2 panelPosition)
+    private WarbandRosterDropTarget PickRosterTarget(Vector2 panelPosition)
     {
         VisualElement picked = _shellRoot.panel?.Pick(panelPosition);
         while (picked != null)
         {
-            if (picked.userData is RosterTarget target) return target;
+            if (picked.userData is WarbandRosterDropTarget target) return target;
             picked = picked.parent;
         }
         return null;
     }
 
-    private static bool IsLegalRosterTarget(RosterTarget target, long sourceHeroId) =>
-        target != null && !target.Locked && target.HeroId != sourceHeroId;
+    private static bool IsLegalRosterTarget(
+        WarbandRosterDropTarget target, long sourceHeroId) =>
+        target != null && !target.Locked &&
+        target.HeroInstanceId != sourceHeroId;
 
     private void SetGearDropHighlights(bool enabled)
     {
         foreach (VisualElement target in _gearTargets)
         {
             bool legal = false;
-            if (enabled && target.userData is GearTarget data)
-                legal = data.Kind == _dragKind && data.HeroId != _dragHeroId;
+            if (enabled && target.userData is WarbandEquipmentDropTarget data)
+                legal = data.Kind == _dragKind &&
+                        data.HeroInstanceId != _dragHeroId;
             target.EnableInClassList("warband-gear--drop-target", legal);
         }
+        foreach (VisualElement element in _rosterTargets)
+        {
+            bool legal = enabled &&
+                         element.userData is WarbandRosterDropTarget data &&
+                         !data.Locked &&
+                         data.HeroInstanceId > 0 &&
+                         data.HeroInstanceId != _dragHeroId;
+            element.EnableInClassList("warband-hero--gear-drop-target", legal);
+        }
         _armory.EnableInClassList("warband-bar__armory--drop-target", enabled);
+        _shellRoot.Query<VisualElement>(className: "workbench-rack").ForEach(element =>
+        {
+            bool armoryTarget =
+                element.userData is WarbandEquipmentDropTarget data &&
+                data.Armory;
+            element.EnableInClassList(
+                "workbench-rack--drop-target", enabled && armoryTarget);
+        });
         UpdateArmoryHint(enabled || (_model.CanEdit && HasSelectedEquipment()));
     }
 
@@ -722,11 +880,12 @@ internal sealed class WarbandBarView : IDisposable
     {
         foreach (VisualElement element in _rosterTargets)
         {
-            RosterTarget target = element.userData as RosterTarget;
+            WarbandRosterDropTarget target =
+                element.userData as WarbandRosterDropTarget;
             bool legal = enabled && IsLegalRosterTarget(target, sourceHeroId);
             element.EnableInClassList("warband-hero--drop-target", legal);
             element.EnableInClassList("warband-hero--drop-swap",
-                legal && target.HeroId > 0);
+                legal && target.HeroInstanceId > 0);
         }
         _field.EnableInClassList("warband-bar__slots--drop-active", enabled);
         _reserve.EnableInClassList("warband-bar__slots--drop-active", enabled);
@@ -888,7 +1047,8 @@ internal sealed class WarbandBarView : IDisposable
     {
         foreach (WarbandHeroModel hero in heroes)
             text.Append(hero.HeroInstanceId).Append(':')
-                .Append(hero.Empty ? 'e' : hero.Locked ? 'l' : 'o').Append('|');
+                .Append(hero.Awaiting ? 'a' : hero.Empty ? 'e' : hero.Locked ? 'l' : 'o')
+                .Append('|');
     }
 
     public void Dispose()
@@ -952,9 +1112,9 @@ internal sealed class WarbandBarView : IDisposable
         int locked = 0;
         foreach (VisualElement element in _rosterTargets)
         {
-            if (!(element.userData is RosterTarget target)) continue;
+            if (!(element.userData is WarbandRosterDropTarget target)) continue;
             if (target.Locked) locked++;
-            else if (target.HeroId > 0) occupied++;
+            else if (target.HeroInstanceId > 0) occupied++;
             else open++;
         }
         // A roster at full capacity legitimately has zero open slots — swap targets still

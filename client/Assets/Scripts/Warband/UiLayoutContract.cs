@@ -128,6 +128,36 @@ internal static class UiLayoutContract
         }
     }
 
+    /// <summary>
+    /// A child can report enough text height while its nearest card/section still clips it.
+    /// Check the actual resolved bounds against the owning ancestor, not only the outer panel.
+    /// </summary>
+    public static void RequireClassInsideNearestAncestor(
+        UiLayoutReport report, VisualElement root, string childClass,
+        string ancestorClass, float tolerance = 1f)
+    {
+        if (report == null || root == null) return;
+        List<VisualElement> children =
+            root.Query<VisualElement>(className: childClass).ToList();
+        for (int i = 0; i < children.Count; i++)
+        {
+            VisualElement child = children[i];
+            if (!IsVisible(child)) continue;
+            VisualElement ancestor = child.parent;
+            while (ancestor != null &&
+                   !ancestor.ClassListContains(ancestorClass))
+                ancestor = ancestor.parent;
+            if (ancestor == null)
+            {
+                report.Fail($"{childClass} {i} has no {ancestorClass} ancestor");
+                continue;
+            }
+            RequireInside(
+                report, child, ancestor,
+                $"{childClass} {i} inside {ancestorClass}", tolerance);
+        }
+    }
+
     public static void RequireWrappedTextFits(
         UiLayoutReport report, VisualElement root, string className,
         float tolerance = 1f)

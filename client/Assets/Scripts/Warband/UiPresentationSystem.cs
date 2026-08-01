@@ -1400,7 +1400,7 @@ internal sealed class UiFeedbackDirector : IDisposable
                 Attention(target ?? source ?? _targets.Find("station-market"));
                 break;
             case UiPolishSignals.Cue.Error:
-                Error(target ?? source ?? _targets.Find("feedback"));
+                Error(target ?? source ?? _targets.Find("hub-workspace"));
                 break;
             case UiPolishSignals.Cue.Purchase:
                 Purchase(resource, source, target, feedback.Amount, feedback.Tone,
@@ -1577,7 +1577,7 @@ internal sealed class UiFeedbackDirector : IDisposable
                 Attention(_targets.Find("station-market"));
                 break;
             case UiPolishSignals.Cue.Error:
-                Error(_targets.Find("feedback") ?? _targets.Find("hub-workspace"));
+                Error(_targets.Find("hub-workspace"));
                 break;
             case UiPolishSignals.Cue.Purchase:
             case UiPolishSignals.Cue.Reward:

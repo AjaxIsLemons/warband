@@ -82,6 +82,14 @@ namespace Warband.Content
             new EffectDef { Kind = EffectKind.ApplyStatus, Status = s, Amount = mag, StatusTicks = ticks, StatusSwings = swings, Select = sel };
         public static EffectDef Strip(StatusKind s, Selector sel) =>
             new EffectDef { Kind = EffectKind.RemoveStatus, Status = s, Select = sel };
+        public static EffectDef Spend(StatusKind s, Selector sel, int stacks = 1) =>
+            new EffectDef
+            {
+                Kind = EffectKind.RemoveStatus,
+                Status = s,
+                Amount = stacks,
+                Select = sel,
+            };
         public static EffectDef Swing(Selector sel, int pct = 0, bool counter = false) =>
             new EffectDef { Kind = EffectKind.Swing, Select = sel, Amount = pct, AsCounter = counter };
         public static EffectDef Execute(Selector sel) =>

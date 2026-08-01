@@ -65,7 +65,10 @@ public static class ProbeParties
         {
             ("bulwark", "bulwark.warden"),
             ("phalanx", "phalanx.pikewall"),
-            ("banneret", "banneret.warcaller"),
+            // Item 32 / ADR 0031: Banneret is already named CHASSIS-DEAD by the build sweep.
+            // Including it made every act-1 "control failed" verdict a Banneret verdict. A second
+            // Warden is legal draft content and keeps this axis honestly about Stun/Silence/Taunt.
+            ("bulwark", "bulwark.warden"),
             ("cleric", "cleric.lifebinder"),
         }),
         ("damage", new[]

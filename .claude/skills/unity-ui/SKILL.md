@@ -476,9 +476,16 @@ See: [references/ugui-legacy.md](references/ugui-legacy.md)
 - **unity-scripting** -- C# patterns, SerializeField, events
 - **unity-input** -- Input System integration with UI
 
-## TextMeshPro
+## Text rendering
 
-For all text rendering, use **TextMeshPro** (TMP) — not legacy `UI.Text`. TMP uses SDF rendering for crisp text at any scale. Use `TextMeshProUGUI` for Canvas UI, `TextMeshPro` for 3D world text. Use `SetText("Score: {0}", value)` for zero-allocation updates. See [references/textmeshpro.md](references/textmeshpro.md) for full API, rich text tags, font assets, and patterns.
+UI Toolkit text is rendered by `TextElement` controls such as `Label`, `Button`, and `TextField`;
+style it through USS and configure font assets, fallbacks, emoji, and missing-glyph behavior with
+the panel's Text Settings asset. Do not add TextMeshPro components to a UI Toolkit visual tree.
+
+For uGUI Canvas text, use `TextMeshProUGUI` instead of legacy `UI.Text`. Use `TextMeshPro` for 3D
+world text. `SetText("Score: {0}", value)` avoids formatting allocations on frequently updated TMP
+labels. See [references/textmeshpro.md](references/textmeshpro.md) for the TMP-specific API and
+font-asset workflow.
 
 ## Additional Resources
 

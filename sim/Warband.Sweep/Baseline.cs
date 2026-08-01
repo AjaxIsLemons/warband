@@ -62,6 +62,15 @@ public static class Baseline
         Put("enc.naive.completed", $"{naive.Completed}/{naive.Total}");
         foreach (var (where, count) in naive.Deaths)
             Put($"enc.naive.died.{where.Replace(' ', '-').Replace("(", "").Replace(")", "")}", count.ToString());
+        var responsive = EncounterProbe.CollectResponsiveLine();
+        Put("enc.responsive.completed", $"{responsive.Completed}/{responsive.Total}");
+        Put("enc.responsive.adapted", responsive.AdaptedPlacements.ToString());
+        foreach (var (response, count) in responsive.Responses)
+            Put($"enc.responsive.response.{response.ToLowerInvariant().Replace(' ', '-')}",
+                count.ToString());
+        foreach (var (where, count) in responsive.Deaths)
+            Put($"enc.responsive.died.{where.Replace(' ', '-').Replace("(", "").Replace(")", "")}",
+                count.ToString());
 
         // ---- act bosses ---------------------------------------------------------------
         for (int act = 1; act <= Encounters.BossPool.Length; act++)

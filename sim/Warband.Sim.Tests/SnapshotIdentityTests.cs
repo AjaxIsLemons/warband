@@ -52,7 +52,8 @@ namespace Warband.Sim.Tests
             var bow = new WeaponDef
             {
                 Name = "Longbow", Category = "bow", Damage = 12, Interval = 11,
-                Range = 4, CritChance = 15, MasteryRangeBonus = 1,
+                Range = 4, ManaPerSwing = 7, CritChance = 15, CleavePct = 25,
+                MasteryRangeBonus = 1,
             };
             var composed = Loadout.Compose(Ranger(), bow, mastered: true);
             var view = PlaybackUnit.From(Loadout.Spawn(0, 0, composed, Hex.FromRowCol(0, 0)));
@@ -61,7 +62,9 @@ namespace Warband.Sim.Tests
             Assert.Equal(12, view.Attack);
             Assert.Equal(11, view.AttackInterval);
             Assert.Equal(4, view.MoveInterval);
+            Assert.Equal(7, view.ManaPerSwing);
             Assert.Equal(15, view.CritChance);
+            Assert.Equal(25, view.CleavePct);
             Assert.False(view.HealAutos);
             Assert.Equal("ranger", view.ChassisId);
             Assert.Equal("Longbow", view.WeaponName);
@@ -90,6 +93,8 @@ namespace Warband.Sim.Tests
             result.InitialUnits[0].Traits.Add("Warden");
             result.InitialUnits[0].Range = 1;
             result.InitialUnits[0].MoveInterval = 6;
+            result.InitialUnits[0].ManaPerSwing = 7;
+            result.InitialUnits[0].CleavePct = 25;
             result.InitialUnits[1].RoleId = "anchor";
 
             var ms = new MemoryStream();
@@ -102,6 +107,8 @@ namespace Warband.Sim.Tests
             Assert.Equal(new[] { "Warden" }, initial[0].Traits);
             Assert.Equal(1, initial[0].Range);
             Assert.Equal(6, initial[0].MoveInterval);
+            Assert.Equal(7, initial[0].ManaPerSwing);
+            Assert.Equal(25, initial[0].CleavePct);
             Assert.Equal("anchor", initial[1].RoleId); // the board picks its body off this
             Assert.Equal(result.Events.Count, events.Count);
 
@@ -134,6 +141,10 @@ namespace Warband.Sim.Tests
             { Id = 0, Name = "Bulwark", ChassisId = "phalanx", WeaponName = "Tower Shield", Range = 1 });
             AssertDiffers("weapon must be hashed", new PlaybackUnit
             { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Longbow", Range = 1 });
+            AssertDiffers("mana per swing must be hashed", new PlaybackUnit
+            { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Tower Shield", Range = 1, ManaPerSwing = 7 });
+            AssertDiffers("cleave must be hashed", new PlaybackUnit
+            { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Tower Shield", Range = 1, CleavePct = 25 });
             AssertDiffers("traits must be hashed", new PlaybackUnit
             { Id = 0, Name = "Bulwark", ChassisId = "bulwark", WeaponName = "Tower Shield", Range = 1, Traits = { "Warden" } });
             AssertDiffers("role id must be hashed", new PlaybackUnit

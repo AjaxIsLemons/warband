@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Encounter Probes"
+  short_description: "Measure encounters, bosses, and balance"
+  default_prompt: "Use $warband-encounter-probes to measure this Warband encounter, boss, or balance question with the baseline/enc/boss/oath probes."

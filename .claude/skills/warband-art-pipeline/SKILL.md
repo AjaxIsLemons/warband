@@ -1,6 +1,6 @@
 ---
 name: warband-art-pipeline
-description: Generate, curate, process, import, and verify Warband placeholder art through shared Claude/Codex inbox-outbox jobs. Use for portraits, class or talent icons, weapon art and icons, spell/VFX source images, decals, masks, flipbooks, materials, textures, and environment concepts. Prefer Codex native image generation, let Claude prepare and review Codex jobs, and require explicit approval before importing generated assets into Unity.
+description: Generate, curate, process, import, and verify Warband placeholder art through shared Claude/Codex inbox-outbox jobs. Use for portraits, class or talent icons, weapon art and icons, spell/VFX source images, decals, masks, flipbooks, materials, textures, and environment concepts. Route textures and spritesheet VFX through Unity asset generation, queue portraits and icons to Codex native imagegen, and require explicit approval before any credit spend or import into Unity.
 ---
 
 # Warband Art Pipeline
@@ -63,9 +63,23 @@ inbox files or earlier candidate revisions. Put agent-authored work only in the 
 
 Do not invent a mechanic to make an icon interesting. The authored mechanic owns the image.
 
+## Pick the generator before queueing anything
+
+Claude has its own generation path — `Unity_AssetGeneration_GenerateAsset` over Unity MCP
+(`Unity_AssetGeneration_GetModels` lists what is available: Tripo/Hunyuan 3D and rigging,
+text-to-motion, spritesheet VFX, ElevenLabs SFX). Use it directly for textures, masks, and
+spritesheet VFX — mono masks tint best, and `spell-fx` already depends on this route. Check for
+retry-stub or suffixed files after every batch, and commit assets with their `.meta` together.
+
+Any credit spend needs Jake's explicit approval first, every time.
+
+Hand off to Codex when the job wants Codex's native imagegen strengths — portraits, icons, weapon
+art, illustrative concepts, or anything where Jake wants candidate variety to choose from — or when
+Unity MCP is unavailable (the Editor lease is singleton and often held elsewhere). Queue it rather
+than substituting a weaker route.
+
 ## Hand work from Claude to Codex
 
-Claude cannot assume access to Codex's native image generator or Jake's ChatGPT subscription.
 Use the shared filesystem as the queue:
 
 1. Complete the contract and exact prompts in `job.md` and `prompts/`.

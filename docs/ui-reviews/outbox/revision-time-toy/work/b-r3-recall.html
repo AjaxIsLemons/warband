@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>B r3 — Recall to Formation</title>
+<link rel="stylesheet" href="_dial.css">
+<style>
+  /* ONE cluster, at the hex it gets hauled back to. The arrow is the whole explanation. */
+  .tether { position:absolute; height:10px; transform-origin:0 50%; border-radius:5px;
+    background:repeating-linear-gradient(90deg,
+      rgba(255,156,140,.98) 0 26px, rgba(255,156,140,0) 26px 46px);
+    filter:drop-shadow(0 0 16px rgba(255,110,90,.95)); }
+  .arrowhead { position:absolute; transform:translate(-50%,-50%) rotate(-139deg);
+    width:0; height:0; border-left:30px solid transparent; border-right:30px solid transparent;
+    border-bottom:46px solid rgba(255,168,152,.98);
+    filter:drop-shadow(0 0 18px rgba(255,110,90,.95)); }
+
+  .home { position:absolute; transform:translate(-50%,-50%);
+    width:196px; height:98px; border-radius:50%;
+    border:6px dashed rgba(255,186,172,.98);
+    background:radial-gradient(ellipse, rgba(255,132,110,.34), rgba(0,0,0,0) 74%);
+    box-shadow:0 0 56px rgba(255,120,95,.7); }
+  .homeghost { position:absolute; transform:translate(-50%,-100%);
+    width:112px; height:158px; border-radius:56px/68px;
+    background:linear-gradient(180deg, rgba(255,178,164,.42), rgba(255,120,100,.08));
+    border:4px dashed rgba(255,196,184,.85); }
+
+  .badge { position:absolute; transform:translate(-50%,0); text-align:center; white-space:nowrap; }
+  .badge b { display:block; font-size:104px; font-weight:800; letter-spacing:-4px; color:#FF9C8C;
+    line-height:.86; text-shadow:0 0 38px rgba(255,80,58,1), 0 7px 0 rgba(20,4,4,.92); }
+  .badge span { display:inline-block; margin-top:10px; padding:9px 20px; border-radius:999px;
+    background:rgba(230,103,91,.97); color:#1b0605;
+    font-size:24px; font-weight:800; letter-spacing:4px; text-shadow:none;
+    box-shadow:0 0 32px rgba(255,110,90,.75); }
+</style>
+<body>
+<div class="board"></div>
+<div class="vig"></div>
+<div class="chrome">
+
+  <!-- eligible, unchosen -->
+  <div class="ring enemy" style="left:56.8%; top:40.4%"></div>
+  <div class="ring enemy" style="left:61.6%; top:21.8%"></div>
+
+  <!-- the chosen enemy, and the single line explaining what happens to it -->
+  <div class="ring enemy pick" style="left:48.2%; top:42.8%"></div>
+  <div class="tether" style="left:1234px; top:616px; width:352px; transform:rotate(-139.1deg)"></div>
+  <div class="arrowhead" style="left:36.8%; top:25.2%"></div>
+
+  <div class="home"      style="left:36.0%; top:24.0%"></div>
+  <div class="homeghost" style="left:36.0%; top:26.5%"></div>
+  <div class="badge"     style="left:36.0%; top:27.5%"><b>1.5s</b><span>CANNOT SWING</span></div>
+
+  <div class="dial">
+    <div class="fill"></div>
+    <div class="lineage">RECALL TO FORMATION</div>
+    <div class="notch"    style="left:113px; top:156px"><b>6s</b></div>
+    <div class="notch"    style="left:170px; top:103px"><b>5s</b></div>
+    <div class="notch"    style="left:241px; top:70px"><b>4s</b></div>
+    <div class="notch on" style="left:319px; top:60px"><b>3s</b></div>
+    <div class="notch"    style="left:396px; top:75px"><b>2s</b></div>
+    <div class="notch"    style="left:464px; top:113px"><b>1s</b></div>
+    <div class="knob"     style="left:319px; top:60px"></div>
+    <div class="read">
+      <div class="num">3<u>s</u></div>
+      <div class="sub">ROLLED BACK</div>
+    </div>
+  </div>
+
+  <div class="hint">TURN THE HOURSTONE &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT THE HOUR</div>
+
+</div>
+</body>
+</html>

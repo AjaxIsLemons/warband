@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shared.css">
+<style>
+/* r4 — THE UNIT CARD, revised against Jake's notes.
+   1 PORTRAIT: research says large portraits carry identity/desire, small icons carry
+     reference. So portrait size follows the QUESTION: the Hall (choosing) keeps the
+     full portrait banner; combat (referencing live state) gets a 56px bezel — up from
+     44px, because faces stop reading below roughly 32-48px.
+   2 RANK: multi-channel escalation, see r4-rank-ladder.
+   3 COLOUR LAW FIX: sand/gold is now Hourstone COST ONLY. Signature mana uses the Mana
+     family teal. TARGETS uses Space blue — targeting is spatial (nearest/farthest/hexes).
+   4 SECTIONS: SIGNATURE / WEAPON / PASSIVES / SPECS. The weapon owns the basic-attack
+     row. "Deferred" is a ROLE (full text vs one-liner), never a visible heading. */
+
+body { background: rgb(9, 13, 20); }
+.sheet { padding: 42px 0 0 80px; display: flex; gap: 64px; align-items: flex-start; }
+
+.ctx { font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:13px;
+       letter-spacing:2.2px; text-transform:uppercase; color:rgb(150,174,202); margin-bottom:3px; }
+.ctx-sub { font-size:11px; letter-spacing:.8px; color:rgb(104,128,158); margin-bottom:11px; }
+
+.card { position: relative; padding: 0 0 13px; }
+.card--wide { width: 440px; }
+.card--narrow { width: 302px; }
+
+/* BAND 0 — Hall only: the portrait banner survives, because this is where you choose. */
+.banner-art { position: relative; height: 156px; overflow: hidden; }
+.banner-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; }
+.banner-art::after {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(7,11,17,0) 34%, rgba(9,14,22,.86) 82%, rgb(11,17,26) 100%);
+}
+.banner-art .rank { position: absolute; right: 11px; top: 11px; z-index: 2; }
+
+.rank { display:inline-flex; align-items:center; gap:5px; padding:3px 8px 2px;
+        font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:15px;
+        letter-spacing:1.6px; line-height:1; }
+.rank i { font-style:normal; font-size:8px; letter-spacing:1px; }
+.rank--a { background:rgba(28,42,58,.95); border:1px solid rgb(127,168,206); color:rgb(207,224,242);
+           box-shadow:0 0 0 1px rgba(127,168,206,.22); }
+.rank--s { background:linear-gradient(180deg,rgb(246,214,142),rgb(206,160,66));
+           border:1px solid rgb(255,231,176); color:rgb(14,20,30);
+           box-shadow:0 0 16px rgba(226,178,78,.5); }
+
+.head-wide { padding: 0 15px 12px 18px; margin-top: -30px; position: relative; z-index: 2; }
+.card__head { display:flex; gap:12px; align-items:center; padding:12px 12px 11px 15px; }
+.card--narrow .bezel { width:56px; height:63px; }
+.card__close { margin-left:auto; align-self:flex-start; font-family:'BarlowCondensed',sans-serif;
+               font-weight:600; font-size:13px; color:rgb(148,170,196);
+               border:1px solid rgba(110,140,174,.4); padding:1px 6px 0; }
+
+/* sand is COST ONLY now */
+.price { display:inline-flex; align-items:center; gap:5px; padding:3px 9px 2px;
+         font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:20px;
+         color:var(--sand); border:1px solid rgba(217,164,58,.45);
+         background:rgba(55,40,16,.55); }
+
+.facts { display:flex; align-items:baseline; margin:0 13px 0 16px; padding:8px 0 9px;
+         border-top:1px solid rgba(97,125,158,.26); border-bottom:1px solid rgba(97,125,158,.26); }
+.card--wide .facts { margin:0 15px 0 18px; padding:10px 0 11px; }
+.fact { flex:1 1 0; min-width:0; }
+.fact b { display:block; font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:10px;
+          letter-spacing:1.3px; text-transform:uppercase; color:rgb(126,146,172); }
+.fact span { font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:20px;
+             line-height:1.1; color:var(--fc,var(--bone)); white-space:nowrap; }
+.card--wide .fact span { font-size:23px; }
+.fact span small { font-size:12px; color:rgba(198,212,230,.6); }
+.f-health{--fc:var(--health)} .f-power{--fc:var(--power)} .f-reach{--fc:var(--reach)}
+.f-cadence{--fc:var(--cadence)} .f-shield{--fc:var(--shield)} .f-mana{--fc:var(--mana)}
+
+/* TARGETS — Space blue, not sand. */
+.targets { margin:10px 13px 0 16px; padding:6px 9px 7px;
+           background:rgba(20,34,52,.9); border-left:2px solid var(--reach); }
+.card--wide .targets { margin:10px 15px 0 18px; }
+.targets b { display:block; font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:11px;
+             letter-spacing:1.6px; text-transform:uppercase; color:rgb(150,178,210); }
+.targets span { font-size:13px; color:rgb(228,236,246); }
+.targets span i { font-style:normal; color:var(--reach); font-weight:600; }
+
+.sec { padding:11px 13px 0 16px; }
+.card--wide .sec { padding:12px 15px 0 18px; }
+.sec .section-head { font-size:11px; letter-spacing:1.7px; }
+/* the trigger chip carries the family colour of what it costs/keys off */
+.trig--mana { color: var(--mana) !important; }
+.trig--hit  { color: var(--power) !important; }
+.sec .rule-name { font-size:16px; margin-top:3px; }
+.card--wide .sec .rule-name { font-size:18px; }
+.sec .rule-text { font-size:12.5px; line-height:1.42; margin-top:2px; }
+.card--wide .sec .rule-text { font-size:13.5px; }
+
+/* a hoverable row: dashed underline = "there is more behind this" */
+.hoverable { border-bottom:1px dashed rgba(150,172,198,.55); }
+.row-line { display:flex; align-items:baseline; gap:8px; padding:5px 0 4px;
+            font-size:12px; color:rgb(146,165,189); border-top:1px solid rgba(97,125,158,.16); }
+.row-line:first-of-type { border-top:0; }
+.row-line b { font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:14px;
+              letter-spacing:.4px; color:rgb(208,221,237); }
+.row-line .at { margin-left:auto; font-family:'BarlowCondensed',sans-serif; font-weight:600;
+                font-size:11px; letter-spacing:1.2px; color:rgb(120,146,178); }
+
+.live { margin:12px 13px 0 16px; padding-top:10px; border-top:1px solid rgba(97,125,158,.26); }
+.live .eyebrow { font-size:11px; margin-bottom:6px; }
+
+.action { margin:14px 15px 2px 18px; padding:11px 0 10px; text-align:center;
+          font-family:'BarlowCondensed',sans-serif; font-weight:600; font-size:16px;
+          letter-spacing:1.8px; text-transform:uppercase; color:rgb(12,18,27);
+          background:linear-gradient(180deg,rgb(233,196,116),rgb(198,152,62));
+          border:1px solid rgba(255,231,176,.5); }
+</style></head>
+<body>
+<div class="sheet">
+
+  <!-- ===================== HALL — portrait banner kept ===================== -->
+  <div>
+    <div class="ctx">Hall &middot; dossier / shop card</div>
+    <div class="ctx-sub">440px &middot; portrait banner &middot; rank S</div>
+    <div class="plate card card--wide">
+      <div class="spine spine--ally" style="background:linear-gradient(180deg,rgb(246,214,142),rgba(150,108,34,.55))"></div>
+
+      <div class="banner-art">
+        <img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png">
+        <div class="rank rank--s">S <i>&#9670;&#9670;&#9670;</i></div>
+      </div>
+
+      <div class="head-wide">
+        <div class="eyebrow" style="color:rgb(214,178,112)">Recruit &middot; Reaction</div>
+        <div style="display:flex; align-items:flex-end; gap:12px">
+          <div style="min-width:0">
+            <div class="unit-name" style="color:rgb(248,226,172)">Phalanx</div>
+            <div class="identity-line">Leonnatos of the Unbroken Line</div>
+          </div>
+          <div style="margin-left:auto"><div class="price">&#8987; 12</div></div>
+        </div>
+      </div>
+
+      <div class="facts">
+        <div class="fact f-health"><b>HP</b><span>218</span></div>
+        <div class="fact f-power"><b>Power</b><span>16</span></div>
+        <div class="fact f-reach"><b>Reach</b><span>2</span></div>
+        <div class="fact f-cadence"><b>Cadence</b><span>0.9<small>s</small></span></div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Signature <span class="trig trig--mana">35 mana</span></div>
+        <div class="rule-name">Skewer</div>
+        <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Weapon</div>
+        <div class="rule-name hoverable" style="display:inline-block">Pike &middot; Honed</div>
+        <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Passives</div>
+        <div class="row-line"><b class="hoverable">Riposte</b><span>&mdash; when hit</span></div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Specs</div>
+        <div class="row-line"><b class="hoverable">Pikewall</b><span class="at">B</span></div>
+        <div class="row-line"><b class="hoverable">Bracing Line</b><span class="at">A</span></div>
+        <div class="row-line"><b class="hoverable">Unbroken</b><span class="at">S</span></div>
+      </div>
+
+      <div class="action">Recruit &middot; &#8987; 12</div>
+    </div>
+  </div>
+
+  <!-- ===================== COMBAT — 56px bezel ===================== -->
+  <div>
+    <div class="ctx">Combat &middot; floating card</div>
+    <div class="ctx-sub">302px &middot; 56px bezel &middot; rank A</div>
+    <div class="plate card card--narrow">
+      <div class="spine spine--ally"></div>
+
+      <div class="card__head">
+        <div class="bezel bezel--ally"><img src="file:///home/jake/Work/warband/client/Assets/Resources/UI/Portraits/phalanx.png"></div>
+        <div style="min-width:0; flex:1">
+          <div class="eyebrow">Ally &middot; Reaction</div>
+          <div class="unit-name" style="font-size:23px">Leonnatos</div>
+          <div class="identity-line" style="font-size:12px;margin-top:1px">Phalanx</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px">
+          <div class="card__close" style="margin:0">&times;</div>
+          <div class="rank rank--a">A <i>&#9670;&#9670;</i></div>
+        </div>
+      </div>
+
+      <div class="facts">
+        <div class="fact f-health"><b>HP</b><span>118<small>/188</small></span></div>
+        <div class="fact f-shield"><b>Shield</b><span>20</span></div>
+        <div class="fact f-mana"><b>Mana</b><span>28<small>/35</small></span></div>
+        <div class="fact f-power"><b>Power</b><span>13</span></div>
+      </div>
+
+      <div class="targets"><b>Targets</b><span><i>Nearest</i></span></div>
+
+      <div class="sec">
+        <div class="section-head">Signature <span class="trig trig--mana">35 mana</span></div>
+        <div class="rule-name">Skewer</div>
+        <div class="rule-text">Enemies on a 3-<span class="kw kw--space">hex</span> <span class="kw kw--space">line</span> through the target take 12 <span class="kw kw--offense">damage</span>.</div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Weapon</div>
+        <div class="rule-name hoverable" style="display:inline-block">Pike &middot; Honed</div>
+        <div class="rule-text">9 <span class="kw kw--offense">damage</span> every 1.1<span class="kw kw--time">s</span> at <span class="kw kw--space">reach</span> 2.</div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Passives</div>
+        <div class="rule-name" style="font-size:15px">Riposte <span class="trig trig--hit" style="font-size:10px; letter-spacing:1.3px">when hit</span></div>
+        <div class="rule-text">Spends a stored <span class="kw kw--offense">Riposte</span> to counterattack the attacker.</div>
+      </div>
+
+      <div class="sec">
+        <div class="section-head">Specs</div>
+        <div class="row-line"><b class="hoverable">Pikewall</b><span class="at">B</span></div>
+        <div class="row-line"><b class="hoverable">Bracing Line</b><span class="at">A</span></div>
+      </div>
+
+      <div class="live">
+        <div class="eyebrow">Live</div>
+        <div class="statuses">
+          <span class="pill p-ward">Fortified <em>3.0s</em></span>
+          <span class="pill p-control">Mustered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body></html>

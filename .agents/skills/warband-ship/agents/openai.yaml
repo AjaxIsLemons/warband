@@ -1,0 +1,4 @@
+interface:
+  display_name: "Warband Ship"
+  short_description: "Build, publish, and verify a warband release"
+  default_prompt: "Use $warband-ship to take this Warband release work through preflight, verification, and (only with Jake's approval) publishing."

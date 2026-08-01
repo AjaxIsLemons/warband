@@ -839,7 +839,7 @@ public class DebugMenu : MonoBehaviour
         {
             var item = list[i];
             string title = $"[{i}]";
-            var ek = item?.GetType().GetField("eventKind");
+            var ek = item?.GetType().GetField("eventKind") ?? item?.GetType().GetField("model");
             var ekVal = ek?.GetValue(item);
             if (ekVal != null) title = $"[{i}] {ekVal}";
 

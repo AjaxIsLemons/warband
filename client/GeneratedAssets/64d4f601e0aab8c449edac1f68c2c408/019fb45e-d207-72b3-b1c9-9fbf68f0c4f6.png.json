@@ -1,0 +1,31 @@
+{
+    "asset": "64d4f601e0aab8c449edac1f68c2c408",
+    "fileName": "019fb45e-d207-72b3-b1c9-9fbf68f0c4f6.png",
+    "prompt": "A void outside of time, seen from high above looking down. Below and all around the viewer: bottomless dark emptiness holding faint fragments of dissolving grey geometry and slow drifting pale ash, far beneath. Extremely desaturated near-black blue-grey to cold slate, with one faint warm amber glow low down beneath the viewer. NO sun, NO clouds, NO stars, NO horizon line, NO terrain or landscape at eye level, NO bright zenith. All visual interest sits BELOW the viewer. Dark, minimal, atmospheric, very low contrast, uninhabited, empty.",
+    "negativePrompt": "",
+    "model": "skybox-cinematic",
+    "modelName": "Cinematic",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

@@ -12,7 +12,9 @@ namespace Warband.Sim
     public static class Replay
     {
         private const uint Magic = 0x57425250; // "WBRP"
-        private const int Version = 9;   // v9: + PlaybackUnit.RoleId — the authored enemy role. The
+        private const int Version = 10;  // v10: + PlaybackUnit.ManaPerSwing/CleavePct — immutable
+                                         //      Weapon facts rendered by the shared live unit sheet
+                                         // v9: + PlaybackUnit.RoleId — the authored enemy role. The
                                          //     board renders a monster as its ROLE (item 29); before
                                          //     this the only identity on the wire was ChassisId, a
                                          //     borrowed hero silhouette
@@ -59,7 +61,8 @@ namespace Warband.Sim
                 w.Write(u.Pos.Q); w.Write(u.Pos.R); w.Write(u.Dead);
                 w.Write(u.StepTo.Q); w.Write(u.StepTo.R); w.Write(u.StepStart); w.Write(u.StepEnd);
                 w.Write(u.Range); w.Write(u.Attack); w.Write(u.AttackInterval);
-                w.Write(u.MoveInterval); w.Write(u.CritChance); w.Write(u.HealAutos);
+                w.Write(u.MoveInterval); w.Write(u.ManaPerSwing);
+                w.Write(u.CritChance); w.Write(u.CleavePct); w.Write(u.HealAutos);
                 w.Write((int)u.TargetPref); w.Write(u.Standoff);
                 w.Write(u.TriggerRuleBase); w.Write(u.TriggerRuleCount);
                 w.Write(u.StatRuleBase); w.Write(u.StatRuleCount);
@@ -118,7 +121,9 @@ namespace Warband.Sim
                     StepTo = new Hex(r.ReadInt32(), r.ReadInt32()),
                     StepStart = r.ReadInt32(), StepEnd = r.ReadInt32(),
                     Range = r.ReadInt32(), Attack = r.ReadInt32(), AttackInterval = r.ReadInt32(),
-                    MoveInterval = r.ReadInt32(), CritChance = r.ReadInt32(), HealAutos = r.ReadBoolean(),
+                    MoveInterval = r.ReadInt32(), ManaPerSwing = r.ReadInt32(),
+                    CritChance = r.ReadInt32(), CleavePct = r.ReadInt32(),
+                    HealAutos = r.ReadBoolean(),
                     TargetPref = (TargetPref)r.ReadInt32(), Standoff = r.ReadInt32(),
                     TriggerRuleBase = r.ReadInt32(), TriggerRuleCount = r.ReadInt32(),
                     StatRuleBase = r.ReadInt32(), StatRuleCount = r.ReadInt32(),

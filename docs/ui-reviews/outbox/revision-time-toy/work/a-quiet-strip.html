@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>A — Quiet Strip</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:2560px; height:1440px; overflow:hidden; }
+  body {
+    background:#0b1018 url(board.png) center/cover no-repeat;
+    font-family:"DejaVu Sans", system-ui, sans-serif;
+    position:relative;
+    /* the held Hour: desaturated + vignetted, as the sim's dress already does */
+    filter:saturate(.45);
+  }
+  .vig { position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 38%, rgba(2,5,10,.78) 100%); }
+  .chrome { position:absolute; inset:0; filter:saturate(1.9); }
+
+  /* ---- floating unit callouts (the whole point) ---- */
+  .pin { position:absolute; transform:translate(-50%,-100%); text-align:center; }
+  .carry {
+    font-size:74px; font-weight:800; letter-spacing:-2px; color:#8FE3FF;
+    text-shadow:0 0 26px rgba(60,180,255,.95), 0 5px 0 rgba(4,10,20,.85);
+    line-height:.9;
+  }
+  .carry small { display:block; font-size:21px; font-weight:700; letter-spacing:3px;
+    color:#BFE7FF; opacity:.92; text-shadow:0 2px 6px #000; margin-top:6px; }
+  .orb { width:96px; height:96px; border-radius:50%; margin:0 auto 8px;
+    background:conic-gradient(#5FD0FF 0 72%, rgba(255,255,255,.10) 72% 100%);
+    border:4px solid rgba(190,235,255,.95);
+    box-shadow:0 0 34px rgba(70,190,255,.85), inset 0 0 22px rgba(0,40,80,.6);
+    display:grid; place-items:center;
+    font-size:26px; font-weight:800; color:#EAF8FF; text-shadow:0 2px 4px #000; }
+
+  .ring { position:absolute; transform:translate(-50%,-50%);
+    width:150px; height:74px; border-radius:50%;
+    border:5px solid rgba(255,206,110,.95);
+    box-shadow:0 0 30px rgba(255,190,80,.75), inset 0 0 22px rgba(255,180,60,.35); }
+  .ring.pick { border-color:#8FE3FF; box-shadow:0 0 42px rgba(90,200,255,.95); }
+  .ring.revive { border-color:#FFFFFF; box-shadow:0 0 52px rgba(255,255,255,.95); }
+
+  .tag { position:absolute; transform:translate(-50%,-100%);
+    padding:8px 16px; border-radius:999px; font-size:22px; font-weight:800; letter-spacing:2px;
+    white-space:nowrap; text-shadow:0 2px 4px #000; }
+  .tag.back { background:rgba(250,252,255,.95); color:#10202e; box-shadow:0 0 30px rgba(255,255,255,.8); }
+  .tag.gone { background:rgba(230,103,91,.95); color:#180608; }
+
+  /* ---- the strip: a sand track, portraits, one big number ---- */
+  .strip { position:absolute; left:50%; bottom:56px; transform:translateX(-50%);
+    width:1180px; text-align:center; }
+  .big { font-size:92px; font-weight:800; color:#FFE6B0; letter-spacing:-3px;
+    text-shadow:0 0 38px rgba(255,190,90,.8), 0 4px 0 rgba(0,0,0,.6); line-height:1; }
+  .big span { font-size:34px; letter-spacing:5px; opacity:.72; }
+  .track { position:relative; height:88px; margin-top:14px; }
+  .rail { position:absolute; left:0; right:0; top:52px; height:6px; border-radius:3px;
+    background:linear-gradient(90deg, rgba(233,181,95,.20), rgba(233,181,95,.75)); }
+  .por { position:absolute; top:8px; transform:translateX(-50%);
+    width:74px; height:74px; border-radius:50%; border:4px solid #7FA9CE;
+    background:#16202e center/cover no-repeat; display:grid; place-items:center;
+    font-size:30px; color:#cfe2f5; box-shadow:0 4px 14px rgba(0,0,0,.6); }
+  .por.enemy { border-color:#E6675B; }
+  .por.dead { border-color:#fff; box-shadow:0 0 30px rgba(255,255,255,.9); }
+  .head { position:absolute; top:40px; transform:translateX(-50%);
+    width:8px; height:30px; border-radius:4px; background:#fff;
+    box-shadow:0 0 18px rgba(255,255,255,.95); }
+  .hint { margin-top:16px; font-size:24px; letter-spacing:4px; font-weight:700; color:#9FBBD6; }
+  .hint b { color:#FFE6B0; }
+  .lab { position:absolute; left:50%; top:0; transform:translate(-50%,-130%);
+    font-size:20px; letter-spacing:4px; font-weight:800; color:#B9D3EA; opacity:.8; }
+</style>
+<body>
+<div class="vig"></div>
+<div class="chrome">
+
+  <!-- eligible ally, not chosen -->
+  <div class="ring" style="left:58.6%; top:59.5%"></div>
+
+  <!-- the chosen ally: everything you need is over its head -->
+  <div class="ring pick" style="left:30.0%; top:63.5%"></div>
+  <div class="pin" style="left:30.0%; top:55.0%">
+    <div class="orb">25</div>
+    <div class="carry">+33<small>MANA CARRIED</small></div>
+  </div>
+
+  <!-- the ally who is alive again at this second -->
+  <div class="ring revive" style="left:43.2%; top:33.5%"></div>
+  <div class="tag back" style="left:43.2%; top:26.0%">◄ ALIVE AGAIN HERE</div>
+
+  <div class="strip">
+    <div class="big">−2<span>s</span></div>
+    <div class="track">
+      <div class="lab">◄ EARLIER          THE MOMENT YOU STOPPED ►</div>
+      <div class="rail"></div>
+      <div class="por dead" style="left:26%">☠</div>
+      <div class="por enemy" style="left:44%">✦</div>
+      <div class="por" style="left:62%">✦</div>
+      <div class="por enemy" style="left:82%">☠</div>
+      <div class="head" style="left:26%"></div>
+    </div>
+    <div class="hint">◄ ◄ DRAG OR <b>A / D</b> TO ROLL TIME BACK &nbsp;·&nbsp; <b>HOLD ⏎</b> TO SPLIT</div>
+  </div>
+
+</div>
+</body>
+</html>

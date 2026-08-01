@@ -1,0 +1,20 @@
+{
+    "MonoBehaviour": {
+        "m_Enabled": true,
+        "m_EditorHideFlags": 0,
+        "m_Name": "RunShellStyles",
+        "m_EditorClassIdentifier": "UnityEngine.dll::UnityEngine.UIElements.StyleSheet",
+        "m_ImportedWithErrors": true,
+        "m_ImportedWithWarnings": false,
+        "m_Rules": [],
+        "floats": [],
+        "dimensions": [],
+        "colors": [],
+        "strings": [],
+        "assets": [],
+        "imports": [],
+        "m_FlattenedImportedStyleSheets": [],
+        "m_ContentHash": -1914050096,
+        "scalableImages": []
+    }
+}

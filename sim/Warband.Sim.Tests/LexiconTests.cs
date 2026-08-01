@@ -54,6 +54,14 @@ namespace Warband.Sim.Tests
         }
 
         [Fact]
+        public void RiposteDefinesItsExactSpend()
+        {
+            Assert.Equal(
+                "Spend 1 to Counter an incoming basic attack.",
+                Lexicon.Of(StatusKind.CounterCharge).Text);
+        }
+
+        [Fact]
         public void UnknownValueFallsBackInsteadOfThrowing()
         {
             // A live fight must never crash on an un-authored id; the coverage tests above are

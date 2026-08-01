@@ -164,6 +164,52 @@ namespace Warband.Run.Tests
             Assert.Contains(Encounters.NinthBell(2).Enemies, e => e.Def.Name == "Ashen Colossus");
         }
 
+        [Fact]
+        public void GnawingHourDisclosesItsActualSwarmAndTwoWedges()
+        {
+            foreach (int act in Enumerable.Range(1, 3))
+            {
+                var encounter = Encounters.GnawingHour(act);
+                int hourlings = encounter.Enemies.Count(e => e.Def.Name == "Hourling");
+
+                Assert.Equal(new[] { 7, 8, 10 }[act - 1], hourlings);
+                Assert.Contains($"{hourlings} Hourlings", encounter.Pressure);
+                Assert.Contains($"{hourlings} Hourlings", encounter.RuleText);
+                Assert.Contains(encounter.Enemies, e => e.Pos.Col <= 1);
+                Assert.Contains(encounter.Enemies, e => e.Pos.Col >= 6);
+            }
+        }
+
+        [Fact]
+        public void LongRangeDisclosesBothWallsAndAllThreeGuns()
+        {
+            var encounter = Encounters.TheLongRange(2);
+            var walls = encounter.Enemies.Where(e => e.Def.Name == "Ashen Colossus").ToList();
+            var guns = encounter.Enemies.Where(e => e.Def.Name == "Sanddrift Gunner").ToList();
+
+            Assert.Equal(2, walls.Count);
+            Assert.Single(walls, wall => wall.Def.Traits.Contains("Ward"));
+            Assert.Equal(3, guns.Count);
+            Assert.All(guns, gun => Assert.Equal(TargetPref.Farthest, gun.Def.TargetPref));
+            Assert.Contains("One Ashen Colossus", encounter.RuleText);
+            Assert.Contains("the second Colossus is unwarded", encounter.RuleText);
+            Assert.Contains("All three Sanddrift Gunners", encounter.RuleText);
+        }
+
+        [Fact]
+        public void LongProcessionDisclosesTheCourtThatActuallyFeedsItsClock()
+        {
+            foreach (int act in Enumerable.Range(1, 3))
+            {
+                var encounter = Encounters.LongProcession(act);
+                int court = encounter.Enemies.Count(e => e.Def.Name == "Hourling");
+
+                Assert.Equal(new[] { 4, 4, 8 }[act - 1], court);
+                Assert.Contains($"every death among its {court} Hourlings", encounter.RuleText);
+                Assert.Single(encounter.Enemies, e => e.Def.Name == "Procession-Scribe");
+            }
+        }
+
         // ---- the two authored rules that bend the shared model on purpose ----
 
         /// <summary>

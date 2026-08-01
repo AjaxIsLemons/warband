@@ -1032,17 +1032,6 @@
     font-size: 14px;
 }
 
-/* The shared feedback token is centered with a negative margin for the legacy drawer.
-   The Hall owns a variable-width collection pane, so pin the receipt to that pane instead. */
-.hub .management-feedback {
-    left: 24px;
-    right: 24px;
-    bottom: 14px;
-    width: auto;
-    margin-left: 0;
-    font-size: 14px;
-}
-
 .wb-card--hub-warband {
     width: 252px;
     min-width: 252px;
